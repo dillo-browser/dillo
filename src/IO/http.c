@@ -294,50 +294,49 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
       dStr_sprintfa(
          query,
          "POST %s HTTP/1.1\r\n"
-         "Connection: close\r\n"
+         "Host: %s\r\n"
+         "User-Agent: %s\r\n"
          "Accept: text/*,image/*,*/*;q=0.2\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* language */
          "%s" /* auth */
          "DNT: 1\r\n"
-         "Host: %s\r\n"
-         "%s"
-         "%s"
-         "User-Agent: %s\r\n"
-         "Content-Length: %ld\r\n"
+         "%s" /* proxy auth */
+         "%s" /* referer */
+         "Connection: close\r\n"
          "Content-Type: %s\r\n"
+         "Content-Length: %ld\r\n"
          "%s" /* cookies */
          "\r\n",
-         request_uri->str, HTTP_Language_hdr, auth ? auth : "",
-         URL_AUTHORITY(url), proxy_auth->str, referer, prefs.http_user_agent,
-         (long)URL_DATA(url)->len, content_type->str,
-         cookies);
+         request_uri->str, URL_AUTHORITY(url), prefs.http_user_agent,
+         HTTP_Language_hdr, auth ? auth : "", proxy_auth->str, referer,
+         content_type->str, (long)URL_DATA(url)->len, cookies);
       dStr_append_l(query, URL_DATA(url)->str, URL_DATA(url)->len);
       dStr_free(content_type, TRUE);
    } else {
       dStr_sprintfa(
          query,
          "GET %s HTTP/1.1\r\n"
+         "Host: %s\r\n"
+         "User-Agent: %s\r\n"
          "%s"
-         "Connection: close\r\n"
          "Accept: text/*,image/*,*/*;q=0.2\r\n"
          "Accept-Charset: utf-8,*;q=0.8\r\n"
          "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* language */
          "%s" /* auth */
          "DNT: 1\r\n"
-         "Host: %s\r\n"
-         "%s"
-         "%s"
-         "User-Agent: %s\r\n"
+         "%s" /* proxy auth */
+         "%s" /* referer */
+         "Connection: close\r\n"
          "%s" /* cookies */
          "\r\n",
-         request_uri->str,
+         request_uri->str, URL_AUTHORITY(url), prefs.http_user_agent,
          (URL_FLAGS(url) & URL_E2EQuery) ?
             "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
-         HTTP_Language_hdr, auth ? auth : "", URL_AUTHORITY(url),
-         proxy_auth->str, referer, prefs.http_user_agent, cookies);
+         HTTP_Language_hdr, auth ? auth : "",
+         proxy_auth->str, referer, cookies);
    }
    dFree(referer);
    dFree(cookies);
