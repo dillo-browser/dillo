@@ -19,7 +19,7 @@ void a_Http_set_proxy_passwd(const char *str);
 char *a_Http_make_connect_str(const DilloUrl *url);
 const char *a_Http_get_proxy_urlstr();
 Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
-                            bool_t use_proxy);
+                            int web_flags, bool_t use_proxy);
 
 void a_Http_ccc (int Op, int Branch, int Dir, ChainLink *Info,
                  void *Data1, void *Data2);

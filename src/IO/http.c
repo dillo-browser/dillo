@@ -262,12 +262,17 @@ static Dstr *Http_make_content_type(const DilloUrl *url)
  * Make the http query string
  */
 Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
-                            bool_t use_proxy)
+                            int web_flags, bool_t use_proxy)
 {
    char *ptr, *cookies, *referer, *auth;
    Dstr *query      = dStr_new(""),
         *request_uri = dStr_new(""),
         *proxy_auth = dStr_new("");
+
+   /* BUG: dillo doesn't actually understand application/xml yet */
+   const char *accept_hdr_value = web_flags & WEB_Image ?
+      "image/png,image/*;q=0.8,*/*;q=0.5" :
+      "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
 
    if (use_proxy) {
       dStr_sprintfa(request_uri, "%s%s",
@@ -296,7 +301,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "POST %s HTTP/1.1\r\n"
          "Host: %s\r\n"
          "User-Agent: %s\r\n"
-         "Accept: text/*,image/*,*/*;q=0.2\r\n"
+         "Accept: %s\r\n"
          "%s" /* language */
          "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* auth */
@@ -309,8 +314,9 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "%s" /* cookies */
          "\r\n",
          request_uri->str, URL_AUTHORITY(url), prefs.http_user_agent,
-         HTTP_Language_hdr, auth ? auth : "", proxy_auth->str, referer,
-         content_type->str, (long)URL_DATA(url)->len, cookies);
+         accept_hdr_value, HTTP_Language_hdr, auth ? auth : "",
+         proxy_auth->str, referer, content_type->str, (long)URL_DATA(url)->len,
+         cookies);
       dStr_append_l(query, URL_DATA(url)->str, URL_DATA(url)->len);
       dStr_free(content_type, TRUE);
    } else {
@@ -320,7 +326,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "Host: %s\r\n"
          "User-Agent: %s\r\n"
          "%s"
-         "Accept: text/*,image/*,*/*;q=0.2\r\n"
+         "Accept: %s\r\n"
          "%s" /* language */
          "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* auth */
@@ -333,7 +339,7 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          request_uri->str, URL_AUTHORITY(url), prefs.http_user_agent,
          (URL_FLAGS(url) & URL_E2EQuery) ?
             "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
-         HTTP_Language_hdr, auth ? auth : "",
+         accept_hdr_value, HTTP_Language_hdr, auth ? auth : "",
          proxy_auth->str, referer, cookies);
    }
    dFree(referer);
@@ -355,7 +361,7 @@ static void Http_send_query(ChainLink *Info, SocketData_t *S)
    DataBuf *dbuf;
 
    /* Create the query */
-   query = a_Http_make_query_str(S->web->url, S->web->requester,
+   query = a_Http_make_query_str(S->web->url, S->web->requester, S->web->flags,
                                  S->flags & HTTP_SOCKET_USE_PROXY);
    dbuf = a_Chain_dbuf_new(query->str, query->len, 0);
 
