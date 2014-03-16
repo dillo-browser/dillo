@@ -326,7 +326,6 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "GET %s HTTP/1.1\r\n"
          "Host: %s\r\n"
          "User-Agent: %s\r\n"
-         "%s"
          "Accept: %s\r\n"
          "%s" /* language */
          "Accept-Encoding: gzip, deflate\r\n"
@@ -335,13 +334,15 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "%s" /* proxy auth */
          "%s" /* referer */
          "Connection: close\r\n"
+         "%s" /* cache control */
          "%s" /* cookies */
          "\r\n",
          request_uri->str, URL_AUTHORITY(url), prefs.http_user_agent,
-         (URL_FLAGS(url) & URL_E2EQuery) ?
-            "Cache-Control: no-cache\r\nPragma: no-cache\r\n" : "",
          accept_hdr_value, HTTP_Language_hdr, auth ? auth : "",
-         proxy_auth->str, referer, cookies);
+         proxy_auth->str, referer,
+         (URL_FLAGS(url) & URL_E2EQuery) ?
+            "Pragma: no-cache\r\nCache-Control: no-cache\r\n" : "",
+         cookies);
    }
    dFree(referer);
    dFree(cookies);
