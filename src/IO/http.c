@@ -297,8 +297,8 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "Host: %s\r\n"
          "User-Agent: %s\r\n"
          "Accept: text/*,image/*,*/*;q=0.2\r\n"
-         "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* language */
+         "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* auth */
          "DNT: 1\r\n"
          "%s" /* proxy auth */
@@ -321,8 +321,8 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "User-Agent: %s\r\n"
          "%s"
          "Accept: text/*,image/*,*/*;q=0.2\r\n"
-         "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* language */
+         "Accept-Encoding: gzip, deflate\r\n"
          "%s" /* auth */
          "DNT: 1\r\n"
          "%s" /* proxy auth */
