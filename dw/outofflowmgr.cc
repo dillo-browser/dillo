@@ -1898,13 +1898,8 @@ void OutOfFlowMgr::getAbsolutelyPositionedExtremes (Extremes *cbExtr,
 void OutOfFlowMgr::ensureAbsolutelyPositionedSizeAndPosition
    (AbsolutelyPositioned *abspos)
 {
-   // TODO Similar to floats, changes of the available size of the
-   // containing block are not noticed; which is a bit more severe as
-   // for floats. Find a general solution for both floats and
-   // absolutely positioned blocks.
-
-   // TODO Compare to ensureFloatSize: some parts are
-   // missing. Nevertheless, a simpler approach should be focussed on.
+   // No work is done anymore on this, since widget sizes will be
+   // redesigned before absolute positions are finished.
 
    if (abspos->dirty) {
       Style *style = abspos->widget->getStyle();
