@@ -559,7 +559,7 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       rightFloatsCB->get(i)->updateAllocation ();
 
    // There are cases where some allocated floats (TODO: later also absolutely
-   // positioned elements) exceed the CB allocation.
+   // positioned elements?) exceed the CB allocation.
    if (doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT))
       containingBlock->oofSizeChanged ();
 
