@@ -256,6 +256,8 @@ private:
                             int newFlx, int newFly, int newFlw, int newFlh,
                             Side side, int *floatPos);
 
+   bool doFloatsExceedCB (Side side);
+
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area);
    void drawAbsolutelyPositioned (core::View *view, core::Rectangle *area);

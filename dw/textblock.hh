@@ -775,6 +775,7 @@ public:
                          bool includeFirstSpace, bool includeLastSpace);
 
    void borderChanged (int y, core::Widget *vloat);
+   inline void oofSizeChanged () { queueResize (-1, false); }
    inline int getAvailWidth () { return availWidth; }
    inline int getAvailAscent () { return availAscent; }
    inline int getAvailDescent () { return availDescent; }

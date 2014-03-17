@@ -558,6 +558,11 @@ void OutOfFlowMgr::sizeAllocateEnd ()
    for (int i = 0; i < rightFloatsCB->size(); i++)
       rightFloatsCB->get(i)->updateAllocation ();
 
+   // There are cases where some allocated floats (TODO: later also absolutely
+   // positioned elements) exceed the CB allocation.
+   if (doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT))
+      containingBlock->oofSizeChanged ();
+
    DBG_OBJ_MSG_END ();
 }
 
@@ -809,6 +814,27 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
    return result;
 }
 
+bool OutOfFlowMgr::doFloatsExceedCB (Side side)
+{
+   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   bool exceeds = false;
+
+   for (int i = 0; i < list->size () && !exceeds; i++) {
+      Float *vloat = list->get (i);
+      if (vloat->getWidget()->wasAllocated ()) {
+         Allocation *fla = vloat->getWidget()->getAllocation ();
+         if (fla->x + fla->width >
+             containingBlockAllocation.x + containingBlockAllocation.width ||
+             fla->y + fla->ascent + fla->descent >
+             containingBlockAllocation.y + containingBlockAllocation.ascent
+             + containingBlockAllocation.descent)
+            exceeds = true;
+      }
+   }
+
+   return exceeds;
+}
+
 void OutOfFlowMgr::moveFromGBToCB (Side side)
 {
    SortedFloatsVector *dest = side == LEFT ? leftFloatsCB : rightFloatsCB;
@@ -821,7 +847,7 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
          SortedFloatsVector *src =
             side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
          for (int i = 0; i < src->size (); i++) {
-            Float *vloat = src->get(i);
+            Float *vloat = src->get (i);
             if (!vloat->inCBList && vloat->mark == mark) {
                dest->put (vloat);
                //printf("[%p] moving %s float %p (%s %p, mark %d) to CB list\n",
