@@ -809,25 +809,6 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
    return result;
 }
 
-bool OutOfFlowMgr::isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
-                                              int tbx, int tby,
-                                              int tbWidth, int tbHeight,
-                                              int *floatPos)
-{
-   assert (wasAllocated (vloat->generatingBlock));
-   
-   int flh = vloat->dirty ? 0 : vloat->size.ascent + vloat->size.descent;
-   int y1 = getAllocation(vloat->generatingBlock)->y + vloat->yReal;
-   int y2 = y1 + flh;
-
-   // TODO: Also regard horizontal dimension (same for tellFloatPosition)?
-   if (y2 > tby && y1 < tby + tbHeight) {
-      *floatPos = y1 - tby;
-      return true;
-   } else
-      return false;
-}
-
 void OutOfFlowMgr::moveFromGBToCB (Side side)
 {
    SortedFloatsVector *dest = side == LEFT ? leftFloatsCB : rightFloatsCB;

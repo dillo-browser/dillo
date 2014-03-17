@@ -256,10 +256,6 @@ private:
                             int newFlx, int newFly, int newFlw, int newFlh,
                             Side side, int *floatPos);
 
-   bool isTextblockCoveredByFloat (Float *vloat, Textblock *tb,
-                                   int tbx, int tby, int tbWidth, int tbHeight,
-                                   int *floatPos);
- 
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area);
    void drawAbsolutelyPositioned (core::View *view, core::Rectangle *area);
