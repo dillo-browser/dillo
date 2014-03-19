@@ -881,11 +881,18 @@ void Textblock::updateBorders (int wordIndex, bool left, bool right)
    if (left) {
       newLineHasFloatLeft = oofm->hasFloatLeft (this, y, h, this, wordIndex);
       newLineLeftBorder = oofm->getLeftBorder (this, y, h, this, wordIndex);
+      DBG_OBJ_MSGF ("construct.line.border", 1,
+                    "left: has border? %s, border = %d",
+                    newLineHasFloatLeft ? "true" : "false", newLineLeftBorder);
    }
 
    if (right) {
       newLineHasFloatRight = oofm->hasFloatRight (this, y, h, this, wordIndex);
       newLineRightBorder = oofm->getRightBorder (this, y, h, this, wordIndex);
+      DBG_OBJ_MSGF ("construct.line.border", 1,
+                    "right: has border? %s, border = %d",
+                    newLineHasFloatRight ? "true" : "false",
+                    newLineRightBorder);
    }
 
    int firstIndex =

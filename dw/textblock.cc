@@ -389,7 +389,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    // role (currently) and caring about them (for the future) would
    // cause too much problems.
 
-   DBG_OBJ_MSGF ("resize", 1, "before considering OOF widgets: %d * %d + %d",
+   DBG_OBJ_MSGF ("resize", 1, "before considering OOF widgets: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
 
    if (outOfFlowMgr) {
@@ -400,8 +400,10 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
          requisition->descent = oofHeight - requisition->ascent;
    }   
 
-   DBG_OBJ_MSGF ("resize", 1, "before considering availWidth: %d * %d + %d",
-                 requisition->width, requisition->ascent, requisition->descent);
+   DBG_OBJ_MSGF ("resize", 1,
+                 "before considering availWidth (= %d): %d * (%d + %d)",
+                 availWidth, requisition->width, requisition->ascent,
+                 requisition->descent);
 
    if (requisition->width < availWidth) {
       requisition->width = availWidth;
