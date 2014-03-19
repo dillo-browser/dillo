@@ -1642,15 +1642,25 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                   vloat->generatingBlock->getStyle()->boxOffsetX() :
                   vloat->generatingBlock->getStyle()->boxRestWidth();
                thisBorder = vloat->size.width + borderIn;
+               DBG_OBJ_MSGF ("border", 1, "GB: thisBorder = %d + %d = %d",
+                             vloat->size.width, borderIn, thisBorder);
             } else {
                assert (wasAllocated (vloat->generatingBlock));
                assert (vloat->getWidget()->wasAllocated ());
 
                Allocation *tba = getAllocation(textblock),
                   *fla = vloat->getWidget()->getAllocation ();
-               thisBorder = side == LEFT ?
-                  fla->x + fla->width - tba->x :
-                  tba->x + tba->width - fla->x;
+               if (side == LEFT) {
+                  thisBorder = fla->x + fla->width - tba->x;
+                  DBG_OBJ_MSGF ("border", 1,
+                                "not GB: thisBorder = %d + %d - %d = %d",
+                                fla->x, fla->width, tba->x, thisBorder);
+               } else {
+                  thisBorder = tba->x + tba->width - fla->x;
+                  DBG_OBJ_MSGF ("border", 1,
+                                "not GB: thisBorder = %d + %d - %d = %d",
+                                tba->x, tba->width, fla->x, thisBorder);
+               }
             }
 
             border = max (border, thisBorder);
