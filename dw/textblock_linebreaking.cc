@@ -876,23 +876,16 @@ void Textblock::updateBorders (int wordIndex, bool left, bool right)
    
    int y = yOffsetOfPossiblyMissingLine (lines->size ());
    int h = heightOfPossiblyMissingLine (lines->size ());
+   OutOfFlowMgr *oofm = containingBlock->outOfFlowMgr;
 
    if (left) {
-      newLineHasFloatLeft =
-         containingBlock->outOfFlowMgr->hasFloatLeft (this, y, h, this,
-                                                      wordIndex);
-      newLineHasFloatRight =
-         containingBlock->outOfFlowMgr->hasFloatRight (this, y, h, this,
-                                                       wordIndex);
+      newLineHasFloatLeft = oofm->hasFloatLeft (this, y, h, this, wordIndex);
+      newLineLeftBorder = oofm->getLeftBorder (this, y, h, this, wordIndex);
    }
 
    if (right) {
-      newLineLeftBorder =
-         containingBlock->outOfFlowMgr->getLeftBorder (this, y, h, this,
-                                                       wordIndex);
-      newLineRightBorder =
-         containingBlock->outOfFlowMgr->getRightBorder (this, y, h, this,
-                                                        wordIndex);
+      newLineHasFloatRight = oofm->hasFloatRight (this, y, h, this, wordIndex);
+      newLineRightBorder = oofm->getRightBorder (this, y, h, this, wordIndex);
    }
 
    int firstIndex =
