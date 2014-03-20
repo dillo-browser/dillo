@@ -1257,7 +1257,7 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
 bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, int *yReal)
 {
    // Only checks vertical (possible) collisions, and only refers to
-   // vloat->yReal; never to vloat->allocation, even when the GBs are
+   // vloat->yReal; never to vloat->allocation->y, even when the GBs are
    // different. Used only in tellPosition.
 
    DBG_OBJ_MSGF ("resize.oofm", 0,
@@ -1335,34 +1335,35 @@ bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, int *yReal)
             + vloat->generatingBlock->getStyle()->boxDiffWidth()
             > vloat->generatingBlock->getAvailWidth();
       else {
-         // Here (different generating blocks) it can be assumed that the
-         // allocations are defined, otherwise, the float "other" would not be
-         // found in "listOpp".
          assert (wasAllocated (vloat->generatingBlock));
          assert (wasAllocated (other->generatingBlock));
-         Float *left, *right;
-         if (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT) {
-            left = vloat;
-            right = other;
-         } else {
-            left = other;
-            right = vloat;
+
+         // Again, if the other float is not allocated, there is no
+         // collision. Compare to collidesV. (But vloat->size is used
+         // here.)
+         if (!other->getWidget()->wasAllocated ())
+            collidesH = false;
+         else {
+            Allocation *gba = getAllocation (vloat->generatingBlock);
+            int vloatX =
+               calcFloatX (vloat, 
+                           vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT ?
+                           LEFT : RIGHT,
+                           gba->x, gba->width,
+                           vloat->generatingBlock->getAvailWidth ());
+
+            // Generally: right border of the left float > left border
+            // of the right float (all in canvas coordinates).
+            if (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT)
+               // "vloat" is left, "other" is right
+               collidesH = vloatX + vloat->size.width
+                  > other->getWidget()->getAllocation()->x;
+            else
+               // "other" is left, "vloat" is right
+               collidesH = other->getWidget()->getAllocation()->x
+                  + other->getWidget()->getAllocation()->width
+                  > vloatX;
          }
-         
-         // right border of the left float (canvas coordinates)
-         int rightOfLeft =
-            left->generatingBlock->getAllocation()->x
-            + left->generatingBlock->getStyle()->boxOffsetX()
-            + left->size.width;
-         // left border of the right float (canvas coordinates)
-         int leftOfRight =
-            right->generatingBlock->getAllocation()->x
-            + min (right->generatingBlock->getAllocation()->width,
-                   right->generatingBlock->getAvailWidth())
-            - right->generatingBlock->getStyle()->boxRestWidth()
-            - right->size.width;
-         
-         collidesH = rightOfLeft > leftOfRight;
       }
    }
 
