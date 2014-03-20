@@ -1528,9 +1528,8 @@ void Textblock::alignLine (int lineIndex)
                // when the line would be shrunken otherwise. (This solution is
                // far from perfect, but a better solution would make changes in
                // the line breaking algorithm necessary.)
-               availWidth < lastWord->totalWidth) {
+               availWidth < lastWord->totalWidth)
                justifyLine (line, availWidth - lastWord->totalWidth);
-            }
             break;
          case core::style::TEXT_ALIGN_RIGHT:
             DBG_OBJ_MSG ("construct.line", 1,
