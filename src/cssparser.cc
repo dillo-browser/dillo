@@ -288,7 +288,8 @@ typedef struct {
       CSS_SHORTHAND_FONT,       /* special, used for 'font' */
    } type;
    const CssPropertyName *properties; /* CSS_SHORTHAND_MULTIPLE:
-                                       *   must be terminated by -1
+                                       *   must be terminated by
+                                       *   CSS_PROPERTY_END 
                                        * CSS_SHORTHAND_DIRECTIONS:
                                        *   must have length 4
                                        * CSS_SHORTHAND_BORDERS:
@@ -303,14 +304,14 @@ const CssPropertyName Css_background_properties[] = {
    CSS_PROPERTY_BACKGROUND_REPEAT,
    CSS_PROPERTY_BACKGROUND_ATTACHMENT,
    CSS_PROPERTY_BACKGROUND_POSITION,
-   (CssPropertyName) - 1
+   CSS_PROPERTY_END
 };
 
 const CssPropertyName Css_border_bottom_properties[] = {
    CSS_PROPERTY_BORDER_BOTTOM_WIDTH,
    CSS_PROPERTY_BORDER_BOTTOM_STYLE,
    CSS_PROPERTY_BORDER_BOTTOM_COLOR,
-   (CssPropertyName) - 1
+   CSS_PROPERTY_END
 };
 
 const CssPropertyName Css_border_color_properties[4] = {
@@ -324,14 +325,14 @@ const CssPropertyName Css_border_left_properties[] = {
    CSS_PROPERTY_BORDER_LEFT_WIDTH,
    CSS_PROPERTY_BORDER_LEFT_STYLE,
    CSS_PROPERTY_BORDER_LEFT_COLOR,
-   (CssPropertyName) - 1
+   CSS_PROPERTY_END
 };
 
 const CssPropertyName Css_border_right_properties[] = {
    CSS_PROPERTY_BORDER_RIGHT_WIDTH,
    CSS_PROPERTY_BORDER_RIGHT_STYLE,
    CSS_PROPERTY_BORDER_RIGHT_COLOR,
-   (CssPropertyName) - 1
+   CSS_PROPERTY_END
 };
 
 const CssPropertyName Css_border_style_properties[] = {
@@ -345,7 +346,7 @@ const CssPropertyName Css_border_top_properties[] = {
    CSS_PROPERTY_BORDER_TOP_WIDTH,
    CSS_PROPERTY_BORDER_TOP_STYLE,
    CSS_PROPERTY_BORDER_TOP_COLOR,
-   (CssPropertyName) - 1
+   CSS_PROPERTY_END
 };
 
 const CssPropertyName Css_border_width_properties[] = {
@@ -359,7 +360,7 @@ const CssPropertyName Css_list_style_properties[] = {
    CSS_PROPERTY_LIST_STYLE_TYPE,
    CSS_PROPERTY_LIST_STYLE_POSITION,
    CSS_PROPERTY_LIST_STYLE_IMAGE,
-   (CssPropertyName) - 1
+   CSS_PROPERTY_END
 };
 
 const CssPropertyName Css_margin_properties[] = {
@@ -373,7 +374,7 @@ const CssPropertyName Css_outline_properties[] = {
    CSS_PROPERTY_OUTLINE_COLOR,
    CSS_PROPERTY_OUTLINE_STYLE,
    CSS_PROPERTY_OUTLINE_WIDTH,
-   (CssPropertyName) - 1
+   CSS_PROPERTY_END
 };
 
 const CssPropertyName Css_padding_properties[] = {
@@ -404,7 +405,7 @@ const CssPropertyName Css_font_properties[] = {
    CSS_PROPERTY_FONT_VARIANT,
    CSS_PROPERTY_FONT_WEIGHT,
    CSS_PROPERTY_FONT_FAMILY,
-   (CssPropertyName) - 1
+   CSS_PROPERTY_END
 };
 
 static const CssShorthandInfo Css_shorthand_info[] = {
@@ -1260,7 +1261,8 @@ void CssParser::parseDeclaration(CssPropertyList *props,
                   do {
                      for (found = false, i = 0;
                           !found &&
-                          Css_shorthand_info[sh_index].properties[i] != -1;
+                          Css_shorthand_info[sh_index].properties[i] !=
+                          CSS_PROPERTY_END;
                           i++)
                         if (tokenMatchesProperty(Css_shorthand_info[sh_index].
                                                  properties[i], &type)) {

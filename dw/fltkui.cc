@@ -1292,15 +1292,15 @@ int FltkOptionMenuResource::getNumberOfItems()
 class CustBrowser : public Fl_Browser {
 public:
    CustBrowser(int x, int y, int w, int h) : Fl_Browser(x, y, w, h) {};
-   int full_width();
-   int full_height() {return Fl_Browser::full_height();}
+   int full_width() const;
+   int full_height() const {return Fl_Browser::full_height();}
    int avg_height() {return size() ? Fl_Browser_::incr_height() : 0;}
 };
 
 /*
  * Fl_Browser_ has a full_width(), but it has a tendency to contain 0, so...
  */
-int CustBrowser::full_width()
+int CustBrowser::full_width() const
 {
    int max = 0;
    void *item = item_first();

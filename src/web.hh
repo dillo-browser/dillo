@@ -15,7 +15,8 @@ extern "C" {
  */
 #define WEB_RootUrl  1
 #define WEB_Image    2
-#define WEB_Download 4   /* Half implemented... */
+#define WEB_Stylesheet 4
+#define WEB_Download 8   /* Half implemented... */
 
 
 typedef struct _DilloWeb DilloWeb;

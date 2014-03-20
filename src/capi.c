@@ -301,7 +301,8 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
    if (strcmp(server, "proto.https") == 0) {
       /* Let's be kind and make the HTTP query string for the dpi */
       char *proxy_connect = a_Http_make_connect_str(web->url);
-      Dstr *http_query = a_Http_make_query_str(web->url, web->requester,FALSE);
+      Dstr *http_query = a_Http_make_query_str(web->url, web->requester,
+                                               web->flags, FALSE);
 
       if ((uint_t) http_query->len > strlen(http_query->str)) {
          /* Can't handle NULLs embedded in query data */

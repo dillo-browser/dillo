@@ -399,9 +399,9 @@ void CssStyleSheet::addRule (CssRule *rule) {
    }
 
    if (ruleList) {
-      rule->selector->setMatchCacheOffset (matchCacheOffset);
-      matchCacheOffset += rule->selector->size ();
       ruleList->insert (rule);
+      if (rule->selector->getRequiredMatchCache () > requiredMatchCache)
+         requiredMatchCache = rule->selector->getRequiredMatchCache ();
    } else {
       assert (top->getElement () == CssSimpleSelector::ELEMENT_NONE);
       delete rule;
@@ -488,7 +488,7 @@ CssStyleSheet CssContext::userAgentSheet;
 
 CssContext::CssContext () {
    pos = 0;
-   matchCache[CSS_PRIMARY_USER_AGENT].setSize (userAgentSheet.matchCacheOffset, -1);
+   matchCache.setSize (userAgentSheet.getRequiredMatchCache (), -1);
 }
 
 /**
@@ -505,28 +505,25 @@ void CssContext::apply (CssPropertyList *props, Doctree *docTree,
          CssPropertyList *tagStyle, CssPropertyList *tagStyleImportant,
          CssPropertyList *nonCssHints) {
 
-   userAgentSheet.apply (props, docTree, node,
-                         &matchCache[CSS_PRIMARY_USER_AGENT]);
-   sheet[CSS_PRIMARY_USER].apply (props, docTree, node,
-                                  &matchCache[CSS_PRIMARY_USER]);
+   userAgentSheet.apply (props, docTree, node, &matchCache);
+
+   sheet[CSS_PRIMARY_USER].apply (props, docTree, node, &matchCache);
 
    if (nonCssHints)
         nonCssHints->apply (props);
 
-   sheet[CSS_PRIMARY_AUTHOR].apply (props, docTree, node,
-                                    &matchCache[CSS_PRIMARY_AUTHOR]);
+   sheet[CSS_PRIMARY_AUTHOR].apply (props, docTree, node, &matchCache);
 
    if (tagStyle)
         tagStyle->apply (props);
 
    sheet[CSS_PRIMARY_AUTHOR_IMPORTANT].apply (props, docTree, node,
-                                     &matchCache[CSS_PRIMARY_AUTHOR_IMPORTANT]);
+                                              &matchCache);
 
    if (tagStyleImportant)
         tagStyleImportant->apply (props);
 
-   sheet[CSS_PRIMARY_USER_IMPORTANT].apply (props, docTree, node,
-                                     &matchCache[CSS_PRIMARY_USER_IMPORTANT]);
+   sheet[CSS_PRIMARY_USER_IMPORTANT].apply (props, docTree, node, &matchCache);
 }
 
 void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
@@ -540,12 +537,16 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
            !rule->isSafe ()) {
          MSG_WARN ("Ignoring unsafe author style that might reveal browsing history\n");
          delete rule;
-      } else if (order == CSS_PRIMARY_USER_AGENT) {
-         userAgentSheet.addRule (rule);
-         matchCache[CSS_PRIMARY_USER_AGENT].setSize (userAgentSheet.matchCacheOffset, -1);
-      } else { 
-         sheet[order].addRule (rule);
-         matchCache[order].setSize (sheet[order].matchCacheOffset, -1);
+      } else {
+         rule->selector->setMatchCacheOffset(matchCache.size ());
+         if (rule->selector->getRequiredMatchCache () > matchCache.size ())
+            matchCache.setSize (rule->selector->getRequiredMatchCache (), -1);
+
+         if (order == CSS_PRIMARY_USER_AGENT) {
+            userAgentSheet.addRule (rule);
+         } else { 
+            sheet[order].addRule (rule);
+         }
       }
    }
 }
