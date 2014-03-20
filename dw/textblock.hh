@@ -12,7 +12,9 @@
 #define PRINTF(fmt, ...)
 #define PUTCHAR(ch)
 
-//#define DEBUG
+#ifdef DBG_RTFL
+#   define DEBUG
+#endif
 
 namespace dw {
 
@@ -222,6 +224,7 @@ private:
       bool lineCanBeBroken (int penaltyIndex);
       int compareTo (int penaltyIndex, BadnessAndPenalty *other);
 
+      void intoStringBuffer(lout::misc::StringBuffer *sb);
       void print ();
    };
 

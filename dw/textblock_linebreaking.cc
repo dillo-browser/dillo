@@ -193,42 +193,58 @@ int Textblock::BadnessAndPenalty::compareTo (int penaltyIndex,
 
 void Textblock::BadnessAndPenalty::print ()
 {
+   misc::StringBuffer sb;
+   intoStringBuffer(&sb);
+   printf ("%s", sb.getChars ());
+}
+
+void Textblock::BadnessAndPenalty::intoStringBuffer(misc::StringBuffer *sb)
+{
    switch (badnessState) {
    case NOT_STRETCHABLE:
-      printf ("not stretchable");
+      sb->append ("not stretchable");
       break;
 
    case TOO_TIGHT:
-      printf ("too tight");
+      sb->append ("too tight");
       break;
 
    case QUITE_LOOSE:
-      printf ("quite loose (ratio = %d)", ratio);
+      sb->append ("quite loose (ratio = ");
+      sb->appendInt (ratio);
+      sb->append (")");
       break;
 
    case BADNESS_VALUE:
-      printf ("%d", badness);
+      sb->appendInt (badness);
       break;
    }
 
 #ifdef DEBUG
-   printf (" [%d + %d - %d vs. %d]",
-           totalWidth, totalStretchability, totalShrinkability, idealWidth);
+   sb->append (" [");
+   sb->appendInt (totalWidth);
+   sb->append (" + ");
+   sb->appendInt (totalStretchability);
+   sb->append (" - ");
+   sb->appendInt (totalShrinkability);
+   sb->append (" vs. ");
+   sb->appendInt (idealWidth);
+   sb->append ("]");
 #endif
 
-   printf (" + (");
+   sb->append (" + (");
    for (int i = 0; i < 2; i++) {
       if (penalty[i] == INT_MIN)
-         printf ("-inf");
+         sb->append ("-inf");
       else if (penalty[i] == INT_MAX)
-         printf ("inf");
+         sb->append ("inf");
       else
-         printf ("%d", penalty[i]);
+         sb->appendInt (penalty[i]);
 
       if (i == 0)
-         printf (", ");
+         sb->append (", ");
    }
-   printf (")");
+   sb->append (")");
 }
 
 void Textblock::printWordShort (Word *word)
@@ -911,17 +927,25 @@ void Textblock::updateBorders (int wordIndex, bool left, bool right)
 int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
                              bool correctAtEnd)
 {
-   PRINTF ("   searching from %d to %d\n", firstWord, lastWord);
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>searchMinBap</b> (%d, %d, %d, %s)",
+                 firstWord, lastWord, penaltyIndex,
+                 correctAtEnd ? "true" : "false");
+   DBG_OBJ_MSG_START ();
 
    int pos = -1;
 
+   DBG_OBJ_MSG_START ();
    for (int i = firstWord; i <= lastWord; i++) {
       Word *w = words->getRef(i);
       
-      //printf ("      %d (of %d): ", i, words->size ());
-      //printWord (w);
-      //printf ("\n");
-               
+      DBG_IF_RTFL {
+         misc::StringBuffer sb;
+         w->badnessAndPenalty.intoStringBuffer (&sb);
+         DBG_OBJ_MSGF ("construct.word", 2, "%d (of %d): b+p: %s",
+                       i, words->size (), sb.getChars ());
+         DBG_MSG_WORD ("construct.word", 2, "(<i>i. e.:</i> ", i, ")");
+      }
+
       if (pos == -1 ||
           w->badnessAndPenalty.compareTo (penaltyIndex,
                                           &words->getRef(pos)
@@ -931,8 +955,9 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
          // case "==" will never occur.
          pos = i;
    }
+   DBG_OBJ_MSG_END ();
 
-   PRINTF ("      found at %d\n", pos);
+   DBG_OBJ_MSGF ("construct.word", 1, "found at %d\n", pos);
 
    if (correctAtEnd && lastWord == words->size () - 1) {
       // Since no break and no space is added, the last word will have
@@ -947,17 +972,21 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
       BadnessAndPenalty correctedBap = w->badnessAndPenalty;
       correctedBap.setPenalty (0);
 
-      //printf ("         corrected bap: ");
-      //correctedBap.print ();
-      //printf ("\n");
-
+      DBG_IF_RTFL {
+         misc::StringBuffer sb;
+         correctedBap.intoStringBuffer (&sb);
+         DBG_OBJ_MSGF ("construct.word", 1, "corrected b+p: %s",
+                       sb.getChars ());
+      }
+                    
       if (correctedBap.compareTo(penaltyIndex,
                                  &words->getRef(pos)->badnessAndPenalty) <= 0) {
          pos = lastWord;
-         PRINTF ("      corrected => %d\n", pos);
+         DBG_OBJ_MSGF ("construct.word", 1, "corrected: %d\n", pos);
       }
    }
            
+   DBG_OBJ_MSG_END ();
    return pos;
 }
 
@@ -1373,9 +1402,11 @@ void Textblock::accumulateWordData (int wordIndex)
                                         totalStretchability,
                                         totalShrinkability);
 
-   //printf ("      => ");
-   //printWord (word);
-   //printf ("\n");
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      word->badnessAndPenalty.intoStringBuffer (&sb);
+      DBG_OBJ_MSGF ("construct.word", 1, "b+p: %s", sb.getChars ());
+   }
 
    DBG_OBJ_MSG_END ();
 }
