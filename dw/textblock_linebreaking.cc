@@ -1521,7 +1521,7 @@ void Textblock::alignLine (int lineIndex)
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: justify'");
             // Do not justify the last line of a paragraph (which ends on a
-            // BREAK or with the last word of the page.
+            // BREAK or with the last word of the page).
             if(!(lastWord->content.type == core::Content::BREAK ||
                  line->lastWord == words->size () - 1) ||
                // In some cases, however, an unjustified line would be too wide:
