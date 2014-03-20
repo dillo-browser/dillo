@@ -1148,12 +1148,16 @@ void Textblock::alignLine (int lineIndex)
          break;
       case core::style::TEXT_ALIGN_JUSTIFY:  /* see some lines above */
          line->leftOffset = 0;
-         if(lastWord->content.type != core::Content::BREAK &&
-            line->lastWord != words->size () - 1) {
-            PRINTF ("      justifyLine => %d vs. %d\n",
-                    lastWord->totalWidth, availWidth);
+         // Do not justify the last line of a paragraph (which ends on a
+         // BREAK or with the last word of the page).
+         if(!(lastWord->content.type == core::Content::BREAK ||
+              line->lastWord == words->size () - 1) ||
+            // In some cases, however, an unjustified line would be too wide:
+            // when the line would be shrunken otherwise. (This solution is
+            // far from perfect, but a better solution would make changes in
+            // the line breaking algorithm necessary.)
+            availWidth < lastWord->totalWidth)
             justifyLine (line, availWidth - lastWord->totalWidth);
-         }
          break;
       case core::style::TEXT_ALIGN_RIGHT:
          line->leftOffset = availWidth - lastWord->totalWidth;
