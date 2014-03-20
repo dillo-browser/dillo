@@ -290,8 +290,11 @@ void Textblock::printWord (Word *word)
  */
 void Textblock::justifyLine (Line *line, int diff)
 {
-   /* To avoid rounding errors, the calculation is based on accumulated
-    * values. */
+   DBG_OBJ_MSGF ("construct.line", 0, "<b>justifyLine</b> (..., %d)", diff);
+   DBG_OBJ_MSG_START ();
+
+   // To avoid rounding errors, the calculation is based on accumulated
+   // values. See doc/rounding-errors.doc.
 
    if (diff > 0) {
       int spaceStretchabilitySum = 0;
@@ -309,8 +312,8 @@ void Textblock::justifyLine (Line *line, int diff)
                - spaceDiffCum;
             spaceDiffCum += spaceDiff;
 
-            PRINTF ("         %d (of %d): diff = %d\n", i, words->size (),
-                    spaceDiff);
+            DBG_OBJ_MSGF ("construct.line", 1, "%d (of %d): diff = %d",
+                          i, words->size (), spaceDiff);
 
             word->effSpace = word->origSpace + spaceDiff;
          }
@@ -331,10 +334,15 @@ void Textblock::justifyLine (Line *line, int diff)
                - spaceDiffCum;
             spaceDiffCum += spaceDiff;
 
+            DBG_OBJ_MSGF ("construct.line", 1, "%d (of %d): diff = %d",
+                          i, words->size (), spaceDiff);
+
             word->effSpace = word->origSpace + spaceDiff;
          }
       }
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 
@@ -399,12 +407,13 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    line->finished = false;
 
    alignLine (lineIndex);
+
    for (int i = line->firstWord; i < line->lastWord; i++) {
       Word *word = words->getRef (i);
       lineWidth += (word->effSpace - word->origSpace);
       DBG_OBJ_MSGF ("construct.line", 1,
-                    "lineWidth (corrected space after word %d): %d",
-                    i, lineWidth);
+                    "lineWidth [corrected space (%d - %d) after word %d]: %d",
+                    word->effSpace, word->origSpace, i, lineWidth);
    }
   
    if (lines->size () == 1) {
@@ -1482,6 +1491,9 @@ void Textblock::initLine1Offset (int wordIndex)
  */
 void Textblock::alignLine (int lineIndex)
 {
+   DBG_OBJ_MSGF ("construct.line", 0, "<b>alignLine</b> (%d)", lineIndex);
+   DBG_OBJ_MSG_START ();
+
    Line *line = lines->getRef (lineIndex);
    int availWidth = calcAvailWidth (lineIndex);
    if (line->firstWord <= line->lastWord) {
@@ -1494,23 +1506,40 @@ void Textblock::alignLine (int lineIndex)
       if (firstWord->content.type != core::Content::BREAK) {
          switch (firstWord->style->textAlign) {
          case core::style::TEXT_ALIGN_LEFT:
+            DBG_OBJ_MSG ("construct.line", 1,
+                         "first word has 'text-align: left'");
+            line->leftOffset = 0;
+            break;
          case core::style::TEXT_ALIGN_STRING:   /* handled elsewhere (in the
                                                  * future)? */
+            DBG_OBJ_MSG ("construct.line", 1,
+                         "first word has 'text-align: string'");
             line->leftOffset = 0;
             break;
          case core::style::TEXT_ALIGN_JUSTIFY:  /* see some lines above */
             line->leftOffset = 0;
-            if(lastWord->content.type != core::Content::BREAK &&
-               line->lastWord != words->size () - 1) {
-               PRINTF ("      justifyLine => %d vs. %d\n",
-                       lastWord->totalWidth, availWidth);
+            DBG_OBJ_MSG ("construct.line", 1,
+                         "first word has 'text-align: justify'");
+            // Do not justify the last line of a paragraph (which ends on a
+            // BREAK or with the last word of the page.
+            if(!(lastWord->content.type == core::Content::BREAK ||
+                 line->lastWord == words->size () - 1) ||
+               // In some cases, however, an unjustified line would be too wide:
+               // when the line would be shrunken otherwise. (This solution is
+               // far from perfect, but a better solution would make changes in
+               // the line breaking algorithm necessary.)
+               availWidth < lastWord->totalWidth) {
                justifyLine (line, availWidth - lastWord->totalWidth);
             }
             break;
          case core::style::TEXT_ALIGN_RIGHT:
+            DBG_OBJ_MSG ("construct.line", 1,
+                         "first word has 'text-align: right'");
             line->leftOffset = availWidth - lastWord->totalWidth;
             break;
          case core::style::TEXT_ALIGN_CENTER:
+            DBG_OBJ_MSG ("construct.line", 1,
+                         "first word has 'text-align: center'");
             line->leftOffset = (availWidth - lastWord->totalWidth) / 2;
             break;
          default:
@@ -1525,6 +1554,8 @@ void Textblock::alignLine (int lineIndex)
    } else
       // empty line
       line->leftOffset = 0;
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
