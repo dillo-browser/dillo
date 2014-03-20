@@ -1237,59 +1237,17 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    // Test collisions (on this side). Only previous float is relevant.
    int yRealNew;
    if (vloat->index >= 1 &&
-       collidesV (vloat, listSame->get (vloat->index - 1), &yRealNew)) {
+       collidesV (vloat, listSame->get (vloat->index - 1), &yRealNew))
       vloat->yReal = yRealNew;
-   }
-
+      
    // Test collisions (on the opposite side). Search the last float on
    // the other size before this float; only this is relevant.
    int lastOppFloat =
       listOpp->findLastBeforeSideSpanningIndex (vloat->sideSpanningIndex);
-   if (lastOppFloat >= 0) {
-      Float *last = listOpp->get (lastOppFloat);
-      if (collidesV (vloat, last, &yRealNew)) {
-         // Here, test also horizontal values.
-         bool collidesH;
-         if (vloat->generatingBlock == last->generatingBlock)
-            collidesH = vloat->size.width + last->size.width +
-               vloat->generatingBlock->getStyle()->boxDiffWidth()
-               > vloat->generatingBlock->getAvailWidth();
-         else {
-            // Here (different generating blocks) it can be assumed
-            // that the allocations are defined, otherwise, the float
-            // "last" would not be found in "listOpp".
-            assert (wasAllocated (vloat->generatingBlock));
-            assert (wasAllocated (last->generatingBlock));
-            Float *left, *right;
-            if (widget->getStyle()->vloat == FLOAT_LEFT) {
-               left = vloat;
-               right = last;
-            } else {
-               left = last;
-               right = vloat;
-            }
-            
-            // right border of the left float (canvas coordinates)
-            int rightOfLeft =
-               left->generatingBlock->getAllocation()->x
-               + left->generatingBlock->getStyle()->boxOffsetX()
-               + left->size.width;
-            // left border of the right float (canvas coordinates)
-            int leftOfRight =
-               right->generatingBlock->getAllocation()->x
-               + min (right->generatingBlock->getAllocation()->width,
-                      right->generatingBlock->getAvailWidth())
-               - right->generatingBlock->getStyle()->boxRestWidth()
-               - right->size.width;
-            
-            collidesH = rightOfLeft > leftOfRight;
-         }
-         
-         if (collidesH)
-            vloat->yReal = yRealNew;
-      }
-   }
-
+   if (lastOppFloat >= 0 &&
+       collidesH (vloat, listOpp->get (lastOppFloat), &yRealNew))
+      vloat->yReal = yRealNew;
+   
    DBG_OBJ_MSGF ("resize.oofm", 1, "vloat->yReq = %d, vloat->yReal = %d",
                  vloat->yReq, vloat->yReal);
 
@@ -1362,6 +1320,53 @@ bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, int *yReal)
    
    DBG_OBJ_MSG_END ();
    return result;
+}
+
+
+bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, int *yReal)
+{
+   bool collidesH;
+
+   if (!collidesV (vloat, other, yReal))
+      collidesH = false;
+   else {
+      if (vloat->generatingBlock == other->generatingBlock)
+         collidesH = vloat->size.width + other->size.width
+            + vloat->generatingBlock->getStyle()->boxDiffWidth()
+            > vloat->generatingBlock->getAvailWidth();
+      else {
+         // Here (different generating blocks) it can be assumed that the
+         // allocations are defined, otherwise, the float "other" would not be
+         // found in "listOpp".
+         assert (wasAllocated (vloat->generatingBlock));
+         assert (wasAllocated (other->generatingBlock));
+         Float *left, *right;
+         if (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT) {
+            left = vloat;
+            right = other;
+         } else {
+            left = other;
+            right = vloat;
+         }
+         
+         // right border of the left float (canvas coordinates)
+         int rightOfLeft =
+            left->generatingBlock->getAllocation()->x
+            + left->generatingBlock->getStyle()->boxOffsetX()
+            + left->size.width;
+         // left border of the right float (canvas coordinates)
+         int leftOfRight =
+            right->generatingBlock->getAllocation()->x
+            + min (right->generatingBlock->getAllocation()->width,
+                   right->generatingBlock->getAvailWidth())
+            - right->generatingBlock->getStyle()->boxRestWidth()
+            - right->size.width;
+         
+         collidesH = rightOfLeft > leftOfRight;
+      }
+   }
+
+   return collidesH;
 }
 
 void OutOfFlowMgr::getFloatsListsAndSide (Float *vloat,
