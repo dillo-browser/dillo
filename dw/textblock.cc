@@ -2305,7 +2305,7 @@ void Textblock::addSpace (core::style::Style *style)
 
 /**
  * Add a break option (see setBreakOption() for details). Used instead
- * of addStyle for ideographic characters.
+ * of addSpace for ideographic characters.
  *
  * When "forceBreak" is true, a break is even possible within PRE etc.
  */
