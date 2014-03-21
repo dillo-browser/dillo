@@ -2213,6 +2213,10 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       word->content.type = core::Content::WIDGET_OOF_REF;
       word->content.widget = widget;
 
+      // After a out-of-flow reference, breaking is allowed. (This avoids some
+      // problems with breaking near float definitions.)
+      setBreakOption (word, style, 0, 0, false);
+
       DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type",
                               "WIDGET_OOF_REF");
       DBG_OBJ_ARRATTRSET_PTR ("words", words->size () - 1,
