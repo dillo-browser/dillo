@@ -2212,7 +2212,6 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       Word *word = addWord (0, 0, 0, 0, style);
       word->content.type = core::Content::WIDGET_OOF_REF;
       word->content.widget = widget;
-      word->style = style;
 
       DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type",
                               "WIDGET_OOF_REF");
