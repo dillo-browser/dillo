@@ -714,79 +714,15 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 
       if(newLine) {
          accumulateWordData (wordIndex);
-         int wordIndexEnd = wordIndex;
 
-         bool lineAdded;
-         do {
-            DBG_OBJ_MSG ("construct.word", 1, "<i>line adding loop cycle</i>");
-            DBG_OBJ_MSG_START ();
+         searchBreakPos (wordIndex, firstIndex, searchUntil,
+                         tempNewLine, penaltyIndex, wrapAll, &wordListChanged);
+         
+         // update word pointer as hyphenateWord() can trigger a
+         // reorganization of the words structure
+         word = words->getRef (wordIndex);
 
-            if (firstIndex > searchUntil) {
-               // empty line
-               DBG_OBJ_MSG ("construct.word", 1, "empty line");
-               assert (searchUntil == firstIndex - 1);
-               addLine (firstIndex, firstIndex - 1, tempNewLine);
-               checkPossibleLineHeightChange (firstIndex);
-               lineAdded = true;
-               penaltyIndex = calcPenaltyIndexForNewLine ();
-            } else {
-               DBG_OBJ_MSG ("construct.word", 1, "non-empty line");
-
-               int breakPos =
-                  searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
-               int hyphenatedWord = considerHyphenation (firstIndex, breakPos);
-      
-               DBG_OBJ_MSGF ("construct.word", 1, "breakPos = %d", breakPos);
-               DBG_MSG_WORD ("construct.word", 1, "<i>break at word:</i> ",
-                             breakPos, "");
-               DBG_OBJ_MSGF ("construct.word", 1, "hyphenatedWord = %d",
-                             hyphenatedWord);
-               if (hyphenatedWord != -1)
-                  DBG_MSG_WORD ("construct.word", 1,
-                                "<i>hyphenate at word:</i> ",
-                                hyphenatedWord, "");
-               
-               if(hyphenatedWord == -1) {
-                  addLine (firstIndex, breakPos, tempNewLine);
-                  PRINTF ("[%p]    new line %d (%s), from %d to %d\n",
-                          this, lines->size() - 1,
-                          tempNewLine ? "temporally" : "permanently",
-                          firstIndex, breakPos);
-                  lineAdded = true;
-                  penaltyIndex = calcPenaltyIndexForNewLine ();
-               } else {
-                  // TODO hyphenateWord() should return whether
-                  // something has changed at all. So that a second
-                  // run, with !word->canBeHyphenated, is unnecessary.
-                  // TODO Update: for this, searchUntil == 0 should be
-                  // checked.
-                  DBG_OBJ_MSGF ("construct.word", 1, "old searchUntil = %d",
-                                searchUntil);
-                  int n = hyphenateWord (hyphenatedWord);
-                  searchUntil += n;
-                  if (hyphenatedWord <= wordIndex)
-                     wordIndexEnd += n;
-                  DBG_OBJ_MSGF ("construct.word", 1, "new searchUntil = %d",
-                                searchUntil);
-                  lineAdded = false;
-               
-                  // update word pointer as hyphenateWord() can trigger a
-                  // reorganization of the words structure
-                  word = words->getRef (wordIndex);
-
-                  if (n > 0 && hyphenatedWord <= wordIndex)
-                     wordListChanged = true;
-               }
-               
-               DBG_OBJ_MSGF ("construct.word", 1,
-                             "accumulating again from %d to %d\n",
-                             breakPos + 1, wordIndexEnd);
-               for(int i = breakPos + 1; i <= wordIndexEnd; i++)
-                  accumulateWordData (i);
-            }
-
-            DBG_OBJ_MSG_END ();
-         } while(!lineAdded);
+         penaltyIndex = calcPenaltyIndexForNewLine ();
       }
    } while (newLine);
 
@@ -818,6 +754,78 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
    DBG_OBJ_MSG_END ();
 
    return wordListChanged;
+}
+
+int Textblock::searchBreakPos (int wordIndex, int firstIndex, int searchUntil,
+                               bool tempNewLine, int penaltyIndex, bool wrapAll,
+                               bool *wordListChanged)
+{
+   int wordIndexEnd = wordIndex;
+   bool lineAdded;
+   do {
+      DBG_OBJ_MSG ("construct.word", 1, "<i>line adding loop cycle</i>");
+      DBG_OBJ_MSG_START ();
+      
+      if (firstIndex > searchUntil) {
+         // empty line
+         DBG_OBJ_MSG ("construct.word", 1, "empty line");
+         assert (searchUntil == firstIndex - 1);
+         addLine (firstIndex, firstIndex - 1, tempNewLine);
+         checkPossibleLineHeightChange (firstIndex);
+         lineAdded = true;
+      } else {
+         DBG_OBJ_MSG ("construct.word", 1, "non-empty line");
+         
+         int breakPos =
+            searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
+         int hyphenatedWord = considerHyphenation (firstIndex, breakPos);
+      
+         DBG_OBJ_MSGF ("construct.word", 1, "breakPos = %d", breakPos);
+         DBG_MSG_WORD ("construct.word", 1, "<i>break at word:</i> ",
+                       breakPos, "");
+         DBG_OBJ_MSGF ("construct.word", 1, "hyphenatedWord = %d",
+                       hyphenatedWord);
+         if (hyphenatedWord != -1)
+            DBG_MSG_WORD ("construct.word", 1,
+                          "<i>hyphenate at word:</i> ",
+                          hyphenatedWord, "");
+         
+         if(hyphenatedWord == -1) {
+            addLine (firstIndex, breakPos, tempNewLine);
+            PRINTF ("[%p]    new line %d (%s), from %d to %d\n",
+                    this, lines->size() - 1,
+                    tempNewLine ? "temporally" : "permanently",
+                    firstIndex, breakPos);
+            lineAdded = true;
+         } else {
+            // TODO hyphenateWord() should return whether something
+            // has changed at all. So that a second run, with
+            // !word->canBeHyphenated, is unnecessary.
+            // TODO Update: for this, searchUntil == 0 should be
+            // checked.
+            DBG_OBJ_MSGF ("construct.word", 1, "old searchUntil = %d",
+                          searchUntil);
+            int n = hyphenateWord (hyphenatedWord);
+            searchUntil += n;
+            if (hyphenatedWord <= wordIndex)
+               wordIndexEnd += n;
+            DBG_OBJ_MSGF ("construct.word", 1, "new searchUntil = %d",
+                          searchUntil);
+            lineAdded = false;
+                       
+            if (n > 0 && hyphenatedWord <= wordIndex)
+               *wordListChanged = true;
+         }
+         
+         DBG_OBJ_MSGF ("construct.word", 1,
+                       "accumulating again from %d to %d\n",
+                       breakPos + 1, wordIndexEnd);
+         for(int i = breakPos + 1; i <= wordIndexEnd; i++)
+            accumulateWordData (i);
+      }
+      
+      DBG_OBJ_MSG_END ();
+   } while(!lineAdded);
 }
 
 /**

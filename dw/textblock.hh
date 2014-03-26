@@ -693,6 +693,9 @@ protected:
    void checkPossibleLineHeightChange (int wordIndex);
    bool wrapWordOofRef (int wordIndex, bool wrapAll);
    void updateBorders (int wordIndex, bool left, bool right);
+   int searchBreakPos (int wordIndex, int firstIndex, int searchUntil,
+                       bool tempNewLine, int penaltyIndex, bool wrapAll,
+                       bool *wordListChanged);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
                      bool correctAtEnd);
    int considerHyphenation (int firstIndex, int breakPos);
