@@ -715,8 +715,10 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
       if(newLine) {
          accumulateWordData (wordIndex);
 
-         searchBreakPos (wordIndex, firstIndex, searchUntil,
-                         tempNewLine, penaltyIndex, wrapAll, &wordListChanged);
+         int breakPos =
+            searchBreakPos (wordIndex, firstIndex, &searchUntil, tempNewLine,
+                            penaltyIndex, wrapAll,&wordListChanged);
+         //addLine (firstIndex, breakPos, tempNewLine);
          
          // update word pointer as hyphenateWord() can trigger a
          // reorganization of the words structure
@@ -756,20 +758,27 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
    return wordListChanged;
 }
 
-int Textblock::searchBreakPos (int wordIndex, int firstIndex, int searchUntil,
+int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                                bool tempNewLine, int penaltyIndex, bool wrapAll,
                                bool *wordListChanged)
 {
-   int wordIndexEnd = wordIndex;
+   DBG_OBJ_MSGF ("construct.word", 0,
+                 "<b>searchBreakPos</b> (%d, %d. %d, %d, %s, ...)",
+                 wordIndex, firstIndex, *searchUntil, penaltyIndex,
+                 wrapAll ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
+   int wordIndexEnd = wordIndex, result;
    bool lineAdded;
    do {
       DBG_OBJ_MSG ("construct.word", 1, "<i>line adding loop cycle</i>");
       DBG_OBJ_MSG_START ();
       
-      if (firstIndex > searchUntil) {
+      if (firstIndex > *searchUntil) {
          // empty line
          DBG_OBJ_MSG ("construct.word", 1, "empty line");
-         assert (searchUntil == firstIndex - 1);
+         assert (*searchUntil == firstIndex - 1);
+         result = firstIndex - 1;
          addLine (firstIndex, firstIndex - 1, tempNewLine);
          checkPossibleLineHeightChange (firstIndex);
          lineAdded = true;
@@ -777,7 +786,7 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int searchUntil,
          DBG_OBJ_MSG ("construct.word", 1, "non-empty line");
          
          int breakPos =
-            searchMinBap (firstIndex, searchUntil, penaltyIndex, wrapAll);
+            searchMinBap (firstIndex, *searchUntil, penaltyIndex, wrapAll);
          int hyphenatedWord = considerHyphenation (firstIndex, breakPos);
       
          DBG_OBJ_MSGF ("construct.word", 1, "breakPos = %d", breakPos);
@@ -791,26 +800,23 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int searchUntil,
                           hyphenatedWord, "");
          
          if(hyphenatedWord == -1) {
+            result = breakPos;
             addLine (firstIndex, breakPos, tempNewLine);
-            PRINTF ("[%p]    new line %d (%s), from %d to %d\n",
-                    this, lines->size() - 1,
-                    tempNewLine ? "temporally" : "permanently",
-                    firstIndex, breakPos);
             lineAdded = true;
          } else {
             // TODO hyphenateWord() should return whether something
             // has changed at all. So that a second run, with
             // !word->canBeHyphenated, is unnecessary.
-            // TODO Update: for this, searchUntil == 0 should be
-            // checked.
+            // TODO Update: The return value of hyphenateWord() should
+            // be checked.
             DBG_OBJ_MSGF ("construct.word", 1, "old searchUntil = %d",
-                          searchUntil);
+                          *searchUntil);
             int n = hyphenateWord (hyphenatedWord);
-            searchUntil += n;
+            *searchUntil += n;
             if (hyphenatedWord <= wordIndex)
                wordIndexEnd += n;
             DBG_OBJ_MSGF ("construct.word", 1, "new searchUntil = %d",
-                          searchUntil);
+                          *searchUntil);
             lineAdded = false;
                        
             if (n > 0 && hyphenatedWord <= wordIndex)
@@ -826,6 +832,11 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int searchUntil,
       
       DBG_OBJ_MSG_END ();
    } while(!lineAdded);
+
+   DBG_OBJ_MSGF ("construct.word", 1, "=> %d", result);
+   DBG_OBJ_MSG_END ();
+   
+   return result;
 }
 
 /**
