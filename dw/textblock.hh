@@ -695,7 +695,7 @@ protected:
    void updateBorders (int wordIndex, bool left, bool right);
    int searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                        bool tempNewLine, int penaltyIndex, bool wrapAll,
-                       bool *wordListChanged);
+                       bool *wordListChanged, int *wordIndexEnd);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
                      bool correctAtEnd);
    int considerHyphenation (int firstIndex, int breakPos);

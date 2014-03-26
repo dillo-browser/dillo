@@ -715,10 +715,17 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
       if(newLine) {
          accumulateWordData (wordIndex);
 
-         int breakPos =
+         int wordIndexEnd, breakPos =
             searchBreakPos (wordIndex, firstIndex, &searchUntil, tempNewLine,
-                            penaltyIndex, wrapAll,&wordListChanged);
-         //addLine (firstIndex, breakPos, tempNewLine);
+                            penaltyIndex, wrapAll,&wordListChanged,
+                            &wordIndexEnd);
+         addLine (firstIndex, breakPos, tempNewLine);
+
+         DBG_OBJ_MSGF ("construct.word", 1,
+                       "accumulating again from %d to %d\n",
+                       breakPos + 1, wordIndexEnd);
+         for(int i = breakPos + 1; i <= wordIndexEnd; i++)
+            accumulateWordData (i);
          
          // update word pointer as hyphenateWord() can trigger a
          // reorganization of the words structure
@@ -760,7 +767,7 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 
 int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                                bool tempNewLine, int penaltyIndex, bool wrapAll,
-                               bool *wordListChanged)
+                               bool *wordListChanged, int *wordIndexEnd)
 {
    DBG_OBJ_MSGF ("construct.word", 0,
                  "<b>searchBreakPos</b> (%d, %d. %d, %d, %s, ...)",
@@ -768,8 +775,11 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                  wrapAll ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
-   int wordIndexEnd = wordIndex, result;
+   int result;
    bool lineAdded;
+
+   *wordIndexEnd = wordIndex;
+
    do {
       DBG_OBJ_MSG ("construct.word", 1, "<i>line adding loop cycle</i>");
       DBG_OBJ_MSG_START ();
@@ -779,7 +789,6 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
          DBG_OBJ_MSG ("construct.word", 1, "empty line");
          assert (*searchUntil == firstIndex - 1);
          result = firstIndex - 1;
-         addLine (firstIndex, firstIndex - 1, tempNewLine);
          checkPossibleLineHeightChange (firstIndex);
          lineAdded = true;
       } else {
@@ -801,7 +810,6 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
          
          if(hyphenatedWord == -1) {
             result = breakPos;
-            addLine (firstIndex, breakPos, tempNewLine);
             lineAdded = true;
          } else {
             // TODO hyphenateWord() should return whether something
@@ -814,20 +822,21 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
             int n = hyphenateWord (hyphenatedWord);
             *searchUntil += n;
             if (hyphenatedWord <= wordIndex)
-               wordIndexEnd += n;
+               *wordIndexEnd += n;
             DBG_OBJ_MSGF ("construct.word", 1, "new searchUntil = %d",
                           *searchUntil);
             lineAdded = false;
+            result = 1000000000; // compiler happiness
                        
             if (n > 0 && hyphenatedWord <= wordIndex)
                *wordListChanged = true;
-         }
-         
-         DBG_OBJ_MSGF ("construct.word", 1,
-                       "accumulating again from %d to %d\n",
-                       breakPos + 1, wordIndexEnd);
-         for(int i = breakPos + 1; i <= wordIndexEnd; i++)
-            accumulateWordData (i);
+
+            DBG_OBJ_MSGF ("construct.word", 1,
+                          "accumulating again from %d to %d\n",
+                          breakPos + 1, *wordIndexEnd);
+            for(int i = breakPos + 1; i <= *wordIndexEnd; i++)
+               accumulateWordData (i);
+         }       
       }
       
       DBG_OBJ_MSG_END ();
