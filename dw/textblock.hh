@@ -349,6 +349,15 @@ protected:
        * the end. Should be checked by some methods which are called
        * by addLine(). */
       bool finished;
+
+      /* The word index of the last OOF reference (most importantly:
+       * float) whic is positioned before this line, or -1, if there
+       * is no OOF reference positioned before.
+       *
+       * **Important:** These references may still be part of this or
+       * even a following line, when positioned before (this is the
+       * reason this attribute exists); see \ref dw-out-of-flow. */
+      int lastOofRefPositionedBeforeThisLine;
    };
 
    struct Word
@@ -552,6 +561,7 @@ protected:
    void rewrap ();
    void fillParagraphs ();
    void initNewLine ();
+   void calcBorders (int lastOofRef, int height);
    void showMissingLines ();
    void removeTemporaryLines ();
    void setVerticalOffset (int verticalOffset);
@@ -690,9 +700,6 @@ protected:
    void processWord (int wordIndex);
    virtual bool wordWrap (int wordIndex, bool wrapAll);
    bool wrapWordInFlow (int wordIndex, bool wrapAll);
-   void checkPossibleLineHeightChange (int wordIndex);
-   bool wrapWordOofRef (int wordIndex, bool wrapAll);
-   void updateBorders (int wordIndex, bool left, bool right);
    int searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                        bool tempNewLine, int penaltyIndex, bool wrapAll,
                        bool *wordListChanged, int *wordIndexEnd);
@@ -700,6 +707,8 @@ protected:
                      bool correctAtEnd);
    int considerHyphenation (int firstIndex, int breakPos);
    bool isHyphenationCandidate (Word *word);
+   int calcLinePartHeight (int firstWord, int lastWord);
+   
    
    void handleWordExtremes (int wordIndex);
    void correctLastWordExtremes ();
