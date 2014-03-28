@@ -701,10 +701,11 @@ protected:
    virtual bool wordWrap (int wordIndex, bool wrapAll);
    bool wrapWordInFlow (int wordIndex, bool wrapAll);
    int searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
-                       bool tempNewLine, int penaltyIndex, bool wrapAll,
+                       bool tempNewLine, int penaltyIndex,
+                       bool thereWillBeMoreSpace, bool wrapAll,
                        bool *wordListChanged, int *wordIndexEnd);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
-                     bool correctAtEnd);
+                     bool thereWillBeMoreSpace, bool correctAtEnd);
    int considerHyphenation (int firstIndex, int breakPos);
    bool isHyphenationCandidate (Word *word);
    int calcLinePartHeight (int firstWord, int lastWord);
