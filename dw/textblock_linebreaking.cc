@@ -778,7 +778,7 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                                   &wordListChanged, &wordIndexEnd);
                height = calcLinePartHeight (firstIndex, breakPos);
 
-               // TODO: Iterate until the height converges.
+               // TODO: Iterate until the height converges?
             }
 
             DBG_OBJ_MSG_END ();

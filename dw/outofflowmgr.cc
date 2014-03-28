@@ -71,6 +71,16 @@ OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
    yReq = yReal = size.width = size.ascent = size.descent = 0;
    dirty = sizeChangedSinceLastAllocation = true;
    inCBList = false;
+
+   // Sometimes a float with widget = NULL is created as a key; this
+   // is not interesting for RTFL.
+   if (widget) {
+      DBG_OBJ_SET_NUM_O (widget, "<Float>.yReq", yReq);
+      DBG_OBJ_SET_NUM_O (widget, "<Float>.yReal", yReal);
+      DBG_OBJ_SET_NUM_O (widget, "<Float>.size.width", size.width);
+      DBG_OBJ_SET_NUM_O (widget, "<Float>.size.ascent", size.ascent);
+      DBG_OBJ_SET_NUM_O (widget, "<Float>.size.descent", size.descent);
+   }
 }
 
 void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
@@ -1234,19 +1244,26 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    // "yReal" may change due to collisions (see below).
    vloat->yReq = vloat->yReal = yReq;
 
+   DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReq", vloat->yReq);
+   DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
+
    // Test collisions (on this side). Only previous float is relevant.
    int yRealNew;
    if (vloat->index >= 1 &&
-       collidesV (vloat, listSame->get (vloat->index - 1), &yRealNew))
+       collidesV (vloat, listSame->get (vloat->index - 1), &yRealNew)) {
       vloat->yReal = yRealNew;
+      DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
+   }
       
    // Test collisions (on the opposite side). Search the last float on
    // the other size before this float; only this is relevant.
    int lastOppFloat =
       listOpp->findLastBeforeSideSpanningIndex (vloat->sideSpanningIndex);
    if (lastOppFloat >= 0 &&
-       collidesH (vloat, listOpp->get (lastOppFloat), &yRealNew))
+       collidesH (vloat, listOpp->get (lastOppFloat), &yRealNew)) {
       vloat->yReal = yRealNew;
+      DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
+   }
    
    DBG_OBJ_MSGF ("resize.oofm", 1, "vloat->yReq = %d, vloat->yReal = %d",
                  vloat->yReq, vloat->yReal);
@@ -1865,11 +1882,11 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       DBG_OBJ_MSGF ("resize.oofm", 1, "final size: %d * (%d + %d)",
                     vloat->size.width, vloat->size.ascent, vloat->size.descent);
 
-      DBG_OBJ_SET_NUM_O (vloat->getWidget(), "<Float-size>.width",
+      DBG_OBJ_SET_NUM_O (vloat->getWidget(), "<Float>.size.width",
                          vloat->size.width);
-      DBG_OBJ_SET_NUM_O (vloat->getWidget(), "<Float-size>.ascent",
+      DBG_OBJ_SET_NUM_O (vloat->getWidget(), "<Float>.size.ascent",
                          vloat->size.ascent);
-      DBG_OBJ_SET_NUM_O (vloat->getWidget(), "<Float-size>.descent",
+      DBG_OBJ_SET_NUM_O (vloat->getWidget(), "<Float>.size.descent",
                          vloat->size.descent);
 
       // "sizeChangedSinceLastAllocation" is reset in sizeAllocateEnd()
