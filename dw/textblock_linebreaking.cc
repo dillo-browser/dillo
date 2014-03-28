@@ -1051,7 +1051,7 @@ int Textblock::calcLinePartHeight (int firstWord, int lastWord)
       descent = misc::max (descent, word->size.descent);
    }
 
-   return ascent + descent;
+   return misc::max (ascent + descent, 1);
 }
 
 /**
