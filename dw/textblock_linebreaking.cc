@@ -926,13 +926,14 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
          DBG_MSG_WORD ("construct.word", 2, "(<i>i. e.:</i> ", i, ")");
       }
 
+      // "<=" instead of "<" in the next lines (see also
+      // "correctedBap.compareTo ...) tends to result in more words
+      // per line -- theoretically. Practically, the case "==" will
+      // never occur.
       if (pos == -1 ||
           w->badnessAndPenalty.compareTo (penaltyIndex,
                                           &words->getRef(pos)
                                           ->badnessAndPenalty) <= 0)
-         // "<=" instead of "<" in the next lines tends to result in
-         // more words per line -- theoretically. Practically, the
-         // case "==" will never occur.
          pos = i;
    }
    DBG_OBJ_MSG_END ();
