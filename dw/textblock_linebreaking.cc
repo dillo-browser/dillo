@@ -1772,9 +1772,8 @@ void Textblock::showMissingLines ()
    // In some cases, there are some words of type WIDGET_OOF_REF left, which
    // are not added to line, since addLine() is only called within
    // wrapWordInFlow(), but not within wrapWordOofRef(). The missing line
-   // is created here.
-   //
-   // TODO Update this to recent changes (2014-03-29).
+   // is created here, so it is ensured that the last line ends with the last
+   // word.
 
    int firstWordNotInLine =
       lines->size () > 0 ? lines->getLastRef()->lastWord + 1: 0;
