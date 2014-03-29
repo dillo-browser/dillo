@@ -347,7 +347,7 @@ void Textblock::justifyLine (Line *line, int diff)
 
 
 Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
-                                     bool temporary)
+                                     int newLastOofPos, bool temporary)
 {
    DBG_OBJ_MSGF ("construct.line", 0, "<b>addLine</b> (%d, %d) => %d",
                  firstWord, lastWord, lines->size ());
@@ -478,6 +478,10 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    }
    
    line->finished = true;
+   line->lastOofRefPositionedBeforeThisLine =
+      misc::max (line->lastOofRefPositionedBeforeThisLine, newLastOofPos);
+   DBG_OBJ_SET_NUM ("lastLine.lastOofRefPositionedBeforeThisLine",
+                    line->lastOofRefPositionedBeforeThisLine);
 
    initNewLine ();
 
@@ -733,7 +737,7 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                           "breakPos = %d, height = %d, lastFloatPos = %d",
                           breakPos, height, lastFloatPos);
             
-            int startSearch = misc::max (firstIndex, lastFloatPos);
+            int startSearch = misc::max (firstIndex, lastFloatPos + 1);
             int newFloatPos = -1;
 
             DBG_OBJ_MSGF ("construct.word", 2, "searching from %d to %d",
@@ -784,9 +788,8 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
             DBG_OBJ_MSG_END ();
          } while (floatHandled);
 
-         addLine (firstIndex, breakPos, tempNewLine);
-         lines->getLastRef()->lastOofRefPositionedBeforeThisLine = lastFloatPos;
-
+         addLine (firstIndex, breakPos, lastFloatPos, tempNewLine);
+ 
          DBG_OBJ_MSGF ("construct.word", 1,
                        "accumulating again from %d to %d\n",
                        breakPos + 1, wordIndexEnd);
@@ -1756,13 +1759,15 @@ void Textblock::showMissingLines ()
    // are not added to line, since addLine() is only called within
    // wrapWordInFlow(), but not within wrapWordOofRef(). The missing line
    // is created here.
+   //
+   // TODO Update this to recent changes (2014-03-29).
 
    int firstWordNotInLine =
       lines->size () > 0 ? lines->getLastRef()->lastWord + 1: 0;
    DBG_OBJ_MSGF ("construct.line", 1, "firstWordNotInLine = %d (of %d)",
                  firstWordNotInLine, words->size ());
    if (firstWordNotInLine < words->size ())
-      addLine (firstWordNotInLine, words->size () -1, true);
+      addLine (firstWordNotInLine, words->size () - 1, -1, true);
 
    DBG_OBJ_MSG_END ();
 }

@@ -358,6 +358,7 @@ protected:
        * even a following line, when positioned before (this is the
        * reason this attribute exists); see \ref dw-out-of-flow. */
       int lastOofRefPositionedBeforeThisLine;
+      // TODO Must this adjusted to hyphenation?
    };
 
    struct Word
@@ -556,7 +557,8 @@ protected:
    void queueDrawRange (int index1, int index2);
    void getWordExtremes (Word *word, core::Extremes *extremes);
    void justifyLine (Line *line, int diff);
-   Line *addLine (int firstWord, int lastWord, bool temporary);
+   Line *addLine (int firstWord, int lastWord, int newLastOofPos,
+                  bool temporary);
    void calcWidgetSize (core::Widget *widget, core::Requisition *size);
    void rewrap ();
    void fillParagraphs ();
