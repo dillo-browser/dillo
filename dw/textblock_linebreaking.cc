@@ -1196,9 +1196,7 @@ int Textblock::hyphenateWord (int wordIndex)
          initWord (wordIndex + i);
       PRINTF ("[%p]       ... => %d words\n", this, words->size ());
 
-      if (containingBlock->outOfFlowMgr)
-         containingBlock->outOfFlowMgr->moveExternalIndices (this, wordIndex,
-                                                             numBreaks);
+      moveWordIndices (wordIndex, numBreaks);
 
       // Adjust anchor indexes.
       for (int i = 0; i < anchors->size (); i++) {
@@ -1284,6 +1282,12 @@ int Textblock::hyphenateWord (int wordIndex)
       words->getRef(wordIndex)->flags &= ~Word::CAN_BE_HYPHENATED;
 
    return numBreaks;
+}
+
+void Textblock::moveWordIndices (int wordIndex, int num)
+{
+   if (containingBlock->outOfFlowMgr)
+      containingBlock->outOfFlowMgr->moveExternalIndices (this, wordIndex, num);
 }
 
 void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)

@@ -721,6 +721,7 @@ protected:
    static int getLineShrinkability(Word *lastWord);
    static int getLineStretchability(Word *lastWord);
    int hyphenateWord (int wordIndex);
+   void moveWordIndices (int wordIndex, int num);
    void accumulateWordForLine (int lineIndex, int wordIndex);
    void accumulateWordData (int wordIndex);
    int calcAvailWidth (int lineIndex);
