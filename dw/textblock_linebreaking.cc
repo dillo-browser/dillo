@@ -1288,6 +1288,16 @@ void Textblock::moveWordIndices (int wordIndex, int num)
 {
    if (containingBlock->outOfFlowMgr)
       containingBlock->outOfFlowMgr->moveExternalIndices (this, wordIndex, num);
+
+   for (int i = lines->size () - 1; i >= 0; i--) {
+      Line *line = lines->getRef (i);
+      if (line->lastOofRefPositionedBeforeThisLine < wordIndex)
+         // Since lastOofRefPositionedBeforeThisLine are ascending,
+         // the search can be stopped here.
+         break;
+      else
+         line->lastOofRefPositionedBeforeThisLine += num;
+   }
 }
 
 void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)

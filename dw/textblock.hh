@@ -358,7 +358,6 @@ protected:
        * even a following line, when positioned before (this is the
        * reason this attribute exists); see \ref dw-out-of-flow. */
       int lastOofRefPositionedBeforeThisLine;
-      // TODO Must this adjusted to hyphenation?
    };
 
    struct Word
