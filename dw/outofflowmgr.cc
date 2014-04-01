@@ -562,16 +562,22 @@ void OutOfFlowMgr::sizeAllocateEnd ()
       tbInfo->availWidth = tb->getAvailWidth ();
    }
 
+   // There are cases where some allocated floats (TODO: later also absolutely
+   // positioned elements?) exceed the CB allocation.
+   bool sizeChanged = doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT);
+
+   // Similar for extremes. (TODO: here also absolutely positioned elements?)
+   bool extremesChanged =
+      haveExtremesChanged (LEFT) || haveExtremesChanged (RIGHT);
+
    for (int i = 0; i < leftFloatsCB->size(); i++)
       leftFloatsCB->get(i)->updateAllocation ();
 
    for (int i = 0; i < rightFloatsCB->size(); i++)
       rightFloatsCB->get(i)->updateAllocation ();
-
-   // There are cases where some allocated floats (TODO: later also absolutely
-   // positioned elements?) exceed the CB allocation.
-   if (doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT))
-      containingBlock->oofSizeChanged ();
+   
+   if (sizeChanged || extremesChanged)
+      containingBlock->oofSizeChanged (extremesChanged);
 
    DBG_OBJ_MSG_END ();
 }
@@ -843,6 +849,58 @@ bool OutOfFlowMgr::doFloatsExceedCB (Side side)
    }
 
    return exceeds;
+}
+
+bool OutOfFlowMgr::haveExtremesChanged (Side side)
+{
+   // This is quite different from doFloatsExceedCB, since there is no
+   // counterpart to getExtremes, as sizeAllocate is a counterpart to
+   // sizeRequest. So we have to determine whether the allocation has
+   // changed the extremes, which is done by examining the part of the
+   // allocation which is part of the extremes calculation (see
+   // getFloatsExtremes). Changes of the extremes are handled by the
+   // normal queueResize mechanism.
+
+   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   bool changed = false;
+
+   for (int i = 0; i < list->size () && !changed; i++) {
+      Float *vloat = list->get (i);
+      // When the GB is the CB, an allocation change does not play a
+      // role here.
+      if (vloat->generatingBlock != containingBlock) {
+         if (!vloat->wasThenAllocated () && vloat->isNowAllocated ())
+            changed = true;
+         else {           
+            // This method is called within sizeAllocateEnd, where
+            // containinBlock->getAllocation() (old value) and
+            // containinBlockAllocation (new value) are different.
+
+            Allocation *oldCBA = containingBlock->getAllocation ();
+            Allocation *newCBA = &containingBlockAllocation;
+            
+            // Compare also to getFloatsExtremes. The box difference
+            // of the GB (from style) has not changed in this context,
+            // so it is ignored.
+
+            int oldDiffLeft = vloat->getOldXCB ();
+            int newDiffLeft = vloat->getNewXCB ();
+            int oldDiffRight =
+               oldCBA->width - (vloat->getOldXCB () + vloat->getOldWidth ());
+            int newDiffRight = 
+               newCBA->width - (vloat->getNewXCB () + vloat->getNewWidth ());
+            
+            if (// regarding minimum
+                (side == LEFT && oldDiffLeft != newDiffLeft) ||
+                (side == RIGHT && oldDiffRight != newDiffRight) ||
+                // regarding maximum
+                oldDiffLeft + oldDiffRight != newDiffLeft + newDiffRight)
+               changed = true;
+         }
+      }
+   }
+
+   return changed;
 }
 
 void OutOfFlowMgr::moveFromGBToCB (Side side)

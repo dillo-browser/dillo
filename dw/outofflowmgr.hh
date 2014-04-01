@@ -257,6 +257,7 @@ private:
                             Side side, int *floatPos);
 
    bool doFloatsExceedCB (Side side);
+   bool haveExtremesChanged (Side side);
 
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area);
