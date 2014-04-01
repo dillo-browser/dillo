@@ -58,7 +58,7 @@ void StyleImageDeletionReceiver::deleted (lout::signal::ObservedObject *object)
 
 // ----------------------------------------------------------------------
 
-StyleEngine::StyleEngine (dw::core::Layout *layout) {
+StyleEngine::StyleEngine (dw::core::Layout *layout, const DilloUrl *baseUrl) {
    StyleAttrs style_attrs;
    FontAttrs font_attrs;
 
@@ -67,6 +67,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout) {
    cssContext = new CssContext ();
    buildUserStyle ();
    this->layout = layout;
+   this->baseUrl = baseUrl;
    importDepth = 0;
 
    stackPush ();
@@ -130,8 +131,8 @@ void StyleEngine::stackPop () {
 /**
  * \brief tell the styleEngine that a new html element has started.
  */
-void StyleEngine::startElement (int element, BrowserWindow *bw, DilloUrl *url) {
-   style (bw, url); // ensure that style of current node is computed
+void StyleEngine::startElement (int element, BrowserWindow *bw) {
+   style (bw); // ensure that style of current node is computed
 
    stackPush ();
    Node *n = stack->getLastRef ();
@@ -141,9 +142,8 @@ void StyleEngine::startElement (int element, BrowserWindow *bw, DilloUrl *url) {
    n->doctreeNode = dn;
 }
 
-void StyleEngine::startElement (const char *tagname, BrowserWindow *bw,
-                                DilloUrl *url) {
-   startElement (a_Html_tag_index (tagname), bw, url);
+void StyleEngine::startElement (const char *tagname, BrowserWindow *bw) {
+   startElement (a_Html_tag_index (tagname), bw);
 }
 
 void StyleEngine::setId (const char *id) {
@@ -191,7 +191,7 @@ void StyleEngine::setStyle (const char *styleAttr) {
       n->styleAttrProperties = new CssPropertyList (true);
       n->styleAttrPropertiesImportant = new CssPropertyList (true);
 
-      CssParser::parseDeclarationBlock (styleAttr, strlen (styleAttr),
+      CssParser::parseDeclarationBlock (baseUrl, styleAttr, strlen (styleAttr),
                                         n->styleAttrProperties,
                                         n->styleAttrPropertiesImportant);
    }
@@ -351,7 +351,7 @@ void StyleEngine::postprocessAttrs (dw::core::style::StyleAttrs *attrs) {
  * \brief Make changes to StyleAttrs attrs according to CssPropertyList props.
  */
 void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
-                         BrowserWindow *bw, DilloUrl *url) {
+                         BrowserWindow *bw) {
    FontAttrs fontAttrs = *attrs->font;
    Font *parentFont = stack->get (i - 1).style->font;
    char *c, *fontName;
@@ -525,8 +525,8 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
          case CSS_PROPERTY_BACKGROUND_IMAGE:
             if (prefs.load_background_images)
             {
-               DilloUrl *imgUrl =
-                  a_Url_new (p->value.strVal, a_Url_str (url));
+               // p->value.strVal should be absolute, so baseUrl is not needed
+               DilloUrl *imgUrl = a_Url_new (p->value.strVal, NULL);
 
                attrs->backgroundImage = StyleImage::create();
                DilloImage *image =
@@ -535,7 +535,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                                         ->getMainImgRenderer(),
                               0xffffff);
 
-               DilloWeb *web = a_Web_new(bw, imgUrl, url);
+               DilloWeb *web = a_Web_new(bw, imgUrl, baseUrl);
                web->Image = image;
                a_Image_ref(image);
                web->flags |= WEB_Image;
@@ -543,7 +543,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                int clientKey;
                if ((clientKey = a_Capi_open_url(web, NULL, NULL)) != 0) {
                   a_Bw_add_client(bw, clientKey, 0);
-                  a_Bw_add_url(bw, url);
+                  a_Bw_add_url(bw, imgUrl);
                   attrs->backgroundImage->connectDeletion
                      (new StyleImageDeletionReceiver (clientKey));
                }
@@ -839,9 +839,9 @@ void StyleEngine::computeBorderWidth (int *dest, CssProperty *p,
  * A normal style might have backgroundColor == NULL to indicate a transparent
  * background. This method ensures that backgroundColor is set.
  */
-Style * StyleEngine::backgroundStyle (BrowserWindow *bw, DilloUrl *url) {
+Style * StyleEngine::backgroundStyle (BrowserWindow *bw) {
    if (!stack->getRef (stack->size () - 1)->backgroundStyle) {
-      StyleAttrs attrs = *style (bw, url);
+      StyleAttrs attrs = *style (bw);
 
       for (int i = stack->size () - 1; i >= 0 && ! attrs.backgroundColor; i--)
          attrs.backgroundColor = stack->getRef (i)->style->backgroundColor;
@@ -858,7 +858,7 @@ Style * StyleEngine::backgroundStyle (BrowserWindow *bw, DilloUrl *url) {
  * HTML elements and the nonCssProperties that have been set.
  * This method is private. Call style() to get a current style object.
  */
-Style * StyleEngine::style0 (int i, BrowserWindow *bw, DilloUrl *url) {
+Style * StyleEngine::style0 (int i, BrowserWindow *bw) {
    CssPropertyList props, *styleAttrProperties, *styleAttrPropertiesImportant;
    CssPropertyList *nonCssProperties;
    // get previous style from the stack
@@ -886,7 +886,7 @@ Style * StyleEngine::style0 (int i, BrowserWindow *bw, DilloUrl *url) {
                       nonCssProperties);
 
    // apply style
-   apply (i, &attrs, &props, bw, url);
+   apply (i, &attrs, &props, bw);
 
    postprocessAttrs (&attrs);
 
@@ -895,20 +895,20 @@ Style * StyleEngine::style0 (int i, BrowserWindow *bw, DilloUrl *url) {
    return stack->getRef (i)->style;
 }
 
-Style * StyleEngine::wordStyle0 (BrowserWindow *bw, DilloUrl *url) {
-   StyleAttrs attrs = *style (bw, url);
+Style * StyleEngine::wordStyle0 (BrowserWindow *bw) {
+   StyleAttrs attrs = *style (bw);
    attrs.resetValues ();
 
    if (stack->getRef (stack->size() - 1)->inheritBackgroundColor) {
-      attrs.backgroundColor = style (bw, url)->backgroundColor;
-      attrs.backgroundImage = style (bw, url)->backgroundImage;
-      attrs.backgroundRepeat = style (bw, url)->backgroundRepeat;
-      attrs.backgroundAttachment = style (bw, url)->backgroundAttachment;
-      attrs.backgroundPositionX = style (bw, url)->backgroundPositionX;
-      attrs.backgroundPositionY = style (bw, url)->backgroundPositionY;
+      attrs.backgroundColor = style (bw)->backgroundColor;
+      attrs.backgroundImage = style (bw)->backgroundImage;
+      attrs.backgroundRepeat = style (bw)->backgroundRepeat;
+      attrs.backgroundAttachment = style (bw)->backgroundAttachment;
+      attrs.backgroundPositionX = style (bw)->backgroundPositionX;
+      attrs.backgroundPositionY = style (bw)->backgroundPositionY;
    }
 
-   attrs.valign = style (bw, url)->valign;
+   attrs.valign = style (bw)->valign;
 
    stack->getRef(stack->size() - 1)->wordStyle = Style::create(&attrs);
    return stack->getRef (stack->size () - 1)->wordStyle;
@@ -921,7 +921,7 @@ Style * StyleEngine::wordStyle0 (BrowserWindow *bw, DilloUrl *url) {
  * and thereby after the HTML-element has been opened.
  * Note that restyle() does not change any styles in the widget tree.
  */
-void StyleEngine::restyle (BrowserWindow *bw, DilloUrl *url) {
+void StyleEngine::restyle (BrowserWindow *bw) {
    for (int i = 1; i < stack->size (); i++) {
       Node *n = stack->getRef (i);
       if (n->style) {
@@ -937,7 +937,7 @@ void StyleEngine::restyle (BrowserWindow *bw, DilloUrl *url) {
          n->backgroundStyle = NULL;
       }
 
-      style0 (i, bw, url);
+      style0 (i, bw);
    }
 }
 

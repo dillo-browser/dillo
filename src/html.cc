@@ -405,7 +405,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    DocType = DT_NONE;    /* assume Tag Soup 0.0!   :-) */
    DocTypeVersion = 0.0f;
 
-   styleEngine = new StyleEngine (HT2LT (this));
+   styleEngine = new StyleEngine (HT2LT (this), base_url);
 
    cssUrls = new misc::SimpleVector <DilloUrl*> (1);
 
@@ -1799,7 +1799,7 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_style(DilloHtml *html)
 {
    if (prefs.parse_embedded_css && html->loadCssFromStash)
-      html->styleEngine->parse(html, NULL, html->Stash->str, html->Stash->len,
+      html->styleEngine->parse(html, html->base_url, html->Stash->str, html->Stash->len,
                                CSS_ORIGIN_AUTHOR);
 }
 

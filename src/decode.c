@@ -326,7 +326,7 @@ Decode *a_Decode_content_init(const char *format)
    if (format && *format) {
       if (!dStrAsciiCasecmp(format, "gzip") ||
           !dStrAsciiCasecmp(format, "x-gzip")) {
-         MSG("gzipped data!\n");
+         _MSG("gzipped data!\n");
 
          dc = Decode_content_init_common();
          zs = (z_stream *)dc->state;

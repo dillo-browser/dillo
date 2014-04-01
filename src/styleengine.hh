@@ -35,12 +35,13 @@ class StyleEngine {
       CssContext *cssContext;
       Doctree *doctree;
       int importDepth;
+      const DilloUrl *baseUrl;
 
       void stackPush ();
       void stackPop ();
       void buildUserStyle ();
-      dw::core::style::Style *style0 (int i, BrowserWindow *bw, DilloUrl *url);
-      dw::core::style::Style *wordStyle0 (BrowserWindow *bw, DilloUrl *url);
+      dw::core::style::Style *style0 (int i, BrowserWindow *bw);
+      dw::core::style::Style *wordStyle0 (BrowserWindow *bw);
       inline void setNonCssHint(CssPropertyName name, CssValueType type,
                                 CssPropertyValue value) {
          Node *n = stack->getRef (stack->size () - 1);
@@ -52,7 +53,7 @@ class StyleEngine {
       void preprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void postprocessAttrs (dw::core::style::StyleAttrs *attrs);
       void apply (int i, dw::core::style::StyleAttrs *attrs,
-                  CssPropertyList *props, BrowserWindow *bw, DilloUrl *url);
+                  CssPropertyList *props, BrowserWindow *bw);
       bool computeValue (int *dest, CssLength value,
                          dw::core::style::Font *font);
       bool computeValue (int *dest, CssLength value,
@@ -65,13 +66,13 @@ class StyleEngine {
    public:
       static void init ();
 
-      StyleEngine (dw::core::Layout *layout);
+      StyleEngine (dw::core::Layout *layout, const DilloUrl *baseUrl);
       ~StyleEngine ();
 
       void parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen,
                   CssOrigin origin);
-      void startElement (int tag, BrowserWindow *bw, DilloUrl *url);
-      void startElement (const char *tagname, BrowserWindow *bw, DilloUrl *url);
+      void startElement (int tag, BrowserWindow *bw);
+      void startElement (const char *tagname, BrowserWindow *bw);
       void setId (const char *id);
       const char * getId () { return doctree->top ()->id; };
       void setClass (const char *klass);
@@ -93,10 +94,9 @@ class StyleEngine {
       }
       void inheritNonCssHints ();
       void clearNonCssHints ();
-      void restyle (BrowserWindow *bw, DilloUrl *url);
+      void restyle (BrowserWindow *bw);
       void inheritBackgroundColor (); /* \todo get rid of this somehow */
-      dw::core::style::Style *backgroundStyle (BrowserWindow *bw,
-                                               DilloUrl *url);
+      dw::core::style::Style *backgroundStyle (BrowserWindow *bw);
       dw::core::style::Color *backgroundColor ();
       dw::core::style::StyleImage *backgroundImage
          (dw::core::style::BackgroundRepeat *bgRepeat,
@@ -104,21 +104,20 @@ class StyleEngine {
           dw::core::style::Length *bgPositionX,
           dw::core::style::Length *bgPositionY);
 
-      inline dw::core::style::Style *style (BrowserWindow *bw, DilloUrl *url) {
+      inline dw::core::style::Style *style (BrowserWindow *bw) {
          dw::core::style::Style *s = stack->getRef (stack->size () - 1)->style;
          if (s)
             return s;
          else
-            return style0 (stack->size () - 1, bw, url);
+            return style0 (stack->size () - 1, bw);
       };
 
-      inline dw::core::style::Style *wordStyle (BrowserWindow *bw,
-                                                DilloUrl *url) {
+      inline dw::core::style::Style *wordStyle (BrowserWindow *bw) {
          dw::core::style::Style *s = stack->getRef(stack->size()-1)->wordStyle;
          if (s)
             return s;
          else
-            return wordStyle0 (bw, url);
+            return wordStyle0 (bw);
       };
 };
 
