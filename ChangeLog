@@ -15,6 +15,7 @@ dillo-3.0.4 [not released yet]
    Patches: corvid
 +- Make embedding into other applications more reliable (BUG#1127).
  - Add search from address bar.
+ - Share CSS user agent stylesheet between pages.
    Patches: Johannes Hofmann
 +- Better scaling (down) of images, even with consideration of gamma
    correction.
