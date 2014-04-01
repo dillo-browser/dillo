@@ -73,14 +73,14 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
                           style::createPerLength (0));
 
       /* Set a style for the widget */
-      StyleEngine styleEngine (layout);
-      styleEngine.startElement ("body", Web->bw, Web->url);
+      StyleEngine styleEngine (layout, Web->url);
+      styleEngine.startElement ("body", Web->bw);
 
       dw = (Widget*) viewer(Type, Web, Call, Data);
       if (dw == NULL)
          return -1;
 
-      dw->setStyle (styleEngine.style (Web->bw, Web->url));
+      dw->setStyle (styleEngine.style (Web->bw));
 
       /* This method frees the old dw if any */
       layout->setWidget(dw);

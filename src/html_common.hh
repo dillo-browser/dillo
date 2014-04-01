@@ -222,18 +222,18 @@ public:
 
    // useful shortcuts
    inline void startElement (int tag)
-   { styleEngine->startElement (tag, bw, base_url); }
+   { styleEngine->startElement (tag, bw); }
    inline void startElement (const char *tagname)
-   { styleEngine->startElement (tagname, bw, base_url); }
+   { styleEngine->startElement (tagname, bw); }
 
    inline dw::core::style::Style *backgroundStyle ()
-   { return styleEngine->backgroundStyle (bw, base_url); }
+   { return styleEngine->backgroundStyle (bw); }
    inline dw::core::style::Style *style ()
-   { return styleEngine->style (bw, base_url); }
+   { return styleEngine->style (bw); }
    inline dw::core::style::Style *wordStyle ()
-   { return styleEngine->wordStyle (bw, base_url); }
+   { return styleEngine->wordStyle (bw); }
 
-   inline void restyle () { styleEngine->restyle (bw, base_url); }
+   inline void restyle () { styleEngine->restyle (bw); }
 
 };
 

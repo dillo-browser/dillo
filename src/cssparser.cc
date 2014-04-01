@@ -435,6 +435,7 @@ static const CssShorthandInfo Css_shorthand_info[] = {
  * ---------------------------------------------------------------------- */
 
 CssParser::CssParser(CssContext *context, CssOrigin origin,
+                     const DilloUrl *baseUrl,
                      const char *buf, int buflen)
 {
    this->context = context;
@@ -444,6 +445,7 @@ CssParser::CssParser(CssContext *context, CssOrigin origin,
    this->bufptr = 0;
    this->spaceSeparated = false;
    this->withinBlock = false;
+   this->baseUrl = baseUrl;
 
    nextToken ();
 }
@@ -1558,15 +1560,17 @@ char * CssParser::parseUrl()
    }
 
    if (urlStr) {
-      char *url = urlStr->str;
-      dStr_free(urlStr, 0);
+      DilloUrl *dilloUrl = a_Url_new(urlStr->str, a_Url_str(this->baseUrl));
+      char *url = dStrdup(a_Url_str(dilloUrl));
+      a_Url_free(dilloUrl);
+      dStr_free(urlStr, 1);
       return url;
    } else {
       return NULL;
    }
 }
 
-void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
+void CssParser::parseImport(DilloHtml *html)
 {
    char *urlStr = NULL;
    bool importSyntaxIsOK = false;
@@ -1612,8 +1616,8 @@ void CssParser::parseImport(DilloHtml *html, DilloUrl *baseUrl)
    if (urlStr) {
       if (importSyntaxIsOK && mediaIsSelected) {
          MSG("CssParser::parseImport(): @import %s\n", urlStr);
-         DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(baseUrl),
-                                         baseUrl ? 1 : 0);
+         DilloUrl *url = a_Html_url_new (html, urlStr, a_Url_str(this->baseUrl),
+                                         this->baseUrl ? 1 : 0);
          a_Html_load_stylesheet(html, url);
          a_Url_free(url);
       }
@@ -1705,11 +1709,12 @@ void CssParser::ignoreStatement()
    }
 }
 
-void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext *context,
+void CssParser::parse(DilloHtml *html, const DilloUrl *baseUrl,
+                      CssContext *context,
                       const char *buf,
                       int buflen, CssOrigin origin)
 {
-   CssParser parser (context, origin, buf, buflen);
+   CssParser parser (context, origin, baseUrl, buf, buflen);
    bool importsAreAllowed = true;
 
    while (parser.ttype != CSS_TK_END) {
@@ -1720,7 +1725,7 @@ void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext *context,
             if (dStrAsciiCasecmp(parser.tval, "import") == 0 &&
                 html != NULL &&
                 importsAreAllowed) {
-               parser.parseImport(html, url);
+               parser.parseImport(html);
             } else if (dStrAsciiCasecmp(parser.tval, "media") == 0) {
                parser.parseMedia();
             } else {
@@ -1736,11 +1741,12 @@ void CssParser::parse(DilloHtml *html, DilloUrl *url, CssContext *context,
    }
 }
 
-void CssParser::parseDeclarationBlock(const char *buf, int buflen,
+void CssParser::parseDeclarationBlock(const DilloUrl *baseUrl,
+                                      const char *buf, int buflen,
                                       CssPropertyList *props,
                                       CssPropertyList *propsImortant)
 {
-   CssParser parser (NULL, CSS_ORIGIN_AUTHOR, buf, buflen);
+   CssParser parser (NULL, CSS_ORIGIN_AUTHOR, baseUrl, buf, buflen);
 
    parser.withinBlock = true;
 

@@ -95,12 +95,12 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw)
    state = ST_SeekingEol;
 
    Layout *layout = (Layout*) bw->render_layout;
-   StyleEngine styleEngine (layout);
+   // TODO (1x) No URL?
+   StyleEngine styleEngine (layout, NULL);
 
-   // TODO (3x) No URL?
-   styleEngine.startElement ("body", bw, NULL);
-   styleEngine.startElement ("pre", bw, NULL);
-   widgetStyle = styleEngine.wordStyle (bw, NULL);
+   styleEngine.startElement ("body", bw);
+   styleEngine.startElement ("pre", bw);
+   widgetStyle = styleEngine.wordStyle (bw);
    widgetStyle->ref ();
 
    /* The context menu */
