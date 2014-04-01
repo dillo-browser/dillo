@@ -595,6 +595,7 @@ protected:
                   core::style::Style *style);
    void breakAdded ();
    void initWord (int wordNo);
+   void cleanupWord (int wordNo);   
    void removeWordImgRenderer (int wordNo);
    void setWordImgRenderer (int wordNo);
    void removeSpaceImgRenderer (int wordNo);

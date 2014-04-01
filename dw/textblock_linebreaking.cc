@@ -1803,14 +1803,42 @@ void Textblock::showMissingLines ()
 {
    DBG_OBJ_MSG ("construct.line", 0, "<b>showMissingLines</b> ()");
    DBG_OBJ_MSG_START ();
+
+   // "Temporary word": when the last word is an OOF reference, it is
+   // not processed, and not part of any line. For this reason, we
+   // introduce a "temporary word", which is in flow, after this last
+   // OOF reference, and later removed again.
+   bool tempWord = words->size () > 0 &&
+      words->getLastRef()->content.type == core::Content::WIDGET_OOF_REF;
    int firstWordToWrap =
       lines->size () > 0 ? lines->getLastRef()->lastWord + 1 : 0;
-   DBG_OBJ_MSGF ("construct.line", 1, "firstWordToWrap = %d (of %d)",
-                 firstWordToWrap, words->size ());
+
+   DBG_OBJ_MSGF ("construct.line", 1,
+                 "words->size() = %d, firstWordToWrap = %d, tempWord = %d",
+                 words->size (), firstWordToWrap, tempWord ? "true" : "false");
+   
+   if (tempWord) {
+      core::Requisition size = { 0, 0, 0 };
+      addText0 ("", 0, Word::WORD_START | Word::WORD_END, getStyle (), &size);
+   }
 
    for (int i = firstWordToWrap; i < words->size (); i++)
       wordWrap (i, true);
 
+   // Remove temporary word again. The only reference should be the line.
+   if (tempWord) {
+      cleanupWord (words->size () - 1);
+      words->setSize (words->size () - 1);
+      if (lines->getLastRef()->lastWord > words->size () - 1)
+         lines->getLastRef()->lastWord = words->size () - 1;
+   }
+
+   // The following old code should not be necessary anymore, after
+   // the introduction of the "virtual word". Instead, test the
+   // condition.
+   assert (lines->size () == 0 ||
+           lines->getLastRef()->lastWord == words->size () - 1);
+   /*
    // In some cases, there are some words of type WIDGET_OOF_REF left, which
    // are not added to line, since addLine() is only called within
    // wrapWordInFlow(), but not within wrapWordOofRef(). The missing line
@@ -1823,6 +1851,7 @@ void Textblock::showMissingLines ()
                  firstWordNotInLine, words->size ());
    if (firstWordNotInLine < words->size ())
       addLine (firstWordNotInLine, words->size () - 1, -1, true);
+   */
 
    DBG_OBJ_MSG_END ();
 }

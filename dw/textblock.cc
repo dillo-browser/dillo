@@ -294,19 +294,8 @@ Textblock::~Textblock ()
    /* make sure not to call a free'd tooltip (very fast overkill) */
    hoverTooltip = NULL;
 
-   for (int i = 0; i < words->size(); i++) {
-      Word *word = words->getRef (i);
-
-      if (word->content.type == core::Content::WIDGET_IN_FLOW)
-         delete word->content.widget;
-      /** \todo Widget references? What about texts? */
-
-      removeWordImgRenderer (i);
-      removeSpaceImgRenderer (i);
-
-      word->style->unref ();
-      word->spaceStyle->unref ();
-   }
+   for (int i = 0; i < words->size(); i++)
+      cleanupWord (i);
 
    for (int i = 0; i < anchors->size(); i++) {
       Anchor *anchor = anchors->getRef (i);
@@ -1706,6 +1695,21 @@ void Textblock::initWord (int wordNo)
    word->style = word->spaceStyle = NULL;
    word->wordImgRenderer = NULL;
    word->spaceImgRenderer = NULL;
+}
+
+void Textblock::cleanupWord (int wordNo)
+{
+   Word *word = words->getRef (wordNo);
+
+   if (word->content.type == core::Content::WIDGET_IN_FLOW)
+      delete word->content.widget;
+   /** \todo Widget references? What about texts? */
+
+   removeWordImgRenderer (wordNo);
+   removeSpaceImgRenderer (wordNo);
+
+   word->style->unref ();
+   word->spaceStyle->unref ();
 }
 
 void Textblock::removeWordImgRenderer (int wordNo)
