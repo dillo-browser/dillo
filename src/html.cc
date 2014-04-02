@@ -643,10 +643,12 @@ void DilloHtml::loadImages (const DilloUrl *pattern)
 {
    dReturn_if (a_Bw_expecting(bw));
 
-   /* If the user asked for a specific URL, the user (NULL) is the requester,
-    * but if the user just asked for all URLs, use the page URL as the
-    * requester. If the possible patterns become more complex, it might be
-    * good to have the caller supply the requester instead.
+   /* If the user asked for a specific image, the user (NULL) is the requester,
+    * and the domain mechanism will always permit the request. But if the user
+    * just asked for all images (clicking "Load images"), use the page URL as
+    * the requester so that the domain mechanism can act as a filter.
+    * If the possible patterns become more complex, it might be good to have
+    * the caller supply the requester instead.
     */
    const DilloUrl *requester = pattern ? NULL : this->page_url;
 
