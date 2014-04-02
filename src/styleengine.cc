@@ -58,7 +58,8 @@ void StyleImageDeletionReceiver::deleted (lout::signal::ObservedObject *object)
 
 // ----------------------------------------------------------------------
 
-StyleEngine::StyleEngine (dw::core::Layout *layout, const DilloUrl *baseUrl) {
+StyleEngine::StyleEngine (dw::core::Layout *layout,
+                          const DilloUrl *pageUrl, const DilloUrl *baseUrl) {
    StyleAttrs style_attrs;
    FontAttrs font_attrs;
 
@@ -67,7 +68,8 @@ StyleEngine::StyleEngine (dw::core::Layout *layout, const DilloUrl *baseUrl) {
    cssContext = new CssContext ();
    buildUserStyle ();
    this->layout = layout;
-   this->baseUrl = baseUrl;
+   this->pageUrl = pageUrl ? a_Url_dup(pageUrl) : NULL;
+   this->baseUrl = baseUrl ? a_Url_dup(baseUrl) : NULL;
    importDepth = 0;
 
    stackPush ();
@@ -99,6 +101,9 @@ StyleEngine::~StyleEngine () {
 
    stackPop (); // dummy node on the bottom of the stack
    assert (stack->size () == 0);
+
+   a_Url_free(pageUrl);
+   a_Url_free(baseUrl);
 
    delete stack;
    delete doctree;
@@ -535,7 +540,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                                         ->getMainImgRenderer(),
                               0xffffff);
 
-               DilloWeb *web = a_Web_new(bw, imgUrl, baseUrl);
+               // we use the pageUrl as requester to prevent cross
+               // domain requests as specified in domainrc
+               DilloWeb *web = a_Web_new(bw, imgUrl, pageUrl);
                web->Image = image;
                a_Image_ref(image);
                web->flags |= WEB_Image;

@@ -35,7 +35,7 @@ class StyleEngine {
       CssContext *cssContext;
       Doctree *doctree;
       int importDepth;
-      const DilloUrl *baseUrl;
+      DilloUrl *pageUrl, *baseUrl;
 
       void stackPush ();
       void stackPop ();
@@ -66,7 +66,8 @@ class StyleEngine {
    public:
       static void init ();
 
-      StyleEngine (dw::core::Layout *layout, const DilloUrl *baseUrl);
+      StyleEngine (dw::core::Layout *layout,
+                   const DilloUrl *pageUrl, const DilloUrl *baseUrl);
       ~StyleEngine ();
 
       void parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen,

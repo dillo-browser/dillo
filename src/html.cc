@@ -404,7 +404,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    DocType = DT_NONE;    /* assume Tag Soup 0.0!   :-) */
    DocTypeVersion = 0.0f;
 
-   styleEngine = new StyleEngine (HT2LT (this), base_url);
+   styleEngine = new StyleEngine (HT2LT (this), page_url, base_url);
 
    cssUrls = new misc::SimpleVector <DilloUrl*> (1);
 
