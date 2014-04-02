@@ -759,6 +759,8 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
             if (newFloatPos == -1)
                floatHandled = false;
             else {
+               floatHandled = true;
+
                // Step 2: position the float and re-calculate the line.
                lastFloatPos = newFloatPos;
 
@@ -1814,7 +1816,7 @@ void Textblock::showMissingLines ()
       lines->size () > 0 ? lines->getLastRef()->lastWord + 1 : 0;
 
    DBG_OBJ_MSGF ("construct.line", 1,
-                 "words->size() = %d, firstWordToWrap = %d, tempWord = %d",
+                 "words->size() = %d, firstWordToWrap = %d, tempWord = %s",
                  words->size (), firstWordToWrap, tempWord ? "true" : "false");
    
    if (tempWord) {
