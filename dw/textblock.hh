@@ -702,6 +702,13 @@ protected:
    void processWord (int wordIndex);
    virtual bool wordWrap (int wordIndex, bool wrapAll);
    bool wrapWordInFlow (int wordIndex, bool wrapAll);
+   void balanceBreakPosAndHeight (int wordIndex, int firstIndex,
+                                  int *searchUntil, bool tempNewLine,
+                                  int penaltyIndex, bool *thereWillBeMoreSpace,
+                                  bool wrapAll, bool *wordListChanged,
+                                  int *wordIndexEnd, int lastFloatPos,
+                                  bool regardBorder, int *height,
+                                  int *breakPos);
    int searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                        bool tempNewLine, int penaltyIndex,
                        bool thereWillBeMoreSpace, bool wrapAll,

@@ -767,66 +767,12 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                containingBlock->outOfFlowMgr->tellPosition
                   (words->getRef(lastFloatPos)->content.widget, yNewLine);
 
-               // The height of this part of the line (until the new
-               // break position) may change with the break position,
-               // but the break position may depend on the height. We
-               // try to let these values converge.
-               //
-               // The height, as a function of the break position, is
-               // monotonically (but not strictly) increasing, since
-               // more words may make the line higher (but not
-               // flatter). The break position, as a function of the
-               // height, is, however, monotonically (but not
-               // strictly) *de*creasing, since flatter lines may fit
-               // easier between floats (although this is a rare
-               // case). So a convergence is not necessary.
-               //
-               // For this reason, we iterate only as long as the
-               // height does not increase again, and stop if it
-               // remains the same. As the minimum is 1, this approach
-               // will force the iteration to stop.
-               //
-               // (As a side effect, this will lead to a larger break
-               // position, and so place as much words as possible in
-               // the line.)
-
-               bool firstRun = true;
-               while (true) {
-                  calcBorders (lastFloatPos, height);
-                  thereWillBeMoreSpace = regardBorder ?
-                     newLineHasFloatLeft || newLineHasFloatRight : false;
-
-                  DBG_OBJ_MSGF ("construct.word", 2,
-                                "thereWillBeMoreSpace = %s",
-                                thereWillBeMoreSpace ? "true" : "false");
-
-                  for(int i = firstIndex; i <= wordIndexEnd; i++)
-                     accumulateWordData (i);
-
-                  int newBreakPos =
-                     searchBreakPos (wordIndex, firstIndex, &searchUntil,
-                                     tempNewLine, penaltyIndex,
-                                     thereWillBeMoreSpace, wrapAll,
-                                     &wordListChanged, &wordIndexEnd);
-                  int newHeight = calcLinePartHeight (firstIndex, newBreakPos);
-                  
-                  if (!firstRun && newHeight >= height)
-                     // - newHeight > height: do not proceed, discard
-                     //   new values, which are less desirable than
-                     //   the old ones (see above).
-                     // - newHeight == height: convergence, stop
-                     //   here. New values can be discarded, since
-                     //   they are the same.
-                     // (Since *some* value are needed, the results
-                     // from the first run are never discarded.)
-                     break;
-                  else {
-                     height = newHeight;
-                     breakPos = newBreakPos;
-                  }
-
-                  firstRun = false;
-               }
+               balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
+                                         tempNewLine, penaltyIndex,
+                                         &thereWillBeMoreSpace, wrapAll,
+                                         &wordListChanged, &wordIndexEnd,
+                                         lastFloatPos, regardBorder, &height,
+                                         &breakPos);
             }
 
             DBG_OBJ_MSG_END ();
@@ -876,6 +822,72 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
    DBG_OBJ_MSG_END ();
 
    return wordListChanged;
+}
+
+// *height must be initialized, but not *breakPos.
+void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
+                                          int *searchUntil, bool tempNewLine,
+                                          int penaltyIndex,
+                                          bool *thereWillBeMoreSpace,
+                                          bool wrapAll, bool *wordListChanged,
+                                          int *wordIndexEnd, int lastFloatPos,
+                                          bool regardBorder, int *height,
+                                          int *breakPos)
+{
+   // The height of this part of the line (until the new break
+   // position) may change with the break position, but the break
+   // position may depend on the height. We try to let these values
+   // converge.
+   //
+   // The height, as a function of the break position, is
+   // monotonically (but not strictly) increasing, since more words
+   // may make the line higher (but not flatter). The break position,
+   // as a function of the height, is, however, monotonically (but not
+   // strictly) *de*creasing, since flatter lines may fit easier
+   // between floats (although this is a rare case). So a convergence
+   // is not necessary.
+   //
+   // For this reason, we iterate only as long as the height does not
+   // increase again, and stop if it remains the same. As the minimum
+   // is 1, this approach will force the iteration to stop.
+   //
+   // (As a side effect, this will lead to a larger break position,
+   // and so place as much words as possible in the line.)
+
+   bool firstRun = true;
+   while (true) {
+      calcBorders (lastFloatPos, *height);
+      *thereWillBeMoreSpace = regardBorder ?
+         newLineHasFloatLeft || newLineHasFloatRight : false;
+      
+      DBG_OBJ_MSGF ("construct.word", 2, "thereWillBeMoreSpace = %s",
+                    *thereWillBeMoreSpace ? "true" : "false");
+
+      for(int i = firstIndex; i <= *wordIndexEnd; i++)
+         accumulateWordData (i);
+
+      int newBreakPos =
+         searchBreakPos (wordIndex, firstIndex, searchUntil,
+                         tempNewLine, penaltyIndex,
+                         thereWillBeMoreSpace, wrapAll,
+                         wordListChanged, wordIndexEnd);
+      int newHeight = calcLinePartHeight (firstIndex, newBreakPos);
+      
+      if (!firstRun && newHeight >= *height)
+         // - newHeight > height: do not proceed, discard new values,
+         //   which are less desirable than the old ones (see above).
+         // - newHeight == height: convergence, stop here. New values
+         //   can be discarded, since they are the same.
+         // (Since *some* value are needed, the results from the first
+         // run are never discarded.)
+         break;
+      else {
+         *height = newHeight;
+         *breakPos = newBreakPos;
+      }
+
+      firstRun = false;
+   }
 }
 
 int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
