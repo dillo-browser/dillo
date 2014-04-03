@@ -704,11 +704,11 @@ protected:
    bool wrapWordInFlow (int wordIndex, bool wrapAll);
    void balanceBreakPosAndHeight (int wordIndex, int firstIndex,
                                   int *searchUntil, bool tempNewLine,
-                                  int penaltyIndex, bool *thereWillBeMoreSpace,
-                                  bool wrapAll, bool *wordListChanged,
-                                  int *wordIndexEnd, int lastFloatPos,
-                                  bool regardBorder, int *height,
-                                  int *breakPos);
+                                  int penaltyIndex, bool borderIsCalculated,
+                                  bool *thereWillBeMoreSpace, bool wrapAll,
+                                  bool *wordListChanged, int *wordIndexEnd,
+                                  int lastFloatPos, bool regardBorder,
+                                  int *height, int *breakPos);
    int searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                        bool tempNewLine, int penaltyIndex,
                        bool thereWillBeMoreSpace, bool wrapAll,

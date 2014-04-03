@@ -713,19 +713,25 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
               "mustQueueResize = %s\n", this, newLine ? "true" : "false",
               wrapAll ? "true" : "false", mustQueueResize ? "true" : "false");
 
-      if(newLine) {
+      if (newLine) {
          accumulateWordData (wordIndex);
 
-         int wordIndexEnd = wordIndex, breakPos =
-            searchBreakPos (wordIndex, firstIndex, &searchUntil, tempNewLine,
-                            penaltyIndex, thereWillBeMoreSpace, wrapAll,
-                            &wordListChanged, &wordIndexEnd);
-         int height = calcLinePartHeight (firstIndex, breakPos);
+         int wordIndexEnd = wordIndex;
+         int height = 1; // assumed by calcBorders before (see there)
+         int breakPos;
+
+         balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
+                                   tempNewLine, penaltyIndex, true,
+                                   &thereWillBeMoreSpace, wrapAll,
+                                   &wordListChanged, &wordIndexEnd,
+                                   lines->size() > 0 ?
+                                   lines->getLastRef()
+                                   ->lastOofRefPositionedBeforeThisLine : -1,
+                                   regardBorder, &height, &breakPos);
+
          int lastFloatPos = lines->size() > 0 ?
             lines->getLastRef()->lastOofRefPositionedBeforeThisLine : -1;
-
          bool floatHandled;
-
          int yNewLine = yOffsetOfPossiblyMissingLine (lines->size ());
 
          do {
@@ -768,7 +774,7 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                   (words->getRef(lastFloatPos)->content.widget, yNewLine);
 
                balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
-                                         tempNewLine, penaltyIndex,
+                                         tempNewLine, penaltyIndex, false,
                                          &thereWillBeMoreSpace, wrapAll,
                                          &wordListChanged, &wordIndexEnd,
                                          lastFloatPos, regardBorder, &height,
@@ -829,12 +835,23 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
                                           int *searchUntil, bool tempNewLine,
                                           int penaltyIndex,
+                                          bool borderIsCalculated,
                                           bool *thereWillBeMoreSpace,
                                           bool wrapAll, bool *wordListChanged,
                                           int *wordIndexEnd, int lastFloatPos,
                                           bool regardBorder, int *height,
                                           int *breakPos)
 {
+   DBG_OBJ_MSGF ("construct.word", 0,
+                 "<b>balanceBreakPosAndHeight</b> (%d, %d. %d, %s, %d, %s, "
+                 "..., %s, ..., %d, %s, %d, ...)",
+                 wordIndex, firstIndex, *searchUntil,
+                 tempNewLine ? "true" : "false", penaltyIndex,
+                 borderIsCalculated ? "true" : "false",
+                 wrapAll ? "true" : "false", lastFloatPos,
+                 regardBorder ? "true" : "false", *height);
+   DBG_OBJ_MSG_START ();
+
    // The height of this part of the line (until the new break
    // position) may change with the break position, but the break
    // position may depend on the height. We try to let these values
@@ -857,15 +874,18 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
 
    bool firstRun = true;
    while (true) {
-      calcBorders (lastFloatPos, *height);
-      *thereWillBeMoreSpace = regardBorder ?
-         newLineHasFloatLeft || newLineHasFloatRight : false;
-      
-      DBG_OBJ_MSGF ("construct.word", 2, "thereWillBeMoreSpace = %s",
-                    *thereWillBeMoreSpace ? "true" : "false");
-
-      for(int i = firstIndex; i <= *wordIndexEnd; i++)
-         accumulateWordData (i);
+      if (!(borderIsCalculated && firstRun)) {
+         // borderIsCalculated is, of course, only valid in the first run
+         calcBorders (lastFloatPos, *height);
+         *thereWillBeMoreSpace = regardBorder ?
+            newLineHasFloatLeft || newLineHasFloatRight : false;
+         
+         DBG_OBJ_MSGF ("construct.word", 1, "thereWillBeMoreSpace = %s",
+                       *thereWillBeMoreSpace ? "true" : "false");
+         
+         for(int i = firstIndex; i <= *wordIndexEnd; i++)
+            accumulateWordData (i);
+      }
 
       int newBreakPos =
          searchBreakPos (wordIndex, firstIndex, searchUntil,
@@ -874,21 +894,31 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
                          wordListChanged, wordIndexEnd);
       int newHeight = calcLinePartHeight (firstIndex, newBreakPos);
       
-      if (!firstRun && newHeight >= *height)
+      DBG_OBJ_MSGF ("construct.word", 1,
+                    "firstRun = %s, newBreakPos = %d, newHeight = %d "
+                    "(height = %d)",
+                    firstRun ? "true" : "false", newBreakPos, newHeight,
+                    *height);
+
+      if (!firstRun && newHeight >= *height) {
          // - newHeight > height: do not proceed, discard new values,
          //   which are less desirable than the old ones (see above).
          // - newHeight == height: convergence, stop here. New values
          //   can be discarded, since they are the same.
          // (Since *some* value are needed, the results from the first
          // run are never discarded.)
+         DBG_OBJ_MSG ("construct.word", 1, "discarding new values");
          break;
-      else {
+      } else {
+         DBG_OBJ_MSG ("construct.word", 1, "adopting new values");
          *height = newHeight;
          *breakPos = newBreakPos;
       }
 
       firstRun = false;
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 // *wordIndexEnd must be initialized (initially to wordIndex)
@@ -898,8 +928,9 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                                bool *wordListChanged, int *wordIndexEnd)
 {
    DBG_OBJ_MSGF ("construct.word", 0,
-                 "<b>searchBreakPos</b> (%d, %d. %d, %d, %s, %s, ...)",
-                 wordIndex, firstIndex, *searchUntil, penaltyIndex,
+                 "<b>searchBreakPos</b> (%d, %d. %d, %s, %d, %s, %s, ...)",
+                 wordIndex, firstIndex, *searchUntil,
+                 tempNewLine ? "true" : "false", penaltyIndex,
                  thereWillBeMoreSpace ? "true" : "false",
                  wrapAll ? "true" : "false");
    DBG_OBJ_MSG_START ();
