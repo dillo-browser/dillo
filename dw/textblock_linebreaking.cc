@@ -716,7 +716,7 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
       if(newLine) {
          accumulateWordData (wordIndex);
 
-         int wordIndexEnd, breakPos =
+         int wordIndexEnd = wordIndex, breakPos =
             searchBreakPos (wordIndex, firstIndex, &searchUntil, tempNewLine,
                             penaltyIndex, thereWillBeMoreSpace, wrapAll,
                             &wordListChanged, &wordIndexEnd);
@@ -825,6 +825,7 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 }
 
 // *height must be initialized, but not *breakPos.
+// *wordIndexEnd must be initialized (initially to wordIndex)
 void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
                                           int *searchUntil, bool tempNewLine,
                                           int penaltyIndex,
@@ -890,6 +891,7 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
    }
 }
 
+// *wordIndexEnd must be initialized (initially to wordIndex)
 int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                                bool tempNewLine, int penaltyIndex,
                                bool thereWillBeMoreSpace, bool wrapAll,
@@ -904,8 +906,6 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
 
    int result;
    bool lineAdded;
-
-   *wordIndexEnd = wordIndex;
 
    do {
       DBG_OBJ_MSG ("construct.word", 1, "<i>searchBreakPos loop cycle</i>");
