@@ -872,9 +872,9 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
    // (As a side effect, this will lead to a larger break position,
    // and so place as much words as possible in the line.)
 
-   bool firstRun = true;
+   int runNo = 1;
    while (true) {
-      if (!(borderIsCalculated && firstRun)) {
+      if (!(borderIsCalculated && runNo == 1)) {
          // borderIsCalculated is, of course, only valid in the first run
          calcBorders (lastFloatPos, *height);
          *thereWillBeMoreSpace = regardBorder ?
@@ -895,27 +895,36 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
       int newHeight = calcLinePartHeight (firstIndex, newBreakPos);
       
       DBG_OBJ_MSGF ("construct.word", 1,
-                    "firstRun = %s, newBreakPos = %d, newHeight = %d "
-                    "(height = %d)",
-                    firstRun ? "true" : "false", newBreakPos, newHeight,
-                    *height);
-
-      if (!firstRun && newHeight >= *height) {
-         // - newHeight > height: do not proceed, discard new values,
-         //   which are less desirable than the old ones (see above).
-         // - newHeight == height: convergence, stop here. New values
-         //   can be discarded, since they are the same.
-         // (Since *some* value are needed, the results from the first
-         // run are never discarded.)
-         DBG_OBJ_MSG ("construct.word", 1, "discarding new values");
+                    "runNo = %d, newBreakPos = %d, newHeight = %d",
+                    runNo, newBreakPos, newHeight);
+      if (runNo == 1)
+         DBG_OBJ_MSGF ("construct.word", 1,
+                       "old: height = %d, breakPos undefined", *height);
+      else
+         DBG_OBJ_MSGF ("construct.word", 1,
+                       "old: height = %d, breakPos = %d", *height, *breakPos);
+      
+      if (runNo != 1 /* Since *some* value are needed, the results
+                        from the first run are never discarded. */
+          && newHeight >= *height) {
+         if (newHeight == *height) {
+            // newHeight == height: convergence, stop here. The new break
+            // position is, nevertheless, adopted.
+            DBG_OBJ_MSG ("construct.word", 1, "stopping, adopting new values");
+            *breakPos = newBreakPos;
+         } else
+            // newHeight > height: do not proceed, discard new values,
+            // which are less desirable than the old ones (see above).
+            DBG_OBJ_MSG ("construct.word", 1,
+                         "stopping, discarding new values");
          break;
       } else {
-         DBG_OBJ_MSG ("construct.word", 1, "adopting new values");
+         DBG_OBJ_MSG ("construct.word", 1, "adopting new values, continuing");
          *height = newHeight;
          *breakPos = newBreakPos;
       }
 
-      firstRun = false;
+      runNo++;
    }
 
    DBG_OBJ_MSG_END ();
