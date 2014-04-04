@@ -890,7 +890,7 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
       int newBreakPos =
          searchBreakPos (wordIndex, firstIndex, searchUntil,
                          tempNewLine, penaltyIndex,
-                         thereWillBeMoreSpace, wrapAll,
+                         *thereWillBeMoreSpace, wrapAll,
                          wordListChanged, wordIndexEnd);
       int newHeight = calcLinePartHeight (firstIndex, newBreakPos);
       
