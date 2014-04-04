@@ -880,12 +880,12 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
          *thereWillBeMoreSpace = regardBorder ?
             newLineHasFloatLeft || newLineHasFloatRight : false;
          
-         DBG_OBJ_MSGF ("construct.word", 1, "thereWillBeMoreSpace = %s",
-                       *thereWillBeMoreSpace ? "true" : "false");
-         
          for(int i = firstIndex; i <= *wordIndexEnd; i++)
             accumulateWordData (i);
       }
+         
+      DBG_OBJ_MSGF ("construct.word", 1, "thereWillBeMoreSpace = %s",
+                    *thereWillBeMoreSpace ? "true" : "false");
 
       int newBreakPos =
          searchBreakPos (wordIndex, firstIndex, searchUntil,
