@@ -144,8 +144,10 @@ bool_t a_Domain_permit(const DilloUrl *source, const DilloUrl *dest)
       }
    }
 
-   if (ret == FALSE)
+   if (ret == FALSE) {
+      if (source_host[0] == '\0')
+         source_host = "(none)";
       MSG("Domain: DENIED from %s to %s.\n", source_host, dest_host);
-
+   }
    return ret;
 }
