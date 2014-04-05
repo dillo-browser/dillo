@@ -282,7 +282,7 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #
 ui_fg_color=black
 ui_main_bg_color=#c6c6c6
-ui_text_bg_color=bfdabf
+ui_text_bg_color=#bfdabf
 ui_selection_color=#191970
 ui_button_highlight_color=#a9a9a9
 ui_tab_active_bg_color=#87aca7
