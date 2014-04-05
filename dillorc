@@ -169,7 +169,7 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # (by default, no Accept-Language header is sent)
 # http_language="de"
 # http_language="pt-BR"
-# http_language="vi,de-CH,de;q=0.5,th;q=0.3"
+# http_language="en-US,en;q=0.5"
 
 # Maximum number of simultaneous TCP connections to a single server or proxy.
 # http_max_conns=6
