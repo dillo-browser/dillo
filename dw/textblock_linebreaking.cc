@@ -1823,26 +1823,63 @@ void Textblock::calcBorders (int lastOofRef, int height)
    DBG_OBJ_MSG_START ();
 
    if (containingBlock && containingBlock->outOfFlowMgr) {
+      // Consider the example:
+      //
+      // <div>
+      //   Some text A ...
+      //   <p> Some text B ... <img style="float:right" ...> </p>
+      //   Some more text C ...
+      // </div>
+      //
+      // If the image is large enough, it should float around the last
+      // paragraph, "Some more text C ...":
+      //
+      //    Some more text A ...
+      //    
+      //    Some more  ,---------.
+      //    text B ... |         |
+      //               |  <img>  |
+      //    Some more  |         | <---- Consider this line!
+      //    text C ... '---------'
+      //
+      // Since this float is generated in the <p> element, not in the-
+      // <div> element, and since they are represented by different
+      // instances of dw::Textblock, lastOofRefPositionedBeforeThisLine,
+      // and so lastOofRef, is -1 for the line marked with an arrow;
+      // this would result in ignoring the float, because -1 is
+      // equivalent to the very beginning of the <div> element ("Some
+      // more text A ..."), which is not affected by the float.
+      //
+      // On the other hand, the only relevant values of
+      // Line::lastOofRefPositionedBeforeThisLine are those greater
+      // than the first word of the new line, so a solution is to use
+      // the maximum of both.
+      
+      
+      int firstWordOfLine = lines->size() > 0 ?
+         lines->getLastRef()->lastWord + 1 : 0;
+      int effOofRef = misc::max (lastOofRef, firstWordOfLine);
+
       int y = yOffsetOfPossiblyMissingLine (lines->size ());
 
       newLineHasFloatLeft =
          containingBlock->outOfFlowMgr->hasFloatLeft (this, y, height, this,
-                                                      lastOofRef);
+                                                      effOofRef);
       newLineHasFloatRight =
          containingBlock->outOfFlowMgr->hasFloatRight (this, y, height, this,
-                                                       lastOofRef);
+                                                       effOofRef);
       newLineLeftBorder =
          containingBlock->outOfFlowMgr->getLeftBorder (this, y, height, this,
-                                                       lastOofRef);
+                                                       effOofRef);
       newLineRightBorder =
          containingBlock->outOfFlowMgr->getRightBorder (this, y, height, this,
-                                                        lastOofRef);
+                                                        effOofRef);
       
       DBG_OBJ_MSGF ("construct.line", 0,
-                    "%d (%s) / %d (%s), at %d (%d), until %d\n",
+                    "%d (%s) / %d (%s), at %d (%d), until %d = max (%d, %d)\n",
                     newLineLeftBorder, newLineHasFloatLeft ? "true" : "false",
                     newLineRightBorder, newLineHasFloatRight ? "true" : "false",
-                    y, height, lastOofRef);
+                    y, height, effOofRef, lastOofRef, firstWordOfLine);
    } else {
       newLineHasFloatLeft = newLineHasFloatRight = false;
       newLineLeftBorder = newLineRightBorder = 0;
