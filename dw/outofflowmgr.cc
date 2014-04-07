@@ -41,6 +41,10 @@ OutOfFlowMgr::WidgetInfo::WidgetInfo (OutOfFlowMgr *oofm, Widget *widget)
 void OutOfFlowMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
                                        int width, int height)
 {
+   DBG_OBJ_MSGF_O ("resize.oofm", 0, widget,
+                   "<b>update</b> (%s, %d, %d, %d, %d)",
+                   wasAllocated ? "true" : "false", xCB, yCB, width, height);
+
    this->wasAllocated = wasAllocated;
    this->xCB = xCB;
    this->yCB = yCB;
@@ -55,8 +59,13 @@ void OutOfFlowMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
 
 void OutOfFlowMgr::WidgetInfo::updateAllocation ()
 {
+   DBG_OBJ_MSG_O ("resize.oofm", 0, widget, "<b>updateAllocation</b> ()");
+   DBG_OBJ_MSG_START_O (widget);
+
    update (isNowAllocated (), getNewXCB (), getNewYCB (), getNewWidth (),
            getNewHeight ());
+
+   DBG_OBJ_MSG_END_O (widget);
 }
 
 // ----------------------------------------------------------------------
