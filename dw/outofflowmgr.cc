@@ -445,6 +445,8 @@ OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm, Textblock *textblock,
 
    leftFloatsGB = new SortedFloatsVector (oofm, LEFT, SortedFloatsVector::GB);
    rightFloatsGB = new SortedFloatsVector (oofm, RIGHT, SortedFloatsVector::GB);
+
+   updateAllocation ();
 }
 
 OutOfFlowMgr::TBInfo::~TBInfo ()
@@ -490,8 +492,7 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    absolutelyPositioned = new Vector<AbsolutelyPositioned> (1, true);
 
    containingBlockWasAllocated = containingBlock->wasAllocated ();
-   if (containingBlockWasAllocated)
-      containingBlockAllocation = *(containingBlock->getAllocation());
+   containingBlockAllocation = *(containingBlock->getAllocation());
 
    addWidgetInFlow (containingBlock, NULL, 0);
 }
@@ -521,72 +522,87 @@ OutOfFlowMgr::~OutOfFlowMgr ()
    DBG_OBJ_DELETE ();
 }
 
-void OutOfFlowMgr::sizeAllocateStart (Allocation *containingBlockAllocation)
+void OutOfFlowMgr::sizeAllocateStart (Textblock *caller, Allocation *allocation)
 {
-   DBG_OBJ_MSG ("resize.oofm", 0, "<b>sizeAllocateStart</b>");
-   this->containingBlockAllocation = *containingBlockAllocation;
-   containingBlockWasAllocated = true;
-}
-
-void OutOfFlowMgr::sizeAllocateEnd ()
-{
-   DBG_OBJ_MSG ("resize.oofm", 0, "<b>sizeAllocateEnd</b>");
+   DBG_OBJ_MSGF ("resize.oofm", 0,
+                 "<b>sizeAllocateStart</b> (%p, (%d, %d, %d * (%d + %d)))",
+                 caller, allocation->x, allocation->y, allocation->width,
+                 allocation->ascent, allocation->descent);
    DBG_OBJ_MSG_START ();
 
-   // Move floats from GB lists to the one CB list.
-   moveFromGBToCB (LEFT);
-   moveFromGBToCB (RIGHT);
+   getTextblock(caller)->allocation = *allocation;
+   getTextblock(caller)->wasAllocated = true;
 
-   // Floats and absolutely positioned blocks have to be allocated
-   sizeAllocateFloats (LEFT);
-   sizeAllocateFloats (RIGHT);
-   sizeAllocateAbsolutelyPositioned ();
-
-   // Textblocks have already been allocated here.
-
-   // Check changes of both textblocks and floats allocation. (All is checked
-   // by hasRelationChanged (...).)
-   for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-           tbInfosByTextblock->iterator ();
-        it.hasNext (); ) {
-      TypedPointer <Textblock> *key = it.getNext ();
-      TBInfo *tbInfo = tbInfosByTextblock->get (key);
-      Textblock *tb = key->getTypedValue();
-
-      int minFloatPos;
-      Widget *minFloat;
-      if (hasRelationChanged (tbInfo, &minFloatPos, &minFloat))
-         tb->borderChanged (minFloatPos, minFloat);
-   }
-  
-   // Store some information for later use.
-   for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-           tbInfosByTextblock->iterator ();
-        it.hasNext (); ) {
-      TypedPointer <Textblock> *key = it.getNext ();
-      TBInfo *tbInfo = tbInfosByTextblock->get (key);
-      Textblock *tb = key->getTypedValue();
-
-      tbInfo->updateAllocation ();
-      tbInfo->availWidth = tb->getAvailWidth ();
+   if (caller == containingBlock) {
+      containingBlockAllocation = *allocation;
+      containingBlockWasAllocated = true;
    }
 
-   // There are cases where some allocated floats (TODO: later also absolutely
-   // positioned elements?) exceed the CB allocation.
-   bool sizeChanged = doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT);
+   DBG_OBJ_MSG_END ();
+}
 
-   // Similar for extremes. (TODO: here also absolutely positioned elements?)
-   bool extremesChanged =
-      haveExtremesChanged (LEFT) || haveExtremesChanged (RIGHT);
+void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
+{
+   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>sizeAllocateEnd</b> (%p)", caller);
+   DBG_OBJ_MSG_START ();
 
-   for (int i = 0; i < leftFloatsCB->size(); i++)
-      leftFloatsCB->get(i)->updateAllocation ();
+   if (caller == containingBlock) {
+      // Move floats from GB lists to the one CB list.
+      moveFromGBToCB (LEFT);
+      moveFromGBToCB (RIGHT);
+      
+      // Floats and absolutely positioned blocks have to be allocated
+      sizeAllocateFloats (LEFT);
+      sizeAllocateFloats (RIGHT);
+      sizeAllocateAbsolutelyPositioned ();
+      
+      // Textblocks have already been allocated here.
+      
+      // Check changes of both textblocks and floats allocation. (All
+      // is checked by hasRelationChanged (...).)
+      for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
+              tbInfosByTextblock->iterator ();
+           it.hasNext (); ) {
+         TypedPointer <Textblock> *key = it.getNext ();
+         TBInfo *tbInfo = tbInfosByTextblock->get (key);
+         Textblock *tb = key->getTypedValue();
+         
+         int minFloatPos;
+         Widget *minFloat;
+         if (hasRelationChanged (tbInfo, &minFloatPos, &minFloat))
+            tb->borderChanged (minFloatPos, minFloat);
+      }
+      
+      // Store some information for later use.
+      for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
+              tbInfosByTextblock->iterator ();
+           it.hasNext (); ) {
+         TypedPointer <Textblock> *key = it.getNext ();
+         TBInfo *tbInfo = tbInfosByTextblock->get (key);
+         Textblock *tb = key->getTypedValue();
+         
+         tbInfo->updateAllocation ();
+         tbInfo->availWidth = tb->getAvailWidth ();
+      }
+      
+      // There are cases where some allocated floats (TODO: later also
+      // absolutely positioned elements?) exceed the CB allocation.
+      bool sizeChanged = doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT);
 
-   for (int i = 0; i < rightFloatsCB->size(); i++)
-      rightFloatsCB->get(i)->updateAllocation ();
-   
-   if (sizeChanged || extremesChanged)
-      containingBlock->oofSizeChanged (extremesChanged);
+      // Similar for extremes. (TODO: here also absolutely positioned
+      // elements?)
+      bool extremesChanged =
+         haveExtremesChanged (LEFT) || haveExtremesChanged (RIGHT);
+      
+      for (int i = 0; i < leftFloatsCB->size(); i++)
+         leftFloatsCB->get(i)->updateAllocation ();
+      
+      for (int i = 0; i < rightFloatsCB->size(); i++)
+         rightFloatsCB->get(i)->updateAllocation ();
+      
+      if (sizeChanged || extremesChanged)
+         containingBlock->oofSizeChanged (extremesChanged);
+   }
 
    DBG_OBJ_MSG_END ();
 }
