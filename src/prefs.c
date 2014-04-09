@@ -68,7 +68,7 @@ void a_Prefs_init(void)
    prefs.http_user_agent = dStrdup(PREFS_HTTP_USER_AGENT);
    prefs.limit_text_width = FALSE;
    prefs.load_images=TRUE;
-   prefs.load_background_images=TRUE;
+   prefs.load_background_images=FALSE;
    prefs.load_stylesheets=TRUE;
    prefs.middle_click_drags_page = TRUE;
    prefs.middle_click_opens_new_tab = TRUE;

@@ -96,7 +96,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw)
 
    Layout *layout = (Layout*) bw->render_layout;
    // TODO (1x) No URL?
-   StyleEngine styleEngine (layout, NULL);
+   StyleEngine styleEngine (layout, NULL, NULL);
 
    styleEngine.startElement ("body", bw);
    styleEngine.startElement ("pre", bw);

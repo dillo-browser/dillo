@@ -19,9 +19,9 @@
 # menu.)
 #load_images=YES
 
-# Change this if you do not want background images to be loaded initially.
+# Change this if you want background images to be loaded initially.
 # (While browsing, this can be changed from the tools/settings menu.)
-#load_background_images=YES
+#load_background_images=FALSE
 
 # Change this if you want to disable loading of CSS stylesheets initially.
 # (While browsing, this can be changed from the tools/settings menu.)
@@ -169,7 +169,7 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # (by default, no Accept-Language header is sent)
 # http_language="de"
 # http_language="pt-BR"
-# http_language="vi,de-CH,de;q=0.5,th;q=0.3"
+# http_language="en-US,en;q=0.5"
 
 # Maximum number of simultaneous TCP connections to a single server or proxy.
 # http_max_conns=6
@@ -209,7 +209,7 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #
 # See http://zytrax.com/tech/web/browser_ids.htm for a compilation of strings.
 #
-# http_user_agent="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:25.0) Gecko/20100101 Firefox/25.0"
+# http_user_agent="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:28.0) Gecko/20100101 Firefox/28.0"
 # http_user_agent="Wget/1.13.4 (linux-gnu)"
 #The default is "Dillo/"+current_version_number
 
@@ -243,6 +243,9 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # old GTK/KDE".
 # "plastic" "is inspired by the Aqua user interface on Mac OS X".
 # "gtk+" "is inspired by the Red Hat Bluecurve theme".
+#
+# Once fltk-1.3.3 is released, you will be able to specify "gleam", which
+# is "a sort of Clearlooks Glossy scheme".  ("fltk-config --version")
 #theme=none
 # theme=gtk+
 # theme=plastic
@@ -279,7 +282,7 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 #
 ui_fg_color=black
 ui_main_bg_color=#c6c6c6
-ui_text_bg_color=bfdabf
+ui_text_bg_color=#bfdabf
 ui_selection_color=#191970
 ui_button_highlight_color=#a9a9a9
 ui_tab_active_bg_color=#87aca7

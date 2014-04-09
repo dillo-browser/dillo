@@ -27,7 +27,8 @@ dillorc.
   Here's a list of some old well-known problems of dillo:
 
          * no FRAMES rendering
-         * no https (there's a barebones prototype).
+         * no https (there's a barebones prototype, enable it with:
+                     ./configure --enable-ssl ).
 
 
 --------
@@ -52,8 +53,8 @@ FLTK-1.3
 Dillo3
 ------
 
-     tar jxvf dillo-3.0.3.tar.bz2
-     cd dillo-3.0.3
+     tar jxvf dillo-3.0.4.tar.bz2
+     cd dillo-3.0.4
      ./configure; make
      sudo make install-strip
 
@@ -105,4 +106,4 @@ Solaris
 
 Jorge.-
 (jcid@dillo.org)
-April, 2013
+April, 2014
