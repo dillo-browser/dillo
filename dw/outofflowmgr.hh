@@ -46,17 +46,8 @@ private:
       inline int getOldWidth () { return width; }
       inline int getOldHeight () { return height; }
 
-      inline bool isNowAllocated () { return widget->wasAllocated (); }
-      inline int getNewXCB () { return widget->getAllocation()->x -
-            oofm->containingBlockAllocation.x; }
-      inline int getNewYCB () { return widget->getAllocation()->y -
-            oofm->containingBlockAllocation.y; }
-      inline int getNewWidth () { return widget->getAllocation()->width; }
-      inline int getNewHeight () { return widget->getAllocation()->ascent +
-            widget->getAllocation()->descent; }
-      
+    
       void update (bool wasAllocated, int xCB, int yCB, int width, int height);
-      void updateAllocation ();
 
       inline core::Widget *getWidget () { return widget; }
    };
@@ -113,6 +104,16 @@ private:
 
       Float (OutOfFlowMgr *oofm, core::Widget *widget,
              Textblock *generatingBlock, int externalIndex);
+
+      inline bool isNowAllocated () { return getWidget()->wasAllocated (); }
+      inline int getNewXCB () { return getWidget()->getAllocation()->x -
+            getOutOfFlowMgr()->containingBlockAllocation.x; }
+      inline int getNewYCB () { return getWidget()->getAllocation()->y -
+            getOutOfFlowMgr()->containingBlockAllocation.y; }
+      inline int getNewWidth () { return getWidget()->getAllocation()->width; }
+      inline int getNewHeight () { return getWidget()->getAllocation()->ascent +
+            getWidget()->getAllocation()->descent; }
+      void updateAllocation ();
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);
 
@@ -188,11 +189,23 @@ private:
               TBInfo *parent, int parentExtIndex);
       ~TBInfo ();
 
+      inline bool isNowAllocated () {
+         return getOutOfFlowMgr()->wasAllocated (getTextblock ()); }
+      inline int getNewXCB () {
+         return getOutOfFlowMgr()->getAllocation (getTextblock ())->x -
+            getOutOfFlowMgr()->containingBlockAllocation.x; }
+      inline int getNewYCB () {
+         return getOutOfFlowMgr()->getAllocation (getTextblock ())->y -
+            getOutOfFlowMgr()->containingBlockAllocation.y; }
+      inline int getNewWidth () {
+         return getOutOfFlowMgr()->getAllocation (getTextblock ())->width; }
+      inline int getNewHeight () {
+         core::Allocation *allocation =
+            getOutOfFlowMgr()->getAllocation (getTextblock ());
+         return allocation->ascent + allocation->descent; }
+      void updateAllocation ();
+
       inline Textblock *getTextblock () { return (Textblock*)getWidget (); }
-      inline void updateAllocation () {
-         wasAllocated = getWidget()->wasAllocated ();
-         allocation = *(getWidget()->getAllocation ());
-      }
    };
 
    class AbsolutelyPositioned: public lout::object::Object

@@ -57,17 +57,6 @@ void OutOfFlowMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
    DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.height", height);
 }
 
-void OutOfFlowMgr::WidgetInfo::updateAllocation ()
-{
-   DBG_OBJ_MSG_O ("resize.oofm", 0, widget, "<b>updateAllocation</b> ()");
-   DBG_OBJ_MSG_START_O (widget);
-
-   update (isNowAllocated (), getNewXCB (), getNewYCB (), getNewWidth (),
-           getNewHeight ());
-
-   DBG_OBJ_MSG_END_O (widget);
-}
-
 // ----------------------------------------------------------------------
 
 OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
@@ -90,6 +79,17 @@ OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
       DBG_OBJ_SET_NUM_O (widget, "<Float>.size.ascent", size.ascent);
       DBG_OBJ_SET_NUM_O (widget, "<Float>.size.descent", size.descent);
    }
+}
+
+void OutOfFlowMgr::Float::updateAllocation ()
+{
+   DBG_OBJ_MSG_O ("resize.oofm", 0, getWidget (), "<b>updateAllocation</b> ()");
+   DBG_OBJ_MSG_START_O (getWidget ());
+
+   update (isNowAllocated (), getNewXCB (), getNewYCB (), getNewWidth (),
+           getNewHeight ());
+
+   DBG_OBJ_MSG_END_O (getWidget ());
 }
 
 void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
@@ -446,13 +446,25 @@ OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm, Textblock *textblock,
    leftFloatsGB = new SortedFloatsVector (oofm, LEFT, SortedFloatsVector::GB);
    rightFloatsGB = new SortedFloatsVector (oofm, RIGHT, SortedFloatsVector::GB);
 
-   updateAllocation ();
+   wasAllocated = getWidget()->wasAllocated ();
+   allocation = *(getWidget()->getAllocation ());
 }
 
 OutOfFlowMgr::TBInfo::~TBInfo ()
 {
    delete leftFloatsGB;
    delete rightFloatsGB;
+}
+
+void OutOfFlowMgr::TBInfo::updateAllocation ()
+{
+   DBG_OBJ_MSG_O ("resize.oofm", 0, getWidget (), "<b>updateAllocation</b> ()");
+   DBG_OBJ_MSG_START_O (getWidget ());
+
+   update (isNowAllocated (), getNewXCB (), getNewYCB (), getNewWidth (),
+           getNewHeight ());
+
+   DBG_OBJ_MSG_END_O (getWidget ());
 }
 
 OutOfFlowMgr::AbsolutelyPositioned::AbsolutelyPositioned (OutOfFlowMgr *oofm,
