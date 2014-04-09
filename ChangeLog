@@ -7,7 +7,7 @@ user. For a history of changes in full detail, see our Mercurial repository
 at http://hg.dillo.org/dillo
 
 
-dillo-3.0.4 [not released yet]
+dillo-3.0.4 [April 09, 2014]
 
 +- OPTGROUP and INS elements.
  - Some HTML5 elements, etc.
