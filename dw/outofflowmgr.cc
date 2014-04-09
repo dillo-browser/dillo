@@ -965,19 +965,6 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
 
    *floatsMark = 0;
 
-   /* Old code: GB lists do not have to be cleared, but their contents
-      are still useful after allocation. Soon to be deleted, not only
-      uncommented.
-      
-   for (lout::container::typed::Iterator<TBInfo> it = tbInfos->iterator ();
-        it.hasNext (); ) {
-      TBInfo *tbInfo = it.getNext ();
-      SortedFloatsVector *src =
-         side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
-      src->clear ();
-   }
-   */
-
    //printf ("[%p] new %s list:\n",
    //        containingBlock, side == LEFT ? "left" : "right");
    //for (int i = 0; i < dest->size(); i++)
