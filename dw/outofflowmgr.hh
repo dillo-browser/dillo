@@ -260,7 +260,7 @@ private:
    Float *findFloatByWidget (core::Widget *widget);
 
    void moveFromGBToCB (Side side);
-   void sizeAllocateFloats (Side side);
+   void sizeAllocateFloats (TBInfo *textblock, Side side);
    int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
                    int gbAvailWidth);
 

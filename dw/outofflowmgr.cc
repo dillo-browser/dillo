@@ -558,18 +558,16 @@ void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
    DBG_OBJ_MSGF ("resize.oofm", 0, "<b>sizeAllocateEnd</b> (%p)", caller);
    DBG_OBJ_MSG_START ();
 
+   // Floats (and later absolutely positioned blocks) have to be allocated.
+   TBInfo *tbInfo = getTextblock (caller);
+   sizeAllocateFloats (tbInfo, LEFT);
+   sizeAllocateFloats (tbInfo, RIGHT);
+
    if (caller == containingBlock) {
       // Move floats from GB lists to the one CB list.
       moveFromGBToCB (LEFT);
       moveFromGBToCB (RIGHT);
-      
-      // Floats and absolutely positioned blocks have to be allocated
-      sizeAllocateFloats (LEFT);
-      sizeAllocateFloats (RIGHT);
-      sizeAllocateAbsolutelyPositioned ();
-      
-      // Textblocks have already been allocated here.
-      
+     
       // Check changes of both textblocks and floats allocation. (All
       // is checked by hasRelationChanged (...).)
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
@@ -971,23 +969,23 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
    //   printf ("   %d: %s\n", i, dest->get(i)->toString());
 }
 
-void OutOfFlowMgr::sizeAllocateFloats (Side side)
+void OutOfFlowMgr::sizeAllocateFloats (TBInfo *textblock, Side side)
 {
-   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   SortedFloatsVector *list = side == LEFT ?
+      textblock->leftFloatsGB : textblock->rightFloatsGB;
+
+   Allocation *gba = &(textblock->allocation);
+   Allocation *cba = &containingBlockAllocation;
+   int availWidth = textblock->getTextblock()->getAvailWidth();
 
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
 
-      Allocation *gbAllocation = getAllocation(vloat->generatingBlock);
-      Allocation *cbAllocation = getAllocation(containingBlock);
-
       Allocation childAllocation;
-      childAllocation.x = cbAllocation->x +
-         calcFloatX (vloat, side, gbAllocation->x - cbAllocation->x,
-                     gbAllocation->width,
-                     vloat->generatingBlock->getAvailWidth());
-      childAllocation.y = gbAllocation->y + vloat->yReal;
+      childAllocation.x = cba->x +
+         calcFloatX (vloat, side, gba->x - cba->x, gba->width, availWidth);
+      childAllocation.y = gba->y + vloat->yReal;
       childAllocation.width = vloat->size.width;
       childAllocation.ascent = vloat->size.ascent;
       childAllocation.descent = vloat->size.descent;
