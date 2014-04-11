@@ -228,6 +228,10 @@ private:
    // allocated.
    SortedFloatsVector *leftFloatsCB, *rightFloatsCB;
 
+   // These two attributes are used in the size allocation process;
+   // see sizeAllocateStart and sizeAllocateEnd.
+   int lastAllocatedLeftFloat, lastAllocatedRightFloat;
+
    lout::container::typed::HashTable<lout::object::TypedPointer
                                      <dw::core::Widget>, Float> *floatsByWidget;
 
@@ -260,7 +264,7 @@ private:
    Float *findFloatByWidget (core::Widget *widget);
 
    void moveFromGBToCB (Side side);
-   void sizeAllocateFloats (TBInfo *textblock, Side side);
+   void sizeAllocateFloats (Side side, int newLastAllocatedFloat);
    int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
                    int gbAvailWidth);
 

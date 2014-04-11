@@ -546,12 +546,21 @@ void OutOfFlowMgr::sizeAllocateStart (Textblock *caller, Allocation *allocation)
    getTextblock(caller)->wasAllocated = true;
 
    if (caller == containingBlock) {
+      // In the size allocation process, the *first* OOFM method
+      // called is sizeAllocateStart, with the containing block as an
+      // argument. So this is the correct point to initialize size
+      // allocation.
+
       containingBlockAllocation = *allocation;
       containingBlockWasAllocated = true;
 
       // Move floats from GB lists to the one CB list.
       moveFromGBToCB (LEFT);
       moveFromGBToCB (RIGHT);
+
+      // These attributes are used to keep track which floats have
+      // been allocated (referring to leftFloatsCB and rightFloatsCB).
+      lastAllocatedLeftFloat = lastAllocatedRightFloat = -1;
    }
 
    DBG_OBJ_MSG_END ();
@@ -562,12 +571,24 @@ void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
    DBG_OBJ_MSGF ("resize.oofm", 0, "<b>sizeAllocateEnd</b> (%p)", caller);
    DBG_OBJ_MSG_START ();
 
-   // Floats (and later absolutely positioned blocks) have to be allocated.
-   TBInfo *tbInfo = getTextblock (caller);
-   sizeAllocateFloats (tbInfo, LEFT);
-   sizeAllocateFloats (tbInfo, RIGHT);
+   // (Later, absolutely positioned blocks have to be allocated.)
+
+   if (caller != containingBlock) {
+      // Allocate all floats "before" this textblock.
+      sizeAllocateFloats (LEFT, leftFloatsCB->findFloatIndex (caller, -1));
+      sizeAllocateFloats (RIGHT, rightFloatsCB->findFloatIndex (caller, -1));
+   }
 
    if (caller == containingBlock) {
+      // In the size allocation process, the *last* OOFM method called
+      // is sizeAllocateEnd, with the containing block as an
+      // argument. So this is the correct point to finish size
+      // allocation.
+
+      // Allocate all remaining floats.
+      sizeAllocateFloats (LEFT, leftFloatsCB->size () - 1);
+      sizeAllocateFloats (RIGHT, rightFloatsCB->size () - 1);
+
       // Check changes of both textblocks and floats allocation. (All
       // is checked by hasRelationChanged (...).)
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
@@ -969,18 +990,26 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
    //   printf ("   %d: %s\n", i, dest->get(i)->toString());
 }
 
-void OutOfFlowMgr::sizeAllocateFloats (TBInfo *textblock, Side side)
+void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
 {
-   SortedFloatsVector *list = side == LEFT ?
-      textblock->leftFloatsGB : textblock->rightFloatsGB;
+   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   int *lastAllocatedFloat =
+      side == LEFT ? &lastAllocatedLeftFloat : &lastAllocatedRightFloat;
 
-   Allocation *gba = &(textblock->allocation);
+   DBG_OBJ_MSGF ("resize.oofm", 0,
+                 "<b>sizeAllocateFloats</b> (%s, [%d ->] %d [size = %d])",
+                 side == LEFT ? "LEFT" : "RIGHT", *lastAllocatedFloat,
+                 newLastAllocatedFloat, list->size ());
+   DBG_OBJ_MSG_START ();
+
    Allocation *cba = &containingBlockAllocation;
-   int availWidth = textblock->getTextblock()->getAvailWidth();
 
-   for (int i = 0; i < list->size(); i++) {
+   for (int i = *lastAllocatedFloat + 1; i <= newLastAllocatedFloat; i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
+
+      Allocation *gba = getAllocation (vloat->generatingBlock);
+      int availWidth = vloat->generatingBlock->getAvailWidth();
 
       Allocation childAllocation;
       childAllocation.x = cba->x +
@@ -992,6 +1021,10 @@ void OutOfFlowMgr::sizeAllocateFloats (TBInfo *textblock, Side side)
 
       vloat->getWidget()->sizeAllocate (&childAllocation);
    }
+
+   *lastAllocatedFloat = newLastAllocatedFloat;
+
+   DBG_OBJ_MSG_END ();
 }
 
 
