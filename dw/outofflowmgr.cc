@@ -548,6 +548,10 @@ void OutOfFlowMgr::sizeAllocateStart (Textblock *caller, Allocation *allocation)
    if (caller == containingBlock) {
       containingBlockAllocation = *allocation;
       containingBlockWasAllocated = true;
+
+      // Move floats from GB lists to the one CB list.
+      moveFromGBToCB (LEFT);
+      moveFromGBToCB (RIGHT);
    }
 
    DBG_OBJ_MSG_END ();
@@ -563,11 +567,7 @@ void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
    sizeAllocateFloats (tbInfo, LEFT);
    sizeAllocateFloats (tbInfo, RIGHT);
 
-   if (caller == containingBlock) {
-      // Move floats from GB lists to the one CB list.
-      moveFromGBToCB (LEFT);
-      moveFromGBToCB (RIGHT);
-     
+   if (caller == containingBlock) {    
       // Check changes of both textblocks and floats allocation. (All
       // is checked by hasRelationChanged (...).)
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
