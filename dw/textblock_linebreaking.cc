@@ -1,7 +1,7 @@
 /*
  * Dillo Widget
  *
- * Copyright 2005-2007, 2012-2013 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2005-2007, 2012-2014 Sebastian Geerken <sgeerken@dillo.org>
  *
  * (Parts of this file were originally part of textblock.cc.)
  *
