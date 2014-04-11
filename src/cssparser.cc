@@ -732,7 +732,9 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
               dStrAsciiCasecmp(tval, "top") == 0 ||
               dStrAsciiCasecmp(tval, "bottom") == 0))
             return true;
-         // Fall Through (lenght and percentage)
+         if (ttype == CSS_TK_DECINT || ttype == CSS_TK_FLOAT)
+            return true;
+         break;
       case CSS_TYPE_LENGTH_PERCENTAGE:
       case CSS_TYPE_LENGTH_PERCENTAGE_NUMBER:
       case CSS_TYPE_LENGTH:
@@ -778,7 +780,8 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
 
       case CSS_TYPE_URI:
          if (ttype == CSS_TK_SYMBOL &&
-             dStrAsciiCasecmp(tval, "url") == 0)
+             (dStrAsciiCasecmp(tval, "url") == 0 ||
+              dStrAsciiCasecmp(tval, "none") == 0))
             return true;
          break;
 
@@ -1056,12 +1059,16 @@ bool CssParser::parseValue(CssPropertyName prop,
       break;
 
    case CSS_TYPE_URI:
-      if (ttype == CSS_TK_SYMBOL &&
-          dStrAsciiCasecmp(tval, "url") == 0) {
-         val->strVal = parseUrl();
-         nextToken();
-         if (val->strVal)
+      if (ttype == CSS_TK_SYMBOL) {
+         if (dStrAsciiCasecmp(tval, "url") == 0) {
+            val->strVal = parseUrl();
+            if (val->strVal)
+               ret = true;
+         } else if (dStrAsciiCasecmp(tval, "none") == 0) {
+            val->strVal = NULL;
             ret = true;
+         }
+         nextToken();
       }
       break;
 
@@ -1116,6 +1123,9 @@ bool CssParser::parseValue(CssPropertyName prop,
                // We can assume <length> or <percentage> here ...
                CssPropertyValue valTmp;
                if (parseValue(prop, CSS_TYPE_LENGTH_PERCENTAGE, &valTmp)) {
+                  pos[i] = valTmp.intVal;
+                  ret = true;
+               } else if (parseValue(prop, CSS_TYPE_SIGNED_LENGTH, &valTmp)) {
                   pos[i] = valTmp.intVal;
                   ret = true;
                } else
