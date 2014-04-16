@@ -68,7 +68,7 @@ OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
 
    yReq = yReal = size.width = size.ascent = size.descent = 0;
    dirty = sizeChangedSinceLastAllocation = true;
-   inCBList = false;
+   indexGBList = indexCBList = -1;
 
    // Sometimes a float with widget = NULL is created as a key; this
    // is not interesting for RTFL.
@@ -103,8 +103,10 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
       sb->append (")");
    }
 
-   sb->append (", index = ");
-   sb->appendInt (index);
+   sb->append (", indexGBList = ");
+   sb->appendInt (indexGBList);
+   sb->append (", indexCBList = ");
+   sb->appendInt (indexCBList);
    sb->append (", sideSpanningIndex = ");
    sb->appendInt (sideSpanningIndex);
    sb->append (", generatingBlock = ");
@@ -123,8 +125,6 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->appendBool (dirty);
    sb->append (", sizeChangedSinceLastAllocation = ");
    sb->appendBool (sizeChangedSinceLastAllocation);
-   sb->append (", inCBList = ");
-   sb->appendBool (inCBList);
    sb->append (" }");
 }
 
@@ -311,7 +311,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    DBG_OBJ_MSG_START_O (oofm);
 
    Float key (oofm, NULL, lastGB, lastExtIndex);
-   key.index = -1; // for debugging
+   key.setIndex (type, -1); // for debugging
    Float::CompareGBAndExtIndex comparator (oofm);
    int i = bsearch (&key, false, &comparator);
 
@@ -357,7 +357,7 @@ int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
    Float key (oofm, NULL, NULL, 0);
    key.generatingBlock = textblock;
    key.yReal = y;
-   key.index = -1; // for debugging
+   key.setIndex (type, -1); // for debugging
    Float::ComparePosition comparator (oofm, textblock);
    int result = bsearch (&key, false, start, end, &comparator);
 
@@ -432,8 +432,7 @@ int OutOfFlowMgr::SortedFloatsVector::findLastBeforeSideSpanningIndex
 void OutOfFlowMgr::SortedFloatsVector::put (Float *vloat)
 {
    lout::container::typed::Vector<Float>::put (vloat);
-   vloat->index = size() - 1;
-   vloat->inCBList = type == CB;
+   vloat->setIndex (type, size() - 1);
 }
 
 OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm, Textblock *textblock,
@@ -443,8 +442,8 @@ OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm, Textblock *textblock,
    this->parent = parent;
    this->parentExtIndex = parentExtIndex;
 
-   leftFloatsGB = new SortedFloatsVector (oofm, LEFT, SortedFloatsVector::GB);
-   rightFloatsGB = new SortedFloatsVector (oofm, RIGHT, SortedFloatsVector::GB);
+   leftFloatsGB = new SortedFloatsVector (oofm, LEFT, GB);
+   rightFloatsGB = new SortedFloatsVector (oofm, RIGHT, GB);
 
    wasAllocated = getWidget()->wasAllocated ();
    allocation = *(getWidget()->getAllocation ());
@@ -483,8 +482,8 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 
    this->containingBlock = containingBlock;
 
-   leftFloatsCB = new SortedFloatsVector (this, LEFT, SortedFloatsVector::CB);
-   rightFloatsCB = new SortedFloatsVector (this, RIGHT, SortedFloatsVector::CB);
+   leftFloatsCB = new SortedFloatsVector (this, LEFT, CB);
+   rightFloatsCB = new SortedFloatsVector (this, RIGHT, CB);
 
    leftFloatsAll = new Vector<Float> (1, true);
    rightFloatsAll = new Vector<Float> (1, true);
@@ -972,7 +971,8 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
             side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
          for (int i = 0; i < src->size (); i++) {
             Float *vloat = src->get (i);
-            if (!vloat->inCBList && vloat->mark == mark) {
+            // "vloat->indexCBList == -1": prevent copying the vloat twice.
+            if (vloat->indexCBList == -1 && vloat->mark == mark) {
                dest->put (vloat);
                //printf("[%p] moving %s float %p (%s %p, mark %d) to CB list\n",
                //       containingBlock, side == LEFT ? "left" : "right",
@@ -1361,9 +1361,8 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
 
    // Test collisions (on this side). Only previous float is relevant.
-   int yRealNew;
-   if (vloat->index >= 1 &&
-       collidesV (vloat, listSame->get (vloat->index - 1), &yRealNew)) {
+   int index = vloat->getIndex (listSame->type), yRealNew;
+   if (index >= 1 && collidesV (vloat, listSame->get (index - 1), &yRealNew)) {
       vloat->yReal = yRealNew;
       DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
    }

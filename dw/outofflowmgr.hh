@@ -16,6 +16,7 @@ class OutOfFlowMgr
 
 private:
    enum Side { LEFT, RIGHT };
+   enum SFVType { GB, CB };
 
    Textblock *containingBlock;
 
@@ -86,21 +87,17 @@ private:
       Textblock *generatingBlock;
       int externalIndex;
       int yReq, yReal; // relative to generator, not container
-      int index;       /* When GB is not yet allocated: position
-                          within TBInfo::leftFloatsGB or
-                          TBInfo::rightFloatsGB, respectively. When GB
-                          is allocated: position within leftFloatsCB
-                          or rightFloatsCB, respectively, even when
-                          the floats are still elements of
-                          TBInfo::*FloatsGB. */
+      int indexGBList; /* Refers to TBInfo::leftFloatsGB or
+                          TBInfo::rightFloatsGB, respectively. -1
+                          initially. */
+      int indexCBList; /* Refers to leftFloatsCB or rightFloatsCB,
+                          respectively. -1 initially. */
       int sideSpanningIndex, mark;
       core::Requisition size;
       int cbAvailWidth; /* On which the calculation of relative sizes
                            is based. Height not yet used, and probably
                            not added before size redesign. */
       bool dirty, sizeChangedSinceLastAllocation;
-      bool inCBList; /* Neccessary to prevent floats from being moved
-                        twice from GB to CB list.  */
 
       Float (OutOfFlowMgr *oofm, core::Widget *widget,
              Textblock *generatingBlock, int externalIndex);
@@ -114,6 +111,12 @@ private:
       inline int getNewHeight () { return getWidget()->getAllocation()->ascent +
             getWidget()->getAllocation()->descent; }
       void updateAllocation ();
+
+      inline int *getIndexRef (SFVType type) {
+         return type == GB ? &indexGBList : &indexCBList; }
+      inline int getIndex (SFVType type) { return *(getIndexRef (type)); }
+      inline void setIndex (SFVType type, int value) {
+         *(getIndexRef (type)) = value; }
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);
 
@@ -135,14 +138,14 @@ private:
    class SortedFloatsVector: private lout::container::typed::Vector<Float>
    {
    public:
-      enum Type { GB, CB } type;
+      SFVType type;
 
    private:
       OutOfFlowMgr *oofm;
       Side side;
           
    public:
-      inline SortedFloatsVector (OutOfFlowMgr *oofm, Side side, Type type) :
+      inline SortedFloatsVector (OutOfFlowMgr *oofm, Side side, SFVType type) :
          lout::container::typed::Vector<Float> (1, false)
       { this->oofm = oofm; this->side = side; this->type = type; }
 
