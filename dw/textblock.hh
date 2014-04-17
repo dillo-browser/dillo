@@ -839,25 +839,29 @@ public:
 
 #define DBG_MSG_WORD(aspect, prio, prefix, n, suffix) \
    D_STMT_START { \
-      switch (words->getRef(n)->content.type) { \
-      case ::dw::core::Content::TEXT: \
-         DBG_OBJ_MSGF (aspect, prio, prefix "TEXT / \"%s\"" suffix, \
-                       words->getRef(n)->content.text); \
-         break; \
-      case ::dw::core::Content::WIDGET_IN_FLOW: \
-         DBG_OBJ_MSGF (aspect, prio, prefix "WIDGET_IN_FLOW / %p" suffix, \
-                       words->getRef(n)->content.widget); \
-         break; \
-      case ::dw::core::Content::WIDGET_OOF_REF: \
-         DBG_OBJ_MSGF (aspect, prio, prefix "WIDGET_OOF_REF / %p" suffix, \
-                       words->getRef(n)->content.widget); \
-         break; \
-      case ::dw::core::Content::BREAK: \
-         DBG_OBJ_MSGF (aspect, prio, prefix "BREAK / %d" suffix, \
-                       words->getRef(n)->content.breakSpace); \
-         break; \
-      default: \
-         DBG_OBJ_MSG (aspect, prio, prefix "??? / ???"); \
+      if ((n) < 0 || (n) >= words->size ()) \
+         DBG_OBJ_MSG (aspect, prio, prefix "undefined (wrong index)" suffix); \
+      else { \
+         switch (words->getRef(n)->content.type) { \
+         case ::dw::core::Content::TEXT: \
+            DBG_OBJ_MSGF (aspect, prio, prefix "TEXT / \"%s\"" suffix, \
+                          words->getRef(n)->content.text); \
+            break; \
+         case ::dw::core::Content::WIDGET_IN_FLOW: \
+            DBG_OBJ_MSGF (aspect, prio, prefix "WIDGET_IN_FLOW / %p" suffix, \
+                          words->getRef(n)->content.widget); \
+            break; \
+         case ::dw::core::Content::WIDGET_OOF_REF: \
+            DBG_OBJ_MSGF (aspect, prio, prefix "WIDGET_OOF_REF / %p" suffix, \
+                          words->getRef(n)->content.widget); \
+            break; \
+         case ::dw::core::Content::BREAK: \
+            DBG_OBJ_MSGF (aspect, prio, prefix "BREAK / %d" suffix, \
+                          words->getRef(n)->content.breakSpace); \
+            break; \
+         default: \
+            DBG_OBJ_MSG (aspect, prio, prefix "??? / ???" suffix); \
+         } \
       } \
    } D_STMT_END
 

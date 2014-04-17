@@ -61,10 +61,11 @@ private:
       private:
          OutOfFlowMgr *oofm;
          Textblock *refTB;
+         SFVType type; // actually only used for debugging
 
       public:
-         ComparePosition (OutOfFlowMgr *oofm, Textblock *refTB)
-         { this->oofm = oofm; this->refTB = refTB; }
+         ComparePosition (OutOfFlowMgr *oofm, Textblock *refTB, SFVType type)
+         { this->oofm = oofm; this->refTB = refTB; this->type = type; }
          int compare(Object *o1, Object *o2);
       };
 
@@ -78,9 +79,11 @@ private:
       {
       private:
          OutOfFlowMgr *oofm;
+         SFVType type; // actually only used for debugging
 
       public:
-         CompareGBAndExtIndex (OutOfFlowMgr *oofm) { this->oofm = oofm; }
+         CompareGBAndExtIndex (OutOfFlowMgr *oofm, SFVType type)
+         { this->oofm = oofm; this->type = type; }
          int compare(Object *o1, Object *o2);
       };
 
@@ -293,8 +296,8 @@ private:
                                         int level);
    core::Widget *getAbsolutelyPositionedWidgetAtPoint (int x, int y, int level);
 
-   bool collidesV (Float *vloat, Float *other, int *yReal);
-   bool collidesH (Float *vloat, Float *other, int *yReal);
+   bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal);
+   bool collidesH (Float *vloat, Float *other, SFVType type, int *yReal);
    
    void getFloatsListsAndSide (Float *vloat, SortedFloatsVector **listSame,
                                SortedFloatsVector **listOpp, Side *side);

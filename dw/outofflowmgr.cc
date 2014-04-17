@@ -186,7 +186,7 @@ int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
 
    DBG_OBJ_MSGF_O ("border", 1, oofm,
                    "<b>ComparePosition::compare</b> (#%d, #%d) [refTB = %p]",
-                   fl1->index, fl2->index, refTB);
+                   fl1->getIndex (type), fl2->getIndex (type), refTB);
    DBG_OBJ_MSG_START_O (oofm);
 
    if (refTB == fl1->generatingBlock && refTB == fl2->generatingBlock) {
@@ -253,8 +253,8 @@ int OutOfFlowMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
    DBG_OBJ_MSGF_O ("border", 1, oofm,
                    "<b>CompareGBAndExtIndex::compare</b> (#%d -> %p/%d, "
                    "#%d -> %p/#%d)",
-                   f1->index, f1->generatingBlock, f1->externalIndex,
-                   f2->index, f2->generatingBlock, f2->externalIndex);
+                   f1->getIndex (type), f1->generatingBlock, f1->externalIndex,
+                   f2->getIndex (type), f2->generatingBlock, f2->externalIndex);
    DBG_OBJ_MSG_START_O (oofm);
 
    if (f1->generatingBlock == f2->generatingBlock) {
@@ -312,7 +312,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
 
    Float key (oofm, NULL, lastGB, lastExtIndex);
    key.setIndex (type, -1); // for debugging
-   Float::CompareGBAndExtIndex comparator (oofm);
+   Float::CompareGBAndExtIndex comparator (oofm, type);
    int i = bsearch (&key, false, &comparator);
 
    // At position i is the next larger element, so element i should
@@ -358,7 +358,7 @@ int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
    key.generatingBlock = textblock;
    key.yReal = y;
    key.setIndex (type, -1); // for debugging
-   Float::ComparePosition comparator (oofm, textblock);
+   Float::ComparePosition comparator (oofm, textblock, type);
    int result = bsearch (&key, false, start, end, &comparator);
 
    DBG_OBJ_MSGF_O ("border", 1, oofm, "=> result = %d", result);
@@ -384,9 +384,10 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
          DBG_OBJ_MSGF_O ("border", 2, oofm,
                          "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d)), "
                          "%s, %s, ext = %d, GB = %p); widget at (%d, %d)",
-                         i, f->getWidget (), f->index, f->sideSpanningIndex,
-                         f->yReq, f->yReal, f->size.width, f->size.ascent,
-                         f->size.descent, f->dirty ? "dirty" : "clean",
+                         i, f->getWidget (), f->getIndex (type),
+                         f->sideSpanningIndex, f->yReq, f->yReal,
+                         f->size.width, f->size.ascent, f->size.descent,
+                         f->dirty ? "dirty" : "clean",
                          f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
                          f->externalIndex, f->generatingBlock,
                          f->getWidget()->getAllocation()->x,
@@ -1362,7 +1363,9 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
 
    // Test collisions (on this side). Only previous float is relevant.
    int index = vloat->getIndex (listSame->type), yRealNew;
-   if (index >= 1 && collidesV (vloat, listSame->get (index - 1), &yRealNew)) {
+   if (index >= 1 &&
+       collidesV (vloat, listSame->get (index - 1), listSame->type,
+                  &yRealNew)) {
       vloat->yReal = yRealNew;
       DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
    }
@@ -1372,7 +1375,8 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    int lastOppFloat =
       listOpp->findLastBeforeSideSpanningIndex (vloat->sideSpanningIndex);
    if (lastOppFloat >= 0 &&
-       collidesH (vloat, listOpp->get (lastOppFloat), &yRealNew)) {
+       collidesH (vloat, listOpp->get (lastOppFloat), listSame->type,
+                  &yRealNew)) {
       vloat->yReal = yRealNew;
       DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
    }
@@ -1383,7 +1387,8 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    DBG_OBJ_MSG_END ();
 }
 
-bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, int *yReal)
+bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, SFVType type,
+                              int *yReal)
 {
    // Only checks vertical (possible) collisions, and only refers to
    // vloat->yReal; never to vloat->allocation->y, even when the GBs are
@@ -1391,8 +1396,8 @@ bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, int *yReal)
 
    DBG_OBJ_MSGF ("resize.oofm", 0,
                  "<b>collides</b> (#%d [%p], #%d [%p], ...)",
-                 vloat->index, vloat->getWidget (), other->index,
-                 other->getWidget ());
+                 vloat->getIndex (type), vloat->getWidget (),
+                 other->getIndex (type), other->getWidget ());
    DBG_OBJ_MSG_START ();
 
    bool result;
@@ -1452,11 +1457,12 @@ bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, int *yReal)
 }
 
 
-bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, int *yReal)
+bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, SFVType type,
+                              int *yReal)
 {
    bool collidesH;
 
-   if (!collidesV (vloat, other, yReal))
+   if (!collidesV (vloat, other, type, yReal))
       collidesH = false;
    else {
       if (vloat->generatingBlock == other->generatingBlock)

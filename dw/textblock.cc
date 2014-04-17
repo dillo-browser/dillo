@@ -1421,6 +1421,11 @@ void Textblock::drawSpace(int wordIndex, core::View *view,
  */
 void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
 {
+   DBG_OBJ_MSGF ("draw", 0, "<b>drawLine</b> (..., %d, %d, %d * %d)",
+                 area->x, area->y, area->width, area->height);
+   DBG_OBJ_MSG_START ();
+   DBG_MSG_WORD ("draw", 0, "<i>line starts with: </i>", line->firstWord, "");
+   
    int xWidget = line->offsetCompleteWidget;
    int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
 
@@ -1476,6 +1481,8 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
       }
       xWidget += wordSize + word->effSpace;
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -1635,8 +1642,9 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
 
 void Textblock::draw (core::View *view, core::Rectangle *area)
 {
-   PRINTF ("DRAW: %d, %d, %d x %d\n",
-           area->x, area->y, area->width, area->height);
+   DBG_OBJ_MSGF ("draw", 0, "<b>draw</b> (%d, %d, %d * %d)",
+                 area->x, area->y, area->width, area->height);
+   DBG_OBJ_MSG_START ();
 
    int lineIndex;
    Line *line;
@@ -1663,6 +1671,8 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
    
    if(outOfFlowMgr)
       outOfFlowMgr->draw(view, area);
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
