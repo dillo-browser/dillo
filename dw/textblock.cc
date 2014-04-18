@@ -1424,10 +1424,14 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
    DBG_OBJ_MSGF ("draw", 0, "<b>drawLine</b> (..., %d, %d, %d * %d)",
                  area->x, area->y, area->width, area->height);
    DBG_OBJ_MSG_START ();
-   DBG_MSG_WORD ("draw", 0, "<i>line starts with: </i>", line->firstWord, "");
    
    int xWidget = line->offsetCompleteWidget;
    int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
+
+   DBG_OBJ_MSGF ("draw", 1, "line from %d to %d (%d words), at (%d, %d)",
+                 line->firstWord, line->lastWord, words->size (),
+                 xWidget, yWidgetBase);
+   DBG_MSG_WORD ("draw", 0, "<i>line starts with: </i>", line->firstWord, "");
 
    for (int wordIndex = line->firstWord;
         wordIndex <= line->lastWord && xWidget < area->x + area->width;
@@ -1666,6 +1670,7 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
       if (lineYOffsetWidget (line) >= area->y + area->height)
          break;
 
+      DBG_OBJ_MSGF ("draw", 0, "line %d (of %d)", lineIndex, lines->size ());
       drawLine (line, view, area);
    }
    
