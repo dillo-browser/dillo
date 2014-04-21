@@ -1706,6 +1706,9 @@ void Textblock::rewrap ()
       
       DBG_OBJ_MSGF ("construct.line", 0, "starting with word %d", firstWord);
 
+      lastWordDrawn = misc::min (lastWordDrawn, firstWord - 1);
+      DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
+
       for (int i = firstWord; i < words->size (); i++) {
          Word *word = words->getRef (i);
          
