@@ -34,7 +34,7 @@ protected:
       /**
        * \todo Comment this.
        */
-      EXTREMES_QUEUED    = 1 << 1,
+      EXTREMES_QUEUED  = 1 << 1,
 
       /**
        * \brief Set, when dw::core::Widget::requisition is not up to date
@@ -191,8 +191,84 @@ protected:
 
    Layout *layout;
 
-   inline void setFlags (Flags f)   { flags = (Flags)(flags | f); }
-   inline void unsetFlags (Flags f) { flags = (Flags)(flags & ~f); }
+   /*inline void printFlags () {
+      DBG_IF_RTFL {
+         char buf[10 * 3 - 1 + 1];
+         snprintf (buf, sizeof (buf), "%s:%s:%s:%s:%s:%s:%s:%s:%s:%s",
+                   (flags & RESIZE_QUEUED)    ? "Rq" : "--",
+                   (flags & EXTREMES_QUEUED)  ? "Eq" : "--",
+                   (flags & NEEDS_RESIZE)     ? "nR" : "--",
+                   (flags & NEEDS_ALLOCATE)   ? "nA" : "--",
+                   (flags & ALLOCATE_QUEUED)  ? "Aq" : "--",
+                   (flags & EXTREMES_CHANGED) ? "Ec" : "--",
+                   (flags & USES_HINTS)       ? "uh" : "--",
+                   (flags & HAS_CONTENTS)     ? "hc" : "--",
+                   (flags & WAS_ALLOCATED)    ? "wA" : "--",
+                   (flags & BLOCK_LEVEL)      ? "bl" : "--");
+         DBG_OBJ_SET_SYM ("flags", buf);
+      }
+   }*/
+
+   inline void printFlag (Flags f) {
+      DBG_IF_RTFL {
+         switch (f) {
+         case RESIZE_QUEUED:
+               DBG_OBJ_SET_SYM ("flags.RESIZE_QUEUED",
+                                (flags & RESIZE_QUEUED) ? "true" : "false");
+               break;
+               
+         case EXTREMES_QUEUED:
+            DBG_OBJ_SET_SYM ("flags.EXTREMES_QUEUED",
+                             (flags & EXTREMES_QUEUED) ? "true" : "false");
+            break;
+            
+         case NEEDS_RESIZE:
+            DBG_OBJ_SET_SYM ("flags.NEEDS_RESIZE",
+                             (flags & NEEDS_RESIZE) ? "true" : "false");
+            break;
+            
+         case NEEDS_ALLOCATE:
+            DBG_OBJ_SET_SYM ("flags.NEEDS_ALLOCATE",
+                             (flags & NEEDS_ALLOCATE) ? "true" : "false");
+            break;
+            
+         case ALLOCATE_QUEUED:
+            DBG_OBJ_SET_SYM ("flags.ALLOCATE_QUEUED",
+                             (flags & ALLOCATE_QUEUED) ? "true" : "false");
+            break;
+            
+         case EXTREMES_CHANGED:
+            DBG_OBJ_SET_SYM ("flags.EXTREMES_CHANGED",
+                             (flags & EXTREMES_CHANGED) ? "true" : "false");
+            break;
+            
+         case USES_HINTS:
+            DBG_OBJ_SET_SYM ("flags.USES_HINTS",
+                             (flags & USES_HINTS) ? "true" : "false");
+            break;
+            
+         case HAS_CONTENTS:
+            DBG_OBJ_SET_SYM ("flags.HAS_CONTENTS",
+                             (flags & HAS_CONTENTS) ? "true" : "false");
+            break;
+            
+         case WAS_ALLOCATED:
+            DBG_OBJ_SET_SYM ("flags.WAS_ALLOCATED",
+                             (flags & WAS_ALLOCATED) ? "true" : "false");
+            break;
+            
+         case BLOCK_LEVEL:
+            DBG_OBJ_SET_SYM ("flags.BLOCK_LEVEL",
+                             (flags & BLOCK_LEVEL) ? "true" : "false");
+            break;
+         }
+      }
+   }
+
+   inline void setFlags (Flags f)
+   { flags = (Flags)(flags | f); printFlag (f); }
+   inline void unsetFlags (Flags f)
+   { flags = (Flags)(flags & ~f); printFlag (f); }
 
 
    inline void queueDraw ()

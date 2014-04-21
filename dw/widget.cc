@@ -370,6 +370,12 @@ void Widget::sizeAllocate (Allocation *allocation)
                  allocation->ascent, allocation->descent);
    DBG_OBJ_MSG_START ();
 
+   DBG_OBJ_MSGF ("resize", 1,
+                 "old allocation (%d, %d; %d * (%d + %d)); needsAllocate: %s",
+                 this->allocation.x, this->allocation.y, this->allocation.width,
+                 this->allocation.ascent, this->allocation.descent,
+                 needsAllocate () ? "true" : "false");
+
    enterSizeAllocate ();
 
    /*printf ("The %stop-level %s %p is allocated:\n",

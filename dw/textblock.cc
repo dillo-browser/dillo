@@ -236,7 +236,9 @@ Textblock::Textblock (bool limitTextWidth)
    ignoreLine1OffsetSometimes = false;
    mustQueueResize = false;
    redrawY = 0;
+   DBG_OBJ_SET_NUM ("redrawY", redrawY);
    lastWordDrawn = -1;
+   DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
 
    /*
     * The initial sizes of lines and words should not be
@@ -504,6 +506,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
    if (allocation->width != this->allocation.width) {
       redrawY = 0;
+      DBG_OBJ_SET_NUM ("redrawY", redrawY);
    }
 
    for (lineIndex = 0; lineIndex < lines->size (); lineIndex++) {
@@ -516,6 +519,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
          if (wordIndex == lastWordDrawn + 1) {
             redrawY = misc::min (redrawY, lineYOffsetWidget (line));
+            DBG_OBJ_SET_NUM ("redrawY", redrawY);
          }
 
          if (word->content.type == core::Content::WIDGET_IN_FLOW) {
@@ -548,9 +552,11 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                 * so we need to redraw from this line onwards.
                 */
                redrawY = misc::min (redrawY, lineYOffsetWidget (line));
+               DBG_OBJ_SET_NUM ("redrawY", redrawY);
                if (word->content.widget->wasAllocated ()) {
                   redrawY = misc::min (redrawY,
                      oldChildAllocation->y - this->allocation.y);
+                  DBG_OBJ_SET_NUM ("redrawY", redrawY);
                }
 
             } else if (childAllocation.ascent + childAllocation.descent !=
@@ -580,8 +586,10 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                         oldChildAllocation->descent);
 
                   redrawY = misc::min (redrawY, childChangedY);
+                  DBG_OBJ_SET_NUM ("redrawY", redrawY);
                } else {
                   redrawY = misc::min (redrawY, lineYOffsetWidget (line));
+                  DBG_OBJ_SET_NUM ("redrawY", redrawY);
                }
             }
             word->content.widget->sizeAllocate (&childAllocation);
@@ -613,6 +621,9 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
 void Textblock::resizeDrawImpl ()
 {
+   DBG_OBJ_MSG ("draw", 0, "<b>resizeDrawImpl</b> ()");
+   DBG_OBJ_MSG_START ();
+
    queueDrawArea (0, redrawY, allocation.width, getHeight () - redrawY);
    if (lines->size () > 0) {
       Line *lastLine = lines->getRef (lines->size () - 1);
@@ -620,9 +631,13 @@ void Textblock::resizeDrawImpl ()
        * draw any new added words (see sizeAllocateImpl()).
        */
       lastWordDrawn = lastLine->lastWord;
+      DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
    }
 
    redrawY = getHeight ();
+   DBG_OBJ_SET_NUM ("redrawY", redrawY);
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Textblock::markSizeChange (int ref)
@@ -758,6 +773,7 @@ void Textblock::setWidth (int width)
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
       redrawY = 0;
+      DBG_OBJ_SET_NUM ("redrawY", redrawY);
 
       DBG_OBJ_MSG_END ();
    }
@@ -2879,6 +2895,12 @@ void Textblock::borderChanged (int y, Widget *vloat)
       else
          lastWordDrawn = misc::min (lastWordDrawn,
                                     lines->getRef(wrapLineIndex - 1)->lastWord);
+      DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
+
+      // TODO Is the following necessary? Or even useless?
+      //redrawY =
+      // misc::min (redrawY, lineYOffsetWidget (lines->getRef (wrapLineIndex)));
+      //DBG_OBJ_SET_NUM ("redrawY", redrawY);
    }
 
    DBG_OBJ_MSG_END ();
