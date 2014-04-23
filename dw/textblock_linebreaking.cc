@@ -842,6 +842,8 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
                                           bool regardBorder, int *height,
                                           int *breakPos)
 {
+   // TODO lastFloatPos must be adjusted when words are hyphenated.
+
    DBG_OBJ_MSGF ("construct.word", 0,
                  "<b>balanceBreakPosAndHeight</b> (%d, %d. %d, %s, %d, %s, "
                  "..., %s, ..., %d, %s, %d, ...)",
@@ -943,6 +945,7 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                  thereWillBeMoreSpace ? "true" : "false",
                  wrapAll ? "true" : "false");
    DBG_OBJ_MSG_START ();
+   DBG_MSG_WORD ("construct.word", 0, "<i>first word:</i> ", firstIndex, "");
 
    int result;
    bool lineAdded;
@@ -959,10 +962,26 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
          lineAdded = true;
       } else if (thereWillBeMoreSpace &&
                  words->getRef(firstIndex)->badnessAndPenalty.lineTooTight ()) {
-         // TODO Consider hyphenation.
-         DBG_OBJ_MSG ("construct.word", 1, "too tight => empty line");
-         result = firstIndex - 1;
-         lineAdded = true;
+         int hyphenatedWord = considerHyphenation (firstIndex, firstIndex);
+         DBG_OBJ_MSGF ("construct.word", 1, "too tight ... hyphenatedWord = %d",
+                       hyphenatedWord);
+
+         if (hyphenatedWord == -1) {
+            DBG_OBJ_MSG ("construct.word", 1, "... => empty line");
+            result = firstIndex - 1;
+            lineAdded = true;
+         } else {
+            DBG_OBJ_MSG ("construct.word", 1,
+                         "... => hyphenate word and try again");
+            int n = hyphenateWord (hyphenatedWord);
+            *searchUntil += n;
+            if (hyphenatedWord <= wordIndex)
+               *wordIndexEnd += n;
+            DBG_OBJ_MSGF ("construct.word", 1, "new searchUntil = %d",
+                          *searchUntil);
+
+            lineAdded = false;
+         }
       } else {
          DBG_OBJ_MSG ("construct.word", 1, "non-empty line");
          
@@ -999,7 +1018,6 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
             DBG_OBJ_MSGF ("construct.word", 1, "new searchUntil = %d",
                           *searchUntil);
             lineAdded = false;
-            result = 1000000000; // compiler happiness
                        
             if (n > 0 && hyphenatedWord <= wordIndex)
                *wordListChanged = true;
@@ -1382,18 +1400,32 @@ int Textblock::hyphenateWord (int wordIndex)
 
 void Textblock::moveWordIndices (int wordIndex, int num)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>moveWordIndices</b> (%d, %d)",
+                 wordIndex, num);
+   DBG_OBJ_MSG_START ();
+
    if (containingBlock->outOfFlowMgr)
       containingBlock->outOfFlowMgr->moveExternalIndices (this, wordIndex, num);
 
    for (int i = lines->size () - 1; i >= 0; i--) {
       Line *line = lines->getRef (i);
-      if (line->lastOofRefPositionedBeforeThisLine < wordIndex)
+      if (line->lastOofRefPositionedBeforeThisLine < wordIndex) {
          // Since lastOofRefPositionedBeforeThisLine are ascending,
          // the search can be stopped here.
+         DBG_OBJ_MSGF ("construct.word", 1,
+                       "lines[%d]->lastOofRef = %d < %d => stop",
+                       i, line->lastOofRefPositionedBeforeThisLine, wordIndex);
          break;
-      else
+      } else {
+         DBG_OBJ_MSGF ("construct.word", 1,
+                       "adding %d to lines[%d]->lastOofRef...: %d -> %d",
+                       num, i, line->lastOofRefPositionedBeforeThisLine,
+                       line->lastOofRefPositionedBeforeThisLine + num);
          line->lastOofRefPositionedBeforeThisLine += num;
+      }
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
@@ -1461,7 +1493,7 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
 
 void Textblock::accumulateWordData (int wordIndex)
 {
-   DBG_OBJ_MSGF ("construct.word", 1, "<b>accumulateWordData</b> (%d)",
+   DBG_OBJ_MSGF ("construct.word.accum", 1, "<b>accumulateWordData</b> (%d)",
                  wordIndex);
    DBG_OBJ_MSG_START ();
 
@@ -1479,11 +1511,11 @@ void Textblock::accumulateWordData (int wordIndex)
       firstWordOfLine = lines->getRef(lineIndex - 1)->lastWord + 1;
 
    Word *word = words->getRef (wordIndex);
-   DBG_OBJ_MSGF ("construct.word", 2, "lineIndex = %d", lineIndex);
+   DBG_OBJ_MSGF ("construct.word.accum", 2, "lineIndex = %d", lineIndex);
 
    int availWidth = calcAvailWidth (lineIndex);
 
-   DBG_OBJ_MSGF ("construct.word", 2,
+   DBG_OBJ_MSGF ("construct.word.accum", 2,
                  "(%s existing line %d starts with word %d; availWidth = %d)",
                  lineIndex < lines->size () ? "already" : "not yet",
                  lineIndex, firstWordOfLine, availWidth);
@@ -1496,7 +1528,7 @@ void Textblock::accumulateWordData (int wordIndex)
       word->totalSpaceStretchability = 0;
       word->totalSpaceShrinkability = 0;
 
-      DBG_OBJ_MSGF ("construct.word", 1,
+      DBG_OBJ_MSGF ("construct.word.accum", 1,
                     "first word of line: words[%d].totalWidth = %d + %d = %d",
                     wordIndex, word->size.width, word->hyphenWidth,
                     word->totalWidth);
@@ -1513,7 +1545,7 @@ void Textblock::accumulateWordData (int wordIndex)
       word->totalSpaceShrinkability =
          prevWord->totalSpaceShrinkability + getSpaceShrinkability(prevWord);
 
-      DBG_OBJ_MSGF ("construct.word", 1,
+      DBG_OBJ_MSGF ("construct.word.accum", 1,
                     "not first word of line: words[%d].totalWidth = %d + %d - "
                     "%d + %d + %d = %d",
                     wordIndex, prevWord->totalWidth, prevWord->origSpace,
@@ -1532,7 +1564,7 @@ void Textblock::accumulateWordData (int wordIndex)
    DBG_IF_RTFL {
       misc::StringBuffer sb;
       word->badnessAndPenalty.intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("construct.word", 1, "b+p: %s", sb.getChars ());
+      DBG_OBJ_MSGF ("construct.word.accum", 1, "b+p: %s", sb.getChars ());
    }
 
    DBG_OBJ_MSG_END ();
@@ -1540,7 +1572,8 @@ void Textblock::accumulateWordData (int wordIndex)
 
 int Textblock::calcAvailWidth (int lineIndex)
 {
-   DBG_OBJ_MSGF ("construct.word", 1, "<b>calcAvailWidth</b> (%d <i>of %d</i>)",
+   DBG_OBJ_MSGF ("construct.word.width", 1,
+                 "<b>calcAvailWidth</b> (%d <i>of %d</i>)",
                  lineIndex, lines->size());
    DBG_OBJ_MSG_START ();
 
@@ -1566,7 +1599,7 @@ int Textblock::calcAvailWidth (int lineIndex)
 
    availWidth -= (leftBorder + rightBorder);
 
-   DBG_OBJ_MSGF ("construct.word", 2, "=> %d - %d - (%d + %d) = %d\n",
+   DBG_OBJ_MSGF ("construct.word.width", 2, "=> %d - %d - (%d + %d) = %d\n",
                  this->availWidth, innerPadding, leftBorder, rightBorder,
                  availWidth);
 
@@ -1878,7 +1911,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
          containingBlock->outOfFlowMgr->getRightBorder (this, y, height, this,
                                                         effOofRef);
       
-      DBG_OBJ_MSGF ("construct.line", 0,
+      DBG_OBJ_MSGF ("construct.line", 1,
                     "%d (%s) / %d (%s), at %d (%d), until %d = max (%d, %d)\n",
                     newLineLeftBorder, newLineHasFloatLeft ? "true" : "false",
                     newLineRightBorder, newLineHasFloatRight ? "true" : "false",
