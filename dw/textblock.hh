@@ -707,12 +707,13 @@ protected:
                                   int penaltyIndex, bool borderIsCalculated,
                                   bool *thereWillBeMoreSpace, bool wrapAll,
                                   bool *wordListChanged, int *wordIndexEnd,
-                                  int lastFloatPos, bool regardBorder,
+                                  int *lastFloatPos, bool regardBorder,
                                   int *height, int *breakPos);
    int searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                        bool tempNewLine, int penaltyIndex,
                        bool thereWillBeMoreSpace, bool wrapAll,
-                       bool *wordListChanged, int *wordIndexEnd);
+                       bool *wordListChanged, int *wordIndexEnd,
+                       int *addIndex1 = NULL);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
                      bool thereWillBeMoreSpace, bool correctAtEnd);
    int considerHyphenation (int firstIndex, int breakPos);
@@ -727,8 +728,8 @@ protected:
    static int getSpaceStretchability(struct Word *word);
    static int getLineShrinkability(Word *lastWord);
    static int getLineStretchability(Word *lastWord);
-   int hyphenateWord (int wordIndex);
-   void moveWordIndices (int wordIndex, int num);
+   int hyphenateWord (int wordIndex, int *addIndex1 = NULL);
+   void moveWordIndices (int wordIndex, int num, int *addIndex1 = NULL);
    void accumulateWordForLine (int lineIndex, int wordIndex);
    void accumulateWordData (int wordIndex);
    int calcAvailWidth (int lineIndex);

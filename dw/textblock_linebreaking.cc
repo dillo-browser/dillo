@@ -719,18 +719,17 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
          int wordIndexEnd = wordIndex;
          int height = 1; // assumed by calcBorders before (see there)
          int breakPos;
+         int lastFloatPos = lines->size() > 0 ?
+            lines->getLastRef()->lastOofRefPositionedBeforeThisLine : -1;
+         DBG_OBJ_MSGF ("construct.word", 2, "lastFloatPos = %d", lastFloatPos);
 
          balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
                                    tempNewLine, penaltyIndex, true,
                                    &thereWillBeMoreSpace, wrapAll,
                                    &wordListChanged, &wordIndexEnd,
-                                   lines->size() > 0 ?
-                                   lines->getLastRef()
-                                   ->lastOofRefPositionedBeforeThisLine : -1,
-                                   regardBorder, &height, &breakPos);
+                                   &lastFloatPos, regardBorder, &height,
+                                   &breakPos);
 
-         int lastFloatPos = lines->size() > 0 ?
-            lines->getLastRef()->lastOofRefPositionedBeforeThisLine : -1;
          bool floatHandled;
          int yNewLine = yOffsetOfPossiblyMissingLine (lines->size ());
 
@@ -777,7 +776,7 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                                          tempNewLine, penaltyIndex, false,
                                          &thereWillBeMoreSpace, wrapAll,
                                          &wordListChanged, &wordIndexEnd,
-                                         lastFloatPos, regardBorder, &height,
+                                         &lastFloatPos, regardBorder, &height,
                                          &breakPos);
             }
 
@@ -838,19 +837,17 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
                                           bool borderIsCalculated,
                                           bool *thereWillBeMoreSpace,
                                           bool wrapAll, bool *wordListChanged,
-                                          int *wordIndexEnd, int lastFloatPos,
+                                          int *wordIndexEnd, int *lastFloatPos,
                                           bool regardBorder, int *height,
                                           int *breakPos)
 {
-   // TODO lastFloatPos must be adjusted when words are hyphenated.
-
    DBG_OBJ_MSGF ("construct.word", 0,
                  "<b>balanceBreakPosAndHeight</b> (%d, %d. %d, %s, %d, %s, "
                  "..., %s, ..., %d, %s, %d, ...)",
                  wordIndex, firstIndex, *searchUntil,
                  tempNewLine ? "true" : "false", penaltyIndex,
                  borderIsCalculated ? "true" : "false",
-                 wrapAll ? "true" : "false", lastFloatPos,
+                 wrapAll ? "true" : "false", *lastFloatPos,
                  regardBorder ? "true" : "false", *height);
    DBG_OBJ_MSG_START ();
 
@@ -878,7 +875,7 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
    while (true) {
       if (!(borderIsCalculated && runNo == 1)) {
          // borderIsCalculated is, of course, only valid in the first run
-         calcBorders (lastFloatPos, *height);
+         calcBorders (*lastFloatPos, *height);
          *thereWillBeMoreSpace = regardBorder ?
             newLineHasFloatLeft || newLineHasFloatRight : false;
          
@@ -891,9 +888,8 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
 
       int newBreakPos =
          searchBreakPos (wordIndex, firstIndex, searchUntil,
-                         tempNewLine, penaltyIndex,
-                         *thereWillBeMoreSpace, wrapAll,
-                         wordListChanged, wordIndexEnd);
+                         tempNewLine, penaltyIndex, *thereWillBeMoreSpace,
+                         wrapAll, wordListChanged, wordIndexEnd, lastFloatPos);
       int newHeight = calcLinePartHeight (firstIndex, newBreakPos);
       
       DBG_OBJ_MSGF ("construct.word", 1,
@@ -936,7 +932,8 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
 int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                                bool tempNewLine, int penaltyIndex,
                                bool thereWillBeMoreSpace, bool wrapAll,
-                               bool *wordListChanged, int *wordIndexEnd)
+                               bool *wordListChanged, int *wordIndexEnd,
+                               int *addIndex1)
 {
    DBG_OBJ_MSGF ("construct.word", 0,
                  "<b>searchBreakPos</b> (%d, %d. %d, %s, %d, %s, %s, ...)",
@@ -973,7 +970,7 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
          } else {
             DBG_OBJ_MSG ("construct.word", 1,
                          "... => hyphenate word and try again");
-            int n = hyphenateWord (hyphenatedWord);
+            int n = hyphenateWord (hyphenatedWord, addIndex1);
             *searchUntil += n;
             if (hyphenatedWord <= wordIndex)
                *wordIndexEnd += n;
@@ -1011,7 +1008,7 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
             // be checked.
             DBG_OBJ_MSGF ("construct.word", 1, "old searchUntil = %d",
                           *searchUntil);
-            int n = hyphenateWord (hyphenatedWord);
+            int n = hyphenateWord (hyphenatedWord, addIndex1);
             *searchUntil += n;
             if (hyphenatedWord <= wordIndex)
                *wordIndexEnd += n;
@@ -1278,7 +1275,7 @@ void Textblock::correctLastWordExtremes ()
 }
 
 
-int Textblock::hyphenateWord (int wordIndex)
+int Textblock::hyphenateWord (int wordIndex, int *addIndex1)
 {
    Word *hyphenatedWord = words->getRef(wordIndex);
    char lang[3] = { hyphenatedWord->style->x_lang[0], 
@@ -1310,7 +1307,7 @@ int Textblock::hyphenateWord (int wordIndex)
          initWord (wordIndex + i);
       PRINTF ("[%p]       ... => %d words\n", this, words->size ());
 
-      moveWordIndices (wordIndex, numBreaks);
+      moveWordIndices (wordIndex, numBreaks, addIndex1);
 
       // Adjust anchor indexes.
       for (int i = 0; i < anchors->size (); i++) {
@@ -1398,7 +1395,7 @@ int Textblock::hyphenateWord (int wordIndex)
    return numBreaks;
 }
 
-void Textblock::moveWordIndices (int wordIndex, int num)
+void Textblock::moveWordIndices (int wordIndex, int num, int *addIndex1)
 {
    DBG_OBJ_MSGF ("construct.word", 0, "<b>moveWordIndices</b> (%d, %d)",
                  wordIndex, num);
@@ -1424,6 +1421,10 @@ void Textblock::moveWordIndices (int wordIndex, int num)
          line->lastOofRefPositionedBeforeThisLine += num;
       }
    }
+
+   // Addiditional indices. When needed, the number can be extended.
+   if (addIndex1 && *addIndex1 >= wordIndex)
+      *addIndex1 += num;
 
    DBG_OBJ_MSG_END ();
 }
