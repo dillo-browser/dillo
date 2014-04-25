@@ -1253,7 +1253,7 @@ OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
 
 void OutOfFlowMgr::markSizeChange (int ref)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>markSizeChange</b> (%d)", ref);
+   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>markSizeChange</b> (%d)", ref);
    DBG_OBJ_MSG_START ();
 
    if (isRefFloat (ref)) {
@@ -1632,7 +1632,7 @@ void OutOfFlowMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
    *oofMaxWidth = max (oofMaxWidthLeft, oofMaxWidthRight, oofMaxWidthAbsPos);
 
    DBG_OBJ_MSGF ("resize.oofm", 1,
-                 "=> (a: %d, l: %d, r: %d => %d) * (a: %d, l: %d, r: %d => %d)",
+                 "=> (a: %d, l: %d, r: %d => %d) / (a: %d, l: %d, r: %d => %d)",
                  oofMinWidthAbsPos, oofMinWidthtLeft, oofMinWidthRight,
                  *oofMinWidth, oofMaxWidthAbsPos, oofMaxWidthLeft,
                  oofMaxWidthRight, *oofMaxWidth);
@@ -1646,7 +1646,8 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
 
    SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getFloatsExtremes</b> ((%d / %d), %s, ...)",
+   DBG_OBJ_MSGF ("resize.oofm", 0,
+                 "<b>getFloatsExtremes</b> ((%d / %d), %s, ...)",
                  cbExtr->minWidth, cbExtr->maxWidth,
                  side == LEFT ? "LEFT" : "RIGHT");
    DBG_OBJ_MSG_START ();
