@@ -1692,8 +1692,9 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
          }
 
          // TODO: Or zero (instead of rightDiff) for right floats?
-         *minWidth = max (*minWidth,
-                          extr.minWidth + side == LEFT ? leftDiff : rightDiff);
+         *minWidth =
+            max (*minWidth,
+                 extr.minWidth + (side == LEFT ? leftDiff : rightDiff));
          *maxWidth = max (*maxWidth, extr.maxWidth + leftDiff + rightDiff);
 
          DBG_OBJ_MSGF ("resize.oofm", 1, " => %d / %d", *minWidth, *maxWidth);
