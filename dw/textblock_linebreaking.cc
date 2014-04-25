@@ -688,8 +688,6 @@ bool Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 
          if ((thereWillBeMoreSpace || possibleLineBreak)
              && word->badnessAndPenalty.lineTooTight ()) {
-            // TODO Should hyphenation be considered here? (Here,
-            // because it is to late in searchBreakPos?)
             newLine = true;
             searchUntil = wordIndex - 1;
             DBG_OBJ_MSG ("construct.word", 1,
