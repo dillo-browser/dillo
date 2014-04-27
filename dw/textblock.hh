@@ -802,8 +802,13 @@ public:
                          bool includeFirstSpace, bool includeLastSpace);
 
    void borderChanged (int y, core::Widget *vloat);
-   inline void oofSizeChanged (bool extremesChanged)
-   { queueResize (-1, extremesChanged); }
+   inline void oofSizeChanged (bool extremesChanged) {
+      DBG_OBJ_MSGF ("resize", 0, "<b>oofSizeChanged</b> (%s)",
+                    extremesChanged ? "true" : "false");
+      DBG_OBJ_MSG_START ();
+      queueResize (-1, extremesChanged);
+      DBG_OBJ_MSG_END ();
+   }
    inline int getAvailWidth () { return availWidth; }
    inline int getAvailAscent () { return availAscent; }
    inline int getAvailDescent () { return availDescent; }

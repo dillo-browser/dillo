@@ -888,27 +888,53 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
 
 bool OutOfFlowMgr::doFloatsExceedCB (Side side)
 {
+   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>doFloatsExceedCB</b> (%s)",
+                 side == LEFT ? "LEFT" : "RIGHT");
+   DBG_OBJ_MSG_START ();
+   
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    bool exceeds = false;
+
+   DBG_OBJ_MSG_START ();
 
    for (int i = 0; i < list->size () && !exceeds; i++) {
       Float *vloat = list->get (i);
       if (vloat->getWidget()->wasAllocated ()) {
          Allocation *fla = vloat->getWidget()->getAllocation ();
+         DBG_OBJ_MSGF ("resize.oofm", 2,
+                       "Does FlA = (%d, %d, %d * %d) exceed CBA = "
+                       "(%d, %d, %d * %d)?",
+                       fla->x, fla->y, fla->width, fla->ascent + fla->descent,
+                       containingBlockAllocation.x, containingBlockAllocation.y,
+                       containingBlockAllocation.width,
+                       containingBlockAllocation.ascent
+                       + containingBlockAllocation.descent);
          if (fla->x + fla->width >
              containingBlockAllocation.x + containingBlockAllocation.width ||
              fla->y + fla->ascent + fla->descent >
              containingBlockAllocation.y + containingBlockAllocation.ascent
-             + containingBlockAllocation.descent)
+             + containingBlockAllocation.descent) {
             exceeds = true;
+            DBG_OBJ_MSG ("resize.oofm", 2, "Yes.");
+         } else
+            DBG_OBJ_MSG ("resize.oofm", 2, "No.");
       }
    }
+
+   DBG_OBJ_MSG_END ();
+
+   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", exceeds ? "true" : "false");
+   DBG_OBJ_MSG_END ();
 
    return exceeds;
 }
 
 bool OutOfFlowMgr::haveExtremesChanged (Side side)
 {
+   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>haveExtremesChanged</b> (%s)",
+                 side == LEFT ? "LEFT" : "RIGHT");
+   DBG_OBJ_MSG_START ();
+
    // This is quite different from doFloatsExceedCB, since there is no
    // counterpart to getExtremes, as sizeAllocate is a counterpart to
    // sizeRequest. So we have to determine whether the allocation has
@@ -955,6 +981,9 @@ bool OutOfFlowMgr::haveExtremesChanged (Side side)
          }
       }
    }
+
+   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", changed ? "true" : "false");
+   DBG_OBJ_MSG_END ();
 
    return changed;
 }
@@ -1617,7 +1646,8 @@ void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
 void OutOfFlowMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
                                 int *oofMaxWidth)
 {
-   DBG_OBJ_MSG ("resize.oofm", 0, "<b>getExtremes</b> ()");
+   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>getExtremes</b> ((%d / %d), ...)",
+                 cbExtr->minWidth, cbExtr->maxWidth);
    DBG_OBJ_MSG_START ();
 
    int oofMinWidthAbsPos, oofMaxWidthAbsPos;
@@ -1642,15 +1672,16 @@ void OutOfFlowMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
 void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
                                       int *minWidth, int *maxWidth)
 {
-   *minWidth = *maxWidth = 0;
-
-   SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
-
    DBG_OBJ_MSGF ("resize.oofm", 0,
                  "<b>getFloatsExtremes</b> ((%d / %d), %s, ...)",
                  cbExtr->minWidth, cbExtr->maxWidth,
                  side == LEFT ? "LEFT" : "RIGHT");
    DBG_OBJ_MSG_START ();
+
+   *minWidth = *maxWidth = 0;
+
+   SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
+
 
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
