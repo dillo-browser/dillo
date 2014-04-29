@@ -1696,6 +1696,18 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
                        vloat->getWidget (), vloat->generatingBlock,
                        extr.minWidth, extr.maxWidth);
 
+         if (isAbsLength (vloat->getWidget()->getStyle()->width)) {
+            int width = absLengthVal (vloat->getWidget()->getStyle()->width);
+            if (extr.minWidth < width)
+               extr.minWidth = width;
+            if (extr.maxWidth > width)
+               extr.maxWidth = width;
+                    
+            DBG_OBJ_MSGF ("resize.oofm", 1,
+                          "corrected by absolute width %d: %d / %d",
+                          width, extr.minWidth, extr.maxWidth);
+         }
+
          // TODO: Or zero (instead of rightDiff) for right floats?
          *minWidth =
             max (*minWidth,
