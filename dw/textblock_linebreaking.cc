@@ -1893,7 +1893,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
       
       int firstWordOfLine = lines->size() > 0 ?
          lines->getLastRef()->lastWord + 1 : 0;
-      int effOofRef = misc::max (lastOofRef, firstWordOfLine);
+      int effOofRef = misc::max (lastOofRef, firstWordOfLine - 1);
 
       int y = yOffsetOfPossiblyMissingLine (lines->size ());
 
@@ -1911,7 +1911,8 @@ void Textblock::calcBorders (int lastOofRef, int height)
                                                         effOofRef);
       
       DBG_OBJ_MSGF ("construct.line", 1,
-                    "%d (%s) / %d (%s), at %d (%d), until %d = max (%d, %d)\n",
+                    "%d (%s) / %d (%s), at %d (%d), until %d = "
+                    "max (%d, %d - 1)",
                     newLineLeftBorder, newLineHasFloatLeft ? "true" : "false",
                     newLineRightBorder, newLineHasFloatRight ? "true" : "false",
                     y, height, effOofRef, lastOofRef, firstWordOfLine);
