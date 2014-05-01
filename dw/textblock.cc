@@ -275,6 +275,7 @@ Textblock::Textblock (bool limitTextWidth)
    DBG_OBJ_SET_NUM ("availDescent", availDescent);
 
    verticalOffset = 0;
+   DBG_OBJ_SET_NUM ("verticalOffset", verticalOffset);
 
    this->limitTextWidth = limitTextWidth;
 
@@ -2766,11 +2767,17 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::setVerticalOffset (int verticalOffset)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>setVerticalOffset</b> (%d)", verticalOffset);
+   DBG_OBJ_MSG_START ();
+
    if (this->verticalOffset != verticalOffset) {
       this->verticalOffset = verticalOffset;
+      DBG_OBJ_SET_NUM ("verticalOffset", verticalOffset);
       mustQueueResize = true;
       queueDraw (); // Could perhaps be optimized.
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
