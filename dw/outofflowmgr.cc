@@ -73,6 +73,8 @@ OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
    // Sometimes a float with widget = NULL is created as a key; this
    // is not interesting for RTFL.
    if (widget) {
+      DBG_OBJ_SET_PTR_O (widget, "<Float>.generatingBlock", generatingBlock);
+      DBG_OBJ_SET_NUM_O (widget, "<Float>.externalIndex", externalIndex);
       DBG_OBJ_SET_NUM_O (widget, "<Float>.yReq", yReq);
       DBG_OBJ_SET_NUM_O (widget, "<Float>.yReal", yReal);
       DBG_OBJ_SET_NUM_O (widget, "<Float>.size.width", size.width);
@@ -1066,32 +1068,50 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
 int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
                               int gbAvailWidth)
 {
-   int gbActualWidth;
+   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>calcFloatX</b> (%p, %s, %d, %d, %d)",
+                 vloat->getWidget (), side == LEFT ? "LEFT" : "RIGHT", gbX,
+                 gbWidth, gbAvailWidth);
+   DBG_OBJ_MSG_START ();
+
+   int gbActualWidth, x;
 
    switch (side) {
    case LEFT:
       // Left floats are always aligned on the left side of the
       // generator (content, not allocation).
-      return gbX + vloat->generatingBlock->getStyle()->boxOffsetX();
-         break;
+      x = gbX + vloat->generatingBlock->getStyle()->boxOffsetX();
+      DBG_OBJ_MSGF ("resize.oofm", 1, "left: x = %d + %d = %d",
+                    gbX, vloat->generatingBlock->getStyle()->boxOffsetX(), x);
+      break;
 
    case RIGHT:
       // In some cases, the actual (allocated) width is too large; we
       // use the "available" width here.
       gbActualWidth = min (gbWidth, gbAvailWidth);
+      DBG_OBJ_MSGF ("resize.oofm", 1,
+                    "right: gbActualWidth = min (%d, %d) = %d",
+                    gbWidth, gbAvailWidth, gbActualWidth);
 
       // Similar for right floats, but in this case, floats are
       // shifted to the right when they are too big (instead of
       // shifting the generator to the right).
-      return max (gbX + gbActualWidth - vloat->size.width
-                  - vloat->generatingBlock->getStyle()->boxRestWidth(),
-                  // Do not exceed CB allocation:
-                  0);
+      x = max (gbX + gbActualWidth - vloat->size.width
+               - vloat->generatingBlock->getStyle()->boxRestWidth(),
+               // Do not exceed CB allocation:
+               0);
+      DBG_OBJ_MSGF ("resize.oofm", 1, "x = max (%d + %d - %d - %d, 0) = %d",
+                    gbX, gbActualWidth, vloat->size.width,
+                    vloat->generatingBlock->getStyle()->boxRestWidth(), x);
+      break;
 
    default:
       assertNotReached ();
-      return 0;
+      x = 0;
+      break;
    }
+
+   DBG_OBJ_MSG_END ();
+   return x;
 }
 
 
@@ -1267,8 +1287,11 @@ void OutOfFlowMgr::moveExternalIndices (SortedFloatsVector *list,
    // should be rather small.
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
-      if (vloat->externalIndex >= oldStartIndex)
+      if (vloat->externalIndex >= oldStartIndex) {
          vloat->externalIndex += diff;
+         DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.externalIndex",
+                            vloat->externalIndex);
+      }
    }
 }
 
@@ -1701,7 +1724,8 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
             if (extr.minWidth < width)
                extr.minWidth = width;
             if (extr.maxWidth > width)
-               extr.maxWidth = width;
+               // maxWidth not smaller than minWidth
+               extr.maxWidth = max (width, extr.minWidth);
                     
             DBG_OBJ_MSGF ("resize.oofm", 1,
                           "corrected by absolute width %d: %d / %d",
