@@ -2024,13 +2024,15 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       if (vloat->getWidget()->usesHints ()) {
          // For widths defined by CSS, similar adjustments (extremes
          // etc.) like below are necessary, to prevent CPU hogging.
-         if (isAbsLength (vloat->getWidget()->getStyle()->width)) {
-            int width = absLengthVal (vloat->getWidget()->getStyle()->width);
+
+         Length cssWidth = vloat->getWidget()->getStyle()->width;
+         if (isAbsLength (cssWidth)) {
+            int width = absLengthVal (cssWidth);
             DBG_OBJ_MSGF ("resize.oofm", 1, "about to set absolute width: %d",
                           width);
             width = adjustFloatWidth (width, &extremes);
             vloat->getWidget()->setWidth (width);
-         } else if (isPerLength (vloat->getWidget()->getStyle()->width)) {
+         } else if (cssWidth == LENGTH_AUTO || isPerLength (cssWidth)) {
             // It is important that the width of the *CB* is not
             // larger than its minimal width, when the latter is set
             // as size hint; otherwise we have an endless queueResize
@@ -2047,25 +2049,31 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
                // Not allocated: next allocation will take care.
                availWidth = containingBlock->getAvailWidth();
 
-            int width =
-               multiplyWithPerLength (availWidth,
-                                      vloat->getWidget()->getStyle()->width);
-
-            // Some more corrections (nonsense percentage values):
-            if (width < 1)
-               width = 1;
-            if (width > availWidth)
+            int width;
+            
+            if (cssWidth == LENGTH_AUTO) {
                width = availWidth;
+               DBG_OBJ_MSGF ("resize.oofm", 1, "setting width 'auto': %d",
+                             width);
+            } else {
+               width = multiplyWithPerLength (availWidth, cssWidth);
 
-            DBG_OBJ_MSGF ("resize.oofm", 1,
-                          "about to set percentage width: %d * %g -> %d",
-                          availWidth,
-                          perLengthVal (vloat->getWidget()->getStyle()->width),
-                          width);
-            width = adjustFloatWidth (width, &extremes);
+               // Some more corrections (nonsense percentage values):
+               if (width < 1)
+                  width = 1;
+               if (width > availWidth)
+                  width = availWidth;
+               
+               DBG_OBJ_MSGF ("resize.oofm", 1,
+                             "about to set percentage width: %d * %g -> %d",
+                             availWidth, perLengthVal (cssWidth), width);
+               width = adjustFloatWidth (width, &extremes);
+            }
+
             vloat->getWidget()->setWidth (width);
          } else
-            DBG_OBJ_MSG ("resize.oofm", 1, "setting no width: not defined");
+            DBG_OBJ_MSG ("resize.oofm", 1,
+                         "setting width: <b>relative length? may be a bug</b>");
       } else
          DBG_OBJ_MSG ("resize.oofm", 1, "setting no width: uses no hints");
 
