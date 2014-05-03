@@ -1177,6 +1177,8 @@ void Textblock::handleWordExtremes (int wordIndex)
                  "<b>handleWordExtremes</b> (%d)", wordIndex);
    DBG_OBJ_MSG_START ();
 
+   initLine1Offset (wordIndex);
+
    Word *word = words->getRef (wordIndex);
    DBG_MSG_WORD ("construct.paragraph", 1,
                  "<i>handled word:</i> ", wordIndex, "");
@@ -1187,8 +1189,8 @@ void Textblock::handleWordExtremes (int wordIndex)
                  wordExtremes.minWidth, wordExtremes.maxWidth);
 
    if (wordIndex == 0) {
-      wordExtremes.minWidth += line1Offset;
-      wordExtremes.maxWidth += line1Offset;
+      wordExtremes.minWidth += line1OffsetEff;
+      wordExtremes.maxWidth += line1OffsetEff;
    }
 
    if (paragraphs->size() == 0 ||
