@@ -366,18 +366,18 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
 
    dReturn_val_if_fail (url_str != NULL, NULL);
 
-   /* Count illegal characters (0x00-0x1F, 0x7F and space) */
+   /* Count illegal characters (0x00-0x1F, 0x7F-0xFF and space) */
    n_ic = n_ic_spc = 0;
    for (p = (char*)url_str; *p; p++) {
       n_ic_spc += (*p == ' ') ? 1 : 0;
-      n_ic += (*p != ' ' && *p > 0x1F && *p != 0x7F) ? 0 : 1;
+      n_ic += (*p != ' ' && *p > 0x1F && *p < 0x7F) ? 0 : 1;
    }
    if (n_ic) {
       /* Encode illegal characters (they could also be stripped).
        * There's no standard for illegal chars; we chose to encode. */
       p = str1 = dNew(char, strlen(url_str) + 2*n_ic + 1);
       for (i = 0; url_str[i]; ++i)
-         if (url_str[i] > 0x1F && url_str[i] != 0x7F && url_str[i] != ' ')
+         if (url_str[i] > 0x1F && url_str[i] < 0x7F && url_str[i] != ' ')
             *p++ = url_str[i];
          else  {
            *p++ = '%';
@@ -611,7 +611,7 @@ char *a_Url_encode_hex_str(const char *str)
 /*
  * RFC-3986 suggests this stripping when "importing" URLs from other media.
  * Strip: "URL:", enclosing < >, and embedded whitespace.
- * (We also strip illegal chars: 00-1F and 7F)
+ * (We also strip illegal chars: 00-1F and 7F-FF)
  */
 char *a_Url_string_strip_delimiters(const char *str)
 {
@@ -626,7 +626,7 @@ char *a_Url_string_strip_delimiters(const char *str)
          text++;
 
       for (p = new_str; *text; text++)
-         if (*text > 0x1F && *text != 0x7F && *text != ' ')
+         if (*text > 0x1F && *text < 0x7F && *text != ' ')
             *p++ = *text;
       if (p > new_str && p[-1] == '>')
          --p;
