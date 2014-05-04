@@ -160,11 +160,11 @@ DilloUrl *a_Html_url_new(DilloHtml *html,
       if (n_ic == n_ic_spc) {
          BUG_MSG("URL has %d illegal space%s ('%s')\n", n_ic, suffix, url_str);
       } else if (n_ic_spc == 0) {
-         BUG_MSG("URL has %d illegal byte%s in {00-1F, 7F} range ('%s')\n",
+         BUG_MSG("URL has %d illegal byte%s in {00-1F, 7F-FF} range ('%s')\n",
                  n_ic, suffix, url_str);
       } else {
          BUG_MSG("URL has %d illegal byte%s: "
-                 "%d space%s and %d in {00-1F, 7F} range ('%s')\n",
+                 "%d space%s and %d in {00-1F, 7F-FF} range ('%s')\n",
                  n_ic, suffix,
                  n_ic_spc, n_ic_spc > 1 ? "s" : "", n_ic-n_ic_spc, url_str);
       }
