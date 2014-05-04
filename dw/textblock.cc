@@ -415,9 +415,21 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
 void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
 {
    if (word->content.type == core::Content::WIDGET_IN_FLOW) {
-      if (word->content.widget->usesHints ())
+      if (word->content.widget->usesHints ()) {
          word->content.widget->getExtremes (extremes);
-      else {
+
+         if (core::style::isAbsLength (word->content.widget
+                                       ->getStyle()->width)) {
+            int width =
+               core::style::absLengthVal (word->content.widget
+                                          ->getStyle()->width);
+            if (extremes->minWidth < width)
+               extremes->minWidth = width;
+            if (extremes->maxWidth > width)
+               // maxWidth not smaller than minWidth
+               extremes->maxWidth = misc::max (width, extremes->minWidth);
+         }
+      } else {
          if (core::style::isPerLength
              (word->content.widget->getStyle()->width)) {
             extremes->minWidth = 0;
