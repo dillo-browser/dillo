@@ -321,6 +321,9 @@ Layout::~Layout ()
    delete anchorsTable;
    delete textZone;
 
+   if (requestedAnchor)
+      free (requestedAnchor);
+
    DBG_OBJ_DELETE ();
 }
 
@@ -687,7 +690,7 @@ void Layout::setAnchor (const char *anchor)
    _MSG("setAnchor (%s)\n", anchor);
 
    if (requestedAnchor)
-      free(requestedAnchor);
+      free (requestedAnchor);
    requestedAnchor = anchor ? strdup (anchor) : NULL;
    updateAnchor ();
 }
