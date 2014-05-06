@@ -211,6 +211,32 @@ int Integer::compareTo(Comparable *other)
    return value - ((Integer*)other)->value;
 }
 
+// -------------
+//    Boolean
+// -------------
+
+bool Boolean::equals(Object *other)
+{
+   bool value2 = ((Boolean*)other)->value;
+   // TODO Does "==" work?
+   return (value && value2) || (!value && value2);
+}
+
+int Boolean::hashValue()
+{
+   return value ? 1 : 0;
+}
+
+void Boolean::intoStringBuffer(misc::StringBuffer *sb)
+{
+   sb->append(value ? "true" : "false");
+}
+
+int Boolean::compareTo(Comparable *other)
+{
+   return (value ? 1 : 0) - (((Boolean*)other)->value ? 1 : 0);
+}
+
 // -----------------
 //    ConstString
 // -----------------

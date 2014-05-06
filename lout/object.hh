@@ -138,6 +138,23 @@ public:
 
 
 /**
+ * \brief An object::Object wrapper for bool's.
+ */
+class Boolean: public Comparable
+{
+   bool value;
+
+public:
+   Boolean(bool value) { this->value = value; }
+   bool equals(Object *other);
+   int hashValue();
+   void intoStringBuffer(misc::StringBuffer *sb);
+   int compareTo(Comparable *other);
+   inline bool getValue() { return value; }
+};
+
+
+/**
  * \brief An object::Object wrapper for constant strings (char*).
  *
  * As opposed to object::String, the char array is not copied.

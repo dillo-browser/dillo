@@ -288,14 +288,16 @@ Iterator *LabelButtonResource::iterator (Content::Type mask, bool atEnd)
 
 // ----------------------------------------------------------------------
 
-void ComplexButtonResource::LayoutReceiver::canvasSizeChanged (int width,
-                                                               int ascent,
-                                                               int descent)
+void ComplexButtonResource::LayoutReceiver::resizeQueued (bool extremesChanged)
 {
-   /**
-    * \todo Verify that this is correct.
-    */
-   resource->queueResize (resource->childWidget->extremesQueued ());
+  DBG_OBJ_MSGF_O ("resize", 0, resource,
+                   "LayoutReceiver::<b>resizeQueued</b> (%s)",
+                  extremesChanged ? "true" : "false");
+   DBG_OBJ_MSG_START_O (resource);
+
+   resource->queueResize (extremesChanged);
+
+   DBG_OBJ_MSG_END_O (resource);
 }
 
 ComplexButtonResource::ComplexButtonResource ()

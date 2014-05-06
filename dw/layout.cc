@@ -91,6 +91,10 @@ void Layout::LayoutImgRenderer::draw (int x, int y, int width, int height)
 
 // ----------------------------------------------------------------------
 
+void Layout::Receiver::resizeQueued (bool extremesChanged)
+{
+}
+
 void Layout::Receiver::canvasSizeChanged (int width, int ascent, int descent)
 {
 }
@@ -110,11 +114,22 @@ bool Layout::Emitter::emitToReceiver (lout::signal::Receiver *receiver,
                                          ((Integer*)argv[2])->getValue ());
       break;
 
+   case RESIZE_QUEUED:
+      layoutReceiver->resizeQueued (((Boolean*)argv[0])->getValue ());
+      break;
+
    default:
       misc::assertNotReached ();
    }
 
    return false;
+}
+
+void Layout::Emitter::emitResizeQueued (bool extremesChanged)
+{
+   Boolean ec (extremesChanged);
+   Object *argv[1] = { &ec };
+   emitVoid (RESIZE_QUEUED, 1, argv);
 }
 
 void Layout::Emitter::emitCanvasSizeChanged (int width,
@@ -963,9 +978,10 @@ void Layout::queueDrawExcept (int x, int y, int width, int height,
    queueDraw (ix2, iy1, x + width - ix2, iy2 - iy1);
 }
 
-void Layout::queueResize ()
+void Layout::queueResize (bool extremesChanged)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>queueResize</b>");
+   DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%s)",
+                 extremesChanged ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    if (resizeIdleId == -1) {
@@ -974,6 +990,8 @@ void Layout::queueResize ()
       resizeIdleId = platform->addIdle (&Layout::resizeIdle);
       DBG_OBJ_MSGF ("resize", 1, "setting resizeIdleId = %d", resizeIdleId);
    }
+
+   emitter.emitResizeQueued (extremesChanged);
 
    DBG_OBJ_MSG_END ();
 }
@@ -1261,7 +1279,7 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
          // similar to addWidget()
          topLevel->queueResize (-1, false);
       else
-         queueResize ();
+         queueResize (false);
    }
 
    viewportWidth = width;

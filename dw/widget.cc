@@ -262,7 +262,7 @@ void Widget::actualQueueResize (int ref, bool extremesChanged)
    }
 
    if (layout)
-      layout->queueResize ();
+      layout->queueResize (extremesChanged);
 
    leaveQueueResize ();
 

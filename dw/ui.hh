@@ -378,7 +378,7 @@ private:
    public:
       ComplexButtonResource *resource;
 
-      void canvasSizeChanged (int width, int ascent, int descent);
+      void resizeQueued (bool extremesChanged);
    };
 
    friend class LayoutReceiver;

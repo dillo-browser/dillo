@@ -42,11 +42,12 @@ public:
    /**
     * \brief Receiver interface different signals.
     *
-    * May be extended
+    * May be extended.
     */
    class Receiver: public lout::signal::Receiver
    {
    public:
+      virtual void resizeQueued (bool extremesChanged);
       virtual void canvasSizeChanged (int width, int ascent, int descent);
    };
 
@@ -126,7 +127,7 @@ private:
    class Emitter: public lout::signal::Emitter
    {
    private:
-      enum { CANVAS_SIZE_CHANGED };
+      enum { RESIZE_QUEUED, CANVAS_SIZE_CHANGED };
 
    protected:
       bool emitToReceiver (lout::signal::Receiver *receiver, int signalNo,
@@ -135,6 +136,7 @@ private:
    public:
       inline void connectLayout (Receiver *receiver) { connect (receiver); }
 
+      void emitResizeQueued (bool extremesChanged);
       void emitCanvasSizeChanged (int width, int ascent, int descent);
    };
 
@@ -252,7 +254,7 @@ private:
    void queueDraw (int x, int y, int width, int height);
    void queueDrawExcept (int x, int y, int width, int height,
       int ex, int ey, int ewidth, int eheight);
-   void queueResize ();
+   void queueResize (bool extremesChanged);
    void removeWidget ();
 
    /* For tests regarding the respective Layout and (mostly) Widget
