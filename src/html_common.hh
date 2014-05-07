@@ -156,8 +156,7 @@ public:  //BUG: for now everything is public
    char *content_type, *charset;
    bool stop_parser;
 
-   size_t CurrTagOfs;
-   size_t OldTagOfs, OldTagLine;
+   size_t CurrOfs, OldOfs, OldLine;
 
    DilloHtmlDocumentType DocType; /* as given by DOCTYPE tag */
    float DocTypeVersion;          /* HTML or XHTML version number */
@@ -211,7 +210,7 @@ public:
    void bugMessage(const char *format, ... );
    void connectSignals(dw::core::Widget *dw);
    void write(char *Buf, int BufSize, int Eof);
-   int getCurTagLineNumber();
+   int getCurrLineNumber();
    void finishParsing(int ClientKey);
    int formNew(DilloHtmlMethod method, const DilloUrl *action,
                DilloHtmlEnc enc, const char *charset);
