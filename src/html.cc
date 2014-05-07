@@ -134,7 +134,7 @@ void DilloHtml::bugMessage(const char *format, ... )
 
    dStr_sprintfa(bw->page_bugs,
                  "HTML warning: line %d, ",
-                 getCurTagLineNumber());
+                 getCurrLineNumber());
    va_start(argp, format);
    dStr_vsprintfa(bw->page_bugs, format, argp);
    va_end(argp);
@@ -398,9 +398,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
 
    stop_parser = false;
 
-   CurrTagOfs = 0;
-   OldTagOfs = 0;
-   OldTagLine = 1;
+   CurrOfs = OldOfs = 0;
+   OldLine = 1;
 
    DocType = DT_NONE;    /* assume Tag Soup 0.0!   :-) */
    DocTypeVersion = 0.0f;
@@ -540,10 +539,10 @@ void DilloHtml::write(char *Buf, int BufSize, int Eof)
 }
 
 /*
- * Return the line number of the tag being processed by the parser.
+ * Return the line number of the tag/word being processed by the parser.
  * Also update the offsets.
  */
-int DilloHtml::getCurTagLineNumber()
+int DilloHtml::getCurrLineNumber()
 {
    int i, ofs, line;
    const char *p = Start_Buf;
@@ -552,13 +551,13 @@ int DilloHtml::getCurTagLineNumber()
    /* Disable line counting for META hack. Buffers differ. */
    dReturn_val_if((InFlags & IN_META_HACK), -1);
 
-   ofs = CurrTagOfs;
-   line = OldTagLine;
-   for (i = OldTagOfs; i < ofs; ++i)
+   ofs = CurrOfs;
+   line = OldLine;
+   for (i = OldOfs; i < ofs; ++i)
       if (p[i] == '\n' || (p[i] == '\r' && p[i+1] != '\n'))
          ++line;
-   OldTagOfs = CurrTagOfs;
-   OldTagLine = line;
+   OldOfs = CurrOfs;
+   OldLine = line;
    return line;
 }
 
@@ -4225,7 +4224,7 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
                buf_index = bufsize;
          } else {
             /* Tag: search end of tag (skipping over quoted strings) */
-            html->CurrTagOfs = html->Start_Ofs + token_start;
+            html->CurrOfs = html->Start_Ofs + token_start;
 
             while ( buf_index < bufsize ) {
                buf_index++;
@@ -4269,6 +4268,8 @@ static int Html_write_raw(DilloHtml *html, char *buf, int bufsize, int Eof)
          }
       } else {
          /* A Word: search for whitespace or tag open */
+         html->CurrOfs = html->Start_Ofs + token_start;
+
          while (++buf_index < bufsize) {
             buf_index += strcspn(buf + buf_index, " <\n\r\t\f\v");
             if (buf[buf_index] == '<' && (ch = buf[buf_index + 1]) &&
