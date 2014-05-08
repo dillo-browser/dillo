@@ -1484,6 +1484,7 @@ void Textblock::accumulateWordData (int wordIndex)
    DBG_OBJ_MSGF ("construct.word.accum", 1, "<b>accumulateWordData</b> (%d)",
                  wordIndex);
    DBG_OBJ_MSG_START ();
+   DBG_MSG_WORD ("construct.word.accum", 1, "<i>word:</i> ", wordIndex, "");
 
    // Typically, the word in question is in the last line; in any case
    // quite at the end of the text, so that linear search is actually
@@ -1517,17 +1518,18 @@ void Textblock::accumulateWordData (int wordIndex)
       word->totalSpaceShrinkability = 0;
 
       DBG_OBJ_MSGF ("construct.word.accum", 1,
-                    "first word of line: words[%d].totalWidth = %d + %d = %d",
+                    "first word of line: words[%d].totalWidth = %d + %d = %d; "
+                    "maxAscent = %d, maxDescent = %d",
                     wordIndex, word->size.width, word->hyphenWidth,
-                    word->totalWidth);
+                    word->totalWidth, word->maxAscent, word->maxDescent);
    } else {
       Word *prevWord = words->getRef (wordIndex - 1);
 
       word->totalWidth = prevWord->totalWidth
          + prevWord->origSpace - prevWord->hyphenWidth
          + word->size.width + word->hyphenWidth;
-      word->maxAscent = misc::max (prevWord->size.ascent, word->size.ascent);
-      word->maxDescent = misc::max (prevWord->size.descent, word->size.descent);
+      word->maxAscent = misc::max (prevWord->maxAscent, word->size.ascent);
+      word->maxDescent = misc::max (prevWord->maxDescent, word->size.descent);
       word->totalSpaceStretchability =
          prevWord->totalSpaceStretchability + getSpaceStretchability(prevWord);
       word->totalSpaceShrinkability =
@@ -1535,16 +1537,27 @@ void Textblock::accumulateWordData (int wordIndex)
 
       DBG_OBJ_MSGF ("construct.word.accum", 1,
                     "not first word of line: words[%d].totalWidth = %d + %d - "
-                    "%d + %d + %d = %d",
+                    "%d + %d + %d = %d; maxAscent = max (%d, %d) = %d, "
+                    "maxDescent = max (%d, %d) = %d",
                     wordIndex, prevWord->totalWidth, prevWord->origSpace,
                     prevWord->hyphenWidth, word->size.width,
-                    word->hyphenWidth, word->totalWidth);
+                    word->hyphenWidth, word->totalWidth,
+                    prevWord->maxAscent, word->size.ascent, word->maxAscent,
+                    prevWord->maxDescent, word->size.descent, word->maxDescent);
    }
 
    int totalStretchability =
-      word->totalSpaceStretchability + getLineStretchability (word);
+      word->totalSpaceStretchability + getLineStretchability (wordIndex);
    int totalShrinkability =
-      word->totalSpaceShrinkability + getLineShrinkability (word);
+      word->totalSpaceShrinkability + getLineShrinkability (wordIndex);
+
+   DBG_OBJ_MSGF ("construct.word.accum", 1,
+                 "totalStretchability = %d + ... = %d",
+                 word->totalSpaceStretchability, totalStretchability);
+   DBG_OBJ_MSGF ("construct.word.accum", 1,
+                 "totalShrinkability = %d + ... = %d",
+                 word->totalSpaceShrinkability, totalShrinkability);
+
    word->badnessAndPenalty.calcBadness (word->totalWidth, availWidth,
                                         totalStretchability,
                                         totalShrinkability);
@@ -1997,18 +2010,36 @@ int Textblock::getSpaceStretchability(struct Word *word)
    // Alternative: return word->origSpace / 2;
 }
 
-int Textblock::getLineShrinkability(Word *lastWord)
+int Textblock::getLineShrinkability(int lastWordIndex)
 {
    return 0;
 }
 
-int Textblock::getLineStretchability(Word *lastWord)
+int Textblock::getLineStretchability(int lastWordIndex)
 {
-   if (lastWord->spaceStyle->textAlign == core::style::TEXT_ALIGN_JUSTIFY)
-      return 0;
-   else
-      return stretchabilityFactor * (lastWord->maxAscent
-                                     + lastWord->maxDescent) / 100;
+   DBG_OBJ_MSGF ("construct.word.accum", 0,
+                 "<b>getLineStretchability</b> (%d)", lastWordIndex);
+   DBG_OBJ_MSG_START ();
+   DBG_MSG_WORD ("construct.word.accum", 1, "<i>last word:</i> ",
+                 lastWordIndex, "");
+
+   Word *lastWord = words->getRef (lastWordIndex);
+   int str;
+
+   if (lastWord->spaceStyle->textAlign == core::style::TEXT_ALIGN_JUSTIFY) {
+      str = 0;
+      DBG_OBJ_MSG ("construct.word.accum", 1, "justified => 0");
+   } else {
+      str = stretchabilityFactor * (lastWord->maxAscent
+                                    + lastWord->maxDescent) / 100;
+      DBG_OBJ_MSGF ("construct.word.accum", 1,
+                    "not justified => %d * (%d + %d) / 100 = %d",
+                    stretchabilityFactor, lastWord->maxAscent,
+                    lastWord->maxDescent, str);
+   }
+
+   DBG_OBJ_MSG_END ();
+   return str;
 
    // Alternative: return 0;
 }

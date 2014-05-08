@@ -729,8 +729,8 @@ protected:
 
    static int getSpaceShrinkability(struct Word *word);
    static int getSpaceStretchability(struct Word *word);
-   static int getLineShrinkability(Word *lastWord);
-   static int getLineStretchability(Word *lastWord);
+   int getLineShrinkability(int lastWordIndex);
+   int getLineStretchability(int lastWordIndex);
    int hyphenateWord (int wordIndex, int *addIndex1 = NULL);
    void moveWordIndices (int wordIndex, int num, int *addIndex1 = NULL);
    void accumulateWordForLine (int lineIndex, int wordIndex);
