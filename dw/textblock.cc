@@ -1957,7 +1957,9 @@ void Textblock::calcTextSize (const char *text, size_t len,
 void Textblock::addText (const char *text, size_t len,
                          core::style::Style *style)
 {
-   PRINTF ("[%p] ADD_TEXT (%d characters)\n", this, (int)len);
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addText</b> (..., %d, ...)",
+                 (int)len);
+   DBG_OBJ_MSG_START ();
 
    // Count dividing characters.
    int numParts = 1;
@@ -2163,6 +2165,8 @@ void Textblock::addText (const char *text, size_t len,
          }
       }
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Textblock::calcTextSizes (const char *text, size_t textLen,
@@ -2205,6 +2209,21 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
 void Textblock::addText0 (const char *text, size_t len, short flags,
                           core::style::Style *style, core::Requisition *size)
 {
+   DBG_OBJ_MSGF ("construct.word", 0,
+                 "<b>addText0</b> (..., %d, %s:%s:%s:%s:%s:%s:%s, ..., "
+                 "%d * (%d + %d)",
+                 (int)len,
+                 // Ugly copy&paste from printWordFlags:
+                 (flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
+                 (flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
+                 (flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
+                 (flags & Word::DRAW_AS_ONE_TEXT) ? "t1" : "--",
+                 (flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--",
+                 (flags & Word::WORD_START) ? "st" : "--",
+                 (flags & Word::WORD_END) ? "en" : "--",
+                 size->width, size->ascent, size->descent);
+   DBG_OBJ_MSG_START ();
+
    //printf("[%p] addText0 ('", this);
    //for (size_t i = 0; i < len; i++)
    //   putchar(text[i]);
@@ -2227,6 +2246,8 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
    //   printf ("[%p] first word: '%s'\n", this, text);
 
    processWord (words->size () - 1);
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -2234,6 +2255,9 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
  */
 void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addWidget</b> (%p, ...)", widget);
+   DBG_OBJ_MSG_START ();
+
    /* We first assign -1 as parent_ref, since the call of widget->size_request
     * will otherwise let this Textblock be rewrapped from the beginning.
     * (parent_ref is actually undefined, but likely has the value 0.) At the,
@@ -2291,6 +2315,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
    //          "Assigning parent_ref = %d to added word %d, "
    //          "in page with %d word(s)\n",
    //          lines->size () - 1, words->size() - 1, words->size());
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -2302,8 +2328,12 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
  */
 bool Textblock::addAnchor (const char *name, core::style::Style *style)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addAnchor</b> (\"%s\", ...)", name);
+   DBG_OBJ_MSG_START ();
+
    char *copy;
    int y;
+   bool result;
 
    // Since an anchor does not take any space, it is safe to call
    // addAnchor already here.
@@ -2321,7 +2351,7 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
        * \todo It may be necessary for future uses to save the anchor in
        *    some way, e.g. when parts of the widget tree change.
        */
-      return false;
+      result = false;
    else {
       Anchor *anchor;
 
@@ -2329,8 +2359,12 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
       anchor = anchors->getRef(anchors->size() - 1);
       anchor->name = copy;
       anchor->wordIndex = words->size();
-      return true;
+      result =  true;
    }
+
+   DBG_OBJ_MSGF ("construct.word", 0, "=> %s", result ? "true" : "false");
+   DBG_OBJ_MSG_END ();
+   return result;
 }
 
 
@@ -2339,6 +2373,9 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
  */
 void Textblock::addSpace (core::style::Style *style)
 {
+   DBG_OBJ_MSG ("construct.word", 0, "<b>addSpace</b> (...)");
+   DBG_OBJ_MSG_START ();
+
    int wordIndex = words->size () - 1;
    if (wordIndex >= 0) {
       fillSpace (wordIndex, style);
@@ -2346,6 +2383,8 @@ void Textblock::addSpace (core::style::Style *style)
       accumulateWordData (wordIndex);
       correctLastWordExtremes ();
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -2356,6 +2395,10 @@ void Textblock::addSpace (core::style::Style *style)
  */
 void Textblock::addBreakOption (core::style::Style *style, bool forceBreak)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addBreakOption</b> (..., %s)",
+                 forceBreak ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
    int wordIndex = words->size () - 1;
    if (wordIndex >= 0) {
       setBreakOption (words->getRef(wordIndex), style, 0, 0, forceBreak);
@@ -2363,6 +2406,8 @@ void Textblock::addBreakOption (core::style::Style *style, bool forceBreak)
       // Call of accumulateWordData() is not needed here.
       correctLastWordExtremes ();
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Textblock::fillSpace (int wordNo, core::style::Style *style)
@@ -2456,6 +2501,9 @@ bool Textblock::isBreakAllowed (Word *word)
  */
 void Textblock::addParbreak (int space, core::style::Style *style)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addParbreak</b> (%d, ...)", space);
+   DBG_OBJ_MSG ("construct.word", 0, "<i>no nesting!</i>");
+
    Word *word;
 
    /* A break may not be the first word of a page, or directly after
@@ -2539,6 +2587,9 @@ void Textblock::addParbreak (int space, core::style::Style *style)
  */
 void Textblock::addLinebreak (core::style::Style *style)
 {
+   DBG_OBJ_MSG ("construct.word", 0, "<b>addLinebreak</b> (...)");
+   DBG_OBJ_MSG_START ();
+
    Word *word;
 
    if (words->size () == 0 ||
@@ -2561,6 +2612,8 @@ void Textblock::addLinebreak (core::style::Style *style)
 
    breakAdded ();
    processWord (words->size () - 1);
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
