@@ -382,18 +382,19 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
       DBG_OBJ_MSG_START_O (oofm);
 
       for (int i = 0; i < size(); i++) {
-         Float *f = get(i);
          DBG_OBJ_MSGF_O ("border", 2, oofm,
                          "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d)), "
                          "%s, %s, ext = %d, GB = %p); widget at (%d, %d)",
-                         i, f->getWidget (), f->getIndex (type),
-                         f->sideSpanningIndex, f->yReq, f->yReal,
-                         f->size.width, f->size.ascent, f->size.descent,
-                         f->dirty ? "dirty" : "clean",
-                         f->sizeChangedSinceLastAllocation ? "scsla" : "sNcsla",
-                         f->externalIndex, f->generatingBlock,
-                         f->getWidget()->getAllocation()->x,
-                         f->getWidget()->getAllocation()->y);
+                         i, get(i)->getWidget (), get(i)->getIndex (type),
+                         get(i)->sideSpanningIndex, get(i)->yReq, get(i)->yReal,
+                         get(i)->size.width, get(i)->size.ascent,
+                         get(i)->size.descent,
+                         get(i)->dirty ? "dirty" : "clean",
+                         get(i)->sizeChangedSinceLastAllocation ? "scsla"
+                         : "sNcsla",
+                         get(i)->externalIndex, get(i)->generatingBlock,
+                         get(i)->getWidget()->getAllocation()->x,
+                         get(i)->getWidget()->getAllocation()->y);
       }
 
       DBG_OBJ_MSG_END_O (oofm);
