@@ -2146,6 +2146,7 @@ void Textblock::addText (const char *text, size_t len,
 
             setBreakOption (word, style, penalties[partPenaltyIndex[i]][0],
                             penalties[partPenaltyIndex[i]][1], false);
+            DBG_SET_WORD (words->size () - 1);
 
             if (charRemoved[i])
                // Currently, only unconditional hyphens (UTF-8:
