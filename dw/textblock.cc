@@ -2217,9 +2217,7 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
    word->content.type = core::Content::TEXT;
    word->content.text = layout->textZone->strndup(text, len);
 
-   DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type", "TEXT");
-   DBG_OBJ_ARRATTRSET_STR ("words", words->size () - 1,
-                           "text/widget/breakSpace", word->content.text);
+   DBG_SET_WORD (words->size () - 1);
 
    // The following debug message may be useful to identify the
    // different textblocks.
@@ -2265,11 +2263,6 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       // After a out-of-flow reference, breaking is allowed. (This avoids some
       // problems with breaking near float definitions.)
       setBreakOption (word, style, 0, 0, false);
-
-      DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type",
-                              "WIDGET_OOF_REF");
-      DBG_OBJ_ARRATTRSET_PTR ("words", words->size () - 1,
-                               "text/widget/breakSpace", word->content.widget);
    } else {
       PRINTF ("   -> within flow.\n");
 
@@ -2285,12 +2278,9 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       Word *word = addWord (size.width, size.ascent, size.descent, 0, style);
       word->content.type = core::Content::WIDGET_IN_FLOW;
       word->content.widget = widget;
-
-      DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type",
-                              "WIDGET_IN_FLOW");
-      DBG_OBJ_ARRATTRSET_PTR ("words", words->size () - 1,
-                               "text/widget/breakSpace", word->content.widget);
    }
+
+   DBG_SET_WORD (words->size () - 1);
 
    processWord (words->size () - 1);
    //DBG_OBJ_SET_NUM (word->content.widget, "parent_ref",
@@ -2535,9 +2525,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = space;
 
-   DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type", "BREAK");
-   DBG_OBJ_ARRATTRSET_NUM ("words", words->size () - 1,
-                           "text/widget/breakSpace", word->content.breakSpace);
+   DBG_SET_WORD (words->size () - 1);
 
    breakAdded ();
    processWord (words->size () - 1);
@@ -2566,9 +2554,7 @@ void Textblock::addLinebreak (core::style::Style *style)
    word->badnessAndPenalty.setPenalty (PENALTY_FORCE_BREAK);
    word->content.breakSpace = 0;
 
-   DBG_OBJ_ARRATTRSET_SYM ("words", words->size () - 1, "type", "BREAK");
-   DBG_OBJ_ARRATTRSET_NUM ("words", words->size () - 1,
-                           "text/widget/breakSpace", word->content.breakSpace);
+   DBG_SET_WORD (words->size () - 1);
 
    breakAdded ();
    processWord (words->size () - 1);

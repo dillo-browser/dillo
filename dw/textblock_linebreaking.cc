@@ -1332,9 +1332,7 @@ int Textblock::hyphenateWord (int wordIndex, int *addIndex1)
                                        end - start);
          PRINTF ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
 
-         DBG_OBJ_ARRATTRSET_SYM ("words", wordIndex + i, "type", "TEXT");
-         DBG_OBJ_ARRATTRSET_STR ("words", wordIndex + i,
-                                 "text/widget/breakSpace", w->content.text);
+         DBG_SET_WORD (wordIndex + i);
 
          // Note: there are numBreaks + 1 word parts.
          if (i == 0)
