@@ -2341,6 +2341,7 @@ void Textblock::addSpace (core::style::Style *style)
    int wordIndex = words->size () - 1;
    if (wordIndex >= 0) {
       fillSpace (wordIndex, style);
+      DBG_SET_WORD (wordIndex);
       accumulateWordData (wordIndex);
       correctLastWordExtremes ();
    }
@@ -2357,6 +2358,7 @@ void Textblock::addBreakOption (core::style::Style *style, bool forceBreak)
    int wordIndex = words->size () - 1;
    if (wordIndex >= 0) {
       setBreakOption (words->getRef(wordIndex), style, 0, 0, forceBreak);
+      DBG_SET_WORD (wordIndex);
       // Call of accumulateWordData() is not needed here.
       correctLastWordExtremes ();
    }

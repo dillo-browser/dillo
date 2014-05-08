@@ -217,6 +217,9 @@ private:
       inline void setPenalty (int penalty) { setPenalties (penalty, penalty); }
       void setPenalties (int penalty1, int penalty2);
 
+      // Rather for debugging:
+      inline int getPenalty (int i) { return penalty[i]; }
+
       bool lineLoose ();
       bool lineTight ();
       bool lineTooTight ();
@@ -814,6 +817,18 @@ public:
    inline int getAvailDescent () { return availDescent; }
 };
 
+#define DBG_SET_WORD_PENALTY(n, i, is)             \
+   D_STMT_START { \
+      if (words->getRef(n)->badnessAndPenalty.getPenalty (i) == INT_MIN) \
+         DBG_OBJ_ARRATTRSET_SYM ("words", n, "penalty." is, "-inf"); \
+      else if (words->getRef(n)->badnessAndPenalty.getPenalty (i) == INT_MAX) \
+         DBG_OBJ_ARRATTRSET_SYM ("words", n, "penalty." is, "inf"); \
+      else \
+         DBG_OBJ_ARRATTRSET_NUM ("words", n, "penalty." is, \
+                                 words->getRef(n)->badnessAndPenalty \
+                                 .getPenalty (i));                   \
+   } D_STMT_END
+
 #define DBG_SET_WORD(n) \
    D_STMT_START { \
       switch (words->getRef(n)->content.type) { \
@@ -841,6 +856,8 @@ public:
          DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "???"); \
          DBG_OBJ_ARRATTRSET_SYM ("words", n, "text/widget/breakSpace", "???"); \
       } \
+      DBG_SET_WORD_PENALTY (n, 0, "0"); \
+      DBG_SET_WORD_PENALTY (n, 1, "1"); \
    } D_STMT_END
 
 #define DBG_MSG_WORD(aspect, prio, prefix, n, suffix) \

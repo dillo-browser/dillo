@@ -1330,9 +1330,6 @@ int Textblock::hyphenateWord (int wordIndex, int *addIndex1)
          w->content.text =
             layout->textZone->strndup (origWord.content.text + start,
                                        end - start);
-         PRINTF ("      [%d] -> '%s'\n", wordIndex + i, w->content.text);
-
-         DBG_SET_WORD (wordIndex + i);
 
          // Note: there are numBreaks + 1 word parts.
          if (i == 0)
@@ -1355,20 +1352,12 @@ int Textblock::hyphenateWord (int wordIndex, int *addIndex1)
                                   strlen (hyphenDrawChar));
             w->flags |= (Word::DRAW_AS_ONE_TEXT | Word::DIV_CHAR_AT_EOL |
                          Word::UNBREAKABLE_FOR_MIN_WIDTH);
-
-            PRINTF ("      [%d] + hyphen\n", wordIndex + i);
          } else {
-            if (origWord.content.space) {
+            if (origWord.content.space)
                fillSpace (wordIndex + i, origWord.spaceStyle);
-               PRINTF ("      [%d] + space\n", wordIndex + i);
-            } else {
-               PRINTF ("      [%d] + nothing\n", wordIndex + i);
-            }
          }
 
-         //printf ("[%p] %d: hyphenated word part: ", this, wordIndex + i);
-         //printWordWithFlags (w);
-         //printf ("\n");
+         DBG_SET_WORD (wordIndex + i);
       }
 
       // AccumulateWordData() will calculate the width, which depends
