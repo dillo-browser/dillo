@@ -608,7 +608,9 @@ protected:
    void fillSpace (int wordNo, core::style::Style *style);
    void setBreakOption (Word *word, core::style::Style *style,
                         int breakPenalty1, int breakPenalty2, bool forceBreak);
-   bool isBreakAllowed (Word *word);
+   bool isBreakAllowedInWord (Word *word)
+   { return isBreakAllowed (word->style); }
+   bool isBreakAllowed (core::style::Style *style);
    int textWidth (const char *text, int start, int len,
                   core::style::Style *style, bool isStart, bool isEnd);
    void calcTextSize (const char *text, size_t len, core::style::Style *style,

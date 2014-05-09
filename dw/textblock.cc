@@ -2483,7 +2483,7 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style,
    // TODO: lineMustBeBroken should be independent of the penalty
    // index? Otherwise, examine the last line.
    if (!word->badnessAndPenalty.lineMustBeBroken(0)) {
-      if (forceBreak || isBreakAllowed (word))
+      if (forceBreak || isBreakAllowed (style))
          word->badnessAndPenalty.setPenalties (breakPenalty1, breakPenalty2);
       else
          word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
@@ -2492,9 +2492,9 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style,
    DBG_OBJ_MSG_END ();
 }
 
-bool Textblock::isBreakAllowed (Word *word)
+bool Textblock::isBreakAllowed (core::style::Style *style)
 {
-   switch (word->style->whiteSpace) {
+   switch (style->whiteSpace) {
    case core::style::WHITE_SPACE_NORMAL:
    case core::style::WHITE_SPACE_PRE_LINE:
    case core::style::WHITE_SPACE_PRE_WRAP:
