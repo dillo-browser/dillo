@@ -1957,8 +1957,8 @@ void Textblock::calcTextSize (const char *text, size_t len,
 void Textblock::addText (const char *text, size_t len,
                          core::style::Style *style)
 {
-   DBG_OBJ_MSGF ("construct.word", 0, "<b>addText</b> (..., %d, ...)",
-                 (int)len);
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addText</b> (..., %d, %p)",
+                 (int)len, style);
    DBG_OBJ_MSG_START ();
 
    // Count dividing characters.
@@ -2210,7 +2210,7 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
                           core::style::Style *style, core::Requisition *size)
 {
    DBG_OBJ_MSGF ("construct.word", 0,
-                 "<b>addText0</b> (..., %d, %s:%s:%s:%s:%s:%s:%s, ..., "
+                 "<b>addText0</b> (..., %d, %s:%s:%s:%s:%s:%s:%s, %p, "
                  "%d * (%d + %d)",
                  (int)len,
                  // Ugly copy&paste from printWordFlags:
@@ -2221,7 +2221,7 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
                  (flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--",
                  (flags & Word::WORD_START) ? "st" : "--",
                  (flags & Word::WORD_END) ? "en" : "--",
-                 size->width, size->ascent, size->descent);
+                 style, size->width, size->ascent, size->descent);
    DBG_OBJ_MSG_START ();
 
    //printf("[%p] addText0 ('", this);
@@ -2255,7 +2255,8 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
  */
 void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 {
-   DBG_OBJ_MSGF ("construct.word", 0, "<b>addWidget</b> (%p, ...)", widget);
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addWidget</b> (%p, %p)",
+                 widget, style);
    DBG_OBJ_MSG_START ();
 
    /* We first assign -1 as parent_ref, since the call of widget->size_request
@@ -2328,7 +2329,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
  */
 bool Textblock::addAnchor (const char *name, core::style::Style *style)
 {
-   DBG_OBJ_MSGF ("construct.word", 0, "<b>addAnchor</b> (\"%s\", ...)", name);
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addAnchor</b> (\"%s\", %p)",
+                 name, style);
    DBG_OBJ_MSG_START ();
 
    char *copy;
@@ -2373,7 +2375,7 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
  */
 void Textblock::addSpace (core::style::Style *style)
 {
-   DBG_OBJ_MSG ("construct.word", 0, "<b>addSpace</b> (...)");
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addSpace</b> (%p)", style);
    DBG_OBJ_MSG_START ();
 
    int wordIndex = words->size () - 1;
@@ -2395,8 +2397,8 @@ void Textblock::addSpace (core::style::Style *style)
  */
 void Textblock::addBreakOption (core::style::Style *style, bool forceBreak)
 {
-   DBG_OBJ_MSGF ("construct.word", 0, "<b>addBreakOption</b> (..., %s)",
-                 forceBreak ? "true" : "false");
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addBreakOption</b> (%p, %s)",
+                 style, forceBreak ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    int wordIndex = words->size () - 1;
@@ -2412,6 +2414,19 @@ void Textblock::addBreakOption (core::style::Style *style, bool forceBreak)
 
 void Textblock::fillSpace (int wordNo, core::style::Style *style)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>fillSpace</b> (%d, ...)", wordNo);
+   DBG_OBJ_MSG_START ();
+
+   DBG_OBJ_MSGF ("construct.word", 1, "style.white-space = %s",
+                 style->whiteSpace == core::style::WHITE_SPACE_NORMAL ? "normal"
+                 : style->whiteSpace == core::style::WHITE_SPACE_PRE ? "pre"
+                 : style->whiteSpace == core::style::WHITE_SPACE_NOWRAP ?
+                 "nowrap"
+                 : style->whiteSpace == core::style::WHITE_SPACE_PRE_WRAP ?
+                 "pre-wrap"
+                 : style->whiteSpace == core::style::WHITE_SPACE_PRE_LINE ?
+                 "pre-line" : "???");
+
    // Old comment:
    // 
    //     According to
@@ -2437,16 +2452,8 @@ void Textblock::fillSpace (int wordNo, core::style::Style *style)
       setBreakOption (word, style, 0, 0, false);
 
       word->content.space = true;
-      word->effSpace = word->origSpace = style->font->spaceWidth +
-         style->wordSpacing;
-
-      //DBG_OBJ_ARRSET_NUM (this, "words.%d.origSpace", wordIndex,
-      //                    word->origSpace);
-      //DBG_OBJ_ARRSET_NUM (this, "words.%d.effSpace", wordIndex,
-      //                    word->effSpace);
-      //DBG_OBJ_ARRSET_NUM (this, "words.%d.content.space", wordIndex,
-      //                    word->content.space);
-
+      word->effSpace = word->origSpace =
+         style->font->spaceWidth + style->wordSpacing;
 
       removeSpaceImgRenderer (wordNo);
 
@@ -2456,6 +2463,8 @@ void Textblock::fillSpace (int wordNo, core::style::Style *style)
       
       setSpaceImgRenderer (wordNo);
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**
@@ -2467,6 +2476,10 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style,
                                 int breakPenalty1, int breakPenalty2,
                                 bool forceBreak)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>setBreakOption</b> (..., %d, %d, %s)",
+                 breakPenalty1, breakPenalty2, forceBreak ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
    // TODO: lineMustBeBroken should be independent of the penalty
    // index? Otherwise, examine the last line.
    if (!word->badnessAndPenalty.lineMustBeBroken(0)) {
@@ -2475,6 +2488,8 @@ void Textblock::setBreakOption (Word *word, core::style::Style *style,
       else
          word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 bool Textblock::isBreakAllowed (Word *word)
@@ -2488,11 +2503,12 @@ bool Textblock::isBreakAllowed (Word *word)
    case core::style::WHITE_SPACE_PRE:
    case core::style::WHITE_SPACE_NOWRAP:
       return false;
-   }
-   
-   // compiler happiness
-   lout::misc::assertNotReached ();
-   return false;
+
+   default:
+      // compiler happiness
+      lout::misc::assertNotReached ();
+      return false;
+   }  
 }
 
 
@@ -2501,7 +2517,8 @@ bool Textblock::isBreakAllowed (Word *word)
  */
 void Textblock::addParbreak (int space, core::style::Style *style)
 {
-   DBG_OBJ_MSGF ("construct.word", 0, "<b>addParbreak</b> (%d, ...)", space);
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addParbreak</b> (%d, %p)",
+                 space, style);
    DBG_OBJ_MSG ("construct.word", 0, "<i>no nesting!</i>");
 
    Word *word;
@@ -2587,7 +2604,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
  */
 void Textblock::addLinebreak (core::style::Style *style)
 {
-   DBG_OBJ_MSG ("construct.word", 0, "<b>addLinebreak</b> (...)");
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>addLinebreak</b> (%p)", style);
    DBG_OBJ_MSG_START ();
 
    Word *word;
