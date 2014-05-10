@@ -529,6 +529,9 @@ void Textblock::accumulateWordExtremes (int firstWord, int lastWord,
 
 void Textblock::processWord (int wordIndex)
 {
+   DBG_OBJ_MSGF ("construct.word", 0, "<b>processWord</b> (%d)", wordIndex);
+   DBG_OBJ_MSG_START ();
+
    bool wordListChanged = wordWrap (wordIndex, false);
 
    if (wordListChanged) {
@@ -537,19 +540,35 @@ void Textblock::processWord (int wordIndex)
       // more than one time (original un-hyphenated word, plus all
       // parts of the hyphenated word, except the first one), the
       // whole paragraph is recalculated again.
+      //
+      // (Note: the hyphenated word is often *before* wordIndex, and
+      // it may be even more than one word, which makes it nearly
+      // impossible to reconstruct what has happend. Therefore, there
+      // is no simpler approach to handle this.)
+
+      DBG_OBJ_MSG ("construct.paragraph", 1, "word list has changed");
 
       int firstWord;
       if (paragraphs->size() > 0) {
          firstWord = paragraphs->getLastRef()->firstWord;
          paragraphs->setSize (paragraphs->size() - 1);
+         DBG_OBJ_MSG ("construct.paragraph", 1, "removing last paragraph");
       } else
          firstWord = 0;
 
+      DBG_OBJ_MSGF ("construct.paragraph", 1,
+                    "processing words again from %d to %d",
+                    firstWord, wordIndex - 1);
+
+      DBG_OBJ_MSG_START ();
       for (int i = firstWord; i <= wordIndex - 1; i++)
          handleWordExtremes (i);
+      DBG_OBJ_MSG_END ();
    }
 
    handleWordExtremes (wordIndex);
+
+   DBG_OBJ_MSG_END ();
 }
 
 /*

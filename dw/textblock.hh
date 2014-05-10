@@ -307,13 +307,13 @@ protected:
                            hyphen width etc.) since the last possible
                            break within this paragraph. */
       int parMax;       /* The sum of all word maxima in this
-                         * paragraph (plus spaces, hyphen width
-                         * etc.). */
+                           paragraph (plus spaces, hyphen width
+                           etc.). */
 
       int maxParMin;    /* Maximum of all paragraph minima (value of
-                         * "parMin), including this paragraph. */
+                           "parMin"), including this paragraph. */
       int maxParMax;    /* Maximum of all paragraph maxima (value of
-                         * "parMax"), including this paragraph. */
+                           "parMax""), including this paragraph. */
    };
 
    struct Line
