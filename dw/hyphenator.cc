@@ -244,7 +244,7 @@ bool Hyphenator::isCharPartOfActualWord (char *s)
 int *Hyphenator::hyphenateWord(core::Platform *platform,
                                const char *word, int *numBreaks)
 {
-   if ((trie == NULL && exceptions ==NULL) || !isHyphenationCandidate (word)) {
+   if ((trie == NULL && exceptions == NULL) || !isHyphenationCandidate (word)) {
       *numBreaks = 0;
       return NULL;
    }
