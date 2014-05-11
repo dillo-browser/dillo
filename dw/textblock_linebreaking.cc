@@ -605,19 +605,16 @@ int Textblock::wordWrap (int wordIndex, bool wrapAll)
 
    accumulateWordData (wordIndex);
 
-   //printf ("   ");
-   //printWord (word);
-   //printf ("\n");
-
-   bool b;
+   int n;
    if (word->content.type == core::Content::WIDGET_OOF_REF)
-      b = false;
+      n = 0;
    else
-      b = wrapWordInFlow (wordIndex, wrapAll);
+      n = wrapWordInFlow (wordIndex, wrapAll);
 
+   DBG_OBJ_MSGF ("construct.word", 1, "=> %d", n);
    DBG_OBJ_MSG_END ();
 
-   return b;
+   return n;
 }
 
 int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
