@@ -2028,11 +2028,14 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 {
    if (vloat->dirty ||
-       // If the size of the containing block has changed (represented
-       // currently by the available width), a recalculation of a
-       // relative float width may also be necessary.
-       (isPerLength (vloat->getWidget()->getStyle()->width) &&
-        vloat->cbAvailWidth != containingBlock->getAvailWidth ())) {
+       vloat->cbAvailWidth != containingBlock->getAvailWidth () &&
+       (// If the size of the containing block has changed (represented
+        // currently by the available width), a recalculation of a relative
+        // float width may also be necessary.
+        isPerLength (vloat->getWidget()->getStyle()->width) ||
+        // Similar for "auto" widths of textblocks etc.
+        (vloat->getWidget()->usesHints () && 
+         vloat->getWidget()->getStyle()->width == LENGTH_AUTO))) {
       DBG_OBJ_MSGF ("resize.oofm", 0,
                     "<b>ensureFloatSize</b> (%p): recalculation",
                     vloat->getWidget ());
