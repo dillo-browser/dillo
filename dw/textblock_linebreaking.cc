@@ -535,7 +535,9 @@ void Textblock::processWord (int wordIndex)
 
    int diffWords = wordWrap (wordIndex, false);
 
-   if (diffWords > 0) {
+   if (diffWords == 0)
+      handleWordExtremes (wordIndex);
+   else {
       // If wordWrap has called hyphenateWord here, this has an effect
       // on the call of handleWordExtremes. To avoid adding values
       // more than one time (original un-hyphenated word, plus all
@@ -547,7 +549,8 @@ void Textblock::processWord (int wordIndex)
       // impossible to reconstruct what has happend. Therefore, there
       // is no simpler approach to handle this.)
 
-      DBG_OBJ_MSG ("construct.paragraph", 1, "word list has changed");
+      DBG_OBJ_MSGF ("construct.paragraph", 1,
+                    "word list has become longer by %d", diffWords);
 
       int firstWord;
       if (paragraphs->size() > 0) {
@@ -561,13 +564,14 @@ void Textblock::processWord (int wordIndex)
                     "processing words again from %d to %d",
                     firstWord, wordIndex - 1);
 
+      // Furthermore, some more words have to be processed, so we
+      // iterate until wordIndex + diffWords, not only
+      // wordIndex.
       DBG_OBJ_MSG_START ();
-      for (int i = firstWord; i <= wordIndex - 1; i++)
+      for (int i = firstWord; i <= wordIndex + diffWords; i++)
          handleWordExtremes (i);
       DBG_OBJ_MSG_END ();
    }
-
-   handleWordExtremes (wordIndex);
 
    DBG_OBJ_MSG_END ();
 }
