@@ -529,8 +529,9 @@ void Textblock::accumulateWordExtremes (int firstWord, int lastWord,
 
 void Textblock::processWord (int wordIndex)
 {
-   DBG_OBJ_MSGF ("construct.word", 0, "<b>processWord</b> (%d)", wordIndex);
+   DBG_OBJ_MSGF ("construct.all", 0, "<b>processWord</b> (%d)", wordIndex);
    DBG_OBJ_MSG_START ();
+   DBG_MSG_WORD ("construct.all", 1, "<i>processed word:</i>", wordIndex, "");
 
    bool wordListChanged = wordWrap (wordIndex, false);
 
@@ -1796,50 +1797,54 @@ void Textblock::fillParagraphs ()
    DBG_OBJ_MSG ("resize", 0, "<b>fillParagraphs</b>");
    DBG_OBJ_MSG_START ();
 
-   if (wrapRefParagraphs == -1)
-      return;
-
-   // Notice that wrapRefParagraphs refers to the lines, not to the paragraphs.
-   int firstWordOfLine;
-   if (lines->size () > 0 && wrapRefParagraphs > 0) {
-      // Sometimes, wrapRefParagraphs is larger than lines->size(), due to
-      // floats? (Has to be clarified.)
-      int lineNo = misc::min (wrapRefParagraphs, lines->size ()) - 1;
-      firstWordOfLine = lines->getRef(lineNo)->lastWord + 1;
-   } else
-      firstWordOfLine = 0;
-
-   int parNo;
-   if (paragraphs->size() > 0 &&
-       firstWordOfLine > paragraphs->getLastRef()->firstWord)
-      // A special case: the paragraphs list has been partly built, but
-      // not yet the paragraph containing the word in question. In
-      // this case, only the rest of the paragraphs list must be
-      // constructed. (Without this check, findParagraphOfWord would
-      // return -1 in this case, so that all paragraphs would be
-      // rebuilt.)
-      parNo = paragraphs->size ();
-   else
-      // If there are no paragraphs yet, findParagraphOfWord will return
-      // -1: use 0 then instead.
-      parNo = misc::max (0, findParagraphOfWord (firstWordOfLine));
-
-   paragraphs->setSize (parNo);
-
-   int firstWord;
-   if (paragraphs->size () > 0)
-      firstWord = paragraphs->getLastRef()->lastWord + 1;
-   else
-      firstWord = 0;
-
-   PRINTF ("[%p] FILL_PARAGRAPHS: now %d paragraphs; starting from word %d\n",
-           this, parNo, firstWord);
-
-   for (int i = firstWord; i < words->size (); i++)
-      handleWordExtremes (i);
-
-   wrapRefParagraphs = -1;
-   DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);     
+   DBG_OBJ_MSGF ("resize", 1, "wrapRefParagraphs = %d", wrapRefParagraphs);
+   
+   if (wrapRefParagraphs != -1) {
+      // Notice that wrapRefParagraphs refers to the lines, not to the
+      // paragraphs.
+      int firstWordOfLine;
+      if (lines->size () > 0 && wrapRefParagraphs > 0) {
+         // Sometimes, wrapRefParagraphs is larger than lines->size(), due to
+         // floats? (Has to be clarified.)
+         int lineNo = misc::min (wrapRefParagraphs, lines->size ()) - 1;
+         firstWordOfLine = lines->getRef(lineNo)->lastWord + 1;
+      } else
+         firstWordOfLine = 0;
+      
+      int parNo;
+      if (paragraphs->size() > 0 &&
+          firstWordOfLine > paragraphs->getLastRef()->firstWord)
+         // A special case: the paragraphs list has been partly built, but
+         // not yet the paragraph containing the word in question. In
+         // this case, only the rest of the paragraphs list must be
+         // constructed. (Without this check, findParagraphOfWord would
+         // return -1 in this case, so that all paragraphs would be
+         // rebuilt.)
+         parNo = paragraphs->size ();
+      else
+         // If there are no paragraphs yet, findParagraphOfWord will return
+         // -1: use 0 then instead.
+         parNo = misc::max (0, findParagraphOfWord (firstWordOfLine));
+      
+      paragraphs->setSize (parNo);
+      
+      int firstWord;
+      if (paragraphs->size () > 0)
+         firstWord = paragraphs->getLastRef()->lastWord + 1;
+      else
+         firstWord = 0;
+      
+      DBG_OBJ_MSGF ("resize", 1, "firstWord = %d, words->size() = %d [before]",
+                    firstWord, words->size ());
+      
+      for (int i = firstWord; i < words->size (); i++)
+         handleWordExtremes (i);
+      
+      DBG_OBJ_MSGF ("resize", 1, "words->size() = %d [after]", words->size ());
+      
+      wrapRefParagraphs = -1;
+      DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);     
+   }
 
    DBG_OBJ_MSG_END ();
 }
