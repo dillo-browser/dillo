@@ -705,19 +705,19 @@ protected:
    void accumulateWordExtremes (int firstWord, int lastWord,
                                 int *maxOfMinWidth, int *sumOfMaxWidth);
    void processWord (int wordIndex);
-   virtual bool wordWrap (int wordIndex, bool wrapAll);
-   bool wrapWordInFlow (int wordIndex, bool wrapAll);
+   virtual int wordWrap (int wordIndex, bool wrapAll);
+   int wrapWordInFlow (int wordIndex, bool wrapAll);
    void balanceBreakPosAndHeight (int wordIndex, int firstIndex,
                                   int *searchUntil, bool tempNewLine,
                                   int penaltyIndex, bool borderIsCalculated,
                                   bool *thereWillBeMoreSpace, bool wrapAll,
-                                  bool *wordListChanged, int *wordIndexEnd,
+                                  int *diffWords, int *wordIndexEnd,
                                   int *lastFloatPos, bool regardBorder,
                                   int *height, int *breakPos);
    int searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                        bool tempNewLine, int penaltyIndex,
                        bool thereWillBeMoreSpace, bool wrapAll,
-                       bool *wordListChanged, int *wordIndexEnd,
+                       int *diffWords, int *wordIndexEnd,
                        int *addIndex1 = NULL);
    int searchMinBap (int firstWord, int lastWordm, int penaltyIndex,
                      bool thereWillBeMoreSpace, bool correctAtEnd);

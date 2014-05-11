@@ -45,12 +45,12 @@ TableCell::~TableCell()
    DBG_OBJ_DELETE ();
 }
 
-bool TableCell::wordWrap(int wordIndex, bool wrapAll)
+int TableCell::wordWrap(int wordIndex, bool wrapAll)
 {
    Textblock::Word *word;
    const char *p;
 
-   bool ret = Textblock::wordWrap (wordIndex, wrapAll);
+   int ret = Textblock::wordWrap (wordIndex, wrapAll);
 
    if (charWordIndex == -1) {
       word = words->getRef (wordIndex);
