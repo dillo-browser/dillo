@@ -551,6 +551,8 @@ void Textblock::processWord (int wordIndex)
 
       DBG_OBJ_MSGF ("construct.paragraph", 1,
                     "word list has become longer by %d", diffWords);
+      DBG_MSG_WORD ("construct.all", 1, "<i>processed word now:</i>",
+                    wordIndex, "");
 
       int firstWord;
       if (paragraphs->size() > 0) {
@@ -560,15 +562,16 @@ void Textblock::processWord (int wordIndex)
       } else
          firstWord = 0;
 
+      int lastIndex = wordIndex + diffWords;
       DBG_OBJ_MSGF ("construct.paragraph", 1,
                     "processing words again from %d to %d",
-                    firstWord, wordIndex - 1);
+                    firstWord, lastIndex);
 
       // Furthermore, some more words have to be processed, so we
       // iterate until wordIndex + diffWords, not only
       // wordIndex.
       DBG_OBJ_MSG_START ();
-      for (int i = firstWord; i <= wordIndex + diffWords; i++)
+      for (int i = firstWord; i <= lastIndex; i++)
          handleWordExtremes (i);
       DBG_OBJ_MSG_END ();
    }
