@@ -1153,11 +1153,15 @@ void OutOfFlowMgr::drawAbsolutelyPositioned (View *view, Rectangle *area)
  * leads sometimes to a cleaner rendering.
  */
 bool OutOfFlowMgr::isWidgetOutOfFlow (Widget *widget)
-{
-   return
-      widget->getStyle()->vloat != FLOAT_NONE ||
-      widget->getStyle()->position == POSITION_ABSOLUTE ||
-      widget->getStyle()->position == POSITION_FIXED;
+{  
+   // This is only half-baked, will perhaps be reactivated:
+   //
+   //return
+   //   widget->getStyle()->vloat != FLOAT_NONE ||
+   //   widget->getStyle()->position == POSITION_ABSOLUTE ||
+   //   widget->getStyle()->position == POSITION_FIXED;
+
+   return isWidgetHandledByOOFM (widget);
 }
 
 bool OutOfFlowMgr::isWidgetHandledByOOFM (Widget *widget)
