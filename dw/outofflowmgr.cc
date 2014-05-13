@@ -1418,7 +1418,11 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReq", vloat->yReq);
    DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
 
-   // Test collisions (on this side). Only previous float is relevant.
+   // Test collisions (on this side). Although there are (rare) cases
+   // where it could make sense, the horizontal dimensions are not
+   // tested; especially since searching and border calculation would
+   // be confused. For this reaspn, only the previous float is
+   // relevant. (Cf. below, collisions on the other side.)
    int index = vloat->getIndex (listSame->type), yRealNew;
    if (index >= 1 &&
        collidesV (vloat, listSame->get (index - 1), listSame->type,
@@ -1427,15 +1431,48 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
       DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
    }
 
-   // Test collisions (on the opposite side). Search the last float on
-   // the other size before this float; only this is relevant.
-   int lastOppFloat =
+   // Test collisions (on the opposite side). There are cases when
+   // more than one float has to be tested. Consider the following
+   // HTML snippet ("id" attribute only used for simple reference
+   // below, as #f1, #f2, and #f3):
+   //
+   //    <div style="float:left" id="f1">
+   //       Left left left left left left left left left left.
+   //    </div>
+   //    <div style="float:left" id="f2">Also left.</div>
+   //    <div style="float:right" id="f3">Right.</div>
+   //
+   // When displayed with a suitable window width (only slightly wider
+   // than the text within #f1), this should look like this:
+   //
+   //    ---------------------------------------------------------
+   //    | Left left left left left left left left left left.    |
+   //    | Also left.                                     Right. |
+   //    ---------------------------------------------------------
+   //
+   // Consider float #f3: a collision test with #f2, considering
+   // vertical dimensions, is positive, but not the test with
+   // horizontal dimensions (because #f2 and #f3 are too
+   // narrow). However, a collision has to be tested with #f1;
+   // otherwise #f3 and #f1 would overlap.
+   
+   int oppFloatIndex =
       listOpp->findLastBeforeSideSpanningIndex (vloat->sideSpanningIndex);
-   if (lastOppFloat >= 0 &&
-       collidesH (vloat, listOpp->get (lastOppFloat), listSame->type,
-                  &yRealNew)) {
-      vloat->yReal = yRealNew;
-      DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
+   // Generally, the rules are simple: loop as long as the vertical
+   // dimensions test is positive (and, of course, there are floats),
+   // ...
+   for (bool foundColl = false;
+        !foundColl && oppFloatIndex >= 0 &&
+           collidesV (vloat, listOpp->get (oppFloatIndex), listSame->type,
+                      &yRealNew);
+        oppFloatIndex--) {
+      // ... but stop the loop as soon as the horizontal dimensions
+      // test is positive.
+      if (collidesH (vloat, listOpp->get (oppFloatIndex), listSame->type)) {
+         vloat->yReal = yRealNew;
+         DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
+         foundColl = true;
+      }
    }
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "vloat->yReq = %d, vloat->yReal = %d",
@@ -1514,48 +1551,45 @@ bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, SFVType type,
 }
 
 
-bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, SFVType type,
-                              int *yReal)
+bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, SFVType type)
 {
+   // Only checks horizontal collision. For a complete test, use
+   // collidesV (...) && collidesH (...).
    bool collidesH;
 
-   if (!collidesV (vloat, other, type, yReal))
-      collidesH = false;
+   if (vloat->generatingBlock == other->generatingBlock)
+      collidesH = vloat->size.width + other->size.width
+         + vloat->generatingBlock->getStyle()->boxDiffWidth()
+         > vloat->generatingBlock->getAvailWidth();
    else {
-      if (vloat->generatingBlock == other->generatingBlock)
-         collidesH = vloat->size.width + other->size.width
-            + vloat->generatingBlock->getStyle()->boxDiffWidth()
-            > vloat->generatingBlock->getAvailWidth();
+      assert (wasAllocated (vloat->generatingBlock));
+      assert (wasAllocated (other->generatingBlock));
+      
+      // Again, if the other float is not allocated, there is no
+      // collision. Compare to collidesV. (But vloat->size is used
+      // here.)
+      if (!other->getWidget()->wasAllocated ())
+         collidesH = false;
       else {
-         assert (wasAllocated (vloat->generatingBlock));
-         assert (wasAllocated (other->generatingBlock));
-
-         // Again, if the other float is not allocated, there is no
-         // collision. Compare to collidesV. (But vloat->size is used
-         // here.)
-         if (!other->getWidget()->wasAllocated ())
-            collidesH = false;
-         else {
-            Allocation *gba = getAllocation (vloat->generatingBlock);
-            int vloatX =
-               calcFloatX (vloat,
-                           vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT ?
-                           LEFT : RIGHT,
-                           gba->x, gba->width,
-                           vloat->generatingBlock->getAvailWidth ());
-
-            // Generally: right border of the left float > left border
-            // of the right float (all in canvas coordinates).
-            if (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT)
-               // "vloat" is left, "other" is right
-               collidesH = vloatX + vloat->size.width
-                  > other->getWidget()->getAllocation()->x;
-            else
-               // "other" is left, "vloat" is right
-               collidesH = other->getWidget()->getAllocation()->x
-                  + other->getWidget()->getAllocation()->width
-                  > vloatX;
-         }
+         Allocation *gba = getAllocation (vloat->generatingBlock);
+         int vloatX =
+            calcFloatX (vloat,
+                        vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT ?
+                        LEFT : RIGHT,
+                        gba->x, gba->width,
+                        vloat->generatingBlock->getAvailWidth ());
+         
+         // Generally: right border of the left float > left border of
+         // the right float (all in canvas coordinates).
+         if (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT)
+            // "vloat" is left, "other" is right
+            collidesH = vloatX + vloat->size.width
+               > other->getWidget()->getAllocation()->x;
+         else
+            // "other" is left, "vloat" is right
+            collidesH = other->getWidget()->getAllocation()->x
+               + other->getWidget()->getAllocation()->width
+               > vloatX;
       }
    }
 

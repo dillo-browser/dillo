@@ -297,7 +297,7 @@ private:
    core::Widget *getAbsolutelyPositionedWidgetAtPoint (int x, int y, int level);
 
    bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal);
-   bool collidesH (Float *vloat, Float *other, SFVType type, int *yReal);
+   bool collidesH (Float *vloat, Float *other, SFVType type);
    
    void getFloatsListsAndSide (Float *vloat, SortedFloatsVector **listSame,
                                SortedFloatsVector **listOpp, Side *side);
