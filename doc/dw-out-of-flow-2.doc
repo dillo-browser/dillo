@@ -1,7 +1,6 @@
-/** \page dw-out-of-flow-2 Handling Elements Out Of Flow (cont.)
+/** \page dw-out-of-flow-2 Handling Elements Out Of Flow (notes 2)
 
-(Some notes, to be integrated into \ref dw-out-of-flow; focus mainly
-on performance aspects.)
+This has to be integrated into \ref dw-out-of-flow.
 
 Constructing a page with floats
 -------------------------------
