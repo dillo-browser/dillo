@@ -256,7 +256,9 @@ void a_Dicache_invalidate_entry(const DilloUrl *Url)
 
 /*
  * Set image's width, height & type
- * (By now, we'll use the image information despite the html tags --Jcid)
+ * - 'width' and 'height' come from the image data.
+ * - HTML width and height attrs are handled with setNonCssHint.
+ * - CSS sizing is handled by the CSS engine.
  */
 void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
                          uint_t width, uint_t height, DilloImgType type,
@@ -269,7 +271,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
    /* Find the DicEntry for this Image */
    DicEntry = a_Dicache_get_entry(url, version);
    dReturn_if_fail ( DicEntry != NULL );
-   /* Parameters already set? */
+   /* Parameters already set? Don't do it twice. */
    dReturn_if_fail ( DicEntry->State < DIC_SetParms );
 
    _MSG("  RefCount=%d version=%d\n", DicEntry->RefCount, DicEntry->version);
