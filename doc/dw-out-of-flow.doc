@@ -50,6 +50,71 @@ Both in this text and the code, generating and containing block are
 abbreviated with **GB** and **CB**, respectively.
 
 
+Implementation overview
+=======================
+
+Widget level
+------------
+The terms *generating block* and *containing block* have been raised
+to a higher level, the one of dw::core::Widget, and are here called
+*generating widget* and *containing widget*. To represent the
+distinction, the type of dw::core::Content has been split into three
+parts:
+
+- If a widget is out of flow, the generating widget keeps a reference
+  with the type dw::core::Content::WIDGET_OOF_REF, while the
+  containing block refers to it as dw::core::Content::WIDGET_OOF_CONT.
+- For widgets within flow, dw::core::Content::WIDGET_IN_FLOW is used.
+
+Notice that in the first case, there are two pieces of content
+referring to the same widget.
+
+An application of this distinction is iterators. [TODO: more. And
+still missing: DeepIterator may need the generating parent widget in
+some cases.]
+
+
+Textblock level
+---------------
+Both dw::Textblock::notifySetAsTopLevel and
+dw::Textblock::notifySetParent set the member
+dw::Textblock::containingBlock appropriately, (according to rules
+which should be defined in this document).
+
+Handling widgets out of flow is partly the task of the new class
+dw::OutOfFlowMgr, which is stored by dw::Textblock::outOfFlowMgr, but
+only for containing blocks. Generating blocks should refer to
+*containingBlock->outOfFlowMgr*. (Perhaps dw::OutOfFlowMgr may become
+independent of dw::Textblock.)
+
+dw::Textblock::addWidget is extended, so that floats and absolutely
+positioned elements can be added. Notice that not *this* widget, but
+the containing block becomes the parent of the newly added child, if
+it is out of flow. dw::Textblock::addWidget decides this by calling
+dw::OutOfFlowMgr::isOutOfFlow. (See new content types above.)
+
+dw::core::Widget::parentRef has become a new representation. Before,
+it represented the line numer. Now (least signifant bit left):
+
+    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    |                line number                | 0 |
+    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    
+    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    |          left float index         | 0 | 0 | 1 |
+    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    
+    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    |         right float index         | 1 | 0 | 1 |
+    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    
+    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    |      absolutely positioned index      | 1 | 1 |
+    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+
+Details are hidden by static inline methods of dw::OutOfFlowMgr.
+
+
 The sizeRequest/sizeAllocate problem
 ========================================
 
@@ -120,73 +185,13 @@ vague idea, perhaps not even feasible, and for which there are no
 concrete plans, certainly not in \ref dw-grows.)
 
 
-Implementation overview
-=======================
+Implementation details
+======================
 
-<div style="border: 2px solid #ff4040; margin-bottom: 0.5em;
-padding: 0.5em 1em; background-color: #fff0f0"><b>Warning:</b>
-This complete section must be reviewed. Also, integrate \ref
-dw-out-of-flow (most probably into this section).</div>
-
-Widget level
-------------
-The terms _generating block_ and _containing block_ have been raised
-to a higher level, the one of dw::core::Widget, and are here called
-_generating widget_ and _containing widget_. To represent the
-distinction, the type of dw::core::Content has been split into three
-parts:
-
-- If a widget is out of flow, the generating widget keeps a reference
-  with the type dw::core::Content::WIDGET_OOF_REF, while the
-  containing block refers to it as dw::core::Content::WIDGET_OOF_CONT.
-
-- For widgets within flow, dw::core::Content::WIDGET_IN_FLOW is used.
-
-Notice that in the first case, there are two pieces of content
-referring to the same widget.
-
-An application of this distinction is iterators. TODO: more. And still
-missing: DeepIterator may need the generating parent widget in some
-cases.
-
-
-Textblock level
----------------
-Both dw::Textblock::notifySetAsTopLevel and
-dw::Textblock::notifySetParent set the member
-dw::Textblock::containingBlock appropriately, (according to rules
-which should be defined in this document).
-
-Handling widgets out of flow is partly the task of the new class
-dw::OutOfFlowMgr, which is stored by dw::Textblock::outOfFlowMgr, but
-only for containing blocks. Generating blocks should refer to
-_containingBlock->outOfFlowMgr_. (Perhaps dw::OutOfFlowMgr may become
-independent of dw::Textblock.)
-
-dw::Textblock::addWidget is extended, so that floats and absolutely
-positioned elements can be added. Notice that not this widget, but the
-containing block becomes the parent of the newly added child, if it is
-out of flow. dw::Textblock::addWidget decides this by calling
-dw::OutOfFlowMgr::isOutOfFlow. (See new content types above.)
-
-dw::core::Widget::parentRef has become a new representation. Before,
-it represented the line numer. Now (least signifant bit left):
-
-    +---+---+- - - - - - - - - - -+---+
-    |         line number         | 0 |
-    +---+---+- - - - - - - - - - -+---+
-
-    +---+---+- - - - - - - - -+---+---+
-    |  number of left float   | 0 | 1 |
-    +---+---+- - - - - - - - -+---+---+
-
-    +---+---+- - - - - - - - -+---+---+
-    |  number of right float  | 1 | 1 |
-    +---+---+- - - - - - - - -+---+---+
-
-The latter two must be changed, as soom as absolute positions are
-introduced. Details are hidden by static inline methods of
-dw::OutOfFlowMgr.
+- CB and GB lists (general pattern) (see previous section)
+- binary search; different search criteria, how they accord
+- lastLeftTBIndex, lastRightTBIndex etc.
+- limitiation of search; extIndex etc.
 
 
 How *hasRelationChanged* works
