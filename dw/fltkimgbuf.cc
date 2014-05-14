@@ -80,7 +80,7 @@ FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma)
 {
    DBG_OBJ_CREATE ("dw::fltk::FltkImgbuf");
 
-   _MSG("FltkImgbuf: new root %p\n", this);
+   _MSG ("FltkImgbuf::FltkImgbuf: new root %p\n", this);
    init (type, width, height, gamma, NULL);
 }
 
@@ -89,7 +89,7 @@ FltkImgbuf::FltkImgbuf (Type type, int width, int height, double gamma,
 {
    DBG_OBJ_CREATE ("dw::fltk::FltkImgbuf");
 
-   _MSG("FltkImgbuf: new scaled %p, root is %p\n", this, root);
+   _MSG ("FltkImgbuf::FltkImgbuf: new scaled %p, root is %p\n", this, root);
    init (type, width, height, gamma, root);
 }
 
@@ -135,8 +135,8 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
       case RGB:  bpp = 3; break;
       default:   bpp = 1; break;
       }
-      _MSG("FltkImgbuf::init width=%d height=%d bpp=%d gamma=%g\n",
-           width, height, bpp, gamma);
+      _MSG("FltkImgbuf::init this=%p width=%d height=%d bpp=%d gamma=%g\n",
+           this, width, height, bpp, gamma);
       rawdata = new uchar[bpp * width * height];
       // Set light-gray as interim background color.
       memset(rawdata, 222, width*height*bpp);
@@ -163,6 +163,8 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
 
 FltkImgbuf::~FltkImgbuf ()
 {
+   _MSG ("FltkImgbuf::~FltkImgbuf\n");
+
    if (!isRoot())
       root->detachScaledBuf (this);
 

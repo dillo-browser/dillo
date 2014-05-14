@@ -106,9 +106,11 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
                        int version, uint_t width, uint_t height,
                        DilloImgType type)
 {
-   _MSG("a_Image_set_parms: width=%d height=%d\n", width, height);
+   _MSG("a_Image_set_parms: width=%d height=%d iw=%d ih=%d\n",
+        width, height, Image->width, Image->height);
 
-   bool resize = (Image->width != width || Image->height != height);
+   /* Resize from 0,0 to width,height */
+   bool resize = true;
    I2IR(Image)->setBuffer((Imgbuf*)v_imgbuf, resize);
 
    if (!Image->BitVec)

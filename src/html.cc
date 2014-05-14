@@ -1800,8 +1800,8 @@ static void Html_tag_open_style(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_style(DilloHtml *html)
 {
    if (prefs.parse_embedded_css && html->loadCssFromStash)
-      html->styleEngine->parse(html, html->base_url, html->Stash->str, html->Stash->len,
-                               CSS_ORIGIN_AUTHOR);
+      html->styleEngine->parse(html, html->base_url, html->Stash->str,
+                               html->Stash->len, CSS_ORIGIN_AUTHOR);
 }
 
 /*
