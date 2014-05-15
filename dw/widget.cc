@@ -159,7 +159,10 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
 {
    /** \todo Maybe only the intersection? */
    layout->queueDraw (x + allocation.x, y + allocation.y, width, height);
-   _MSG("Widget::queueDrawArea x=%d y=%d w=%d h=%d\n", x, y, width, height);
+   _MSG("Widget::queueDrawArea alloc(%d %d %d %d) wid(%d %d %d %d)\n",
+       allocation.x, allocation.y,
+       allocation.width, allocation.ascent + allocation.descent,
+       x, y, width, height);
 }
 
 /**

@@ -182,8 +182,8 @@ static void Dicache_remove(const DilloUrl *Url, int version)
    }
 
    if (entry) {
-      _MSG("Dicache_remove Decoder=%p DecoderData=%p\n",
-          entry->Decoder, entry->DecoderData);
+      _MSG("Dicache_remove Imgbuf=%p Decoder=%p DecoderData=%p\n",
+          entry->v_imgbuf, entry->Decoder, entry->DecoderData);
       /* Eliminate this dicache entry */
       dFree(entry->cmap);
       a_Bitvec_free(entry->BitVec);
@@ -218,9 +218,13 @@ void a_Dicache_unref(const DilloUrl *Url, int version)
 
    _MSG("a_Dicache_unref\n");
    if ((entry = a_Dicache_get_entry(Url, version))) {
-      if (--entry->RefCount == 0) {
+      _MSG(" a_Dicache_unref: RefCount=%d\n", entry->RefCount);
+      _MSG(" a_Dicache_unref: ImgbufLastRef=%d\n",
+          entry->v_imgbuf ? a_Imgbuf_last_reference(entry->v_imgbuf) : -1);
+      if (entry->RefCount > 0) --entry->RefCount;
+      if (entry->v_imgbuf == NULL ||
+          (entry->RefCount == 0 && a_Imgbuf_last_reference(entry->v_imgbuf)))
          Dicache_remove(Url, version);
-      }
    }
 }
 
@@ -370,6 +374,9 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
 
    /* a_Dicache_unref() may free DicEntry */
    _MSG("a_Dicache_close RefCount=%d\n", DicEntry->RefCount - 1);
+   _MSG("a_Dicache_close DIC_Close=%d State=%d\n", DIC_Close, DicEntry->State);
+   _MSG(" a_Dicache_close imgbuf=%p Decoder=%p DecoderData=%p\n",
+        DicEntry->v_imgbuf, DicEntry->Decoder, DicEntry->DecoderData);
 
    if (DicEntry->State < DIC_Close) {
       DicEntry->State = DIC_Close;
@@ -412,24 +419,27 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
 
    DicEntry = a_Dicache_get_entry(web->url, DIC_Last);
    if (!DicEntry) {
-      /* Let's create an entry for this image... */
+      /* Create an entry for this image... */
       DicEntry = Dicache_add_entry(web->url);
-      DicEntry->DecoderData =
-         (ImgType == DIC_Png) ?
-            a_Png_new(web->Image, DicEntry->url, DicEntry->version) :
-         (ImgType == DIC_Gif) ?
-            a_Gif_new(web->Image, DicEntry->url, DicEntry->version) :
-         (ImgType == DIC_Jpeg) ?
-            a_Jpeg_new(web->Image, DicEntry->url, DicEntry->version) :
-            NULL;
+      /* Attach a decoder */
+      if (ImgType == DIC_Jpeg) {
+         DicEntry->Decoder = (CA_Callback_t)a_Jpeg_callback;
+         DicEntry->DecoderData =
+            a_Jpeg_new(web->Image, DicEntry->url, DicEntry->version);
+      } else if (ImgType == DIC_Gif) {
+         DicEntry->Decoder = (CA_Callback_t)a_Gif_callback;
+         DicEntry->DecoderData =
+            a_Gif_new(web->Image, DicEntry->url, DicEntry->version);
+      } else if (ImgType == DIC_Png) {
+         DicEntry->Decoder = (CA_Callback_t)a_Png_callback;
+         DicEntry->DecoderData =
+            a_Png_new(web->Image, DicEntry->url, DicEntry->version);
+      }
    } else {
       /* Repeated image */
       a_Dicache_ref(DicEntry->url, DicEntry->version);
    }
-   DicEntry->Decoder = (ImgType == DIC_Png)  ? (CA_Callback_t)a_Png_callback :
-                       (ImgType == DIC_Gif)  ? (CA_Callback_t)a_Gif_callback :
-                       (ImgType == DIC_Jpeg) ? (CA_Callback_t)a_Jpeg_callback:
-                                               NULL;
+
    *Data = DicEntry->DecoderData;
    *Call = (CA_Callback_t) a_Dicache_callback;
 
@@ -548,6 +558,7 @@ void a_Dicache_cleanup(void)
          if (entry->v_imgbuf &&
              a_Imgbuf_last_reference(entry->v_imgbuf)) {
             /* free this unused entry */
+            _MSG("a_Dicache_cleanup: removing entry...\n");
             if (entry->next) {
                Dicache_remove(node->url, entry->version);
             } else {
