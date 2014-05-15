@@ -164,6 +164,10 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
                  x, y, width, height);
    DBG_OBJ_MSG_START ();
 
+   _MSG("Widget::queueDrawArea alloc(%d %d %d %d) wid(%d %d %d %d)\n",
+       allocation.x, allocation.y,
+       allocation.width, allocation.ascent + allocation.descent,
+       x, y, width, height);
    if (layout)
       layout->queueDraw (x + allocation.x, y + allocation.y, width, height);
 

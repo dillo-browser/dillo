@@ -425,9 +425,6 @@ void Image::setBuffer (core::Imgbuf *buffer, bool resize)
 {
    core::Imgbuf *oldBuf = this->buffer;
 
-   if (resize)
-      queueResize (0, true);
-
    if (wasAllocated () && needsResize () &&
       getContentWidth () > 0 && getContentHeight () > 0) {
       // Don't create a new buffer for the transition from alt text to img,
@@ -438,6 +435,7 @@ void Image::setBuffer (core::Imgbuf *buffer, bool resize)
       this->buffer = buffer;
       buffer->ref ();
    }
+   queueResize (0, true);
 
    DBG_OBJ_ASSOC_CHILD (this->buffer);
 
