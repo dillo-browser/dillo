@@ -1,5 +1,19 @@
 /** \page dw-grows GROWS - Grand Redesign Of Widget Sizes
 
-...
+This paper describes (will describe) some design changes to
+calculating widget sizes. Goals are:
+
+- Simplification of widget size calculation by the parent widget;
+  dw::Textblock::calcWidgetSize, dw::OutOfFlowMgr::ensureFloatSize
+  etc. should become simpler or perhaps even obsolete.
+
+- Making the implementation of some features possible:
+
+  - *max-width*, *max-height*, *min-width*, *min-height*;
+  - correct aspect ratio for images with only one percentage size defined;
+  - *display: inline-block*;
+  - <button>.
+
+(...)
 
 */

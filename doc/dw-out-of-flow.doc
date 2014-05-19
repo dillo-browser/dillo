@@ -209,7 +209,36 @@ Integration of line breaking and floats
 Absolute and fixed positiones
 =============================
 
-...
+If you look at dw::OutOfFlowMgr in detail, you will find that some
+work on absolute positions has already be done, but is
+deactivated. Absolutely positioned elements will also be handled by
+dw::OutOfFlowMgr, in a way transparent to dw::Textblock. Positioning
+is much simpler than for floats: the complicated relation between
+dw::Textblock and dw::OutOfFlowMgr (calculation of the vertical
+position of floats on one hand, limiting line widths by floats on the
+other hand) does not occur here.
 
+Since handling sizes becomes an important part for absolute positions,
+the full implementation will be realized after finishing the planned
+redesign of widget sizes (see \ref dw-grows).
+
+(One note already about the *z-index* attribute: different blocks,
+represented by widgets, may overlap; *z-index* has an influence the
+order in which
+
+1. widgets are drawn (in *ascending* order of *z-index*), and
+2. mouse events are deligated to the widgets (in *descending* oder of
+   *z-index*).
+
+Something similar is already done for floats: effectively, floats have
+a larger *z-index* than the textblocks in flow. (See *end* of
+dw::Textblock::draw and *beginning* of
+dw::Textblock::getWidgetAtPoint.)
+
+For a complete implementation, handling *z-index* becomes a bit more
+complicated. An idea is to keep track of the minimum and maximum value
+of *z-index*, and then iterating over all possible values (ascending
+for drawing, descending for event handling), handling only widgets
+with a specific *z-index* in one iteration.)
 
 */
