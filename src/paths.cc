@@ -45,7 +45,7 @@ void Paths::init(void)
    path = dStrconcat(dGethomedir(), "/.dillo", NULL);
    if (stat(path, &st) == -1) {
       if (errno == ENOENT) {
-         MSG("paths: Creating directory %s\n", path);
+         MSG("paths: Creating directory '%s/'\n", path);
          if (mkdir(path, 0700) < 0) {
             MSG("paths: Error creating directory %s: %s\n",
                 path, dStrerror(errno));
