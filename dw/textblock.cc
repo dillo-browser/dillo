@@ -492,15 +492,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);     
    }   
 
-   DBG_OBJ_MSGF ("resize", 1, "=> min (%d, %d) = %d / %d",
-                 extremes->minWidth, availWidth,
-                 misc::min (extremes->minWidth, availWidth),
-                 extremes->maxWidth);
-
-   // There are some problems when extremes->minWidth is larger than
-   // availWidth (especially with floats). Not too much efforts on
-   // this; it will be reworked with GROWS.
-   extremes->minWidth = misc::min (extremes->minWidth, availWidth);
+   DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
+                 extremes->minWidth, extremes->maxWidth);
 
    DBG_OBJ_MSG_END ();
 }
