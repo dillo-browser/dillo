@@ -32,7 +32,7 @@
 
 
 /*
- * See <http://www.dillo.org/~sgeerken/rtfl/>.
+ * See <http://home.gna.org/rtfl/>.
  */
 
 #ifdef DBG_RTFL
