@@ -2202,12 +2202,7 @@ int OutOfFlowMgr::adjustFloatWidth (int width, Extremes *extremes)
                  containingBlock->getAvailWidth());
    DBG_OBJ_MSG_START ();
 
-   // Consider the available width of the containing block (when set):
-   if (width > containingBlock->getAvailWidth()) {
-      width = containingBlock->getAvailWidth();
-      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to availWidth: %d", width);
-   }
-   // Finally, consider extremes (as described above).
+   // Consider extremes (as described above).
    if (width < extremes->minWidth) {
       width = extremes->minWidth;
       DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to minWidth: %d", width);
@@ -2215,6 +2210,15 @@ int OutOfFlowMgr::adjustFloatWidth (int width, Extremes *extremes)
    if (width > extremes->maxWidth) {
       width = extremes->maxWidth;
       DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to maxWidth: %d", width);
+   }
+   // Finally, consider the available width of the containing
+   // block. Order is important: to prevent problems, the available
+   // width of the float must never be larger than the one of the
+   // containing block. (Somewhat hackish, will be solved cleaner with
+   // GROWS.)
+   if (width > containingBlock->getAvailWidth()) {
+      width = containingBlock->getAvailWidth();
+      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to CB::availWidth: %d", width);
    }
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", width);
