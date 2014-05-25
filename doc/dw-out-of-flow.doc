@@ -210,7 +210,7 @@ Absolute and fixed positiones
 =============================
 
 If you look at dw::OutOfFlowMgr in detail, you will find that some
-work on absolute positions has already be done, but is
+work on **absolute positions** has already be done, but is
 deactivated. Absolutely positioned elements will also be handled by
 dw::OutOfFlowMgr, in a way transparent to dw::Textblock. Positioning
 is much simpler than for floats: the complicated relation between
@@ -240,5 +240,14 @@ complicated. An idea is to keep track of the minimum and maximum value
 of *z-index*, and then iterating over all possible values (ascending
 for drawing, descending for event handling), handling only widgets
 with a specific *z-index* in one iteration.)
+
+There are currently no plans for an implementation of **fixed
+positions** soon. These problems have to be considered:
+
+- Generally attaching dillo widgets to the viewport, not the canvas;
+  this is also required for the implementation of
+  *background-attachment*, see \ref dw-images-and-backgrounds.
+- To which containing block are elements with fixed position related?
+  To the same as floats and absolutely positioned?
 
 */
