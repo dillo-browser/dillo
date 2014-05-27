@@ -830,6 +830,12 @@ void Widget::setDescent (int descent)
 {
 }
 
+bool Widget::isBlockLevel ()
+{
+   // Most widgets are not block-level.
+   return false;
+}
+
 bool Widget::buttonPressImpl (EventButton *event)
 {
    return false;

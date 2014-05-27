@@ -90,11 +90,6 @@ protected:
        * The dw::Image widget uses this flag, see dw::Image::setBuffer.
        */
       WAS_ALLOCATED    = 1 << 8,
-
-      /**
-       * \brief Set for block-level widgets (as opposed to inline widgets)
-       */
-      BLOCK_LEVEL      = 1 << 9,
    };
 
    /**
@@ -255,12 +250,7 @@ protected:
          case WAS_ALLOCATED:
             DBG_OBJ_SET_SYM ("flags.WAS_ALLOCATED",
                              (flags & WAS_ALLOCATED) ? "true" : "false");
-            break;
-            
-         case BLOCK_LEVEL:
-            DBG_OBJ_SET_SYM ("flags.BLOCK_LEVEL",
-                             (flags & BLOCK_LEVEL) ? "true" : "false");
-            break;
+            break;           
          }
       }
    }
@@ -396,7 +386,6 @@ public:
    inline bool wasAllocated ()    { return flags & WAS_ALLOCATED; }
    inline bool usesHints ()       { return flags & USES_HINTS; }
    inline bool hasContents ()     { return flags & HAS_CONTENTS; }
-   inline bool blockLevel ()      { return flags & BLOCK_LEVEL; }
 
    void setParent (Widget *parent);
 
@@ -412,6 +401,8 @@ public:
    virtual void setWidth (int width);
    virtual void setAscent (int ascent);
    virtual void setDescent (int descent);
+
+   virtual bool isBlockLevel ();
 
    bool intersects (Rectangle *area, Rectangle *intersection);
 

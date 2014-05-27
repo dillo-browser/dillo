@@ -26,6 +26,8 @@ protected:
 public:
    Ruler ();
 
+   bool isBlockLevel ();
+
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 };
 

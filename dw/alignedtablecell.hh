@@ -22,6 +22,8 @@ public:
 
    AlignedTableCell(AlignedTableCell *ref, bool limitTextWidth);
    ~AlignedTableCell();
+
+   bool isBlockLevel ();
 };
 
 } // namespace dw

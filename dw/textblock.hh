@@ -753,6 +753,9 @@ protected:
    void setWidth (int width);
    void setAscent (int ascent);
    void setDescent (int descent);
+
+   bool isBlockLevel ();
+
    void draw (core::View *view, core::Rectangle *area);
 
    bool buttonPressImpl (core::EventButton *event);

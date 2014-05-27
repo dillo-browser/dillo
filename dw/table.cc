@@ -34,7 +34,6 @@ Table::Table(bool limitTextWidth)
 {
    DBG_OBJ_CREATE ("dw::Table");
    registerName ("dw::Table", &CLASS_ID);
-   setFlags (BLOCK_LEVEL);
    setFlags (USES_HINTS);
    setButtonSensitive(false);
 
@@ -226,6 +225,11 @@ void Table::setDescent (int descent)
       availDescent = descent;
       queueResize (0, false);
    }
+}
+
+bool Table::isBlockLevel ()
+{
+   return true;
 }
 
 void Table::draw (core::View *view, core::Rectangle *area)

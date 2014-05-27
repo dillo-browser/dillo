@@ -1474,7 +1474,7 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
                     word->content.widget->getStyle()->margin.bottom);
 
       if (lines->size () == 1 &&
-          word->content.widget->blockLevel () &&
+          word->content.widget->isBlockLevel () &&
           getStyle ()->borderWidth.top == 0 &&
           getStyle ()->padding.top == 0) {
          // collapse top margins of parent element and its first child
@@ -1645,7 +1645,7 @@ void Textblock::initLine1Offset (int wordIndex)
          int indent = 0;
 
          if (word->content.type == core::Content::WIDGET_IN_FLOW &&
-             word->content.widget->blockLevel() == true) {
+             word->content.widget->isBlockLevel() == true) {
             /* don't use text-indent when nesting blocks */
          } else {
             if (core::style::isPerLength(getStyle()->textIndent)) {

@@ -12,6 +12,8 @@ public:
 
    SimpleTableCell (bool limitTextWidth);
    ~SimpleTableCell ();
+
+   bool isBlockLevel ();
 };
 
 } // namespace dw

@@ -38,4 +38,9 @@ SimpleTableCell::~SimpleTableCell()
    DBG_OBJ_DELETE ();
 }
 
+bool SimpleTableCell::isBlockLevel ()
+{
+   return false;
+}
+
 } // namespace dw

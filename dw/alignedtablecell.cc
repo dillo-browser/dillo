@@ -45,6 +45,11 @@ AlignedTableCell::~AlignedTableCell()
    DBG_OBJ_DELETE ();
 }
 
+bool AlignedTableCell::isBlockLevel ()
+{
+   return false;
+}
+
 int AlignedTableCell::wordWrap(int wordIndex, bool wrapAll)
 {
    Textblock::Word *word;

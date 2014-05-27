@@ -29,7 +29,6 @@ namespace dw {
 Ruler::Ruler ()
 {
    setFlags (USES_HINTS);
-   setFlags (BLOCK_LEVEL);
    unsetFlags (HAS_CONTENTS);
    availWidth = 0;
 }
@@ -48,6 +47,11 @@ void Ruler::setWidth (int width)
       availWidth = width;
       queueResize (0, false);
    }
+}
+
+   bool Ruler::isBlockLevel ()
+{
+   return true;
 }
 
 void Ruler::draw (core::View *view, core::Rectangle *area)

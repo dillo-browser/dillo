@@ -225,7 +225,6 @@ Textblock::Textblock (bool limitTextWidth)
 {
    DBG_OBJ_CREATE ("dw::Textblock");
    registerName ("dw::Textblock", &CLASS_ID);
-   setFlags (BLOCK_LEVEL);
    setFlags (USES_HINTS);
    setButtonSensitive(true);
 
@@ -820,6 +819,11 @@ void Textblock::setDescent (int descent)
 
       DBG_OBJ_MSG_END ();
    }
+}
+
+bool Textblock::isBlockLevel ()
+{
+   return true;
 }
 
 bool Textblock::buttonPressImpl (core::EventButton *event)
