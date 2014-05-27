@@ -26,7 +26,7 @@
 #include "../dw/fltkcore.hh"
 #include "../dw/fltkviewport.hh"
 #include "../dw/table.hh"
-#include "../dw/tablecell.hh"
+#include "../dw/alignedtablecell.hh"
 
 using namespace dw;
 using namespace dw::core;
@@ -87,10 +87,10 @@ int main(int argc, char **argv)
 
    Style *wordStyle = Style::create (&styleAttrs);
 
-   TableCell *ref = NULL;
+   AlignedTableCell *ref = NULL;
    for(int i = 0; i < 10; i++) {
       //for(int i = 0; i < 1; i++) {
-      TableCell *cell = new TableCell (ref, false);
+      AlignedTableCell *cell = new AlignedTableCell (ref, false);
       cell->setStyle (cellStyle);
       ref = cell;
       table->addRow (wordStyle);

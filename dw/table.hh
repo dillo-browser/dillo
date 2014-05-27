@@ -2,7 +2,7 @@
 #define __DW_TABLE_HH__
 
 #include "core.hh"
-#include "tablecell.hh"
+#include "alignedtablecell.hh"
 #include "../lout/misc.hh"
 
 namespace dw {
@@ -458,7 +458,7 @@ public:
 
    void addCell (Widget *widget, int colspan, int rowspan);
    void addRow (core::style::Style *style);
-   TableCell *getCellRef ();
+   AlignedTableCell *getCellRef ();
 };
 
 } // namespace dw

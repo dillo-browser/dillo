@@ -26,7 +26,6 @@
 #include "../dw/fltkcore.hh"
 #include "../dw/fltkviewport.hh"
 #include "../dw/table.hh"
-#include "../dw/tablecell.hh"
 
 using namespace dw;
 using namespace dw::core;

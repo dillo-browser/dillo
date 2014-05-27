@@ -1,12 +1,12 @@
-#ifndef __DW_TABLECELL_HH__
-#define __DW_TABLECELL_HH__
+#ifndef __DW_ALIGNEDTABLECELL_HH__
+#define __DW_ALIGNEDTABLECELL_HH__
 
 #include "core.hh"
 #include "alignedtextblock.hh"
 
 namespace dw {
 
-class TableCell: public AlignedTextblock
+class AlignedTableCell: public AlignedTextblock
 {
 private:
    int charWordIndex, charWordPos;
@@ -20,10 +20,10 @@ protected:
 public:
    static int CLASS_ID;
 
-   TableCell(TableCell *ref, bool limitTextWidth);
-   ~TableCell();
+   AlignedTableCell(AlignedTableCell *ref, bool limitTextWidth);
+   ~AlignedTableCell();
 };
 
 } // namespace dw
 
-#endif // __DW_TABLECELL_HH__
+#endif // __DW_ALIGNEDTABLECELL_HH__

@@ -19,19 +19,19 @@
 
 
 
-#include "tablecell.hh"
+#include "alignedtablecell.hh"
 #include "../lout/debug.hh"
 #include <stdio.h>
 
 namespace dw {
 
-int TableCell::CLASS_ID = -1;
+int AlignedTableCell::CLASS_ID = -1;
 
-TableCell::TableCell (TableCell *ref, bool limitTextWidth):
+AlignedTableCell::AlignedTableCell (AlignedTableCell *ref, bool limitTextWidth):
    AlignedTextblock (limitTextWidth)
 {
-   DBG_OBJ_CREATE ("dw::TableCell");
-   registerName ("dw::TableCell", &CLASS_ID);
+   DBG_OBJ_CREATE ("dw::AlignedTableCell");
+   registerName ("dw::AlignedTableCell", &CLASS_ID);
 
    /** \bug ignoreLine1OffsetSometimes does not work? */
    //ignoreLine1OffsetSometimes = true;
@@ -40,12 +40,12 @@ TableCell::TableCell (TableCell *ref, bool limitTextWidth):
    setButtonSensitive(true);
 }
 
-TableCell::~TableCell()
+AlignedTableCell::~AlignedTableCell()
 {
    DBG_OBJ_DELETE ();
 }
 
-int TableCell::wordWrap(int wordIndex, bool wrapAll)
+int AlignedTableCell::wordWrap(int wordIndex, bool wrapAll)
 {
    Textblock::Word *word;
    const char *p;
@@ -73,7 +73,7 @@ int TableCell::wordWrap(int wordIndex, bool wrapAll)
    return ret;
 }
 
-int TableCell::getValue ()
+int AlignedTableCell::getValue ()
 {
    Textblock::Word *word;
    int i, wordIndex;
@@ -104,7 +104,7 @@ int TableCell::getValue ()
    return w;
 }
 
-void TableCell::setMaxValue (int maxValue, int value)
+void AlignedTableCell::setMaxValue (int maxValue, int value)
 {
    line1Offset = maxValue - value;
    queueResize (OutOfFlowMgr::createRefNormalFlow (0), true);

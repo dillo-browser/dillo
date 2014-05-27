@@ -15,6 +15,7 @@
 #include "dw/style.hh"
 #include "dw/textblock.hh"
 #include "dw/table.hh"
+#include "dw/simpletablecell.hh"
 
 #include "prefs.h"
 #include "msg.h"
@@ -445,11 +446,11 @@ static void Html_tag_content_table_cell(DilloHtml *html,
          rowspan = MAX(1, strtol (attrbuf, NULL, 10));
       if (html->style ()->textAlign
           == TEXT_ALIGN_STRING)
-         col_tb = new dw::TableCell (
+         col_tb = new AlignedTableCell (
                      ((dw::Table*)S_TOP(html)->table)->getCellRef (),
                      prefs.limit_text_width);
       else
-         col_tb = new Textblock (prefs.limit_text_width);
+         col_tb = new SimpleTableCell (prefs.limit_text_width);
 
       if (html->style()->borderCollapse == BORDER_MODEL_COLLAPSE){
          Html_set_collapsing_border_model(html, col_tb);

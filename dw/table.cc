@@ -393,7 +393,7 @@ void Table::addRow (core::style::Style *style)
    rowClosed = false;
 }
 
-TableCell *Table::getCellRef ()
+AlignedTableCell *Table::getCellRef ()
 {
    core::Widget *child;
 
@@ -401,8 +401,8 @@ TableCell *Table::getCellRef ()
       int n = curCol + row * numCols;
       if (childDefined (n)) {
          child = children->get(n)->cell.widget;
-         if (child->instanceOf (TableCell::CLASS_ID))
-            return (TableCell*)child;
+         if (child->instanceOf (AlignedTableCell::CLASS_ID))
+            return (AlignedTableCell*)child;
       }
    }
 
