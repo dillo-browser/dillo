@@ -371,8 +371,9 @@ void Layout::addWidget (Widget *widget)
 
    topLevel = widget;
    widget->layout = this;
+   widget->container = NULL;
    queueResizeList->clear ();
-   widget->notifySetAsTopLevel();
+   widget->notifySetAsTopLevel ();
 
    findtextState.setWidget (widget);
 

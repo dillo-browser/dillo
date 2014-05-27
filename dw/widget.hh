@@ -122,10 +122,17 @@ private:
 
    /**
     * \brief The generating widget, NULL for top-level widgets, or if
-    * not set; in the latter case, the effective generator (see
-    * getGenerator) is the parent.
+    *    not set; in the latter case, the effective generator (see
+    *    getGenerator) is the parent.
     */
    Widget *generator;
+
+   /**
+    * \brief The containing widget, equivalent to the "containing
+    *    block" defined by CSS. May be NULL, in this case the viewport
+    *    is used.
+    */
+   Widget *container;
 
    style::Style *style;
 

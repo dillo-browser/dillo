@@ -70,7 +70,7 @@ Widget::Widget ()
    registerName ("dw::core::Widget", &CLASS_ID);
 
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED | HAS_CONTENTS);
-   parent = generator = NULL;
+   parent = generator = container = NULL;
    layout = NULL;
 
    allocation.x = -1;
@@ -152,6 +152,18 @@ void Widget::setParent (Widget *parent)
    DBG_OBJ_ASSOC_PARENT (parent);
    //printf ("The %s %p becomes a child of the %s %p\n",
    //        getClassName(), this, parent->getClassName(), parent);
+
+   // Determine the container. Currently rather simple; will become
+   // more complicated when absolute and fixed positions are
+   // supported.
+   container = NULL;
+   for (Widget *widget = this; widget != NULL && container == NULL;
+        widget = widget->getParent())
+      if (widget->isBlockLevel ())
+         container = widget;
+   // If there is no block-level widget, there is also no container
+   // (i. e. the viewport is used). Does not occur in dillo, where the
+   // toplevel widget is a Textblock.
 
    notifySetParent();
 }
