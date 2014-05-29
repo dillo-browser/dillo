@@ -753,7 +753,6 @@ protected:
 
    void notifySetAsTopLevel();
    void notifySetParent();
-   void setWidth (int width);
 
    bool isBlockLevel ();
 

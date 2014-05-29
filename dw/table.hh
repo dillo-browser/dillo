@@ -191,8 +191,9 @@ namespace dw {
  *
  * <ul>
  * <li> the specified absolute width of the table, when given, or
- * <li> the available width (set by dw::Table::setWidth) times the specified
- *      percentage width of t(at max 100%), if the latter is given, or
+ * <li> the available width (set by dw::Table::setWidth [TODO outdated]) times
+ *      the specified percentage width of t(at max 100%), if the latter is
+ *      given, or
  * <li> otherwise the available width.
  * </ul>
  *
@@ -356,7 +357,6 @@ private:
    friend class TableIterator;
 
    bool limitTextWidth, rowClosed;
-   int availWidth, availAscent, availDescent;  // set by set...
 
    int numRows, numCols, curRow, curCol;
    lout::misc::SimpleVector<Child*> *children;
@@ -436,10 +436,6 @@ protected:
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
    void resizeDrawImpl ();
-
-   void setWidth (int width);
-   void setAscent (int ascent);
-   void setDescent (int descent);
 
    bool isBlockLevel ();
 

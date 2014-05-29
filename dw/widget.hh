@@ -409,10 +409,6 @@ public:
    void sizeAllocate (Allocation *allocation);
    int getAvailWidth ();
 
-   virtual void setWidth (int width);
-   virtual void setAscent (int ascent);
-   virtual void setDescent (int descent);
-
    virtual bool isBlockLevel ();
    virtual bool isPossibleContainer ();
 

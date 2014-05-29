@@ -241,9 +241,6 @@ public:
    Embed(Resource *resource);
    ~Embed();
 
-   void setWidth (int width);
-   void setAscent (int ascent);
-   void setDescent (int descent);
    void setDisplayed (bool displayed);
    void setEnabled (bool enabled);
    void draw (View *view, Rectangle *area);
@@ -337,9 +334,6 @@ public:
    virtual void sizeRequest (Requisition *requisition) = 0;
    virtual void getExtremes (Extremes *extremes);
    virtual void sizeAllocate (Allocation *allocation);
-   virtual void setWidth (int width);
-   virtual void setAscent (int ascent);
-   virtual void setDescent (int descent);
    virtual void setDisplayed (bool displayed);
    virtual void draw (View *view, Rectangle *area);
    virtual Iterator *iterator (Content::Type mask, bool atEnd) = 0;
@@ -407,9 +401,6 @@ public:
    void sizeRequest (Requisition *requisition);
    void getExtremes (Extremes *extremes);
    void sizeAllocate (Allocation *allocation);
-   void setWidth (int width);
-   void setAscent (int ascent);
-   void setDescent (int descent);
    Iterator *iterator (Content::Type mask, bool atEnd);
    int getClickX () {return click_x;};
    int getClickY () {return click_y;};

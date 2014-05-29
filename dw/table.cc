@@ -41,11 +41,6 @@ Table::Table(bool limitTextWidth)
 
    rowClosed = false;
 
-   // random values
-   availWidth = 100;
-   availAscent = 100;
-   availDescent = 0;
-
    numRows = 0;
    numCols = 0;
    curRow = -1;
@@ -199,32 +194,6 @@ void Table::resizeDrawImpl ()
    queueDrawArea (0, redrawY, allocation.width, getHeight () - redrawY);
    redrawX = allocation.width;
    redrawY = getHeight ();
-}
-
-void Table::setWidth (int width)
-{
-   // If limitTextWidth is set, a queueResize may also be necessary.
-   if (availWidth != width || limitTextWidth) {
-      _MSG(" Table::setWidth %d\n", width);
-      availWidth = width;
-      queueResize (0, false);
-   }
-}
-
-void Table::setAscent (int ascent)
-{
-   if (availAscent != ascent) {
-      availAscent = ascent;
-      queueResize (0, false);
-   }
-}
-
-void Table::setDescent (int descent)
-{
-   if (availDescent != descent) {
-      availDescent = descent;
-      queueResize (0, false);
-   }
 }
 
 bool Table::isBlockLevel ()
@@ -508,12 +477,13 @@ void Table::forceCalcCellSizes ()
        * rendering is implemented, to handle fixed positions etc.,
        * as defined by CSS2.)
        */
+      int availWidth = getAvailWidth ();
       totalWidth =
          misc::min (core::style::multiplyWithPerLength (availWidth,
                                                         getStyle()->width),
                     availWidth);
    } else if (getStyle()->width == core::style::LENGTH_AUTO) {
-      totalWidth = availWidth;
+      totalWidth = getAvailWidth ();
       forceTotalWidth = 0;
    }
 
@@ -559,7 +529,7 @@ void Table::forceCalcCellSizes ()
                width += colWidths->get (col + i);
 
             core::Requisition childRequisition;
-            children->get(n)->cell.widget->setWidth (width);
+            //children->get(n)->cell.widget->setWidth (width);
             children->get(n)->cell.widget->sizeRequest (&childRequisition);
             childHeight = childRequisition.ascent + childRequisition.descent;
             if (children->get(n)->cell.rowspan == 1) {

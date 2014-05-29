@@ -342,13 +342,15 @@ int Widget::getAvailWidth ()
 
    if (container == NULL) {
       // TODO Consider nested layouts (e. g. <button>).
+      int viewportWidth =
+         layout->viewportWidth - (layout->canvasHeightGreater ?
+                                  layout->vScrollbarThickness : 0);
       if (style::isAbsLength (getStyle()->width))
          return style::absLengthVal (getStyle()->width);
       else if (style::isPerLength (getStyle()->width))
-         return style::multiplyWithPerLength (layout->viewportWidth,
-                                              getStyle()->width);
+         return style::multiplyWithPerLength (viewportWidth, getStyle()->width);
       else
-         return layout->viewportWidth;
+         return viewportWidth;
    } else
       return container->getAvailWidthOfChild (this);
 }
@@ -853,18 +855,6 @@ void Widget::notifySetAsTopLevel()
  * A widget may override this method when it is necessary to be notified.
  */
 void Widget::notifySetParent()
-{
-}
-
-void Widget::setWidth (int width)
-{
-}
-
-void Widget::setAscent (int ascent)
-{
-}
-
-void Widget::setDescent (int descent)
 {
 }
 

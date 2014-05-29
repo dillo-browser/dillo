@@ -769,25 +769,6 @@ void Textblock::notifySetParent ()
    assert (containingBlock != NULL);
 }
 
-void Textblock::setWidth (int width)
-{
-   /* If limitTextWidth is set to YES, a queueResize() may also be
-    * necessary. */
-   if (lineBreakWidth != width || limitTextWidth) {
-      DBG_OBJ_MSGF ("resize", 0, "<b>setWidth</b> (%d)", width);
-      DBG_OBJ_MSG_START ();
-
-      lineBreakWidth = width;
-      DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
-      queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
-      mustQueueResize = false;
-      redrawY = 0;
-      DBG_OBJ_SET_NUM ("redrawY", redrawY);
-
-      DBG_OBJ_MSG_END ();
-   }
-}
-
 bool Textblock::isBlockLevel ()
 {
    return true;
@@ -1077,7 +1058,7 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
                        0);
 
       DBG_OBJ_MSGF ("resize", 1, "setting hint: %d", corrLineBreakWidth);
-      widget->setWidth (corrLineBreakWidth);
+      //widget->setWidth (corrLineBreakWidth);
       widget->sizeRequest (size);
       DBG_OBJ_MSGF ("resize", 1, "sizeRequest => %d * (%d + %d)",
                     size->width, size->ascent, size->descent);

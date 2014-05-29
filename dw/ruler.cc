@@ -30,23 +30,14 @@ Ruler::Ruler ()
 {
    setFlags (USES_HINTS);
    unsetFlags (HAS_CONTENTS);
-   availWidth = 0;
 }
 
 void Ruler::sizeRequestImpl (core::Requisition *requisition)
 {
-   requisition->width =
-      lout::misc::max (availWidth, getStyle()->boxDiffWidth ());
+   requisition->width = lout::misc::max (getAvailWidth (),
+                                         getStyle()->boxDiffWidth ());
    requisition->ascent = getStyle()->boxOffsetY ();
    requisition->descent = getStyle()->boxRestHeight ();
-}
-
-void Ruler::setWidth (int width)
-{
-   if (availWidth != width) {
-      availWidth = width;
-      queueResize (0, false);
-   }
 }
 
 bool Ruler::isBlockLevel ()

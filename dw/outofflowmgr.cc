@@ -2097,7 +2097,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
             DBG_OBJ_MSGF ("resize.oofm", 1, "about to set absolute width: %d",
                           width);
             width = adjustFloatWidth (width, &extremes);
-            vloat->getWidget()->setWidth (width);
+            //vloat->getWidget()->setWidth (width);
          } else if (cssWidth == LENGTH_AUTO || isPerLength (cssWidth)) {
             // It is important that the width of the *CB* is not
             // larger than its minimal width, when the latter is set
@@ -2136,7 +2136,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
                width = adjustFloatWidth (width, &extremes);
             }
 
-            vloat->getWidget()->setWidth (width);
+            //vloat->getWidget()->setWidth (width);
          } else
             DBG_OBJ_MSG ("resize.oofm", 1,
                          "setting width: <b>relative length? may be a bug</b>");
@@ -2170,7 +2170,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       int width = vloat->size.width;
       DBG_OBJ_MSGF ("resize.oofm", 1, "new width: %d", width);
       width = adjustFloatWidth (width, &extremes);
-      vloat->getWidget()->setWidth (width);
+      //vloat->getWidget()->setWidth (width);
       vloat->getWidget()->sizeRequest (&vloat->size);
       DBG_OBJ_MSGF ("resize.oofm", 1, "sizeRequest (2) => %d * (%d + %d)",
                     vloat->size.width, vloat->size.ascent, vloat->size.descent);

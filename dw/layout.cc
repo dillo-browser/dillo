@@ -378,7 +378,6 @@ void Layout::addWidget (Widget *widget)
    findtextState.setWidget (widget);
 
    canvasHeightGreater = false;
-   setSizeHints ();
 
    // Do not directly call Layout::queueResize(), but
    // Widget::queueResize(), so that all flags are set properly,
@@ -909,12 +908,10 @@ void Layout::resizeIdle ()
          int currVThickness = currVScrollbarThickness();
 
          if (!canvasHeightGreater &&
-             canvasAscent + canvasDescent
-             > viewportHeight - currHThickness) {
+             canvasAscent + canvasDescent  > viewportHeight - currHThickness) {
             canvasHeightGreater = true;
-            setSizeHints ();
-            /* May queue a new resize. */
-            }
+            // TODO tell widget about change.
+         }
 
          // Set viewport sizes.
          view->setViewportSize (viewportWidth, viewportHeight,
@@ -931,16 +928,6 @@ void Layout::resizeIdle ()
    DBG_OBJ_MSG_END ();
 
    leaveResizeIdle ();
-}
-
-void Layout::setSizeHints ()
-{
-   if (topLevel) {
-      topLevel->setWidth (viewportWidth
-                          - (canvasHeightGreater ? vScrollbarThickness : 0));
-      topLevel->setAscent (viewportHeight - hScrollbarThickness);
-      topLevel->setDescent (0);
-   }
 }
 
 void Layout::queueDraw (int x, int y, int width, int height)
@@ -1286,7 +1273,7 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
    viewportWidth = width;
    viewportHeight = height;
 
-   setSizeHints ();
+   // TODO tell widget about change.
 }
 
 } // namespace core
