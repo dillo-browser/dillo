@@ -372,6 +372,8 @@ void Layout::addWidget (Widget *widget)
    topLevel = widget;
    widget->layout = this;
    widget->container = NULL;
+   DBG_OBJ_SET_PTR_O (widget, "container", widget->container);
+
    queueResizeList->clear ();
    widget->notifySetAsTopLevel ();
 

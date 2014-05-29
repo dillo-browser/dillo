@@ -71,6 +71,8 @@ Widget::Widget ()
 
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED | HAS_CONTENTS);
    parent = generator = container = NULL;
+   DBG_OBJ_SET_PTR ("container", container);
+
    layout = NULL;
 
    allocation.x = -1;
@@ -157,7 +159,7 @@ void Widget::setParent (Widget *parent)
    // more complicated when absolute and fixed positions are
    // supported.
    container = NULL;
-   for (Widget *widget = this; widget != NULL && container == NULL;
+   for (Widget *widget = getParent (); widget != NULL && container == NULL;
         widget = widget->getParent())
       if (widget->isPossibleContainer ())
          container = widget;
@@ -165,6 +167,7 @@ void Widget::setParent (Widget *parent)
    // (surprisingly!) also no container (i. e. the viewport is
    // used). Does not occur in dillo, where the toplevel widget is a
    // Textblock.
+   DBG_OBJ_SET_PTR ("container", container);
 
    notifySetParent();
 }
@@ -340,19 +343,30 @@ int Widget::getAvailWidth ()
    // TODO Correct by extremes?
    // TODO Border, padding etc.? (Relevant here?)
 
+   DBG_OBJ_MSG ("resize", 0, "<b>getAvailWidth</b> ()");
+   DBG_OBJ_MSG_START ();
+
+   int width;
+
    if (container == NULL) {
       // TODO Consider nested layouts (e. g. <button>).
       int viewportWidth =
          layout->viewportWidth - (layout->canvasHeightGreater ?
                                   layout->vScrollbarThickness : 0);
       if (style::isAbsLength (getStyle()->width))
-         return style::absLengthVal (getStyle()->width);
+         width = style::absLengthVal (getStyle()->width);
       else if (style::isPerLength (getStyle()->width))
-         return style::multiplyWithPerLength (viewportWidth, getStyle()->width);
+         width = style::multiplyWithPerLength (viewportWidth,
+                                               getStyle()->width);
       else
-         return viewportWidth;
+         width = viewportWidth;
    } else
-      return container->getAvailWidthOfChild (this);
+      width = container->getAvailWidthOfChild (this);
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
+   DBG_OBJ_MSG_END ();
+
+   return width;
 }
 
 /**

@@ -333,6 +333,8 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b> ()");
    DBG_OBJ_MSG_START ();
 
+   lineBreakWidth = getAvailWidth ();
+
    rewrap ();
    showMissingLines ();
 
@@ -780,16 +782,26 @@ int Textblock::getAvailWidthOfChild (Widget *child)
    // TODO Implement also for ListItem.
    // TODO Correct by extremes?
 
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p)", child);
+   DBG_OBJ_MSG_START ();
+
+   int width;
+
    if (core::style::isAbsLength (child->getStyle()->width))
-      return core::style::absLengthVal (child->getStyle()->width);
+      width = core::style::absLengthVal (child->getStyle()->width);
    else {
       int containerWidth = getAvailWidth ();
       if (core::style::isPerLength (child->getStyle()->width))
-         return core::style::multiplyWithPerLength (containerWidth,
-                                                    child->getStyle()->width);
+         width = core::style::multiplyWithPerLength (containerWidth,
+                                                     child->getStyle()->width);
       else
-         return containerWidth;
+         width = containerWidth;
    }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
+   DBG_OBJ_MSG_END ();
+
+   return width;
 }
 
 bool Textblock::buttonPressImpl (core::EventButton *event)
