@@ -516,8 +516,8 @@ protected:
    int redrawY;
    int lastWordDrawn;
 
-   /* These values are set by set_... */
-   int availWidth, availAscent, availDescent;
+   /* This value is (currently) set by setAscent(). */
+   int lineBreakWidth;
 
    // Additional vertical offset, used for the "clear" attribute.
    int verticalOffset;
@@ -754,8 +754,6 @@ protected:
    void notifySetAsTopLevel();
    void notifySetParent();
    void setWidth (int width);
-   void setAscent (int ascent);
-   void setDescent (int descent);
 
    bool isBlockLevel ();
 
@@ -820,9 +818,7 @@ public:
       queueResize (-1, extremesChanged);
       DBG_OBJ_MSG_END ();
    }
-   inline int getAvailWidth () { return availWidth; }
-   inline int getAvailAscent () { return availAscent; }
-   inline int getAvailDescent () { return availDescent; }
+   inline int getLineBreakWidth () { return lineBreakWidth; }
 };
 
 #define DBG_SET_WORD_PENALTY(n, i, is)             \

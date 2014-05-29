@@ -616,7 +616,7 @@ void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
          Textblock *tb = key->getTypedValue();
 
          tbInfo->updateAllocation ();
-         tbInfo->availWidth = tb->getAvailWidth ();
+         tbInfo->lineBreakWidth = tb->getLineBreakWidth ();
       }
 
       // There are cases where some allocated floats (TODO: later also
@@ -709,8 +709,8 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
 
          int newFlx =
             calcFloatX (vloat, side,
-                        gba->x - containingBlockAllocation.x,
-                        gba->width, vloat->generatingBlock->getAvailWidth ());
+                        gba->x - containingBlockAllocation.x, gba->width,
+                        vloat->generatingBlock->getLineBreakWidth ());
          int newFly = vloat->generatingBlock->getAllocation()->y
             - containingBlockAllocation.y + vloat->yReal;
 
@@ -1042,11 +1042,11 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
       ensureFloatSize (vloat);
 
       Allocation *gba = getAllocation (vloat->generatingBlock);
-      int availWidth = vloat->generatingBlock->getAvailWidth();
+      int lineBreakWidth = vloat->generatingBlock->getLineBreakWidth();
 
       Allocation childAllocation;
       childAllocation.x = cba->x +
-         calcFloatX (vloat, side, gba->x - cba->x, gba->width, availWidth);
+         calcFloatX (vloat, side, gba->x - cba->x, gba->width, lineBreakWidth);
       childAllocation.y = gba->y + vloat->yReal;
       childAllocation.width = vloat->size.width;
       childAllocation.ascent = vloat->size.ascent;
@@ -1067,11 +1067,11 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
  * gbX is given relative to the CB, as is the return value.
  */
 int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
-                              int gbAvailWidth)
+                              int gbLineBreakWidth)
 {
    DBG_OBJ_MSGF ("resize.oofm", 0, "<b>calcFloatX</b> (%p, %s, %d, %d, %d)",
                  vloat->getWidget (), side == LEFT ? "LEFT" : "RIGHT", gbX,
-                 gbWidth, gbAvailWidth);
+                 gbWidth, gbLineBreakWidth);
    DBG_OBJ_MSG_START ();
 
    int gbActualWidth, x;
@@ -1087,11 +1087,11 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
 
    case RIGHT:
       // In some cases, the actual (allocated) width is too large; we
-      // use the "available" width here.
-      gbActualWidth = min (gbWidth, gbAvailWidth);
+      // use the line break width here.
+      gbActualWidth = min (gbWidth, gbLineBreakWidth);
       DBG_OBJ_MSGF ("resize.oofm", 1,
                     "right: gbActualWidth = min (%d, %d) = %d",
-                    gbWidth, gbAvailWidth, gbActualWidth);
+                    gbWidth, gbLineBreakWidth, gbActualWidth);
 
       // Similar for right floats, but in this case, floats are
       // shifted to the right when they are too big (instead of
@@ -1560,7 +1560,7 @@ bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, SFVType type)
    if (vloat->generatingBlock == other->generatingBlock)
       collidesH = vloat->size.width + other->size.width
          + vloat->generatingBlock->getStyle()->boxDiffWidth()
-         > vloat->generatingBlock->getAvailWidth();
+         > vloat->generatingBlock->getLineBreakWidth();
    else {
       assert (wasAllocated (vloat->generatingBlock));
       assert (wasAllocated (other->generatingBlock));
@@ -1577,7 +1577,7 @@ bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, SFVType type)
                         vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT ?
                         LEFT : RIGHT,
                         gba->x, gba->width,
-                        vloat->generatingBlock->getAvailWidth ());
+                        vloat->generatingBlock->getLineBreakWidth ());
          
          // Generally: right border of the left float > left border of
          // the right float (all in canvas coordinates).
@@ -1676,13 +1676,13 @@ void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
 
          if (vloat->generatingBlock == containingBlock) {
             x = calcFloatX (vloat, side, 0, cbReq->width,
-                            vloat->generatingBlock->getAvailWidth ());
+                            vloat->generatingBlock->getLineBreakWidth ());
             y = vloat->yReal;
          } else {
             Allocation *gba = getAllocation(vloat->generatingBlock);
             x = calcFloatX (vloat, side,
                             gba->x - containingBlockAllocation.x, gba->width,
-                            vloat->generatingBlock->getAvailWidth ());
+                            vloat->generatingBlock->getLineBreakWidth ());
             y = gba->y - containingBlockAllocation.y + vloat->yReal;
          }
 
@@ -1926,7 +1926,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                                 fla->x, fla->width, tba->x, thisBorder);
                } else {
                   // See also calcFloatX.
-                  int tbAvWidth = textblock->getAvailWidth ();
+                  int tbAvWidth = textblock->getLineBreakWidth ();
                   thisBorder = tba->x + min (tba->width, tbAvWidth) - fla->x;
                   DBG_OBJ_MSGF ("border", 1,
                                 "not GB: thisBorder = %d + min (%d, %d) - %d "
@@ -2066,9 +2066,9 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 {
    if (vloat->dirty ||
-       (vloat->cbAvailWidth != containingBlock->getAvailWidth () &&
+       (vloat->cbLineBreakWidth != containingBlock->getLineBreakWidth () &&
         (// If the size of the containing block has changed (represented
-         // currently by the available width), a recalculation of a relative
+         // currently by the line break width), a recalculation of a relative
          // float width may also be necessary.
          isPerLength (vloat->getWidget()->getStyle()->width) ||
          // Similar for "auto" widths of textblocks etc.
@@ -2106,33 +2106,33 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
             // a narrow table column. To prevent this, the width of
             // the *float* has to be limited (cf. also getExtremes).
 
-            int availWidth, leftDiff, rightDiff;
+            int lineBreakWidth, leftDiff, rightDiff;
             if (getFloatDiffToCB (vloat, &leftDiff, &rightDiff))
-               availWidth = containingBlock->getAvailWidth()
+               lineBreakWidth = containingBlock->getLineBreakWidth()
                   - (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT ?
                      leftDiff : rightDiff);
             else
                // Not allocated: next allocation will take care.
-               availWidth = containingBlock->getAvailWidth();
+               lineBreakWidth = containingBlock->getLineBreakWidth();
 
             int width;
             
             if (cssWidth == LENGTH_AUTO) {
-               width = availWidth;
+               width = lineBreakWidth;
                DBG_OBJ_MSGF ("resize.oofm", 1, "setting width 'auto': %d",
                              width);
             } else {
-               width = multiplyWithPerLength (availWidth, cssWidth);
+               width = multiplyWithPerLength (lineBreakWidth, cssWidth);
 
                // Some more corrections (nonsense percentage values):
                if (width < 1)
                   width = 1;
-               if (width > availWidth)
-                  width = availWidth;
+               if (width > lineBreakWidth)
+                  width = lineBreakWidth;
                
                DBG_OBJ_MSGF ("resize.oofm", 1,
                              "about to set percentage width: %d * %g -> %d",
-                             availWidth, perLengthVal (cssWidth), width);
+                             lineBreakWidth, perLengthVal (cssWidth), width);
                width = adjustFloatWidth (width, &extremes);
             }
 
@@ -2175,7 +2175,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       DBG_OBJ_MSGF ("resize.oofm", 1, "sizeRequest (2) => %d * (%d + %d)",
                     vloat->size.width, vloat->size.ascent, vloat->size.descent);
 
-      vloat->cbAvailWidth = containingBlock->getAvailWidth ();
+      vloat->cbLineBreakWidth = containingBlock->getLineBreakWidth ();
       vloat->dirty = false;
 
       DBG_OBJ_MSGF ("resize.oofm", 1, "final size: %d * (%d + %d)",
@@ -2197,9 +2197,10 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 int OutOfFlowMgr::adjustFloatWidth (int width, Extremes *extremes)
 {
    DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>adjustFloatWidth</b> (%d, (%d, %d)) [CB->availWidth = %d]",
+                 "<b>adjustFloatWidth</b> (%d, (%d, %d)) "
+                 "[CB->lineBreakWidth = %d]",
                  width, extremes->minWidth, extremes->maxWidth,
-                 containingBlock->getAvailWidth());
+                 containingBlock->getLineBreakWidth());
    DBG_OBJ_MSG_START ();
 
    // Consider extremes (as described above).
@@ -2211,14 +2212,15 @@ int OutOfFlowMgr::adjustFloatWidth (int width, Extremes *extremes)
       width = extremes->maxWidth;
       DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to maxWidth: %d", width);
    }
-   // Finally, consider the available width of the containing
-   // block. Order is important: to prevent problems, the available
+   // Finally, consider the line break width of the containing
+   // block. Order is important: to prevent problems, the line break
    // width of the float must never be larger than the one of the
    // containing block. (Somewhat hackish, will be solved cleaner with
    // GROWS.)
-   if (width > containingBlock->getAvailWidth()) {
-      width = containingBlock->getAvailWidth();
-      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to CB::availWidth: %d", width);
+   if (width > containingBlock->getLineBreakWidth()) {
+      width = containingBlock->getLineBreakWidth();
+      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to CB::lineBreakWidth: %d",
+                    width);
    }
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", width);
@@ -2245,69 +2247,8 @@ void OutOfFlowMgr::getAbsolutelyPositionedExtremes (Extremes *cbExtr,
 void OutOfFlowMgr::ensureAbsolutelyPositionedSizeAndPosition
    (AbsolutelyPositioned *abspos)
 {
-   // No work is done anymore on this, since widget sizes will be
-   // redesigned before absolute positions are finished.
-
-   if (abspos->dirty) {
-      Style *style = abspos->widget->getStyle();
-      int availWidth = containingBlock->getAvailWidth();
-      int availHeight =
-         containingBlock->getAvailAscent() + containingBlock->getAvailDescent();
-
-      if (style->left == LENGTH_AUTO)
-         abspos->xCB = 0;
-      else
-         abspos->xCB =
-            calcValueForAbsolutelyPositioned (abspos, style->left, availWidth);
-
-      if (style->top == LENGTH_AUTO)
-         abspos->yCB = 0;
-      else
-         abspos->yCB =
-            calcValueForAbsolutelyPositioned (abspos, style->top, availHeight);
-
-      abspos->width = -1; // undefined
-      if (style->width != LENGTH_AUTO)
-         abspos->width = calcValueForAbsolutelyPositioned (abspos, style->width,
-                                                           availWidth);
-      else if (style->right != LENGTH_AUTO) {
-         int right = calcValueForAbsolutelyPositioned (abspos, style->right,
-                                                       availWidth);
-         abspos->width = max (0, availWidth - (abspos->xCB + right));
-      }
-
-      abspos->height = -1; // undefined
-      if (style->height != LENGTH_AUTO)
-         abspos->height = calcValueForAbsolutelyPositioned (abspos,
-                                                            style->height,
-                                                            availHeight);
-      else if (style->bottom != LENGTH_AUTO) {
-         int bottom = calcValueForAbsolutelyPositioned (abspos, style->bottom,
-                                                        availHeight);
-         abspos->height = max (0, availHeight - (abspos->yCB + bottom));
-      }
-
-      if (abspos->width != -1)
-         abspos->widget->setWidth (abspos->width);
-
-      if (abspos->height != -1) {
-         abspos->widget->setAscent (abspos->height);
-         abspos->widget->setDescent (0); // TODO
-      }
-
-      if (abspos->width == -1 || abspos->height == -1) {
-         Requisition req;
-         abspos->widget->sizeRequest (&req);
-
-         if (abspos->width == -1)
-            abspos->width = req.width;
-
-         if (abspos->height == -1)
-            abspos->height = req.ascent + req.descent;
-      }
-
-      abspos->dirty = false;
-   }
+   // TODO
+   assertNotReached ();
 }
 
 int OutOfFlowMgr::calcValueForAbsolutelyPositioned

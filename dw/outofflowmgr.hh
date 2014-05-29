@@ -97,9 +97,9 @@ private:
                           respectively. -1 initially. */
       int sideSpanningIndex, mark;
       core::Requisition size;
-      int cbAvailWidth; /* On which the calculation of relative sizes
-                           is based. Height not yet used, and probably
-                           not added before size redesign. */
+      int cbLineBreakWidth; /* On which the calculation of relative sizes
+                               is based. Height not yet used, and probably
+                               not added before size redesign. */
       bool dirty, sizeChangedSinceLastAllocation;
 
       Float (OutOfFlowMgr *oofm, core::Widget *widget,
@@ -172,7 +172,7 @@ private:
    class TBInfo: public WidgetInfo
    {
    public:
-      int availWidth;
+      int lineBreakWidth;
       int index; // position within "tbInfos"
 
       TBInfo *parent;
@@ -272,7 +272,7 @@ private:
    void moveFromGBToCB (Side side);
    void sizeAllocateFloats (Side side, int newLastAllocatedFloat);
    int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
-                   int gbAvailWidth);
+                   int gbLineBreakWidth);
 
    bool hasRelationChanged (TBInfo *tbInfo,int *minFloatPos,
                             core::Widget **minFloat);

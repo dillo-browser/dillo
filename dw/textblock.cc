@@ -264,14 +264,10 @@ Textblock::Textblock (bool limitTextWidth)
 
    hoverLink = -1;
 
-   // random values
-   availWidth = 100;
-   availAscent = 100;
-   availDescent = 0;
+   // random value
+   lineBreakWidth = 100;
 
-   DBG_OBJ_SET_NUM ("availWidth", availWidth);
-   DBG_OBJ_SET_NUM ("availAscent", availAscent);
-   DBG_OBJ_SET_NUM ("availDescent", availDescent);
+   DBG_OBJ_SET_NUM ("lineBreakWidth", availWidth);
 
    verticalOffset = 0;
    DBG_OBJ_SET_NUM ("verticalOffset", verticalOffset);
@@ -396,8 +392,8 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
                  availWidth, requisition->width, requisition->ascent,
                  requisition->descent);
 
-   if (requisition->width < availWidth) {
-      requisition->width = availWidth;
+   if (requisition->width < lineBreakWidth) {
+      requisition->width = lineBreakWidth;
       DBG_OBJ_MSGF ("resize", 1, "adjusting to availWidth => %d",
                     requisition->width);
    }
@@ -776,46 +772,16 @@ void Textblock::setWidth (int width)
 {
    /* If limitTextWidth is set to YES, a queueResize() may also be
     * necessary. */
-   if (availWidth != width || limitTextWidth) {
+   if (lineBreakWidth != width || limitTextWidth) {
       DBG_OBJ_MSGF ("resize", 0, "<b>setWidth</b> (%d)", width);
       DBG_OBJ_MSG_START ();
 
-      availWidth = width;
-      DBG_OBJ_SET_NUM ("availWidth", availWidth);
+      lineBreakWidth = width;
+      DBG_OBJ_SET_NUM ("lineBreakWidth", availWidth);
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
       redrawY = 0;
       DBG_OBJ_SET_NUM ("redrawY", redrawY);
-
-      DBG_OBJ_MSG_END ();
-   }
-}
-
-void Textblock::setAscent (int ascent)
-{
-   if (availAscent != ascent) {
-      DBG_OBJ_MSGF ("resize", 0, "<b>setAscent</b> (%d)", ascent);
-      DBG_OBJ_MSG_START ();
-
-      availAscent = ascent;
-      DBG_OBJ_SET_NUM ("availAscent", availAscent);
-      queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
-      mustQueueResize = false;
-
-      DBG_OBJ_MSG_END ();
-   }
-}
-
-void Textblock::setDescent (int descent)
-{
-   if (availDescent != descent) {
-      DBG_OBJ_MSGF ("resize", 0, "<b>setDescent</b> (%d)", descent);
-      DBG_OBJ_MSG_START ();
-
-      availDescent = descent;
-      DBG_OBJ_SET_NUM ("availDescent", availDescent);
-      queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
-      mustQueueResize = false;
 
       DBG_OBJ_MSG_END ();
    }
@@ -1084,13 +1050,12 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
    DBG_OBJ_MSGF ("resize", 0, "<b>calcWidgetSize</b> (%p, ...)", widget);
 
    core::Requisition requisition;
-   int availWidth, availAscent, availDescent;
+   int availWidth;
    core::style::Style *wstyle = widget->getStyle();
 
    /* We ignore line1_offset[_eff]. */
-   availWidth = this->availWidth - getStyle()->boxDiffWidth () - innerPadding;
-   availAscent = this->availAscent - getStyle()->boxDiffHeight ();
-   availDescent = this->availDescent;
+   availWidth =
+      this->lineBreakWidth - getStyle()->boxDiffWidth () - innerPadding;
 
    if (widget->usesHints ()) {
       // This is a simplified version of calcAvailWidth (see there for
@@ -1109,11 +1074,8 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
             misc::max (availWidth - (newLineLeftBorder + newLineRightBorder),
                        0);
 
-      DBG_OBJ_MSGF ("resize", 1, "setting hints: %d, %d, %d",
-                    corrAvailWidth, availAscent, availDescent);
+      DBG_OBJ_MSGF ("resize", 1, "setting hint: %d", corrAvailWidth);
       widget->setWidth (corrAvailWidth);
-      widget->setAscent (availAscent);
-      widget->setDescent (availDescent);
       widget->sizeRequest (size);
       DBG_OBJ_MSGF ("resize", 1, "sizeRequest => %d * (%d + %d)",
                     size->width, size->ascent, size->descent);
@@ -1147,10 +1109,12 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
                         + wstyle->boxDiffHeight ();
          size->descent = 0;
       } else {
-         size->ascent =
+         // TODO Old code:
+         /*size->ascent =
             core::style::multiplyWithPerLength (wstyle->height, availAscent);
          size->descent =
             core::style::multiplyWithPerLength (wstyle->height, availDescent);
+         */
       }
    }
 

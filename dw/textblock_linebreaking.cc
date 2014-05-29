@@ -1602,7 +1602,7 @@ int Textblock::calcAvailWidth (int lineIndex)
                  lineIndex, lines->size());
    DBG_OBJ_MSG_START ();
 
-   int availWidth = this->availWidth - innerPadding;
+   int availWidth = this->lineBreakWidth - innerPadding;
    if (limitTextWidth &&
        layout->getUsesViewport () &&
        // margin/border/padding will be subtracted later,  via OOFM.
@@ -1639,7 +1639,7 @@ void Textblock::initLine1Offset (int wordIndex)
    /* Test whether line1Offset can be used. */
    if (wordIndex == 0) {
       if (ignoreLine1OffsetSometimes &&
-          line1Offset + word->size.width > availWidth) {
+          line1Offset + word->size.width > lineBreakWidth) {
          line1OffsetEff = 0;
       } else {
          int indent = 0;
@@ -1650,7 +1650,7 @@ void Textblock::initLine1Offset (int wordIndex)
          } else {
             if (core::style::isPerLength(getStyle()->textIndent)) {
                indent = core::style::multiplyWithPerLengthRounded
-                           (this->availWidth, getStyle()->textIndent);
+                           (lineBreakWidth, getStyle()->textIndent);
             } else {
                indent = core::style::absLengthVal (getStyle()->textIndent);
             }
