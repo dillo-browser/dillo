@@ -306,6 +306,8 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
+   virtual int getAvailWidthOfChild (Widget *child);
+
    virtual void notifySetAsTopLevel();
    virtual void notifySetParent();
 
@@ -405,6 +407,8 @@ public:
    void sizeRequest (Requisition *requisition);
    void getExtremes (Extremes *extremes);
    void sizeAllocate (Allocation *allocation);
+   int getAvailWidth ();
+
    virtual void setWidth (int width);
    virtual void setAscent (int ascent);
    virtual void setDescent (int descent);

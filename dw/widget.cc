@@ -334,6 +334,24 @@ void Widget::sizeRequest (Requisition *requisition)
    DBG_OBJ_MSG_END ();
 }
 
+int Widget::getAvailWidth ()
+{
+   // TODO Correct by extremes?
+   // TODO Border, padding etc.? (Relevant here?)
+
+   if (container == NULL) {
+      // TODO Consider nested layouts (e. g. <button>).
+      if (style::isAbsLength (getStyle()->width))
+         return style::absLengthVal (getStyle()->width);
+      else if (style::isPerLength (getStyle()->width))
+         return style::multiplyWithPerLength (layout->viewportWidth,
+                                              getStyle()->width);
+      else
+         return layout->viewportWidth;
+   } else
+      return container->getAvailWidthOfChild (this);
+}
+
 /**
  * \brief Wrapper for Widget::getExtremesImpl().
  */
@@ -809,6 +827,13 @@ void Widget::markSizeChange (int ref)
 
 void Widget::markExtremesChange (int ref)
 {
+}
+
+int Widget::getAvailWidthOfChild (Widget *child)
+{
+   // Must be implemented for block-level widgets.
+   misc::assertNotReached ();
+   return 0;
 }
 
 /**

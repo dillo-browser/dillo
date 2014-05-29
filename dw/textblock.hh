@@ -748,6 +748,9 @@ protected:
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
+
+   int getAvailWidthOfChild (Widget *child);
+
    void notifySetAsTopLevel();
    void notifySetParent();
    void setWidth (int width);

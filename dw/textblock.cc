@@ -826,6 +826,24 @@ bool Textblock::isBlockLevel ()
    return true;
 }
 
+int Textblock::getAvailWidthOfChild (Widget *child)
+{
+   // TODO Border, padding etc.
+   // TODO Implement also for ListItem.
+   // TODO Correct by extremes?
+
+   if (core::style::isAbsLength (child->getStyle()->width))
+      return core::style::absLengthVal (child->getStyle()->width);
+   else {
+      int containerWidth = getAvailWidth ();
+      if (core::style::isPerLength (child->getStyle()->width))
+         return core::style::multiplyWithPerLength (containerWidth,
+                                                    child->getStyle()->width);
+      else
+         return containerWidth;
+   }
+}
+
 bool Textblock::buttonPressImpl (core::EventButton *event)
 {
    return sendSelectionEvent (core::SelectionState::BUTTON_PRESS, event);
