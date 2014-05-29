@@ -49,7 +49,7 @@ void Ruler::setWidth (int width)
    }
 }
 
-   bool Ruler::isBlockLevel ()
+bool Ruler::isBlockLevel ()
 {
    return true;
 }

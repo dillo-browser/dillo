@@ -1645,7 +1645,7 @@ void Textblock::initLine1Offset (int wordIndex)
          int indent = 0;
 
          if (word->content.type == core::Content::WIDGET_IN_FLOW &&
-             word->content.widget->isBlockLevel() == true) {
+             word->content.widget->isBlockLevel()) {
             /* don't use text-indent when nesting blocks */
          } else {
             if (core::style::isPerLength(getStyle()->textIndent)) {

@@ -159,11 +159,12 @@ void Widget::setParent (Widget *parent)
    container = NULL;
    for (Widget *widget = this; widget != NULL && container == NULL;
         widget = widget->getParent())
-      if (widget->isBlockLevel ())
+      if (widget->isPossibleContainer ())
          container = widget;
-   // If there is no block-level widget, there is also no container
-   // (i. e. the viewport is used). Does not occur in dillo, where the
-   // toplevel widget is a Textblock.
+   // If there is no possible container widget, there is
+   // (surprisingly!) also no container (i. e. the viewport is
+   // used). Does not occur in dillo, where the toplevel widget is a
+   // Textblock.
 
    notifySetParent();
 }
@@ -831,7 +832,7 @@ void Widget::markExtremesChange (int ref)
 
 int Widget::getAvailWidthOfChild (Widget *child)
 {
-   // Must be implemented for block-level widgets.
+   // Must be implemented for possible containers.
    misc::assertNotReached ();
    return 0;
 }
@@ -871,6 +872,12 @@ bool Widget::isBlockLevel ()
 {
    // Most widgets are not block-level.
    return false;
+}
+
+bool Widget::isPossibleContainer ()
+{
+   // In most (all?) cases identical to:
+   return isBlockLevel ();
 }
 
 bool Widget::buttonPressImpl (EventButton *event)

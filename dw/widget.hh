@@ -414,6 +414,7 @@ public:
    virtual void setDescent (int descent);
 
    virtual bool isBlockLevel ();
+   virtual bool isPossibleContainer ();
 
    bool intersects (Rectangle *area, Rectangle *intersection);
 
