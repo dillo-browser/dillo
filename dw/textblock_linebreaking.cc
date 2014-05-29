@@ -92,7 +92,7 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
             badness = ratio * ratio * ratio;
          }
       }
-   } else { // if (totalWidth > availWidth)
+   } else { // if (totalWidth > idealWidth)
       if (totalShrinkability == 0)
          badnessState = TOO_TIGHT;
       else {
@@ -637,7 +637,7 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
       // be left empty.
 
       // (In other cases, lines are never left empty, even if this means
-      // that the contents is wider than the available witdh. Leaving
+      // that the contents is wider than the line break width. Leaving
       // lines empty does not make sense without floats, since there will
       // be no possibility with more space anymore.)
 
@@ -1526,12 +1526,13 @@ void Textblock::accumulateWordData (int wordIndex)
    Word *word = words->getRef (wordIndex);
    DBG_OBJ_MSGF ("construct.word.accum", 2, "lineIndex = %d", lineIndex);
 
-   int availWidth = calcAvailWidth (lineIndex);
+   int lineBreakWidth = calcLineBreakWidth (lineIndex);
 
    DBG_OBJ_MSGF ("construct.word.accum", 2,
-                 "(%s existing line %d starts with word %d; availWidth = %d)",
+                 "(%s existing line %d starts with word %d; "
+                 "lineBreakWidth = %d)",
                  lineIndex < lines->size () ? "already" : "not yet",
-                 lineIndex, firstWordOfLine, availWidth);
+                 lineIndex, firstWordOfLine, lineBreakWidth);
 
    if (wordIndex == firstWordOfLine) {
       // first word of the (not neccessarily yet existing) line
@@ -1582,7 +1583,7 @@ void Textblock::accumulateWordData (int wordIndex)
                  "totalShrinkability = %d + ... = %d",
                  word->totalSpaceShrinkability, totalShrinkability);
 
-   word->badnessAndPenalty.calcBadness (word->totalWidth, availWidth,
+   word->badnessAndPenalty.calcBadness (word->totalWidth, lineBreakWidth,
                                         totalStretchability,
                                         totalShrinkability);
 
@@ -1595,22 +1596,22 @@ void Textblock::accumulateWordData (int wordIndex)
    DBG_OBJ_MSG_END ();
 }
 
-int Textblock::calcAvailWidth (int lineIndex)
+int Textblock::calcLineBreakWidth (int lineIndex)
 {
    DBG_OBJ_MSGF ("construct.word.width", 1,
-                 "<b>calcAvailWidth</b> (%d <i>of %d</i>)",
+                 "<b>calcLineBreakWidth</b> (%d <i>of %d</i>)",
                  lineIndex, lines->size());
    DBG_OBJ_MSG_START ();
 
-   int availWidth = this->lineBreakWidth - innerPadding;
+   int lineBreakWidth = this->lineBreakWidth - innerPadding;
    if (limitTextWidth &&
        layout->getUsesViewport () &&
        // margin/border/padding will be subtracted later,  via OOFM.
-       availWidth - getStyle()->boxDiffWidth()
+       lineBreakWidth - getStyle()->boxDiffWidth()
        > layout->getWidthViewport () - 10)
-      availWidth = layout->getWidthViewport () - 10;
+      lineBreakWidth = layout->getWidthViewport () - 10;
    if (lineIndex == 0)
-      availWidth -= line1OffsetEff;
+      lineBreakWidth -= line1OffsetEff;
 
    int leftBorder, rightBorder;
    if (mustBorderBeRegarded (lineIndex)) {
@@ -1622,14 +1623,14 @@ int Textblock::calcAvailWidth (int lineIndex)
    leftBorder = misc::max (leftBorder, getStyle()->boxOffsetX());
    rightBorder = misc::max (rightBorder, getStyle()->boxRestWidth());
 
-   availWidth -= (leftBorder + rightBorder);
+   lineBreakWidth -= (leftBorder + rightBorder);
 
    DBG_OBJ_MSGF ("construct.word.width", 2, "=> %d - %d - (%d + %d) = %d\n",
-                 this->availWidth, innerPadding, leftBorder, rightBorder,
-                 availWidth);
+                 this->lineBreakWidth, innerPadding, leftBorder, rightBorder,
+                 lineBreakWidth);
 
    DBG_OBJ_MSG_END ();
-   return availWidth;
+   return lineBreakWidth;
 }
 
 void Textblock::initLine1Offset (int wordIndex)
@@ -1671,7 +1672,7 @@ void Textblock::alignLine (int lineIndex)
    DBG_OBJ_MSG_START ();
 
    Line *line = lines->getRef (lineIndex);
-   int availWidth = calcAvailWidth (lineIndex);
+   int lineBreakWidth = calcLineBreakWidth (lineIndex);
    if (line->firstWord <= line->lastWord) {
       Word *firstWord = words->getRef (line->firstWord);
       Word *lastWord = words->getRef (line->lastWord);
@@ -1704,18 +1705,18 @@ void Textblock::alignLine (int lineIndex)
                // when the line would be shrunken otherwise. (This solution is
                // far from perfect, but a better solution would make changes in
                // the line breaking algorithm necessary.)
-               availWidth < lastWord->totalWidth)
-               justifyLine (line, availWidth - lastWord->totalWidth);
+               lineBreakWidth < lastWord->totalWidth)
+               justifyLine (line, lineBreakWidth - lastWord->totalWidth);
             break;
          case core::style::TEXT_ALIGN_RIGHT:
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: right'");
-            line->leftOffset = availWidth - lastWord->totalWidth;
+            line->leftOffset = lineBreakWidth - lastWord->totalWidth;
             break;
          case core::style::TEXT_ALIGN_CENTER:
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: center'");
-            line->leftOffset = (availWidth - lastWord->totalWidth) / 2;
+            line->leftOffset = (lineBreakWidth - lastWord->totalWidth) / 2;
             break;
          default:
             /* compiler happiness */

@@ -267,7 +267,7 @@ Textblock::Textblock (bool limitTextWidth)
    // random value
    lineBreakWidth = 100;
 
-   DBG_OBJ_SET_NUM ("lineBreakWidth", availWidth);
+   DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
 
    verticalOffset = 0;
    DBG_OBJ_SET_NUM ("verticalOffset", verticalOffset);
@@ -388,13 +388,14 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    }   
 
    DBG_OBJ_MSGF ("resize", 1,
-                 "before considering availWidth (= %d): %d * (%d + %d)",
-                 availWidth, requisition->width, requisition->ascent,
+                 "before considering lineBreakWidth (= %d): %d * (%d + %d)",
+                 lineBreakWidth, requisition->width, requisition->ascent,
                  requisition->descent);
 
+   // TODO The following will not be necessary anymore:
    if (requisition->width < lineBreakWidth) {
       requisition->width = lineBreakWidth;
-      DBG_OBJ_MSGF ("resize", 1, "adjusting to availWidth => %d",
+      DBG_OBJ_MSGF ("resize", 1, "adjusting to lineBreakWidth => %d",
                     requisition->width);
    }
 
@@ -777,7 +778,7 @@ void Textblock::setWidth (int width)
       DBG_OBJ_MSG_START ();
 
       lineBreakWidth = width;
-      DBG_OBJ_SET_NUM ("lineBreakWidth", availWidth);
+      DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
       queueResize (OutOfFlowMgr::createRefNormalFlow (0), false);
       mustQueueResize = false;
       redrawY = 0;
@@ -1050,32 +1051,33 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
    DBG_OBJ_MSGF ("resize", 0, "<b>calcWidgetSize</b> (%p, ...)", widget);
 
    core::Requisition requisition;
-   int availWidth;
+   int lineBreakWidth;
    core::style::Style *wstyle = widget->getStyle();
 
    /* We ignore line1_offset[_eff]. */
-   availWidth =
+   lineBreakWidth =
       this->lineBreakWidth - getStyle()->boxDiffWidth () - innerPadding;
 
    if (widget->usesHints ()) {
-      // This is a simplified version of calcAvailWidth (see there for
-      // more details). Until recently, the *attribute* availWidth was
+      // This is a simplified version of calcLineBreakWidth (see there for
+      // more details). Until recently, the *attribute* lineBreakWidth was
       // used, widthout any corrections. To limit the damage, only
       // includde left and right border (by floats), until the Great
       // Redesign Of Widget Sizes (GROWS).
-      int corrAvailWidth;
+      int corrLineBreakWidth;
       // Textblocks keep track of borders themselves, so they get the
-      // total available width. (Should once replaced by something
+      // total line break width. (Should once replaced by something
       // like OOFAware.)
       if (widget->instanceOf (Textblock::CLASS_ID))
-         corrAvailWidth = availWidth;
+         corrLineBreakWidth = lineBreakWidth;
       else
-         corrAvailWidth =
-            misc::max (availWidth - (newLineLeftBorder + newLineRightBorder),
+         corrLineBreakWidth =
+            misc::max (lineBreakWidth
+                       - (newLineLeftBorder + newLineRightBorder),
                        0);
 
-      DBG_OBJ_MSGF ("resize", 1, "setting hint: %d", corrAvailWidth);
-      widget->setWidth (corrAvailWidth);
+      DBG_OBJ_MSGF ("resize", 1, "setting hint: %d", corrLineBreakWidth);
+      widget->setWidth (corrLineBreakWidth);
       widget->sizeRequest (size);
       DBG_OBJ_MSGF ("resize", 1, "sizeRequest => %d * (%d + %d)",
                     size->width, size->ascent, size->descent);
@@ -1097,7 +1099,7 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
             + wstyle->boxDiffWidth ();
       else
          size->width =
-            core::style::multiplyWithPerLength (availWidth, wstyle->width);
+            core::style::multiplyWithPerLength (lineBreakWidth, wstyle->width);
 
       if (wstyle->height == core::style::LENGTH_AUTO) {
          size->ascent = requisition.ascent;

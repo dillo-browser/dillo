@@ -130,7 +130,7 @@ namespace dw {
  * widget:
  *
  * <ul>
- * <li> The available size of the widget has changed, e.g., because the
+ * <li> The line break size of the widget has changed, e.g., because the
  *      user has changed the size of the browser window. In this case,
  *      it is necessary to rewrap all the lines.
  *
@@ -489,7 +489,7 @@ protected:
     *      (which is used by DwTable!), and
     * (ii) line1_offset is ignored (line1_offset_eff is set to 0),
     *      when line1_offset plus the width of the first word is
-    *      greater than the the available witdh.
+    *      greater than the the line break witdh.
     *
     * \todo Eliminate all these ad-hoc features by a new, simpler and
     *       more elegant design. ;-)
@@ -737,7 +737,7 @@ protected:
    void moveWordIndices (int wordIndex, int num, int *addIndex1 = NULL);
    void accumulateWordForLine (int lineIndex, int wordIndex);
    void accumulateWordData (int wordIndex);
-   int calcAvailWidth (int lineIndex);
+   int calcLineBreakWidth (int lineIndex);
    void initLine1Offset (int wordIndex);
    void alignLine (int lineIndex);
 
