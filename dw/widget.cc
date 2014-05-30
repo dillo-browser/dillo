@@ -340,34 +340,111 @@ void Widget::sizeRequest (Requisition *requisition)
    DBG_OBJ_MSG_END ();
 }
 
-int Widget::getAvailWidth ()
+int Widget::getAvailWidth (bool forceValue)
 {
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSG ("resize", 0, "<b>getAvailWidth</b> ()");
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidth</b> (%s)",
+                 forceValue ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    int width;
 
    if (container == NULL) {
       // TODO Consider nested layouts (e. g. <button>).
-      int viewportWidth =
-         layout->viewportWidth - (layout->canvasHeightGreater ?
-                                  layout->vScrollbarThickness : 0);
       if (style::isAbsLength (getStyle()->width))
          width = style::absLengthVal (getStyle()->width);
-      else if (style::isPerLength (getStyle()->width))
-         width = style::multiplyWithPerLength (viewportWidth,
-                                               getStyle()->width);
-      else
-         width = viewportWidth;
+      else {
+         int viewportWidth =
+            layout->viewportWidth - (layout->canvasHeightGreater ?
+                                     layout->vScrollbarThickness : 0);
+         if (style::isPerLength (getStyle()->width)) {
+            width = style::multiplyWithPerLength (viewportWidth,
+                                                  getStyle()->width);
+         } else
+            width = forceValue ? viewportWidth : -1;
+      }
    } else
-      width = container->getAvailWidthOfChild (this);
+      width = container->getAvailWidthOfChild (this, forceValue);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_MSG_END ();
 
    return width;
+}
+
+int Widget::getAvailHeight ()
+{
+   // TODO Correct by ... not extremes, but ...? (Height extremes?)
+
+   DBG_OBJ_MSG ("resize", 0, "<b>getAvailHeight</b> ()");
+   DBG_OBJ_MSG_START ();
+
+   int height;
+
+   if (container == NULL) {
+      // TODO Consider nested layouts (e. g. <button>).
+      if (style::isAbsLength (getStyle()->height))
+         height = style::absLengthVal (getStyle()->height);
+      else if (style::isPerLength (getStyle()->height))
+         // Notice that here -- unlike getAvailWidth() --
+         // layout->hScrollbarThickness is not considered here;
+         // something like canvasWidthGreater (analogue to
+         // canvasHeightGreater) would be complicated and lead to
+         // possibly contradictory self-references.
+         height = style::multiplyWithPerLength (layout->viewportHeight,
+                                                getStyle()->height);
+      else
+         height = -1;
+   } else
+      height = container->getAvailHeightOfChild (this);
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
+   DBG_OBJ_MSG_END ();
+
+   return height;
+}
+
+void Widget::correctRequisition (Requisition *requisition,
+                                 void (*splitHeightFun)(int height, int *ascent,
+                                                        int *descent))
+{
+   // TODO Correct by extremes?
+
+   DBG_OBJ_MSGF ("resize", 0, "<b>correctRequisition</b> (%d * (%d + %d), ...)",
+                 requisition->width, requisition->ascent, requisition->descent);
+   DBG_OBJ_MSG_START ();
+
+   if (container == NULL) {
+      if (core::style::isAbsLength (getStyle()->width))
+         // TODO What does "width" exactly stand for? (Content or all?)
+         requisition->width = core::style::absLengthVal (getStyle()->width);
+      else if (core::style::isPerLength (getStyle()->width)) {
+         int viewportWidth =
+            layout->viewportWidth - (layout->canvasHeightGreater ?
+                                     layout->vScrollbarThickness : 0);
+         requisition->width = style::multiplyWithPerLength (viewportWidth,
+                                                            getStyle()->width);
+      }
+
+      if (core::style::isAbsLength (getStyle()->height))
+         // TODO What does "height" exactly stand for? (Content or all?)
+         splitHeightFun (core::style::absLengthVal (getStyle()->height),
+                         &requisition->ascent, &requisition->descent);
+      else if (core::style::isPerLength (getStyle()->height)) {
+         // For layout->viewportHeight, see comment in getAvailHeight().
+         splitHeightFun (core::style::multiplyWithPerLength
+                         (layout->viewportHeight, getStyle()->height),
+                         &requisition->ascent, &requisition->descent);
+      }
+   } else
+      container->correctRequisitionOfChild (this, requisition, splitHeightFun);
+
+   DBG_OBJ_MSGF ("resize", 1, "=>  %d * (%d + %d)",
+                 requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_MSG_END ();
+   
 }
 
 /**
@@ -847,11 +924,27 @@ void Widget::markExtremesChange (int ref)
 {
 }
 
-int Widget::getAvailWidthOfChild (Widget *child)
+int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
    // Must be implemented for possible containers.
    misc::assertNotReached ();
    return 0;
+}
+
+int Widget::getAvailHeightOfChild (Widget *child)
+{
+   // Must be implemented for possible containers.
+   misc::assertNotReached ();
+   return 0;
+}
+
+void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
+                                        void (*splitHeightFun)(int height,
+                                                               int *ascent,
+                                                               int *descent))
+{
+   // Must be implemented for possible containers.
+   misc::assertNotReached ();
 }
 
 /**
@@ -920,6 +1013,24 @@ void Widget::removeChild (Widget *child)
 {
    // Should be implemented.
    misc::assertNotReached ();
+}
+
+void splitHeightPreserveAscent (int height, int *ascent, int *descent)
+{
+   *descent = height - *ascent;
+   if (*descent < 0) {
+      *descent = 0;
+      *ascent = height;
+   }      
+}
+
+void splitHeightPreserveDescent (int height, int *ascent, int *descent)
+{
+   *ascent = height - *descent;
+   if (*ascent < 0) {
+      *ascent = 0;
+      *descent = height;
+   }      
 }
 
 } // namespace core

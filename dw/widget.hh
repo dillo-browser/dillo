@@ -312,7 +312,14 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
-   virtual int getAvailWidthOfChild (Widget *child);
+   virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
+   virtual int getAvailHeightOfChild (Widget *child);
+   virtual void correctRequisitionOfChild (Widget *child,
+                                           Requisition *requisition,
+                                           void (*splitHeightFun)(int height,
+                                                                  int *ascent,
+                                                                  int
+                                                                  *descent));
 
    virtual void notifySetAsTopLevel();
    virtual void notifySetParent();
@@ -424,8 +431,13 @@ public:
    void sizeRequest (Requisition *requisition);
    void getExtremes (Extremes *extremes);
    void sizeAllocate (Allocation *allocation);
-   int getAvailWidth ();
 
+   int getAvailWidth (bool forceValue);
+   int getAvailHeight ();
+   void correctRequisition (Requisition *requisition,
+                            void (*splitHeightFun)(int height, int *ascent,
+                                                   int *descent));
+   
    virtual bool isBlockLevel ();
    virtual bool isPossibleContainer ();
 
@@ -485,6 +497,10 @@ public:
    virtual Iterator *iterator (Content::Type mask, bool atEnd) = 0;
    virtual void removeChild (Widget *child);
 };
+
+void splitHeightPreserveAscent (int height, int *ascent, int *descent);
+void splitHeightPreserveDescent (int height, int *ascent, int *descent);
+
 
 } // namespace core
 } // namespace dw

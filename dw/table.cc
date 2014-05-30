@@ -477,13 +477,13 @@ void Table::forceCalcCellSizes ()
        * rendering is implemented, to handle fixed positions etc.,
        * as defined by CSS2.)
        */
-      int availWidth = getAvailWidth ();
+      int availWidth = getAvailWidth (true);
       totalWidth =
          misc::min (core::style::multiplyWithPerLength (availWidth,
                                                         getStyle()->width),
                     availWidth);
    } else if (getStyle()->width == core::style::LENGTH_AUTO) {
-      totalWidth = getAvailWidth ();
+      totalWidth = getAvailWidth (true);
       forceTotalWidth = 0;
    }
 

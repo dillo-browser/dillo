@@ -749,7 +749,13 @@ protected:
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
 
-   int getAvailWidthOfChild (Widget *child);
+   int getAvailWidthOfChild (Widget *child, bool forceValue);
+   int getAvailHeightOfChild (Widget *child);
+   void correctRequisitionOfChild (Widget *child,
+                                   core::Requisition *requisition,
+                                   void (*splitHeightFun)(int height,
+                                                          int *ascent,
+                                                          int *descent));
 
    void notifySetAsTopLevel();
    void notifySetParent();

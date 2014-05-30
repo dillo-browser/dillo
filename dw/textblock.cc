@@ -333,7 +333,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b> ()");
    DBG_OBJ_MSG_START ();
 
-   lineBreakWidth = getAvailWidth ();
+   lineBreakWidth = getAvailWidth (true);
 
    rewrap ();
    showMissingLines ();
@@ -400,6 +400,8 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       DBG_OBJ_MSGF ("resize", 1, "adjusting to lineBreakWidth => %d",
                     requisition->width);
    }
+
+   correctRequisition (requisition, core::splitHeightPreserveAscent);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
@@ -776,12 +778,13 @@ bool Textblock::isBlockLevel ()
    return true;
 }
 
-int Textblock::getAvailWidthOfChild (Widget *child)
+int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
    // TODO Implement also for ListItem (subtract space for bullet).
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p)", child);
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p, %s)",
+                 child, forceValue ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    int width;
@@ -790,18 +793,109 @@ int Textblock::getAvailWidthOfChild (Widget *child)
       // TODO What does "width" exactly stand for? (Content or all?)
       width = core::style::absLengthVal (child->getStyle()->width);
    else {
-      int containerWidth = getAvailWidth () - boxDiffWidth ();
-      if (core::style::isPerLength (child->getStyle()->width))
-         width = core::style::multiplyWithPerLength (containerWidth,
-                                                     child->getStyle()->width);
-      else
-         width = containerWidth;
+      int availWidth = getAvailWidth (forceValue);
+      if (availWidth == -1) {
+         assert (!forceValue);
+         width = -1;
+      } else {
+         int containerWidth =  availWidth - boxDiffWidth ();
+         if (core::style::isPerLength (child->getStyle()->width))
+            width =
+               core::style::multiplyWithPerLength (containerWidth,
+                                                   child->getStyle()->width);
+         else
+            // A textblock will use the whole width (but not the whole
+            // height, see getAvailHeightOfChild()).
+            width = forceValue ? containerWidth : 1;
+      }
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_MSG_END ();
 
    return width;
+}
+
+int Textblock::getAvailHeightOfChild (Widget *child)
+{
+   // TODO Implement also for ListItem (subtract space for bullet).
+   // TODO Correct by extremes?
+
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailHeightOfChild</b> (%p)", child);
+   DBG_OBJ_MSG_START ();
+
+   int height;
+
+   if (core::style::isAbsLength (child->getStyle()->height))
+      // TODO What does "height" exactly stand for? (Content or all?)
+      height = core::style::absLengthVal (child->getStyle()->height);
+   else {
+      int availHeight = getAvailHeight ();
+      if (availHeight == -1)
+         height = -1;
+      else {
+         int containerHeight = availHeight - boxDiffHeight ();
+         if (core::style::isPerLength (child->getStyle()->height))
+            height =
+               core::style::multiplyWithPerLength (containerHeight,
+                                                   child->getStyle()->height);
+         else
+            height = -1;
+      }
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
+   DBG_OBJ_MSG_END ();
+
+   return height;
+}
+
+void Textblock::correctRequisitionOfChild (Widget *child,
+                                           core::Requisition *requisition,
+                                           void (*splitHeightFun)(int height,
+                                                                  int *ascent,
+                                                                  int *descent))
+{
+   // TODO Implement also for ListItem (subtract space for bullet).
+   // TODO Correct by extremes?
+
+   DBG_OBJ_MSGF ("resize", 0,
+                 "<b>correctRequisitionOfChild</b> (%p, %d * (%d + %d), ...)",
+                 child, requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_MSG_START ();
+
+   if (core::style::isAbsLength (child->getStyle()->width))
+      // TODO What does "width" exactly stand for? (Content or all?)
+      requisition->width = core::style::absLengthVal (child->getStyle()->width);
+   else if (core::style::isPerLength (child->getStyle()->width)) {
+      int availWidth = getAvailWidth (false);
+      if (availWidth != -1) {
+         int containerWidth = availWidth - boxDiffWidth ();
+         requisition->width =
+            core::style::multiplyWithPerLength (containerWidth,
+                                                child->getStyle()->width);
+      }
+   }
+
+   if (core::style::isAbsLength (child->getStyle()->height))
+      // TODO What does "height" exactly stand for? (Content or all?)
+      splitHeightFun (core::style::absLengthVal (child->getStyle()->height),
+                      &requisition->ascent, &requisition->descent);
+   else if (core::style::isPerLength (child->getStyle()->height)) {
+      int availHeight = getAvailHeight ();
+      if (availHeight != -1) {
+         int containerHeight = availHeight - boxDiffHeight ();
+         splitHeightFun (core::style::multiplyWithPerLength
+                         (containerHeight, child->getStyle()->height),
+                         &requisition->ascent, &requisition->descent);
+      }
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=>  %d * (%d + %d)",
+                 requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_MSG_END ();
 }
 
 bool Textblock::buttonPressImpl (core::EventButton *event)
