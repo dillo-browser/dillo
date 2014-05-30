@@ -170,6 +170,9 @@ Image::~Image()
 
 void Image::sizeRequestImpl (core::Requisition *requisition)
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b> ()");
+   DBG_OBJ_MSG_START ();
+
    if (buffer) {
       if (getStyle ()->height == core::style::LENGTH_AUTO &&
           core::style::isAbsLength (getStyle ()->width) &&
@@ -209,6 +212,12 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
    requisition->width += getStyle()->boxDiffWidth ();
    requisition->ascent += getStyle()->boxOffsetY ();
    requisition->descent += getStyle()->boxRestHeight ();
+
+   correctRequisition (requisition, core::splitHeightPreserveDescent);
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
+                 requisition->width, requisition->ascent, requisition->descent);
+   DBG_OBJ_MSG_END ();
 }
 
 void Image::sizeAllocateImpl (core::Allocation *allocation)

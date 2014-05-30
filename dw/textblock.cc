@@ -405,7 +405,6 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
-
    DBG_OBJ_MSG_END ();
 }
 
@@ -1137,77 +1136,11 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
 {
    DBG_OBJ_MSGF ("resize", 0, "<b>calcWidgetSize</b> (%p, ...)", widget);
 
-   core::Requisition requisition;
-   int lineBreakWidth;
+   widget->sizeRequest (size);
+
+   // Ascent and descent in words do not contain margins.
+   // TODO: Re-evaluate (GROWS)!
    core::style::Style *wstyle = widget->getStyle();
-
-   /* We ignore line1_offset[_eff]. */
-   lineBreakWidth =
-      this->lineBreakWidth - getStyle()->boxDiffWidth () - innerPadding;
-
-   if (widget->usesHints ()) {
-      // This is a simplified version of calcLineBreakWidth (see there for
-      // more details). Until recently, the *attribute* lineBreakWidth was
-      // used, widthout any corrections. To limit the damage, only
-      // includde left and right border (by floats), until the Great
-      // Redesign Of Widget Sizes (GROWS).
-      int corrLineBreakWidth;
-      // Textblocks keep track of borders themselves, so they get the
-      // total line break width. (Should once replaced by something
-      // like OOFAware.)
-      if (widget->instanceOf (Textblock::CLASS_ID))
-         corrLineBreakWidth = lineBreakWidth;
-      else
-         corrLineBreakWidth =
-            misc::max (lineBreakWidth
-                       - (newLineLeftBorder + newLineRightBorder),
-                       0);
-
-      DBG_OBJ_MSGF ("resize", 1, "setting hint: %d", corrLineBreakWidth);
-      //widget->setWidth (corrLineBreakWidth);
-      widget->sizeRequest (size);
-      DBG_OBJ_MSGF ("resize", 1, "sizeRequest => %d * (%d + %d)",
-                    size->width, size->ascent, size->descent);
-   } else {
-      if (wstyle->width == core::style::LENGTH_AUTO ||
-          wstyle->height == core::style::LENGTH_AUTO) {
-         widget->sizeRequest (&requisition);
-         DBG_OBJ_MSGF ("resize", 1, "AUTO; sizeRequest => %d * (%d + %d)",
-                       requisition.width, requisition.ascent,
-                       requisition.descent);
-      }
-
-      if (wstyle->width == core::style::LENGTH_AUTO)
-         size->width = requisition.width;
-      else if (core::style::isAbsLength (wstyle->width))
-         /* Fixed lengths are only applied to the content, so we have to
-          * add padding, border and margin. */
-         size->width = core::style::absLengthVal (wstyle->width)
-            + wstyle->boxDiffWidth ();
-      else
-         size->width =
-            core::style::multiplyWithPerLength (lineBreakWidth, wstyle->width);
-
-      if (wstyle->height == core::style::LENGTH_AUTO) {
-         size->ascent = requisition.ascent;
-         size->descent = requisition.descent;
-      } else if (core::style::isAbsLength (wstyle->height)) {
-         /* Fixed lengths are only applied to the content, so we have to
-          * add padding, border and margin. */
-         size->ascent = core::style::absLengthVal (wstyle->height)
-                        + wstyle->boxDiffHeight ();
-         size->descent = 0;
-      } else {
-         // TODO Old code:
-         /*size->ascent =
-            core::style::multiplyWithPerLength (wstyle->height, availAscent);
-         size->descent =
-            core::style::multiplyWithPerLength (wstyle->height, availDescent);
-         */
-      }
-   }
-
-   /* ascent and descent in words do not contain margins. */
    size->ascent -= wstyle->margin.top;
    size->descent -= wstyle->margin.bottom;
 
