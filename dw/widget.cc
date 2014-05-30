@@ -81,6 +81,8 @@ Widget::Widget ()
    allocation.ascent = 1;
    allocation.descent = 0;
 
+   extraSpace.top = extraSpace.right = extraSpace.bottom = extraSpace.left = 0;
+   
    style = NULL;
    bgColor = NULL;
    buttonSensitive = true;

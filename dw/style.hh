@@ -564,22 +564,14 @@ public:
          = borderStyle.left = val; }
 
    inline int boxOffsetX ()
-   {
-      return margin.left + borderWidth.left + padding.left;
-   }
+   { return margin.left + borderWidth.left + padding.left; }
    inline int boxRestWidth ()
-   {
-      return margin.right + borderWidth.right + padding.right;
-   }
+   { return margin.right + borderWidth.right + padding.right; }
    inline int boxDiffWidth () { return boxOffsetX () + boxRestWidth (); }
    inline int boxOffsetY ()
-   {
-      return margin.top + borderWidth.top + padding.top;
-   }
+   { return margin.top + borderWidth.top + padding.top; }
    inline int boxRestHeight ()
-   {
-      return margin.bottom + borderWidth.bottom + padding.bottom;
-   }
+   { return margin.bottom + borderWidth.bottom + padding.bottom; }
    inline int boxDiffHeight () { return boxOffsetY () + boxRestHeight (); }
 
    inline bool hasBackground ()

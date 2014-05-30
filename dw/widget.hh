@@ -193,6 +193,12 @@ protected:
 
    Layout *layout;
 
+   /**
+    * \brief Space around the margin box. Allocation is extraSpace +
+    *    margin + border + padding + contents;
+    */
+   style::Box extraSpace;
+
    /*inline void printFlags () {
       DBG_IF_RTFL {
          char buf[10 * 3 - 1 + 1];
@@ -403,6 +409,17 @@ public:
    inline style::Style *getStyle () { return style; }
    /** \todo I do not like this. */
    inline Allocation *getAllocation () { return &allocation; }
+
+   inline int boxOffsetX ()
+   { return extraSpace.left + getStyle()->boxOffsetX (); }
+   inline int boxRestWidth ()
+   { return extraSpace.right + getStyle()->boxRestWidth (); }
+   inline int boxDiffWidth () { return boxOffsetX () + boxRestWidth (); }
+   inline int boxOffsetY ()
+   { return extraSpace.top + getStyle()->boxOffsetY (); }
+   inline int boxRestHeight ()
+   { return extraSpace.bottom + getStyle()->boxRestHeight (); }
+   inline int boxDiffHeight () { return boxOffsetY () + boxRestHeight (); }
 
    void sizeRequest (Requisition *requisition);
    void getExtremes (Extremes *extremes);
