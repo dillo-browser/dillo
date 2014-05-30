@@ -778,8 +778,7 @@ bool Textblock::isBlockLevel ()
 
 int Textblock::getAvailWidthOfChild (Widget *child)
 {
-   // TODO Border, padding etc.
-   // TODO Implement also for ListItem.
+   // TODO Implement also for ListItem (subtract space for bullet).
    // TODO Correct by extremes?
 
    DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p)", child);
@@ -788,9 +787,10 @@ int Textblock::getAvailWidthOfChild (Widget *child)
    int width;
 
    if (core::style::isAbsLength (child->getStyle()->width))
+      // TODO What does "width" exactly stand for? (Content or all?)
       width = core::style::absLengthVal (child->getStyle()->width);
    else {
-      int containerWidth = getAvailWidth ();
+      int containerWidth = getAvailWidth () - boxDiffWidth ();
       if (core::style::isPerLength (child->getStyle()->width))
          width = core::style::multiplyWithPerLength (containerWidth,
                                                      child->getStyle()->width);

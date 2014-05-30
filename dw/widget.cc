@@ -343,7 +343,6 @@ void Widget::sizeRequest (Requisition *requisition)
 int Widget::getAvailWidth ()
 {
    // TODO Correct by extremes?
-   // TODO Border, padding etc.? (Relevant here?)
 
    DBG_OBJ_MSG ("resize", 0, "<b>getAvailWidth</b> ()");
    DBG_OBJ_MSG_START ();
