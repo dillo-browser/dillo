@@ -174,46 +174,42 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSG_START ();
 
    if (buffer) {
-      if (getStyle ()->height == core::style::LENGTH_AUTO &&
-          core::style::isAbsLength (getStyle ()->width) &&
-          buffer->getRootWidth () > 0) {
-         // preserve aspect ratio when only width is given
-         requisition->width = core::style::absLengthVal (getStyle ()->width);
-         requisition->ascent = buffer->getRootHeight () *
-                               requisition->width / buffer->getRootWidth ();
-      } else if (getStyle ()->width == core::style::LENGTH_AUTO &&
-                 core::style::isAbsLength (getStyle ()->height) &&
-                 buffer->getRootHeight () > 0) {
-         // preserve aspect ratio when only height is given
-         requisition->ascent = core::style::absLengthVal (getStyle ()->height);
-         requisition->width = buffer->getRootWidth () *
-                               requisition->ascent / buffer->getRootHeight ();
-      } else {
-         requisition->width = buffer->getRootWidth ();
-         requisition->ascent = buffer->getRootHeight ();
-      }
-      requisition->descent = 0;
-   } else {
-      if (altText && altText[0]) {
-         if (altTextWidth == -1)
-            altTextWidth =
-               layout->textWidth (getStyle()->font, altText, strlen (altText));
+      requisition->width = buffer->getRootWidth ();
+      requisition->ascent = buffer->getRootHeight ();
+   } else
+      requisition->width = requisition->ascent = 0;
 
-         requisition->width = altTextWidth;
-         requisition->ascent = getStyle()->font->ascent;
-         requisition->descent = getStyle()->font->descent;
-      } else {
-         requisition->width = 0;
-         requisition->ascent = 0;
-         requisition->descent = 0;
-      }
-   }
+   requisition->width += boxDiffWidth ();
+   requisition->ascent += boxOffsetY ();
 
-   requisition->width += getStyle()->boxDiffWidth ();
-   requisition->ascent += getStyle()->boxOffsetY ();
-   requisition->descent += getStyle()->boxRestHeight ();
+   requisition->descent = boxRestHeight ();
 
    correctRequisition (requisition, core::splitHeightPreserveDescent);
+
+   if (buffer) {
+      // If one dimension is set, preserve the aspect ratio (without
+      // extraSpace/margin/border/padding). Notice that
+      // requisition->descent could have been changed in
+      // core::splitHeightPreserveDescent, so we do not make any
+      // assumtions here about it (and requisition->ascent).
+
+      // TODO Check again possible overflows. (Aren't buffer
+      // dimensions limited to 2^15?)
+
+      if (getStyle()->width == core::style::LENGTH_AUTO &&
+          getStyle()->height != core::style::LENGTH_AUTO) {
+         requisition->width =
+            (requisition->ascent + requisition->descent - boxDiffHeight ())
+            * buffer->getRootWidth () / buffer->getRootHeight ()
+            + boxDiffWidth ();
+      } else if (getStyle()->width != core::style::LENGTH_AUTO &&
+                 getStyle()->height == core::style::LENGTH_AUTO) {
+         requisition->ascent = (requisition->width + boxDiffWidth ())
+            * buffer->getRootHeight () / buffer->getRootWidth ()
+            + boxOffsetY ();
+         requisition->descent = boxRestHeight ();
+      }
+   }         
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
