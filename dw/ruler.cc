@@ -34,7 +34,7 @@ Ruler::Ruler ()
 
 void Ruler::sizeRequestImpl (core::Requisition *requisition)
 {
-   requisition->width = lout::misc::max (getAvailWidth (true),
+   requisition->width = lout::misc::max (getAvailWidth (),
                                          getStyle()->boxDiffWidth ());
    requisition->ascent = getStyle()->boxOffsetY ();
    requisition->descent = getStyle()->boxRestHeight ();

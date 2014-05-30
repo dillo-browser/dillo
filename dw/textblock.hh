@@ -749,7 +749,7 @@ protected:
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
 
-   int getAvailWidthOfChild (Widget *child, bool forceValue);
+   int getAvailWidthOfChild (Widget *child);
    int getAvailHeightOfChild (Widget *child);
    void correctRequisitionOfChild (Widget *child,
                                    core::Requisition *requisition,

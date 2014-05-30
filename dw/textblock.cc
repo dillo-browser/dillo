@@ -333,7 +333,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b> ()");
    DBG_OBJ_MSG_START ();
 
-   lineBreakWidth = getAvailWidth (true);
+   lineBreakWidth = getAvailWidth ();
 
    rewrap ();
    showMissingLines ();
@@ -777,13 +777,12 @@ bool Textblock::isBlockLevel ()
    return true;
 }
 
-int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
+int Textblock::getAvailWidthOfChild (Widget *child)
 {
    // TODO Implement also for ListItem (subtract space for bullet).
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p, %s)",
-                 child, forceValue ? "true" : "false");
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p)", child);
    DBG_OBJ_MSG_START ();
 
    int width;
@@ -792,21 +791,13 @@ int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
       // TODO What does "width" exactly stand for? (Content or all?)
       width = core::style::absLengthVal (child->getStyle()->width);
    else {
-      int availWidth = getAvailWidth (forceValue);
-      if (availWidth == -1) {
-         assert (!forceValue);
-         width = -1;
-      } else {
-         int containerWidth =  availWidth - boxDiffWidth ();
-         if (core::style::isPerLength (child->getStyle()->width))
-            width =
-               core::style::multiplyWithPerLength (containerWidth,
-                                                   child->getStyle()->width);
-         else
-            // A textblock will use the whole width (but not the whole
-            // height, see getAvailHeightOfChild()).
-            width = forceValue ? containerWidth : 1;
-      }
+      int containerWidth =  getAvailWidth () - boxDiffWidth ();
+      if (core::style::isPerLength (child->getStyle()->width))
+         width = core::style::multiplyWithPerLength (containerWidth,
+                                                     child->getStyle()->width);
+      else
+         // A textblock will use the whole width, so this is a meaningful value.
+         width = containerWidth;
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
@@ -829,18 +820,15 @@ int Textblock::getAvailHeightOfChild (Widget *child)
       // TODO What does "height" exactly stand for? (Content or all?)
       height = core::style::absLengthVal (child->getStyle()->height);
    else {
-      int availHeight = getAvailHeight ();
-      if (availHeight == -1)
-         height = -1;
-      else {
-         int containerHeight = availHeight - boxDiffHeight ();
-         if (core::style::isPerLength (child->getStyle()->height))
-            height =
-               core::style::multiplyWithPerLength (containerHeight,
-                                                   child->getStyle()->height);
-         else
-            height = -1;
-      }
+      int containerHeight = getAvailHeight () - boxDiffHeight ();
+      if (core::style::isPerLength (child->getStyle()->height))
+         height =
+            core::style::multiplyWithPerLength (containerHeight,
+                                                child->getStyle()->height);
+      else
+         // Although a textblock will not use the whole height, we have to
+         // return some value here.
+         height = containerHeight;
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
@@ -868,13 +856,10 @@ void Textblock::correctRequisitionOfChild (Widget *child,
       // TODO What does "width" exactly stand for? (Content or all?)
       requisition->width = core::style::absLengthVal (child->getStyle()->width);
    else if (core::style::isPerLength (child->getStyle()->width)) {
-      int availWidth = getAvailWidth (false);
-      if (availWidth != -1) {
-         int containerWidth = availWidth - boxDiffWidth ();
-         requisition->width =
-            core::style::multiplyWithPerLength (containerWidth,
-                                                child->getStyle()->width);
-      }
+      int containerWidth = getAvailWidth () - boxDiffWidth ();
+      requisition->width =
+         core::style::multiplyWithPerLength (containerWidth,
+                                             child->getStyle()->width);
    }
 
    if (core::style::isAbsLength (child->getStyle()->height))
@@ -882,13 +867,10 @@ void Textblock::correctRequisitionOfChild (Widget *child,
       splitHeightFun (core::style::absLengthVal (child->getStyle()->height),
                       &requisition->ascent, &requisition->descent);
    else if (core::style::isPerLength (child->getStyle()->height)) {
-      int availHeight = getAvailHeight ();
-      if (availHeight != -1) {
-         int containerHeight = availHeight - boxDiffHeight ();
-         splitHeightFun (core::style::multiplyWithPerLength
-                         (containerHeight, child->getStyle()->height),
-                         &requisition->ascent, &requisition->descent);
-      }
+      int containerHeight = getAvailHeight () - boxDiffHeight ();
+      splitHeightFun (core::style::multiplyWithPerLength
+                      (containerHeight, child->getStyle()->height),
+                      &requisition->ascent, &requisition->descent);
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=>  %d * (%d + %d)",

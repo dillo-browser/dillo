@@ -340,12 +340,11 @@ void Widget::sizeRequest (Requisition *requisition)
    DBG_OBJ_MSG_END ();
 }
 
-int Widget::getAvailWidth (bool forceValue)
+int Widget::getAvailWidth ()
 {
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidth</b> (%s)",
-                 forceValue ? "true" : "false");
+   DBG_OBJ_MSG ("resize", 0, "<b>getAvailWidth</b> ()");
    DBG_OBJ_MSG_START ();
 
    int width;
@@ -362,10 +361,10 @@ int Widget::getAvailWidth (bool forceValue)
             width = style::multiplyWithPerLength (viewportWidth,
                                                   getStyle()->width);
          } else
-            width = forceValue ? viewportWidth : -1;
+            width = viewportWidth;
       }
    } else
-      width = container->getAvailWidthOfChild (this, forceValue);
+      width = container->getAvailWidthOfChild (this);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_MSG_END ();
@@ -395,7 +394,7 @@ int Widget::getAvailHeight ()
          height = style::multiplyWithPerLength (layout->viewportHeight,
                                                 getStyle()->height);
       else
-         height = -1;
+         height = layout->viewportHeight;
    } else
       height = container->getAvailHeightOfChild (this);
 
@@ -924,7 +923,7 @@ void Widget::markExtremesChange (int ref)
 {
 }
 
-int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
+int Widget::getAvailWidthOfChild (Widget *child)
 {
    // Must be implemented for possible containers.
    misc::assertNotReached ();

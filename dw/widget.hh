@@ -312,7 +312,7 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
-   virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
+   virtual int getAvailWidthOfChild (Widget *child);
    virtual int getAvailHeightOfChild (Widget *child);
    virtual void correctRequisitionOfChild (Widget *child,
                                            Requisition *requisition,
@@ -432,7 +432,7 @@ public:
    void getExtremes (Extremes *extremes);
    void sizeAllocate (Allocation *allocation);
 
-   int getAvailWidth (bool forceValue);
+   int getAvailWidth ();
    int getAvailHeight ();
    void correctRequisition (Requisition *requisition,
                             void (*splitHeightFun)(int height, int *ascent,
