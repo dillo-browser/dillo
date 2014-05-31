@@ -267,6 +267,9 @@ private:
    void enterResizeIdle () { resizeIdleCounter++; }
    void leaveResizeIdle () { resizeIdleCounter--; }
 
+   bool widgetAffectedByContainerSizeChange (Widget *widget);
+   void containerSizeChanged (Widget *widget);
+
 public:
    Layout (Platform *platform);
    ~Layout ();

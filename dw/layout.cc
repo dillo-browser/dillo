@@ -926,7 +926,8 @@ void Layout::resizeIdle ()
             canvasHeightGreater = true;
             DBG_OBJ_SET_SYM ("canvasHeightGreater",
                              canvasHeightGreater ? "true" : "false");
-            // TODO tell widget about change.
+            assert (topLevel); // No toplevel widget would have no size.
+            containerSizeChanged (topLevel);
          }
 
          // Set viewport sizes.
@@ -1295,7 +1296,32 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
    DBG_OBJ_SET_NUM ("viewportWidth", viewportWidth);
    DBG_OBJ_SET_NUM ("viewportHeight", viewportHeight);
 
-   // TODO tell widget about change.
+   if (topLevel)
+      containerSizeChanged (topLevel);
+}
+
+bool Layout::widgetAffectedByContainerSizeChange (Widget *widget)
+{
+   return true; // TODO only absolute dimensions? Depending on widget class?
+}
+
+void Layout::containerSizeChanged (Widget *widget)
+{
+   if (widgetAffectedByContainerSizeChange (widget)) {
+      widget->queueResize (0, false);
+
+      // TODO Wrong! Iteration must stop when the *container* (not the
+      // *parent*!) is unaffected. (Does not matter as long as
+      // widgetAffectedByContainerSizeChange() returns always true.)
+
+      Iterator *it =
+         widget->iterator ((Content::Type)
+                           (Content::WIDGET_IN_FLOW | Content::WIDGET_OOF_CONT),
+                           false);
+      while (it->next ())
+         containerSizeChanged (it->getContent()->widget);
+      it->unref ();
+   }
 }
 
 } // namespace core
