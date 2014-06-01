@@ -936,6 +936,7 @@ void Widget::getExtremesImpl (Extremes *extremes)
    Requisition requisition;
    sizeRequest (&requisition);
    extremes->minWidth = extremes->maxWidth = requisition.width;
+   correctExtremes (extremes);
 }
 
 void Widget::sizeAllocateImpl (Allocation *allocation)

@@ -56,6 +56,7 @@ void Embed::sizeRequestImpl (Requisition *requisition)
 void Embed::getExtremesImpl (Extremes *extremes)
 {
    resource->getExtremes (extremes);
+   correctExtremes (extremes);
 }
 
 void Embed::sizeAllocateImpl (Allocation *allocation)

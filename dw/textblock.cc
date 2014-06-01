@@ -413,44 +413,10 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
  */
 void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
 {
-   if (word->content.type == core::Content::WIDGET_IN_FLOW) {
-      if (word->content.widget->usesHints ()) {
-         word->content.widget->getExtremes (extremes);
-
-         if (core::style::isAbsLength (word->content.widget
-                                       ->getStyle()->width)) {
-            int width =
-               core::style::absLengthVal (word->content.widget
-                                          ->getStyle()->width);
-            if (extremes->minWidth < width)
-               extremes->minWidth = width;
-            if (extremes->maxWidth > width)
-               // maxWidth not smaller than minWidth
-               extremes->maxWidth = misc::max (width, extremes->minWidth);
-         }
-      } else {
-         if (core::style::isPerLength
-             (word->content.widget->getStyle()->width)) {
-            extremes->minWidth = 0;
-            if (word->content.widget->hasContents ())
-               extremes->maxWidth = 1000000;
-            else
-               extremes->maxWidth = 0;
-         } else if (core::style::isAbsLength
-                    (word->content.widget->getStyle()->width)) {
-            /* Fixed lengths are only applied to the content, so we have to
-             * add padding, border and margin. */
-            extremes->minWidth = extremes->maxWidth =
-               core::style::absLengthVal (word->content.widget->getStyle()
-                                          ->width)
-               + word->style->boxDiffWidth ();
-         } else
-            word->content.widget->getExtremes (extremes);
-      }
-   } else {
-      extremes->minWidth = word->size.width;
-      extremes->maxWidth = word->size.width;
-   }
+   if (word->content.type == core::Content::WIDGET_IN_FLOW)
+      word->content.widget->getExtremes (extremes);
+   else
+      extremes->minWidth = extremes->maxWidth = word->size.width;
 }
 
 void Textblock::getExtremesImpl (core::Extremes *extremes)
@@ -490,6 +456,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       extremes->minWidth = misc::max (extremes->minWidth, oofMinWidth);
       extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);     
    }   
+
+   correctExtremes (extremes);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
                  extremes->minWidth, extremes->maxWidth);

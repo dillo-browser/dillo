@@ -40,6 +40,12 @@ void Ruler::sizeRequestImpl (core::Requisition *requisition)
    requisition->descent = getStyle()->boxRestHeight ();
 }
 
+void Ruler::getExtremesImpl (core::Extremes *extremes)
+{
+   extremes->minWidth = extremes->maxWidth = getStyle()->boxDiffWidth ();
+   correctExtremes (extremes);
+}
+
 bool Ruler::isBlockLevel ()
 {
    return true;

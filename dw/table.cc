@@ -131,14 +131,8 @@ void Table::getExtremesImpl (core::Extremes *extremes)
       extremes->minWidth += colExtremes->getRef(col)->minWidth;
       extremes->maxWidth += colExtremes->getRef(col)->maxWidth;
    }
-   if (core::style::isAbsLength (getStyle()->width)) {
-      extremes->minWidth =
-         misc::max (extremes->minWidth,
-                    core::style::absLengthVal(getStyle()->width));
-      extremes->maxWidth =
-         misc::max (extremes->maxWidth,
-                    core::style::absLengthVal(getStyle()->width));
-   }
+
+   correctExtremes (extremes);
 
    _MSG(" Table::getExtremesImpl, {%d, %d} numCols=%d\n",
        extremes->minWidth, extremes->maxWidth, numCols);
