@@ -973,7 +973,6 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
    // containers. For simplification, this will be used during the
    // development; then, a differentiation could be possible.
 
-   // TODO Implement also for ListItem (subtract space for bullet).
    // TODO Correct by extremes?
 
    DBG_OBJ_MSGF ("resize", 0,
