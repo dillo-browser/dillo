@@ -1002,7 +1002,7 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
                       &requisition->ascent, &requisition->descent);
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=>  %d * (%d + %d)",
+   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent,
                  requisition->descent);
    DBG_OBJ_MSG_END ();
@@ -1010,8 +1010,29 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
 
 void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
 {
-   // Must be implemented for possible containers.
-   misc::assertNotReached ();
+   // See comment in correctRequisitionOfChild.
+
+   // TODO Extremes only corrected?
+
+   DBG_OBJ_MSGF ("resize", 0,
+                 "<b>correctExtremedOfChild</b> (%p, %d / %d)",
+                 child, extremes->minWidth, extremes->maxWidth);
+   DBG_OBJ_MSG_START ();
+
+   if (core::style::isAbsLength (child->getStyle()->width))
+      // TODO What does "width" exactly stand for? (Content or all?)
+      extremes->minWidth =extremes->maxWidth =
+         core::style::absLengthVal (child->getStyle()->width);
+   else if (core::style::isPerLength (child->getStyle()->width)) {
+      int containerWidth = getAvailWidth () - boxDiffWidth ();
+      extremes->minWidth =extremes->maxWidth =
+         core::style::multiplyWithPerLength (containerWidth,
+                                             child->getStyle()->width);
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
+                 extremes->minWidth, extremes->maxWidth);
+   DBG_OBJ_MSG_END ();
 }
 
 /**
