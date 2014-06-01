@@ -439,11 +439,38 @@ void Widget::correctRequisition (Requisition *requisition,
    } else
       container->correctRequisitionOfChild (this, requisition, splitHeightFun);
 
-   DBG_OBJ_MSGF ("resize", 1, "=>  %d * (%d + %d)",
+   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent,
                  requisition->descent);
+   DBG_OBJ_MSG_END ();  
+}
+
+void Widget::correctExtremes (Extremes *extremes)
+{
+   // TODO Extremes only corrected?
+
+   DBG_OBJ_MSGF ("resize", 0, "<b>correctExtremes</b> (%d / %d)"
+                 extremes->minWidth, extremes->maxWidth);
+   DBG_OBJ_MSG_START ();
+
+   if (container == NULL) {
+      if (core::style::isAbsLength (getStyle()->width))
+         // TODO What does "width" exactly stand for? (Content or all?)
+         extremes->minWidth = extremes->maxWidth =
+            core::style::absLengthVal (getStyle()->width);
+      else if (core::style::isPerLength (getStyle()->width)) {
+         int viewportWidth =
+            layout->viewportWidth - (layout->canvasHeightGreater ?
+                                     layout->vScrollbarThickness : 0);
+         extremes->minWidth = extremes->maxWidth =
+            style::multiplyWithPerLength (viewportWidth, getStyle()->width);
+      }
+   } else
+      container->correctExtremesOfChild (this, extremes);
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
+                 extremes->minWidth, extremes->maxWidth);
    DBG_OBJ_MSG_END ();
-   
 }
 
 /**
@@ -941,6 +968,12 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
                                         void (*splitHeightFun)(int height,
                                                                int *ascent,
                                                                int *descent))
+{
+   // Must be implemented for possible containers.
+   misc::assertNotReached ();
+}
+
+void correctExtremesOfChild (Widget *child, Extremes *extremes)
 {
    // Must be implemented for possible containers.
    misc::assertNotReached ();

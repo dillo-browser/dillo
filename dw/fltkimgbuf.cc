@@ -35,7 +35,7 @@ namespace fltk {
 using namespace lout::container::typed;
 
 const enum ScaleMode { SIMPLE, BEAUTIFUL, BEAUTIFUL_GAMMA }
-   scaleMode = BEAUTIFUL_GAMMA;
+   scaleMode = SIMPLE;
 
 Vector <FltkImgbuf::GammaCorrectionTable> *FltkImgbuf::gammaCorrectionTables
    = new Vector <FltkImgbuf::GammaCorrectionTable> (true, 2);

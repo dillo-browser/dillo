@@ -320,6 +320,8 @@ protected:
                                                                   int *ascent,
                                                                   int
                                                                   *descent));
+   virtual void correctExtremesOfChild (Widget *child, Extremes *extremes);
+
 
    virtual void notifySetAsTopLevel();
    virtual void notifySetParent();
@@ -437,6 +439,7 @@ public:
    void correctRequisition (Requisition *requisition,
                             void (*splitHeightFun)(int height, int *ascent,
                                                    int *descent));
+   void correctExtremes (Extremes *extremes);
    
    virtual bool isBlockLevel ();
    virtual bool isPossibleContainer ();
