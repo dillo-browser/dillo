@@ -960,9 +960,34 @@ int Widget::getAvailWidthOfChild (Widget *child)
 
 int Widget::getAvailHeightOfChild (Widget *child)
 {
-   // Must be implemented for possible containers.
-   misc::assertNotReached ();
-   return 0;
+   // Again, a suitable implementation for all widgets (perhaps).
+
+   // TODO Correct by extremes?
+
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailHeightOfChild</b> (%p)", child);
+   DBG_OBJ_MSG_START ();
+
+   int height;
+
+   if (core::style::isAbsLength (child->getStyle()->height))
+      // TODO What does "height" exactly stand for? (Content or all?)
+      height = core::style::absLengthVal (child->getStyle()->height);
+   else {
+      int containerHeight = getAvailHeight () - boxDiffHeight ();
+      if (core::style::isPerLength (child->getStyle()->height))
+         height =
+            core::style::multiplyWithPerLength (containerHeight,
+                                                child->getStyle()->height);
+      else
+         // Although no widget will probably use the whole height, we
+         // have to return some value here.
+         height = containerHeight;
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
+   DBG_OBJ_MSG_END ();
+
+   return height;
 }
 
 void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,

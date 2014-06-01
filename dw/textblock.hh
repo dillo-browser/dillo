@@ -750,7 +750,6 @@ protected:
    void markExtremesChange (int ref);
 
    int getAvailWidthOfChild (Widget *child);
-   int getAvailHeightOfChild (Widget *child);
 
    void notifySetAsTopLevel();
    void notifySetParent();
