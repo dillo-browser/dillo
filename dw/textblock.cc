@@ -837,48 +837,6 @@ int Textblock::getAvailHeightOfChild (Widget *child)
    return height;
 }
 
-void Textblock::correctRequisitionOfChild (Widget *child,
-                                           core::Requisition *requisition,
-                                           void (*splitHeightFun)(int height,
-                                                                  int *ascent,
-                                                                  int *descent))
-{
-   // TODO Implement also for ListItem (subtract space for bullet).
-   // TODO Correct by extremes?
-
-   DBG_OBJ_MSGF ("resize", 0,
-                 "<b>correctRequisitionOfChild</b> (%p, %d * (%d + %d), ...)",
-                 child, requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_MSG_START ();
-
-   if (core::style::isAbsLength (child->getStyle()->width))
-      // TODO What does "width" exactly stand for? (Content or all?)
-      requisition->width = core::style::absLengthVal (child->getStyle()->width);
-   else if (core::style::isPerLength (child->getStyle()->width)) {
-      int containerWidth = getAvailWidth () - boxDiffWidth ();
-      requisition->width =
-         core::style::multiplyWithPerLength (containerWidth,
-                                             child->getStyle()->width);
-   }
-
-   if (core::style::isAbsLength (child->getStyle()->height))
-      // TODO What does "height" exactly stand for? (Content or all?)
-      splitHeightFun (core::style::absLengthVal (child->getStyle()->height),
-                      &requisition->ascent, &requisition->descent);
-   else if (core::style::isPerLength (child->getStyle()->height)) {
-      int containerHeight = getAvailHeight () - boxDiffHeight ();
-      splitHeightFun (core::style::multiplyWithPerLength
-                      (containerHeight, child->getStyle()->height),
-                      &requisition->ascent, &requisition->descent);
-   }
-
-   DBG_OBJ_MSGF ("resize", 1, "=>  %d * (%d + %d)",
-                 requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_MSG_END ();
-}
-
 bool Textblock::buttonPressImpl (core::EventButton *event)
 {
    return sendSelectionEvent (core::SelectionState::BUTTON_PRESS, event);

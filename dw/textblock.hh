@@ -751,11 +751,6 @@ protected:
 
    int getAvailWidthOfChild (Widget *child);
    int getAvailHeightOfChild (Widget *child);
-   void correctRequisitionOfChild (Widget *child,
-                                   core::Requisition *requisition,
-                                   void (*splitHeightFun)(int height,
-                                                          int *ascent,
-                                                          int *descent));
 
    void notifySetAsTopLevel();
    void notifySetParent();

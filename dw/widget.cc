@@ -969,11 +969,47 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
                                                                int *ascent,
                                                                int *descent))
 {
-   // Must be implemented for possible containers.
-   misc::assertNotReached ();
+   // This is a halfway suitable implementation for all
+   // containers. For simplification, this will be used during the
+   // development; then, a differentiation could be possible.
+
+   // TODO Implement also for ListItem (subtract space for bullet).
+   // TODO Correct by extremes?
+
+   DBG_OBJ_MSGF ("resize", 0,
+                 "<b>correctRequisitionOfChild</b> (%p, %d * (%d + %d), ...)",
+                 child, requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_MSG_START ();
+
+   if (core::style::isAbsLength (child->getStyle()->width))
+      // TODO What does "width" exactly stand for? (Content or all?)
+      requisition->width = core::style::absLengthVal (child->getStyle()->width);
+   else if (core::style::isPerLength (child->getStyle()->width)) {
+      int containerWidth = getAvailWidth () - boxDiffWidth ();
+      requisition->width =
+         core::style::multiplyWithPerLength (containerWidth,
+                                             child->getStyle()->width);
+   }
+
+   if (core::style::isAbsLength (child->getStyle()->height))
+      // TODO What does "height" exactly stand for? (Content or all?)
+      splitHeightFun (core::style::absLengthVal (child->getStyle()->height),
+                      &requisition->ascent, &requisition->descent);
+   else if (core::style::isPerLength (child->getStyle()->height)) {
+      int containerHeight = getAvailHeight () - boxDiffHeight ();
+      splitHeightFun (core::style::multiplyWithPerLength
+                      (containerHeight, child->getStyle()->height),
+                      &requisition->ascent, &requisition->descent);
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=>  %d * (%d + %d)",
+                 requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_MSG_END ();
 }
 
-void correctExtremesOfChild (Widget *child, Extremes *extremes)
+void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
 {
    // Must be implemented for possible containers.
    misc::assertNotReached ();
