@@ -14,6 +14,45 @@ calculating widget sizes. Goals are:
   - *display: inline-block*;
   - <button>.
 
-(...)
+A short sketch:
+
+**dw::core::Widget::sizeRequest and dw::core::Widget::getExtremes will
+return final results.** The caller does not have to correct the size,
+e.&nbsp;g. when percentages are defined. As an example,
+dw::Textblock::calcWidgetSize has already become much simpler.
+
+**A new hierarchy, *container*:** Aside from dw::core::Widget::parent
+and dw::core::Widget::generator, there is a third hierarchy
+dw::core::Widget::container, which is (unlike *generator*) always a
+direct ancestor, and represents what in CSS is called *containing
+block*. Containers are important to define the "context size", which
+is (not solely) used for percentage sizes.
+
+(There is another "containing block", dw::Textblock::containingBlock;
+these may be consolidated some day.)
+
+**The process of size calculation is split between the widget itself
+and its container:** 
+
+- The container provides some abstract methods:
+  dw::core::Widget::getAvailWidthOfChild,
+  dw::core::Widget::getAvailHeightOfChild,
+  dw::core::Widget::correctRequisitionOfChild, and
+  dw::core::Widget::correctExtremesOfChild, which can be used in the
+  actual implementation of dw::core::Widget::sizeRequestImpl;
+  different containers with different ways how to arrange their
+  children will implement these methods in a different way. (Simple
+  example: the *available width* for children within a textblock is
+  the *available width* for the textblock itself, minus
+  margin/border/padding; on the other hand, it is completely different
+  for children of tables, for which a complex column width calculation
+  is used.)
+
+- The actual size calculation is, however, controlled by the widget
+  itself, which only *uses* these methods above.
+
+**Size hints are removed.** Instead, the container methods in the
+previous paragraph are used. Changes of container sizes (especially
+viewport the size) are handled in a different way.
 
 */
