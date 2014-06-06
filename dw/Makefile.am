@@ -76,6 +76,7 @@ libDw_widgets_a_SOURCES = \
 	simpletablecell.cc \
 	simpletablecell.hh \
 	table.cc \
+	table_iterator.cc \
 	table.hh \
 	textblock.cc \
 	textblock_iterator.cc \

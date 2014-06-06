@@ -10,6 +10,11 @@ namespace dw {
 /**
  * \brief A Widget for rendering tables.
  *
+ * <div style="border: 2px solid #ff0000; margin-top: 0.5em;
+ * margin-bottom: 0.5em; padding: 0.5em 1em;
+ * background-color: #ffefe0"><b>Warning:</b> Some parts of this
+ * description are outdated since \ref dw-grows.</div>
+ *
  * <h3>Introduction</h3>
  *
  * The dw::Table widget is used to render HTML tables.
@@ -383,19 +388,9 @@ private:
     * If a Cell has rowspan > 1, it goes into this array
     */
    lout::misc::SimpleVector<int> *rowSpanCells;
-   /**
-    * If a Cell has colspan > 1, it goes into this array
-    */
-   lout::misc::SimpleVector<int> *colSpanCells;
    lout::misc::SimpleVector<int> *baseline;
 
    lout::misc::SimpleVector<core::style::Style*> *rowStyle;
-
-   /**
-    * hasColPercent becomes true when any cell specifies a percentage width.
-    */
-   int hasColPercent;
-   lout::misc::SimpleVector<core::style::Length> *colPercents;
 
    inline bool childDefined(int n)
    {
@@ -405,15 +400,14 @@ private:
 
    void reallocChildren (int newNumCols, int newNumRows);
 
-   void calcCellSizes ();
-   void forceCalcCellSizes ();
+   void calcCellSizes (bool calcHeights);
+   void forceCalcCellSizes (bool calcHeights);
    void apportionRowSpan ();
 
    void calcColumnExtremes ();
    void forceCalcColumnExtremes ();
 
-   void apportion2 (int totalWidth, int forceTotalWidth);
-   void apportion_percentages2 (int totalWidth, int forceTotalWidth);
+   void apportion2 (int totalWidth, bool forceTotalWidth);
 
    void setCumHeight (int row, int value)
    {
@@ -436,6 +430,8 @@ protected:
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
    void resizeDrawImpl ();
+
+   int getAvailWidthOfChild (Widget *child);
 
    bool isBlockLevel ();
 

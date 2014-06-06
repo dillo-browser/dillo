@@ -223,6 +223,14 @@ public:
       assert (i >= 0 && this->num - i > 0);
       this->array[i] = t;
    }
+
+   /**
+    * \brief Store an object at the end of the vector.
+    */
+   inline void setLast (T t) {
+      assert (this->num > 0);
+      this->array[this->num - 1] = t;
+   }
 };
 
 /**
@@ -487,6 +495,13 @@ public:
     */
    inline void set (int i, T t) {
       *(this->getRef(i)) = t;
+   }
+
+   /**
+    * \brief Store an object at the end of the vector.
+    */
+   inline void setLast (T t) {
+      *(this->getLastRef()) = t;
    }
 };
 

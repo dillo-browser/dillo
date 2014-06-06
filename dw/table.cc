@@ -1,7 +1,7 @@
 /*
  * Dillo Widget
  *
- * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2005-2007, 2014 Sebastian Geerken <sgeerken@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,17 +51,12 @@ Table::Table(bool limitTextWidth)
    colWidths = new misc::SimpleVector <int> (8);
    cumHeight = new misc::SimpleVector <int> (8);
    rowSpanCells = new misc::SimpleVector <int> (8);
-   colSpanCells = new misc::SimpleVector <int> (8);
    baseline = new misc::SimpleVector <int> (8);
    rowStyle = new misc::SimpleVector <core::style::Style*> (8);
-
-   hasColPercent = 0;
-   colPercents = new misc::SimpleVector <core::style::Length> (8);
 
    redrawX = 0;
    redrawY = 0;
 }
-
 
 Table::~Table()
 {
@@ -88,17 +83,18 @@ Table::~Table()
    delete colWidths;
    delete cumHeight;
    delete rowSpanCells;
-   delete colSpanCells;
    delete baseline;
    delete rowStyle;
-   delete colPercents;
 
    DBG_OBJ_DELETE ();
 }
 
 void Table::sizeRequestImpl (core::Requisition *requisition)
 {
-   forceCalcCellSizes ();
+   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b>");
+   DBG_OBJ_MSG_START ();
+
+   forceCalcCellSizes (true);
 
    /**
     * \bug Baselines are not regarded here.
@@ -113,34 +109,39 @@ void Table::sizeRequestImpl (core::Requisition *requisition)
       + getStyle()->vBorderSpacing;
    requisition->descent = 0;
 
+   DBG_OBJ_MSG_END ();
 }
 
 void Table::getExtremesImpl (core::Extremes *extremes)
 {
-   if (numCols == 0) {
+   DBG_OBJ_MSG ("resize", 0, "<b>getExtremesImpl</b>");
+   DBG_OBJ_MSG_START ();
+
+   if (numCols == 0)
       extremes->minWidth = extremes->maxWidth = 0;
-      return;
+   else {
+      forceCalcColumnExtremes ();
+      
+      extremes->minWidth = extremes->maxWidth =
+         (numCols + 1) * getStyle()->hBorderSpacing
+         + getStyle()->boxDiffWidth ();
+      for (int col = 0; col < numCols; col++) {
+         extremes->minWidth += colExtremes->getRef(col)->minWidth;
+         extremes->maxWidth += colExtremes->getRef(col)->maxWidth;
+      }
+      
+      correctExtremes (extremes);
    }
 
-   forceCalcColumnExtremes ();
-
-   extremes->minWidth = extremes->maxWidth =
-      (numCols + 1) * getStyle()->hBorderSpacing
-      + getStyle()->boxDiffWidth ();
-   for (int col = 0; col < numCols; col++) {
-      extremes->minWidth += colExtremes->getRef(col)->minWidth;
-      extremes->maxWidth += colExtremes->getRef(col)->maxWidth;
-   }
-
-   correctExtremes (extremes);
-
-   _MSG(" Table::getExtremesImpl, {%d, %d} numCols=%d\n",
-       extremes->minWidth, extremes->maxWidth, numCols);
+   DBG_OBJ_MSG_END ();
 }
 
 void Table::sizeAllocateImpl (core::Allocation *allocation)
 {
-   calcCellSizes ();
+   DBG_OBJ_MSG ("resize", 0, "<b>sizeAllocateImpl</b>");
+   DBG_OBJ_MSG_START ();
+
+   calcCellSizes (true);
 
    /**
     * \bug Baselines are not regarded here.
@@ -180,6 +181,8 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
 
       x += colWidths->get (col) + getStyle()->hBorderSpacing;
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Table::resizeDrawImpl ()
@@ -188,6 +191,29 @@ void Table::resizeDrawImpl ()
    queueDrawArea (0, redrawY, allocation.width, getHeight () - redrawY);
    redrawX = allocation.width;
    redrawY = getHeight ();
+}
+
+int Table::getAvailWidthOfChild (Widget *child)
+{
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p)", child);
+   DBG_OBJ_MSG_START ();
+
+   calcCellSizes (false);
+
+   // TODO This is inefficient. (Use parentRef?)
+   // TODO Consider colspan.
+   int width = -1;
+   for (int row = numRows - 1; width == -1 && row >= 0; row--) {
+      for (int col = 0; width == -1 && col < numCols; col++) {
+         int n = row * numCols + col;
+         if (childDefined (n) && children->get(n)->cell.widget == child)
+            width = colWidths->get (col);
+      }
+   }
+   
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
+   DBG_OBJ_MSG_END ();
+   return width;
 }
 
 bool Table::isBlockLevel ()
@@ -239,6 +265,10 @@ core::Iterator *Table::iterator (core::Content::Type mask, bool atEnd)
 
 void Table::addCell (Widget *widget, int colspan, int rowspan)
 {
+   DBG_OBJ_MSGF ("resize", 0, "<b>addCell</b> (%p, %d, %d)",
+                 widget, colspan, rowspan);
+   DBG_OBJ_MSG_START ();
+
    const int maxspan = 100;
    Child *child;
    int colspanEff;
@@ -340,6 +370,8 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    }
    MSG("\n");
 #endif
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Table::addRow (core::style::Style *style)
@@ -447,104 +479,89 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
 
 // ----------------------------------------------------------------------
 
-void Table::calcCellSizes ()
+void Table::calcCellSizes (bool calcHeights)
 {
-   if (needsResize () || resizeQueued ())
-      forceCalcCellSizes ();
+   DBG_OBJ_MSG ("resize", 0, "<b>calcCellSizes</b>");
+   DBG_OBJ_MSG_START ();
+
+   if ((calcHeights && (needsResize () || resizeQueued () ||
+                        extremesChanged () || extremesQueued ())) ||
+       (extremesChanged () || extremesQueued ()))
+      forceCalcCellSizes (calcHeights);
+
+   DBG_OBJ_MSG_END ();
 }
 
 
-void Table::forceCalcCellSizes ()
+void Table::forceCalcCellSizes (bool calcHeights)
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>forceCalcCellSizes</b>");
+   DBG_OBJ_MSG_START ();
+
    int totalWidth = 0, childHeight, forceTotalWidth = 1;
    core::Extremes extremes;
 
    // Will also call calcColumnExtremes(), when needed.
    getExtremes (&extremes);
 
-   if (core::style::isAbsLength (getStyle()->width)) {
-      totalWidth = core::style::absLengthVal (getStyle()->width);
-   } else if (core::style::isPerLength (getStyle()->width)) {
-      /*
-       * If the width is > 100%, we use 100%, this prevents ugly
-       * results. (May be changed in future, when a more powerful
-       * rendering is implemented, to handle fixed positions etc.,
-       * as defined by CSS2.)
-       */
-      int availWidth = getAvailWidth ();
-      totalWidth =
-         misc::min (core::style::multiplyWithPerLength (availWidth,
-                                                        getStyle()->width),
-                    availWidth);
-   } else if (getStyle()->width == core::style::LENGTH_AUTO) {
-      totalWidth = getAvailWidth ();
-      forceTotalWidth = 0;
-   }
-
-   _MSG(" availWidth = %d\n", availWidth);
-   _MSG(" totalWidth1 = %d\n", totalWidth);
+   totalWidth = getAvailWidth ();
 
    if (totalWidth < extremes.minWidth)
       totalWidth = extremes.minWidth;
-   totalWidth = totalWidth
-                - (numCols + 1) * getStyle()->hBorderSpacing
-                - getStyle()->boxDiffWidth ();
-
-   _MSG(" totalWidth2 = %d curCol=%d\n", totalWidth,curCol);
-
+   totalWidth -= ((numCols + 1) * getStyle()->hBorderSpacing
+                  + getStyle()->boxDiffWidth ());
 
    colWidths->setSize (numCols, 0);
    cumHeight->setSize (numRows + 1, 0);
    rowSpanCells->setSize (0);
    baseline->setSize (numRows);
 
-   _MSG(" extremes = %d,%d\n", extremes.minWidth, extremes.maxWidth);
-   _MSG(" getStyle()->boxDiffWidth() = %d\n", getStyle()->boxDiffWidth());
-   _MSG(" getStyle()->hBorderSpacing = %d\n", getStyle()->hBorderSpacing);
+   apportion2 (totalWidth, forceTotalWidth);
 
-
-   apportion_percentages2 (totalWidth, forceTotalWidth);
-   if (!hasColPercent)
-      apportion2 (totalWidth, forceTotalWidth);
-
-   setCumHeight (0, 0);
-   for (int row = 0; row < numRows; row++) {
-      /**
-       * \bug dw::Table::baseline is not filled.
-       */
-      int rowHeight = 0;
-
-      for (int col = 0; col < numCols; col++) {
-         int n = row * numCols + col;
-         if (childDefined (n)) {
-            int width = (children->get(n)->cell.colspanEff - 1)
-                        * getStyle()->hBorderSpacing;
-            for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
-               width += colWidths->get (col + i);
-
-            core::Requisition childRequisition;
-            //children->get(n)->cell.widget->setWidth (width);
-            children->get(n)->cell.widget->sizeRequest (&childRequisition);
-            childHeight = childRequisition.ascent + childRequisition.descent;
-            if (children->get(n)->cell.rowspan == 1) {
-               rowHeight = misc::max (rowHeight, childHeight);
-            } else {
-               rowSpanCells->increase();
-               rowSpanCells->set(rowSpanCells->size()-1, n);
+   if (calcHeights) {
+      setCumHeight (0, 0);
+      for (int row = 0; row < numRows; row++) {
+         /**
+          * \bug dw::Table::baseline is not filled.
+          */
+         int rowHeight = 0;
+         
+         for (int col = 0; col < numCols; col++) {
+            int n = row * numCols + col;
+            if (childDefined (n)) {
+               int width = (children->get(n)->cell.colspanEff - 1)
+                  * getStyle()->hBorderSpacing;
+               for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
+                  width += colWidths->get (col + i);
+               
+               core::Requisition childRequisition;
+               //children->get(n)->cell.widget->setWidth (width);
+               children->get(n)->cell.widget->sizeRequest (&childRequisition);
+               childHeight = childRequisition.ascent + childRequisition.descent;
+               if (children->get(n)->cell.rowspan == 1) {
+                  rowHeight = misc::max (rowHeight, childHeight);
+               } else {
+                  rowSpanCells->increase();
+                  rowSpanCells->set(rowSpanCells->size()-1, n);
+               }
             }
-         }
-      }/*for col*/
+         } // for col
+         
+         setCumHeight (row + 1,
+            cumHeight->get (row) + rowHeight + getStyle()->vBorderSpacing);
+      } // for row
 
-      setCumHeight (row + 1,
-         cumHeight->get (row) + rowHeight + getStyle()->vBorderSpacing);
+      apportionRowSpan ();
+   }
 
-   }/*for row*/
-
-   apportionRowSpan ();
+   DBG_OBJ_MSG_END ();
 }
 
 void Table::apportionRowSpan ()
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>apportionRowSpan</b>");
+   DBG_OBJ_MSG_START ();
+
    int *rowHeight = NULL;
 
    for (int c = 0; c < rowSpanCells->size(); ++c) {
@@ -598,6 +615,8 @@ void Table::apportionRowSpan ()
          setCumHeight (i+1, cumHeight->get(i) + rowHeight[i]);
    }
    delete[] rowHeight;
+
+   DBG_OBJ_MSG_END ();
 }
 
 
@@ -608,8 +627,13 @@ void Table::apportionRowSpan ()
  */
 void Table::calcColumnExtremes ()
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>calcColumnExtremes</b>");
+   DBG_OBJ_MSG_START ();
+
    if (extremesChanged () || extremesQueued ())
       forceCalcColumnExtremes ();
+
+   DBG_OBJ_MSG_END ();
 }
 
 
@@ -618,570 +642,104 @@ void Table::calcColumnExtremes ()
  */
 void Table::forceCalcColumnExtremes ()
 {
-   _MSG("  Table::forceCalcColumnExtremes  numCols=%d\n", numCols);
+   DBG_OBJ_MSG ("resize", 0, "<b>forceCalcColumnExtremes</b>");
+   DBG_OBJ_MSG_START ();
 
-   if (numCols == 0)
-      return;
+   if (numCols > 0) {
+      lout::misc::SimpleVector<int> colSpanCells (8);
+      colExtremes->setSize (numCols);
 
-   colExtremes->setSize (numCols);
-   colPercents->setSize (numCols);
-   colSpanCells->setSize (0);
-   /* 1. cells with colspan = 1 */
-   for (int col = 0; col < numCols; col++) {
-      colExtremes->getRef(col)->minWidth = 0;
-      colExtremes->getRef(col)->maxWidth = 0;
-      colPercents->set(col, core::style::LENGTH_AUTO);
-
-      for (int row = 0; row < numRows; row++) {
-         int n = row * numCols + col;
-         if (!childDefined (n))
-            continue;
-         if (children->get(n)->cell.colspanEff == 1) {
-            core::Extremes cellExtremes;
-            int cellMinW, cellMaxW, pbm;
-            core::style::Length width =
-               children->get(n)->cell.widget->getStyle()->width;
-            pbm = (numCols + 1) * getStyle()->hBorderSpacing
-                  + children->get(n)->cell.widget->getStyle()->boxDiffWidth ();
-            children->get(n)->cell.widget->getExtremes (&cellExtremes);
-            if (core::style::isAbsLength (width)) {
-               // Fixed lengths include table padding, border and margin.
-               cellMinW = cellExtremes.minWidth;
-               cellMaxW = misc::max (cellMinW,
-                                     core::style::absLengthVal(width) - pbm);
-            } else {
-               cellMinW = cellExtremes.minWidth;
-               cellMaxW = cellExtremes.maxWidth;
-            }
-
-            _MSG("FCCE, col%d colMin,colMax,cellMin,cellMax = %d,%d,%d,%d\n",
-                col,
-                colExtremes->getRef(col)->minWidth,
-                colExtremes->getRef(col)->maxWidth,
-                cellMinW, cellMaxW);
-
-            colExtremes->getRef(col)->minWidth =
-               misc::max (colExtremes->getRef(col)->minWidth, cellMinW);
-            colExtremes->getRef(col)->maxWidth =
-               misc::max (colExtremes->getRef(col)->minWidth, misc::max (
-                             colExtremes->getRef(col)->maxWidth,
-                             cellMaxW));
-
-            // Also fill the colPercents array in this pass
-            if (core::style::isPerLength (width)) {
-               hasColPercent = 1;
-               if (colPercents->get(col) == core::style::LENGTH_AUTO)
-                  colPercents->set(col, width);
-            } else if (core::style::isAbsLength (width)) {
-               // We treat LEN_ABS as a special case of LEN_AUTO.
-               /*
-                * if (colPercents->get(col) == LEN_AUTO)
-                *   colPercents->set(col, LEN_ABS);
-                *
-                * (Hint: that's old code!)
-                */
-            }
-         } else {
-            colSpanCells->increase();
-            colSpanCells->set(colSpanCells->size()-1, n);
-         }
-      }
-   }
-
-   /* 2. cells with colspan > 1 */
-   /* If needed, here we set proportionally apportioned col maximums */
-   for (int c = 0; c < colSpanCells->size(); ++c) {
-      core::Extremes cellExtremes;
-      int cellMinW, cellMaxW, pbm;
-      int n = colSpanCells->get(c);
-      int col = n % numCols;
-      int cs = children->get(n)->cell.colspanEff;
-      core::style::Length width =
-         children->get(n)->cell.widget->getStyle()->width;
-      pbm = (numCols + 1) * getStyle()->hBorderSpacing
-            + children->get(n)->cell.widget->getStyle()->boxDiffWidth ();
-      children->get(n)->cell.widget->getExtremes (&cellExtremes);
-      if (core::style::isAbsLength (width)) {
-         // Fixed lengths include table padding, border and margin.
-         cellMinW = cellExtremes.minWidth;
-         cellMaxW =
-            misc::max (cellMinW, core::style::absLengthVal(width) - pbm);
-      } else {
-         cellMinW = cellExtremes.minWidth;
-         cellMaxW = cellExtremes.maxWidth;
-      }
-      int minSumCols = 0, maxSumCols = 0;
-      for (int i = 0; i < cs; ++i) {
-         minSumCols += colExtremes->getRef(col+i)->minWidth;
-         maxSumCols += colExtremes->getRef(col+i)->maxWidth;
-      }
-
-      _MSG("cs=%d spanWidth=%d,%d sumCols=%d,%d\n",
-          cs,cellMinW,cellMaxW,minSumCols,maxSumCols);
-
-      if (minSumCols >= cellMinW && maxSumCols >= cellMaxW)
-         continue;
-
-      // Cell size is too small; apportion {min,max} for this colspan.
-      int spanMinW = misc::max (misc::max (cs, minSumCols),
-                                cellMinW - (cs-1) * getStyle()->hBorderSpacing),
-          spanMaxW = misc::max (misc::max (cs, maxSumCols),
-                                cellMaxW - (cs-1) * getStyle()->hBorderSpacing);
-
-      if (minSumCols == 0) {
-         // No single cells defined for this span => pre-apportion equally
-         minSumCols = spanMinW; maxSumCols = spanMaxW;
-         int minW = spanMinW, maxW = spanMaxW;
-         for (int i = 0; i < cs; ++i) {
-            colExtremes->getRef(col+i)->minWidth = minW / (cs - i);
-            colExtremes->getRef(col+i)->maxWidth = maxW / (cs - i);
-            minW -= colExtremes->getRef(col+i)->minWidth;
-            maxW -= colExtremes->getRef(col+i)->maxWidth;
-         }
-      }
-
-      // These values will help if the span has percents.
-      int spanHasColPercent = 0;
-      int availSpanMinW = spanMinW;
-      float cumSpanPercent = 0.0f;
-      for (int i = col; i < col + cs; ++i) {
-         if (core::style::isPerLength (colPercents->get(i))) {
-            cumSpanPercent += core::style::perLengthVal (colPercents->get(i));
-            ++spanHasColPercent;
-         } else
-            availSpanMinW -= colExtremes->getRef(i)->minWidth;
-      }
-
-      // Calculate weighted-apportion columns for this span.
-      int wMin = 0, wMax;
-      int cumMaxWnew = 0, cumMaxWold = 0, goalMaxW = spanMaxW;
-      int curAppW = maxSumCols;
-      int curExtraW = spanMinW - minSumCols;
-      for (int i = col; i < col + cs; ++i) {
-
-         if (!spanHasColPercent) {
-            int d_a = colExtremes->getRef(i)->maxWidth;
-            int d_w = curAppW > 0 ? (int)((float)curExtraW * d_a/curAppW) : 0;
-            if (d_a < 0||d_w < 0) {
-               MSG("d_a=%d d_w=%d\n",d_a,d_w);
-               exit(1);
-            }
-            wMin = colExtremes->getRef(i)->minWidth + d_w;
-            colExtremes->getRef(i)->minWidth = wMin;
-            curExtraW -= d_w;
-            curAppW -= d_a;
-         } else {
-            if (core::style::isPerLength (colPercents->get(i))) {
-               // multiplyWithPerLength would cause rounding errors,
-               // therefore the deprecated way, using perLengthVal:
-               wMin = misc::max (colExtremes->getRef(i)->minWidth,
-                                 (int)(availSpanMinW *
-                                       core::style::perLengthVal
-                                          (colPercents->get (i))
-                                       / cumSpanPercent));
-               colExtremes->getRef(i)->minWidth = wMin;
-            }
-         }
-
-         wMax = (goalMaxW-cumMaxWnew <= 0) ? 0 :
-                   (int)((float)(goalMaxW-cumMaxWnew)
-                         * colExtremes->getRef(i)->maxWidth
-                           / (maxSumCols-cumMaxWold));
-         wMax = misc::max (wMin, wMax);
-         cumMaxWnew += wMax;
-         cumMaxWold += colExtremes->getRef(i)->maxWidth;
-         colExtremes->getRef(i)->maxWidth = wMax;
-
-         _MSG("i=%d, wMin=%d wMax=%d cumMaxWold=%d\n",
-             i,wMin,wMax,cumMaxWold);
-
-      }
-#ifdef DBG
-      MSG("col min,max: [");
-      for (int i = 0; i < numCols; i++)
-         MSG("%d,%d ",
-             colExtremes->getRef(i)->minWidth,
-             colExtremes->getRef(i)->maxWidth);
-      MSG("]\n");
-      MSG("getStyle()->hBorderSpacing = %d\n", getStyle()->hBorderSpacing);
-#endif
-   }
-}
-
-/**
- * \brief Apportionment function for AUTO-length columns.
- * 'extremes' comes filled, 'result' comes defined for percentage columns.
- */
-void Table::apportion2 (int totalWidth, int forceTotalWidth)
-{
-   if (colExtremes->size() == 0)
-      return;
-#ifdef DBG
-   MSG("app2, availWidth=%d, totalWidth=%d, forceTotalWidth=%d\n",
-       availWidth, totalWidth, forceTotalWidth);
-   MSG("app2, extremes: ( ");
-   for (int i = 0; i < colExtremes->size (); i++)
-      MSG("%d,%d ",
-          colExtremes->get(i).minWidth, colExtremes->get(i).maxWidth);
-   MSG(")\n");
-#endif
-   int minAutoWidth = 0, maxAutoWidth = 0, availAutoWidth = totalWidth;
-   for (int col = 0; col < numCols; col++) {
-      if (core::style::isAbsLength (colPercents->get(col))) {
-         // set absolute lengths
-         setColWidth (col, colExtremes->get(col).minWidth);
-      }
-      if (colPercents->get(col) == core::style::LENGTH_AUTO) {
-         maxAutoWidth += colExtremes->get(col).maxWidth;
-         minAutoWidth += colExtremes->get(col).minWidth;
-      } else
-         availAutoWidth -= colWidths->get(col);
-   }
-
-   if (!maxAutoWidth) // no core::style::LENGTH_AUTO cols!
-      return;
-
-   colWidths->setSize (colExtremes->size (), 0);
-
-   if (!forceTotalWidth && maxAutoWidth < availAutoWidth) {
-      // Enough space for the maximum table, don't widen past max.
-      availAutoWidth = maxAutoWidth;
-   }
-
-   // General case.
-   int curTargetWidth = misc::max (availAutoWidth, minAutoWidth);
-   int curExtraWidth = curTargetWidth - minAutoWidth;
-   int curMaxWidth = maxAutoWidth;
-   int curNewWidth = minAutoWidth;
-   for (int col = 0; col < numCols; col++) {
-      _MSG("app2, col %d, minWidth=%d maxWidth=%d\n",
-           col, colExtremes->getRef(col)->minWidth,
-           colExtremes->get(col).maxWidth);
-
-      if (colPercents->get(col) != core::style::LENGTH_AUTO)
-         continue;
-
-      int colMinWidth = colExtremes->getRef(col)->minWidth;
-      int colMaxWidth = colExtremes->getRef(col)->maxWidth;
-      int w = (curMaxWidth <= 0) ? 0 :
-                 (int)((float)curTargetWidth * colMaxWidth/curMaxWidth);
-
-      _MSG("app2, curTargetWidth=%d colMaxWidth=%d curMaxWidth=%d "
-          "curNewWidth=%d  ",
-          curTargetWidth, colMaxWidth,curMaxWidth,curNewWidth);
-      _MSG("w = %d, ", w);
-
-      if (w <= colMinWidth)
-         w = colMinWidth;
-      else if (curNewWidth - colMinWidth + w > curTargetWidth)
-         w = colMinWidth + curExtraWidth;
-
-      _MSG("w = %d\n", w);
-
-      curNewWidth -= colMinWidth;
-      curMaxWidth -= colMaxWidth;
-      curExtraWidth -= (w - colMinWidth);
-      curTargetWidth -= w;
-      setColWidth (col, w);
-   }
-#ifdef DBG
-   MSG("app2, result: ( ");
-   for (int i = 0; i < colWidths->size (); i++)
-      MSG("%d ", colWidths->get (i));
-   MSG(")\n");
-#endif
-}
-
-void Table::apportion_percentages2(int totalWidth, int forceTotalWidth)
-{
-   int hasTablePercent = core::style::isPerLength (getStyle()->width) ? 1 : 0;
-
-   if (colExtremes->size() == 0 || (!hasTablePercent && !hasColPercent))
-      return;
-
-   // If there's a table-wide percentage, totalWidth comes already scaled.
-   _MSG("APP_P, availWidth=%d, totalWidth=%d, forceTotalWidth=%d\n",
-       availWidth, totalWidth, forceTotalWidth);
-
-   if (!hasColPercent) {
-#ifdef DBG
-      MSG("APP_P, only a table-wide percentage\n");
-      MSG("APP_P, extremes = { ");
-      for (int col = 0; col < numCols; col++)
-         MSG("%d,%d ", colExtremes->getRef(col)->minWidth,
-                       colExtremes->getRef(col)->maxWidth);
-      MSG("}\n");
-#endif
-      // It has only a table-wide percentage. Apportion non-absolute widths.
-      int sumMaxWidth = 0, perAvailWidth = totalWidth;
+      // 1. cells with colspan = 1
       for (int col = 0; col < numCols; col++) {
-         if (core::style::isAbsLength (colPercents->get(col)))
-            perAvailWidth -= colExtremes->getRef(col)->maxWidth;
-         else
-            sumMaxWidth += colExtremes->getRef(col)->maxWidth;
-      }
-
-      _MSG("APP_P, perAvailWidth=%d, sumMaxWidth=%d\n",
-          perAvailWidth, sumMaxWidth);
-
-      for (int col = 0; col < numCols; col++) {
-         int max_wi = colExtremes->getRef(col)->maxWidth, new_wi;
-         if (!core::style::isAbsLength (colPercents->get(col))) {
-            new_wi =
-               misc::max (colExtremes->getRef(col)->minWidth,
-                          (int)((float)max_wi * perAvailWidth/sumMaxWidth));
-            setColWidth (col, new_wi);
-            perAvailWidth -= new_wi;
-            sumMaxWidth -= max_wi;
-         }
-      }
-#ifdef DBG
-      MSG("APP_P, result = { ");
-      for (int col = 0; col < numCols; col++)
-         MSG("%d ", colWidths->get(col));
-      MSG("}\n");
-#endif
-
-   } else {
-      // we'll have to apportion...
-      _MSG("APP_P, we'll have to apportion...\n");
-
-      // Calculate cumPercent and available space
-      float cumPercent = 0.0f;
-      int hasAutoCol = 0;
-      int sumMinWidth = 0, sumMaxWidth = 0, sumMinNonPer = 0, sumMaxNonPer = 0;
-      for (int col = 0; col < numCols; col++) {
-         if (core::style::isPerLength (colPercents->get(col))) {
-            cumPercent += core::style::perLengthVal (colPercents->get(col));
-         } else {
-            sumMinNonPer += colExtremes->getRef(col)->minWidth;
-            sumMaxNonPer += colExtremes->getRef(col)->maxWidth;
-            if (colPercents->get(col) == core::style::LENGTH_AUTO)
-               hasAutoCol++;
-         }
-         sumMinWidth += colExtremes->getRef(col)->minWidth;
-         sumMaxWidth += colExtremes->getRef(col)->maxWidth;
-
-         _MSG("APP_P, col %d minWidth=%d maxWidth=%d\n", col,
-             colExtremes->getRef(col)->minWidth,
-             colExtremes->getRef(col)->maxWidth);
-      }
-      int oldTotalWidth = totalWidth;
-      if (!forceTotalWidth) {
-         if (sumMaxNonPer == 0 || cumPercent < 0.99f) {
-            // only percentage columns, or cumPercent < 100% => restrict width
-            int totW = (int)(sumMaxNonPer / (1.0f - cumPercent));
-            for (int col = 0; col < numCols; col++) {
-               totW = misc::max
-                  (totW,
-                   (int)(colExtremes->getRef(col)->maxWidth
-                         / core::style::perLengthVal (colPercents->get(col))));
-            }
-            totalWidth = misc::min (totW, totalWidth);
-         }
-      }
-
-      // make sure there's enough space
-      totalWidth = misc::max (totalWidth, sumMinWidth);
-      // extraWidth is always >= 0
-      int extraWidth = totalWidth - sumMinWidth;
-      int sumMinWidthPer = sumMinWidth - sumMinNonPer;
-      int curPerWidth = sumMinWidthPer;
-      // percentages refer to workingWidth
-      int workingWidth = totalWidth - sumMinNonPer;
-      if (cumPercent < 0.99f) {
-         // In this case, use the whole table width
-         workingWidth = totalWidth;
-         curPerWidth = sumMinWidth;
-      }
-
-      _MSG("APP_P, oldTotalWidth=%d totalWidth=%d"
-          " workingWidth=%d extraWidth=%d sumMinNonPer=%d\n",
-          oldTotalWidth,totalWidth,workingWidth,extraWidth,sumMinNonPer);
-
-      for (int col = 0; col < numCols; col++) {
-         int colMinWidth = colExtremes->getRef(col)->minWidth;
-         if (core::style::isPerLength (colPercents->get(col))) {
-            int w = core::style::multiplyWithPerLength (workingWidth,
-                                                        colPercents->get(col));
-            if (w < colMinWidth)
-               w = colMinWidth;
-            else if (curPerWidth - colMinWidth + w > workingWidth)
-               w = colMinWidth + extraWidth;
-            extraWidth -= (w - colMinWidth);
-            curPerWidth += (w - colMinWidth);
-            setColWidth (col, w);
-         } else {
-            setColWidth (col, colMinWidth);
-         }
-      }
-
-      if (cumPercent < 0.99f) {
-         // Will have to apportion the other columns
-#ifdef DBG
-         MSG("APP_P, extremes: ( ");
-         for (int i = 0; i < colExtremes->size (); i++)
-            MSG("%d,%d ",
-                colExtremes->get(i).minWidth, colExtremes->get(i).maxWidth);
-         MSG(")\n");
-#endif
-         curPerWidth -= sumMinNonPer;
-         int perWidth = (int)(curPerWidth/cumPercent);
-         totalWidth = misc::max (totalWidth, perWidth);
-         totalWidth = misc::min (totalWidth, oldTotalWidth);
-
-         _MSG("APP_P, curPerWidth=%d perWidth=%d, totalWidth=%d\n",
-             curPerWidth, perWidth, totalWidth);
-
-         if (hasAutoCol == 0) {
-            // Special case, cumPercent < 100% and no other columns to expand.
-            // We'll honor totalWidth by expanding the percentage cols.
-            int extraWidth = totalWidth - curPerWidth - sumMinNonPer;
-            for (int col = 0; col < numCols; col++) {
-               if (core::style::isPerLength (colPercents->get(col))) {
-                  // This could cause rounding errors:
-                  //
-                  // int d =
-                  //    core::dw::multiplyWithPerLength (extraWidth,
-                  //                                     colPercents->get(col))
-                  //    / cumPercent;
-                  //
-                  // Thus the "old" way:
-                  int d =
-                     (int)(extraWidth *
-                           core::style::perLengthVal (colPercents->get(col))
-                           / cumPercent);
-                  setColWidth (col, colWidths->get(col) + d);
+         colExtremes->getRef(col)->minWidth = 0;
+         colExtremes->getRef(col)->maxWidth = 0;
+         
+         for (int row = 0; row < numRows; row++) {
+            int n = row * numCols + col;
+            if (childDefined (n)) {
+               if (children->get(n)->cell.colspanEff == 1) {
+                  core::Extremes cellExtremes;
+                  children->get(n)->cell.widget->getExtremes (&cellExtremes);
+                  
+                  colExtremes->getRef(col)->minWidth =
+                     misc::max (colExtremes->getRef(col)->minWidth,
+                                cellExtremes.minWidth);
+                  colExtremes->getRef(col)->maxWidth =
+                     misc::max (colExtremes->getRef(col)->minWidth,
+                                colExtremes->getRef(col)->maxWidth,
+                                cellExtremes.minWidth);
+               } else {
+                  colSpanCells.increase ();
+                  colSpanCells.setLast (n);
                }
             }
          }
       }
-#ifdef DBG
-      MSG("APP_P, result ={ ");
-      for (int col = 0; col < numCols; col++)
-         MSG("%d ", colWidths->get(col));
-      MSG("}\n");
-#endif
-      apportion2 (totalWidth, 2);
 
-#ifdef DBG
-      MSG("APP_P, percent={");
-      for (int col = 0; col < numCols; col++)
-         MSG("%f ", core::dw::perLengthVal (colPercents->get(col)));
-      MSG("}\n");
-      MSG("APP_P, result ={ ");
-      for (int col = 0; col < numCols; col++)
-         MSG("%d ", colWidths->get(col));
-      MSG("}\n");
-#endif
-   }
-}
-
-// ----------------------------------------------------------------------
-
-Table::TableIterator::TableIterator (Table *table,
-                                     core::Content::Type mask, bool atEnd):
-   core::Iterator (table, mask, atEnd)
-{
-   index = atEnd ? table->children->size () : -1;
-   content.type = atEnd ? core::Content::END : core::Content::START;
-}
-
-Table::TableIterator::TableIterator (Table *table,
-                                     core::Content::Type mask, int index):
-   core::Iterator (table, mask, false)
-{
-   this->index = index;
-
-   if (index < 0)
-      content.type = core::Content::START;
-   else if (index >= table->children->size ())
-      content.type = core::Content::END;
-   else {
-      content.type = core::Content::WIDGET_IN_FLOW;
-      content.widget = table->children->get(index)->cell.widget;
-   }
-}
-
-object::Object *Table::TableIterator::clone()
-{
-   return new TableIterator ((Table*)getWidget(), getMask(), index);
-}
-
-int Table::TableIterator::compareTo(object::Comparable *other)
-{
-   return index - ((TableIterator*)other)->index;
-}
-
-bool Table::TableIterator::next ()
-{
-   Table *table = (Table*)getWidget();
-
-   if (content.type == core::Content::END)
-      return false;
-
-   // tables only contain widgets (in flow):
-   if ((getMask() & core::Content::WIDGET_IN_FLOW) == 0) {
-      content.type = core::Content::END;
-      return false;
+      // 2. cells with colspan > 1
+      
+      // TODO: Is this old comment still relevant? "If needed, here we
+      // set proportionally apportioned col maximums."
+      
+      // TODO Reactivate.
    }
 
-   do {
-      index++;
-      if (index >= table->children->size ()) {
-         content.type = core::Content::END;
-         return false;
+   DBG_OBJ_MSG_END ();
+}
+
+/**
+ * \brief Actual apportionment function.
+ */
+void Table::apportion2 (int totalWidth, bool forceTotalWidth)
+{
+   DBG_OBJ_MSGF ("resize", 0, "<b>apportion2</b> (%d, %s)",
+                 totalWidth, forceTotalWidth ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
+   if (colExtremes->size() > 0) {
+      int minWidth = 0, maxWidth = 0, availWidth;
+      
+      for (int col = 0; col < numCols; col++) {
+         maxWidth += colExtremes->get(col).maxWidth;
+         minWidth += colExtremes->get(col).minWidth;
       }
-   } while (table->children->get(index) == NULL ||
-            table->children->get(index)->type != Child::CELL);
+      
+      colWidths->setSize (colExtremes->size (), 0);
+      
+      if (!forceTotalWidth && maxWidth < totalWidth) {
+         // Enough space for the maximum table, don't widen past max.
+         availWidth = maxWidth;
+      } else
+         availWidth = totalWidth;
 
-   content.type = core::Content::WIDGET_IN_FLOW;
-   content.widget = table->children->get(index)->cell.widget;
-   return true;
-}
+      // General case.
+      int curTargetWidth = misc::max (availWidth, minWidth);
+      int curExtraWidth = curTargetWidth - minWidth;
+      int curMaxWidth = maxWidth;
+      int curNewWidth = minWidth;
 
-bool Table::TableIterator::prev ()
-{
-   Table *table = (Table*)getWidget();
+      for (int col = 0; col < numCols; col++) {
+         int colMinWidth = colExtremes->getRef(col)->minWidth;
+         int colMaxWidth = colExtremes->getRef(col)->maxWidth;
+         int w = (curMaxWidth <= 0) ? 0 :
+            (int)((float)curTargetWidth * colMaxWidth/curMaxWidth);
 
-   if (content.type == core::Content::START)
-      return false;
+         if (w <= colMinWidth)
+            w = colMinWidth;
+         else if (curNewWidth - colMinWidth + w > curTargetWidth)
+            w = colMinWidth + curExtraWidth;
 
-   // tables only contain widgets (in flow):
-   if ((getMask() & core::Content::WIDGET_IN_FLOW) == 0) {
-      content.type = core::Content::START;
-      return false;
+         _MSG("w = %d\n", w);
+
+         curNewWidth -= colMinWidth;
+         curMaxWidth -= colMaxWidth;
+         curExtraWidth -= (w - colMinWidth);
+         curTargetWidth -= w;
+         setColWidth (col, w);
+      }
    }
 
-   do {
-      index--;
-      if (index < 0) {
-         content.type = core::Content::START;
-         return false;
-      }
-   } while (table->children->get(index) == NULL ||
-            table->children->get(index)->type != Child::CELL);
-
-   content.type = core::Content::WIDGET_IN_FLOW;
-   content.widget = table->children->get(index)->cell.widget;
-   return true;
-}
-
-void Table::TableIterator::highlight (int start, int end,
-                                      core::HighlightLayer layer)
-{
-   /** todo Needs this an implementation? */
-}
-
-void Table::TableIterator::unhighlight (int direction,
-                                        core::HighlightLayer layer)
-{
-}
-
-void Table::TableIterator::getAllocation (int start, int end,
-                                                  core::Allocation *allocation)
-{
-   /** \bug Not implemented. */
+   DBG_OBJ_MSG_END ();
 }
 
 } // namespace dw

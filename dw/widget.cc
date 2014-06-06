@@ -449,7 +449,7 @@ void Widget::correctExtremes (Extremes *extremes)
 {
    // TODO Extremes only corrected?
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>correctExtremes</b> (%d / %d)"
+   DBG_OBJ_MSGF ("resize", 0, "<b>correctExtremes</b> (%d / %d)",
                  extremes->minWidth, extremes->maxWidth);
    DBG_OBJ_MSG_START ();
 
