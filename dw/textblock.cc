@@ -745,35 +745,6 @@ bool Textblock::isBlockLevel ()
    return true;
 }
 
-int Textblock::getAvailWidthOfChild (Widget *child)
-{
-   // TODO Implement also for ListItem (subtract space for bullet).
-   // TODO Correct by extremes?
-
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p)", child);
-   DBG_OBJ_MSG_START ();
-
-   int width;
-
-   if (core::style::isAbsLength (child->getStyle()->width))
-      // TODO What does "width" exactly stand for? (Content or all?)
-      width = core::style::absLengthVal (child->getStyle()->width);
-   else {
-      int containerWidth =  getAvailWidth () - boxDiffWidth ();
-      if (core::style::isPerLength (child->getStyle()->width))
-         width = core::style::multiplyWithPerLength (containerWidth,
-                                                     child->getStyle()->width);
-      else
-         // A textblock will use the whole width, so this is a meaningful value.
-         width = containerWidth;
-   }
-
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
-   DBG_OBJ_MSG_END ();
-
-   return width;
-}
-
 bool Textblock::buttonPressImpl (core::EventButton *event)
 {
    return sendSelectionEvent (core::SelectionState::BUTTON_PRESS, event);
