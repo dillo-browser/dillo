@@ -156,8 +156,7 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
       for (int row = 0; row < numRows; row++) {
          int n = row * numCols + col;
          if (childDefined (n)) {
-            int width =
-               (children->get(n)->cell.colspanEff - 1)
+            int width = (children->get(n)->cell.colspanEff - 1)
                * getStyle()->hBorderSpacing;
             for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
                width += colWidths->get (col + i);
@@ -200,7 +199,6 @@ int Table::getAvailWidthOfChild (Widget *child)
 
    calcCellSizes (false);
 
-   // TODO Consider colspan.
    int width;
 
    if (core::style::isAbsLength (child->getStyle()->width)) {
@@ -223,7 +221,10 @@ int Table::getAvailWidthOfChild (Widget *child)
             int n = row * numCols + col;
             if (childDefined (n) && children->get(n)->cell.widget == child) {
                DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
-               width = colWidths->get (col);
+               width = (children->get(n)->cell.colspanEff - 1)
+                  * getStyle()->hBorderSpacing;
+               for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
+                  width += colWidths->get (col + i);
             }
          }
       }
