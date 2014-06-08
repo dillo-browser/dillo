@@ -415,10 +415,10 @@ void Widget::correctRequisition (Requisition *requisition,
    DBG_OBJ_MSG_START ();
 
    if (container == NULL) {
-      if (core::style::isAbsLength (getStyle()->width))
+      if (style::isAbsLength (getStyle()->width))
          // TODO What does "width" exactly stand for? (Content or all?)
-         requisition->width = core::style::absLengthVal (getStyle()->width);
-      else if (core::style::isPerLength (getStyle()->width)) {
+         requisition->width = style::absLengthVal (getStyle()->width);
+      else if (style::isPerLength (getStyle()->width)) {
          int viewportWidth =
             layout->viewportWidth - (layout->canvasHeightGreater ?
                                      layout->vScrollbarThickness : 0);
@@ -426,13 +426,13 @@ void Widget::correctRequisition (Requisition *requisition,
                                                             getStyle()->width);
       }
 
-      if (core::style::isAbsLength (getStyle()->height))
+      if (style::isAbsLength (getStyle()->height))
          // TODO What does "height" exactly stand for? (Content or all?)
-         splitHeightFun (core::style::absLengthVal (getStyle()->height),
+         splitHeightFun (style::absLengthVal (getStyle()->height),
                          &requisition->ascent, &requisition->descent);
-      else if (core::style::isPerLength (getStyle()->height)) {
+      else if (style::isPerLength (getStyle()->height)) {
          // For layout->viewportHeight, see comment in getAvailHeight().
-         splitHeightFun (core::style::multiplyWithPerLength
+         splitHeightFun (style::multiplyWithPerLength
                          (layout->viewportHeight, getStyle()->height),
                          &requisition->ascent, &requisition->descent);
       }
@@ -454,11 +454,11 @@ void Widget::correctExtremes (Extremes *extremes)
    DBG_OBJ_MSG_START ();
 
    if (container == NULL) {
-      if (core::style::isAbsLength (getStyle()->width))
+      if (style::isAbsLength (getStyle()->width))
          // TODO What does "width" exactly stand for? (Content or all?)
          extremes->minWidth = extremes->maxWidth =
-            core::style::absLengthVal (getStyle()->width);
-      else if (core::style::isPerLength (getStyle()->width)) {
+            style::absLengthVal (getStyle()->width);
+      else if (style::isPerLength (getStyle()->width)) {
          int viewportWidth =
             layout->viewportWidth - (layout->canvasHeightGreater ?
                                      layout->vScrollbarThickness : 0);
@@ -969,14 +969,13 @@ int Widget::getAvailHeightOfChild (Widget *child)
 
    int height;
 
-   if (core::style::isAbsLength (child->getStyle()->height))
+   if (style::isAbsLength (child->getStyle()->height))
       // TODO What does "height" exactly stand for? (Content or all?)
-      height = core::style::absLengthVal (child->getStyle()->height);
+      height = style::absLengthVal (child->getStyle()->height);
    else {
       int containerHeight = getAvailHeight () - boxDiffHeight ();
-      if (core::style::isPerLength (child->getStyle()->height))
-         height =
-            core::style::multiplyWithPerLength (containerHeight,
+      if (style::isPerLength (child->getStyle()->height))
+         height = style::multiplyWithPerLength (containerHeight,
                                                 child->getStyle()->height);
       else
          // Although no widget will probably use the whole height, we
@@ -1007,24 +1006,24 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
                  requisition->descent);
    DBG_OBJ_MSG_START ();
 
-   if (core::style::isAbsLength (child->getStyle()->width))
+   if (style::isAbsLength (child->getStyle()->width))
       // TODO What does "width" exactly stand for? (Content or all?)
-      requisition->width = core::style::absLengthVal (child->getStyle()->width);
-   else if (core::style::isPerLength (child->getStyle()->width)) {
+      requisition->width = style::absLengthVal (child->getStyle()->width);
+   else if (style::isPerLength (child->getStyle()->width)) {
       int containerWidth = getAvailWidth () - boxDiffWidth ();
       requisition->width =
-         core::style::multiplyWithPerLength (containerWidth,
-                                             child->getStyle()->width);
+         style::multiplyWithPerLength (containerWidth,
+                                       child->getStyle()->width);
    }
 
-   if (core::style::isAbsLength (child->getStyle()->height))
+   if (style::isAbsLength (child->getStyle()->height))
       // TODO What does "height" exactly stand for? (Content or all?)
-      splitHeightFun (core::style::absLengthVal (child->getStyle()->height),
+      splitHeightFun (style::absLengthVal (child->getStyle()->height),
                       &requisition->ascent, &requisition->descent);
-   else if (core::style::isPerLength (child->getStyle()->height)) {
+   else if (style::isPerLength (child->getStyle()->height)) {
       int containerHeight = getAvailHeight () - boxDiffHeight ();
-      splitHeightFun (core::style::multiplyWithPerLength
-                      (containerHeight, child->getStyle()->height),
+      splitHeightFun (style::multiplyWithPerLength (containerHeight,
+                                                    child->getStyle()->height),
                       &requisition->ascent, &requisition->descent);
    }
 
@@ -1045,14 +1044,14 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
                  child, extremes->minWidth, extremes->maxWidth);
    DBG_OBJ_MSG_START ();
 
-   if (core::style::isAbsLength (child->getStyle()->width))
+   if (style::isAbsLength (child->getStyle()->width))
       // TODO What does "width" exactly stand for? (Content or all?)
       extremes->minWidth =extremes->maxWidth =
-         core::style::absLengthVal (child->getStyle()->width);
-   else if (core::style::isPerLength (child->getStyle()->width)) {
+         style::absLengthVal (child->getStyle()->width);
+   else if (style::isPerLength (child->getStyle()->width)) {
       int containerWidth = getAvailWidth () - boxDiffWidth ();
       extremes->minWidth =extremes->maxWidth =
-         core::style::multiplyWithPerLength (containerWidth,
+         style::multiplyWithPerLength (containerWidth,
                                              child->getStyle()->width);
    }
 
@@ -1109,7 +1108,7 @@ bool Widget::motionNotifyImpl (EventMotion *event)
 
 void Widget::enterNotifyImpl (EventCrossing *)
 {
-   core::style::Tooltip *tooltip = getStyle()->x_tooltip;
+   style::Tooltip *tooltip = getStyle()->x_tooltip;
 
    if (tooltip)
       tooltip->onEnter();
@@ -1117,7 +1116,7 @@ void Widget::enterNotifyImpl (EventCrossing *)
 
 void Widget::leaveNotifyImpl (EventCrossing *)
 {
-   core::style::Tooltip *tooltip = getStyle()->x_tooltip;
+   style::Tooltip *tooltip = getStyle()->x_tooltip;
 
    if (tooltip)
       tooltip->onLeave();
