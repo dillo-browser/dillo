@@ -200,17 +200,37 @@ int Table::getAvailWidthOfChild (Widget *child)
 
    calcCellSizes (false);
 
-   // TODO This is inefficient. (Use parentRef?)
    // TODO Consider colspan.
-   int width = -1;
-   for (int row = numRows - 1; width == -1 && row >= 0; row--) {
-      for (int col = 0; width == -1 && col < numCols; col++) {
-         int n = row * numCols + col;
-         if (childDefined (n) && children->get(n)->cell.widget == child)
-            width = colWidths->get (col);
+   int width;
+
+   if (core::style::isAbsLength (child->getStyle()->width)) {
+      DBG_OBJ_MSG ("resize", 1, "absolute length");
+      width = core::style::absLengthVal (child->getStyle()->width)
+         + child->boxDiffWidth ();
+   } else if (core::style::isPerLength (child->getStyle()->width)) {
+      DBG_OBJ_MSG ("resize", 1, "percentage length");
+      int containerContentWidth = getAvailWidth () - boxDiffWidth ();
+      width = core::style::multiplyWithPerLength (containerContentWidth,
+                                                  child->getStyle()->width)
+         + child->boxDiffWidth ();
+   } else {
+      width = -1;
+      DBG_OBJ_MSG ("resize", 1, "no length specified");
+
+      // TODO This is inefficient. (Use parentRef?)
+      for (int row = numRows - 1; width == -1 && row >= 0; row--) {
+         for (int col = 0; width == -1 && col < numCols; col++) {
+            int n = row * numCols + col;
+            if (childDefined (n) && children->get(n)->cell.widget == child) {
+               DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
+               width = colWidths->get (col);
+            }
+         }
       }
+      
+      assert (width != -1);
    }
-   
+
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_MSG_END ();
    return width;
