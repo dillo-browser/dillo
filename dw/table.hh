@@ -407,21 +407,16 @@ private:
    void calcColumnExtremes ();
    void forceCalcColumnExtremes ();
 
-   void apportion2 (int totalWidth, bool forceTotalWidth);
+   void apportion2 (int totalWidth, bool forceTotalWidth,
+                    int firstCol, int lastCol,
+                    lout::misc::SimpleVector<int> *dest, int destOffset,
+                    bool setRedrawX);
 
    void setCumHeight (int row, int value)
    {
       if (value != cumHeight->get (row)) {
          redrawY = lout::misc::min ( redrawY, value );
          cumHeight->set (row, value);
-      }
-   }
-
-   inline void setColWidth (int col, int value)
-   {
-      if (value != colWidths->get (col)) {
-         redrawX = lout::misc::min (redrawX, value);
-         colWidths->set (col, value);
       }
    }
 

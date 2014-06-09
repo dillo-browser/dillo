@@ -519,7 +519,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
    DBG_OBJ_MSG ("resize", 0, "<b>forceCalcCellSizes</b>");
    DBG_OBJ_MSG_START ();
 
-   int totalWidth = 0, childHeight, forceTotalWidth = 1;
+   int totalWidth = 0, childHeight;
    core::Extremes extremes;
 
    // Will also call calcColumnExtremes(), when needed.
@@ -537,7 +537,8 @@ void Table::forceCalcCellSizes (bool calcHeights)
    rowSpanCells->setSize (0);
    baseline->setSize (numRows);
 
-   apportion2 (totalWidth, forceTotalWidth);
+   apportion2 (totalWidth, getStyle()->width != core::style::LENGTH_AUTO,
+               0, colExtremes->size() - 1, colWidths, 0, true);
 
    if (calcHeights) {
       setCumHeight (0, 0);
@@ -701,8 +702,38 @@ void Table::forceCalcColumnExtremes ()
       
       // TODO: Is this old comment still relevant? "If needed, here we
       // set proportionally apportioned col maximums."
-      
-      // TODO Reactivate.
+
+      for (int i = 0; i < colSpanCells.size(); i++) {
+         int n = colSpanCells.get (i);
+         int col = n % numCols;
+         int cs = children->get(n)->cell.colspanEff;        
+
+         core::Extremes cellExtremes;
+         children->get(n)->cell.widget->getExtremes (&cellExtremes);
+
+         int minSumCols = 0, maxSumCols = 0;
+         for (int j = 0; j < cs; j++) {
+            minSumCols += colExtremes->getRef(col + j)->minWidth;
+            maxSumCols += colExtremes->getRef(col + j)->maxWidth;
+         }
+
+         DBG_OBJ_MSGF ("resize", 1, "cs = %d cell: %d / %d, sum: %d / %d\n",
+                       cs, cellExtremes.minWidth, cellExtremes.maxWidth,
+                       minSumCols, maxSumCols);
+
+         if (cellExtremes.minWidth > minSumCols) {
+            // TODO This differs from the documentation? Should work, anyway.
+            misc::SimpleVector<int> newMin;
+            apportion2 (cellExtremes.minWidth, true, col, col + cs - 1,
+                        &newMin, 0, false);
+            for (int j = 0; j < cs; j++) {
+               colExtremes->getRef(col + j)->minWidth = newMin.get (i);
+               colExtremes->getRef(col + j)->maxWidth =
+                  misc::max (colExtremes->getRef(col + j)->minWidth,
+                             colExtremes->getRef(col + j)->maxWidth);
+            }
+         }
+      }
    }
 
    DBG_OBJ_MSG_END ();
@@ -711,21 +742,24 @@ void Table::forceCalcColumnExtremes ()
 /**
  * \brief Actual apportionment function.
  */
-void Table::apportion2 (int totalWidth, bool forceTotalWidth)
+void Table::apportion2 (int totalWidth, bool forceTotalWidth,
+                        int firstCol, int lastCol,
+                        misc::SimpleVector<int> *dest, int destOffset,
+                        bool setRedrawX)
 {
    DBG_OBJ_MSGF ("resize", 0, "<b>apportion2</b> (%d, %s)",
                  totalWidth, forceTotalWidth ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
-   if (colExtremes->size() > 0) {
+   if (lastCol > firstCol) {
       int minWidth = 0, maxWidth = 0, availWidth;
       
-      for (int col = 0; col < numCols; col++) {
+      for (int col = firstCol; col <= lastCol; col++) {
          maxWidth += colExtremes->get(col).maxWidth;
          minWidth += colExtremes->get(col).minWidth;
       }
       
-      colWidths->setSize (colExtremes->size (), 0);
+      dest->setSize (destOffset + lastCol - firstCol + 11, 0);
       
       if (!forceTotalWidth && maxWidth < totalWidth) {
          // Enough space for the maximum table, don't widen past max.
@@ -739,7 +773,7 @@ void Table::apportion2 (int totalWidth, bool forceTotalWidth)
       int curMaxWidth = maxWidth;
       int curNewWidth = minWidth;
 
-      for (int col = 0; col < numCols; col++) {
+      for (int col = firstCol; col <= lastCol; col++) {
          int colMinWidth = colExtremes->getRef(col)->minWidth;
          int colMaxWidth = colExtremes->getRef(col)->maxWidth;
          int w = (curMaxWidth <= 0) ? 0 :
@@ -756,10 +790,17 @@ void Table::apportion2 (int totalWidth, bool forceTotalWidth)
          curMaxWidth -= colMaxWidth;
          curExtraWidth -= (w - colMinWidth);
          curTargetWidth -= w;
-         setColWidth (col, w);
+
+         // TODO Adapted from old inline function "setColWidth". But
+         // (i) is this anyway correct (w is not x)? And does the
+         // performance gain actually play a role?
+         if (setRedrawX && w != dest->get (destOffset + col))
+            redrawX = lout::misc::min (redrawX, w);
+
+         dest->set (destOffset + col, w);
       }
    }
-
+   
    DBG_OBJ_MSG_END ();
 }
 
