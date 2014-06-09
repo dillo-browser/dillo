@@ -1758,19 +1758,6 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
                        vloat->getWidget (), vloat->generatingBlock,
                        extr.minWidth, extr.maxWidth);
 
-         if (isAbsLength (vloat->getWidget()->getStyle()->width)) {
-            int width = absLengthVal (vloat->getWidget()->getStyle()->width);
-            if (extr.minWidth < width)
-               extr.minWidth = width;
-            if (extr.maxWidth > width)
-               // maxWidth not smaller than minWidth
-               extr.maxWidth = max (width, extr.minWidth);
-                    
-            DBG_OBJ_MSGF ("resize.oofm", 1,
-                          "corrected by absolute width %d: %d / %d",
-                          width, extr.minWidth, extr.maxWidth);
-         }
-
          // TODO: Or zero (instead of rightDiff) for right floats?
          *minWidth =
             max (*minWidth,
@@ -2065,120 +2052,21 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
 
 void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 {
-   if (vloat->dirty ||
-       (vloat->cbLineBreakWidth != containingBlock->getLineBreakWidth () &&
-        (// If the size of the containing block has changed (represented
-         // currently by the line break width), a recalculation of a relative
-         // float width may also be necessary.
-         isPerLength (vloat->getWidget()->getStyle()->width) ||
-         // Similar for "auto" widths of textblocks etc.
-         (vloat->getWidget()->usesHints () && 
-          vloat->getWidget()->getStyle()->width == LENGTH_AUTO)))) {
+   // Historical note: relative sizes (e. g. percentages) are already
+   // handled by (at this time) Layout::containerSizeChanged, so
+   // Float::dirty will be set.
+
+   if (vloat->dirty)  {
       DBG_OBJ_MSGF ("resize.oofm", 0,
                     "<b>ensureFloatSize</b> (%p): recalculation",
                     vloat->getWidget ());
       DBG_OBJ_MSG_START ();
 
-      Extremes extremes;
-      vloat->getWidget()->getExtremes (&extremes);
-      DBG_OBJ_MSGF ("resize.oofm", 1, "getExtremes => %d / %d",
-                    extremes.minWidth, extremes.maxWidth);
-
-      // TODO Ugly. Soon to be replaced by cleaner code? See also
-      // comment in Textblock::calcWidgetSize.
-
-      if (vloat->getWidget()->usesHints ()) {
-         // For widths defined by CSS, similar adjustments (extremes
-         // etc.) like below are necessary, to prevent CPU hogging.
-
-         Length cssWidth = vloat->getWidget()->getStyle()->width;
-         if (isAbsLength (cssWidth)) {
-            int width = absLengthVal (cssWidth);
-            DBG_OBJ_MSGF ("resize.oofm", 1, "about to set absolute width: %d",
-                          width);
-            width = adjustFloatWidth (width, &extremes);
-            //vloat->getWidget()->setWidth (width);
-         } else if (cssWidth == LENGTH_AUTO || isPerLength (cssWidth)) {
-            // It is important that the width of the *CB* is not
-            // larger than its minimal width, when the latter is set
-            // as size hint; otherwise we have an endless queueResize
-            // cycle (resulting in CPU hogging) when the CB is part of
-            // a narrow table column. To prevent this, the width of
-            // the *float* has to be limited (cf. also getExtremes).
-
-            int lineBreakWidth, leftDiff, rightDiff;
-            if (getFloatDiffToCB (vloat, &leftDiff, &rightDiff))
-               lineBreakWidth = containingBlock->getLineBreakWidth()
-                  - (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT ?
-                     leftDiff : rightDiff);
-            else
-               // Not allocated: next allocation will take care.
-               lineBreakWidth = containingBlock->getLineBreakWidth();
-
-            int width;
-            
-            if (cssWidth == LENGTH_AUTO) {
-               width = lineBreakWidth;
-               DBG_OBJ_MSGF ("resize.oofm", 1, "setting width 'auto': %d",
-                             width);
-            } else {
-               width = multiplyWithPerLength (lineBreakWidth, cssWidth);
-
-               // Some more corrections (nonsense percentage values):
-               if (width < 1)
-                  width = 1;
-               if (width > lineBreakWidth)
-                  width = lineBreakWidth;
-               
-               DBG_OBJ_MSGF ("resize.oofm", 1,
-                             "about to set percentage width: %d * %g -> %d",
-                             lineBreakWidth, perLengthVal (cssWidth), width);
-               width = adjustFloatWidth (width, &extremes);
-            }
-
-            //vloat->getWidget()->setWidth (width);
-         } else
-            DBG_OBJ_MSG ("resize.oofm", 1,
-                         "setting width: <b>relative length? may be a bug</b>");
-      } else
-         DBG_OBJ_MSG ("resize.oofm", 1, "setting no width: uses no hints");
-
-      // This is a bit hackish: We first request the size, then set
-      // the available width (also considering the one of the
-      // containing block, and the extremes of the float), then
-      // request the size again, which may of course have a different
-      // result. This is a fix for the bug:
-      //
-      //    Text in floats, which are wider because of an image, are
-      //    broken at a too narrow width. Reproduce:
-      //    test/floats2.html. After the image has been loaded, the
-      //    text "Some text in a float." should not be broken
-      //    anymore.
-      //
-      // If the call of setWidth not is neccessary, the second call
-      // will read the size from the cache, so no redundant
-      // calculation is necessary.
-      //
-      // Furthermore, extremes are considered; especially, floats are too
-      // wide, sometimes.
-
       vloat->getWidget()->sizeRequest (&vloat->size);
-      DBG_OBJ_MSGF ("resize.oofm", 1, "sizeRequest (1) => %d * (%d + %d)",
-                    vloat->size.width, vloat->size.ascent, vloat->size.descent);
-
-      // Set width  ...
-      int width = vloat->size.width;
-      DBG_OBJ_MSGF ("resize.oofm", 1, "new width: %d", width);
-      width = adjustFloatWidth (width, &extremes);
-      //vloat->getWidget()->setWidth (width);
-      vloat->getWidget()->sizeRequest (&vloat->size);
-      DBG_OBJ_MSGF ("resize.oofm", 1, "sizeRequest (2) => %d * (%d + %d)",
-                    vloat->size.width, vloat->size.ascent, vloat->size.descent);
-
       vloat->cbLineBreakWidth = containingBlock->getLineBreakWidth ();
       vloat->dirty = false;
 
-      DBG_OBJ_MSGF ("resize.oofm", 1, "final size: %d * (%d + %d)",
+      DBG_OBJ_MSGF ("resize.oofm", 1, "size: %d * (%d + %d)",
                     vloat->size.width, vloat->size.ascent, vloat->size.descent);
 
       DBG_OBJ_SET_NUM_O (vloat->getWidget(), "<Float>.size.width",
@@ -2192,41 +2080,6 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 
       DBG_OBJ_MSG_END ();
    }
-}
-
-int OutOfFlowMgr::adjustFloatWidth (int width, Extremes *extremes)
-{
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>adjustFloatWidth</b> (%d, (%d, %d)) "
-                 "[CB->lineBreakWidth = %d]",
-                 width, extremes->minWidth, extremes->maxWidth,
-                 containingBlock->getLineBreakWidth());
-   DBG_OBJ_MSG_START ();
-
-   // Consider extremes (as described above).
-   if (width < extremes->minWidth) {
-      width = extremes->minWidth;
-      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to minWidth: %d", width);
-   }
-   if (width > extremes->maxWidth) {
-      width = extremes->maxWidth;
-      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to maxWidth: %d", width);
-   }
-   // Finally, consider the line break width of the containing
-   // block. Order is important: to prevent problems, the line break
-   // width of the float must never be larger than the one of the
-   // containing block. (Somewhat hackish, will be solved cleaner with
-   // GROWS.)
-   if (width > containingBlock->getLineBreakWidth()) {
-      width = containingBlock->getLineBreakWidth();
-      DBG_OBJ_MSGF ("resize.oofm", 1, "adjusted to CB::lineBreakWidth: %d",
-                    width);
-   }
-
-   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", width);
-   DBG_OBJ_MSG_END ();
-
-   return width;
 }
 
 void OutOfFlowMgr::getAbsolutelyPositionedSize (Requisition *cbReq, int *width,
