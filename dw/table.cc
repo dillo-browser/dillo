@@ -215,11 +215,20 @@ int Table::getAvailWidthOfChild (Widget *child)
       width = -1;
       DBG_OBJ_MSG ("resize", 1, "no length specified");
 
+      // "child" is not a direct child, but a direct descendant. Search
+      // for the actual childs.
+      Widget *actualChild = child;
+      while (actualChild != NULL && actualChild->getParent () != this)
+         actualChild = actualChild->getParent ();
+
+      assert (actualChild != NULL);
+
       // TODO This is inefficient. (Use parentRef?)
       for (int row = numRows - 1; width == -1 && row >= 0; row--) {
          for (int col = 0; width == -1 && col < numCols; col++) {
             int n = row * numCols + col;
-            if (childDefined (n) && children->get(n)->cell.widget == child) {
+            if (childDefined (n) &&
+                children->get(n)->cell.widget == actualChild) {
                DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
                width = (children->get(n)->cell.colspanEff - 1)
                   * getStyle()->hBorderSpacing;
