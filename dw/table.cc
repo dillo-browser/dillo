@@ -721,13 +721,24 @@ void Table::forceCalcColumnExtremes ()
                        cs, cellExtremes.minWidth, cellExtremes.maxWidth,
                        minSumCols, maxSumCols);
 
-         if (cellExtremes.minWidth > minSumCols) {
+         bool changeMin = cellExtremes.minWidth > minSumCols;
+         bool changeMax = cellExtremes.maxWidth > maxSumCols;
+         if (changeMin || changeMax) {
             // TODO This differs from the documentation? Should work, anyway.
-            misc::SimpleVector<int> newMin;
-            apportion2 (cellExtremes.minWidth, true, col, col + cs - 1,
-                        &newMin, 0, false);
+            misc::SimpleVector<int> newMin, newMax;
+            if (changeMin)
+               apportion2 (cellExtremes.minWidth, true, col, col + cs - 1,
+                           &newMin, 0, false);
+            if (changeMax)
+               apportion2 (cellExtremes.maxWidth, true, col, col + cs - 1,
+                           &newMax, 0, false);
+            
             for (int j = 0; j < cs; j++) {
-               colExtremes->getRef(col + j)->minWidth = newMin.get (i);
+               if (changeMin)
+                  colExtremes->getRef(col + j)->minWidth = newMin.get (i);
+               if (changeMax)
+                  colExtremes->getRef(col + j)->maxWidth = newMax.get (i);
+               // For cases where min and max are somewhat confused:
                colExtremes->getRef(col + j)->maxWidth =
                   misc::max (colExtremes->getRef(col + j)->minWidth,
                              colExtremes->getRef(col + j)->maxWidth);
