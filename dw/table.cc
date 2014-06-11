@@ -783,11 +783,12 @@ void Table::apportion2 (int totalWidth, bool forceTotalWidth,
                         misc::SimpleVector<int> *dest, int destOffset,
                         bool setRedrawX)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>apportion2</b> (%d, %s)",
-                 totalWidth, forceTotalWidth ? "true" : "false");
+   DBG_OBJ_MSGF ("resize", 0, "<b>apportion2</b> (%d, %s, %d, %d, ..., %d, %s)",
+                 totalWidth, forceTotalWidth ? "true" : "false", firstCol,
+                 lastCol, destOffset, setRedrawX ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
-   if (lastCol > firstCol) {
+   if (lastCol >= firstCol) {
       int minWidth = 0, maxWidth = 0, availWidth;
       
       for (int col = firstCol; col <= lastCol; col++) {
@@ -802,6 +803,10 @@ void Table::apportion2 (int totalWidth, bool forceTotalWidth,
          availWidth = maxWidth;
       } else
          availWidth = totalWidth;
+
+      DBG_OBJ_MSGF ("resize", 1,
+                    "maxWidth = %d, minWidth = %d, availWidth = %d",
+                    maxWidth, minWidth, availWidth);
 
       // General case.
       int curTargetWidth = misc::max (availWidth, minWidth);
