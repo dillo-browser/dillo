@@ -1088,7 +1088,7 @@ Widget *Layout::getWidgetAtPoint (int x, int y)
 {
    _MSG ("------------------------------------------------------------\n");
    _MSG ("widget at (%d, %d)\n", x, y);
-   if (topLevel)
+   if (topLevel && topLevel->wasAllocated ())
       return topLevel->getWidgetAtPoint (x, y, 0);
    else
       return NULL;
