@@ -549,6 +549,12 @@ void Table::forceCalcCellSizes (bool calcHeights)
    apportion2 (totalWidth, getStyle()->width != core::style::LENGTH_AUTO,
                0, colExtremes->size() - 1, colWidths, 0, true);
 
+   DBG_IF_RTFL {
+      DBG_OBJ_SET_NUM ("colWidths.size", colWidths->size ());
+      for (int i = 0; i < colWidths->size (); i++)
+         DBG_OBJ_ARRSET_NUM ("colWidths", i, colWidths->get (i));
+   }
+
    if (calcHeights) {
       setCumHeight (0, 0);
       for (int row = 0; row < numRows; row++) {
@@ -753,6 +759,16 @@ void Table::forceCalcColumnExtremes ()
                              colExtremes->getRef(col + j)->maxWidth);
             }
          }
+      }
+   }
+
+   DBG_IF_RTFL {
+      DBG_OBJ_SET_NUM ("colExtremes.size", colExtremes->size ());
+      for (int i = 0; i < colExtremes->size (); i++) {
+         DBG_OBJ_ARRATTRSET_NUM ("colExtremes", i, "minWidth",
+                                 colExtremes->get(i).minWidth);
+         DBG_OBJ_ARRATTRSET_NUM ("colExtremes", i, "maxWidth",
+                                 colExtremes->get(i).maxWidth);
       }
    }
 
