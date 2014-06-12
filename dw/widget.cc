@@ -904,9 +904,11 @@ Widget *Widget::getWidgetAtPoint (int x, int y, int level)
                      (Content::WIDGET_IN_FLOW | Content::WIDGET_OOF_CONT),
                      false);
 
-      while (childAtPoint == NULL && it->next ())
-         childAtPoint = it->getContent()->widget->getWidgetAtPoint (x, y,
-                                                                    level + 1);
+      while (childAtPoint == NULL && it->next ()) {
+         Widget *child = it->getContent()->widget;
+         if (child->wasAllocated ())
+            childAtPoint = child->getWidgetAtPoint (x, y, level + 1);
+      }
 
       it->unref ();
 

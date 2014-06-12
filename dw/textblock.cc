@@ -2569,10 +2569,12 @@ core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
 
       if (word->content.type == core::Content::WIDGET_IN_FLOW) {
          core::Widget * childAtPoint;
-         childAtPoint = word->content.widget->getWidgetAtPoint (x, y,
-                                                                level + 1);
-         if (childAtPoint) {
-            return childAtPoint;
+         if (word->content.widget->wasAllocated ()) {
+            childAtPoint = word->content.widget->getWidgetAtPoint (x, y,
+                                                                   level + 1);
+            if (childAtPoint) {
+               return childAtPoint;
+            }
          }
       }
    }

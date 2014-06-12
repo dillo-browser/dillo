@@ -120,12 +120,13 @@ dnl -------------------------
 dnl
 dnl For debugging and to be user friendly
 AC_MSG_CHECKING([FLTK 1.3])
-fltk_version="`fltk-config --version 2>/dev/null`"
+AC_PATH_PROG(FLTK_CONFIG,fltk-config)
+fltk_version="`$FLTK_CONFIG --version 2>/dev/null`"
 case $fltk_version in
   1.3.*) AC_MSG_RESULT(yes)
-         LIBFLTK_CXXFLAGS=`fltk-config --cxxflags`
-         LIBFLTK_CFLAGS=`fltk-config --cflags`
-         LIBFLTK_LIBS=`fltk-config --ldflags`;;
+         LIBFLTK_CXXFLAGS=`$FLTK_CONFIG --cxxflags`
+         LIBFLTK_CFLAGS=`$FLTK_CONFIG --cflags`
+         LIBFLTK_LIBS=`$FLTK_CONFIG --ldflags`;;
   ?*)    AC_MSG_RESULT(no)
          AC_MSG_ERROR(FLTK 1.3 required; version found: $fltk_version);;
   *)     AC_MSG_RESULT(no)

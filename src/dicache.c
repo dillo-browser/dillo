@@ -548,24 +548,21 @@ void a_Dicache_cleanup(void)
 {
    int i;
    DICacheNode *node;
-   DICacheEntry *entry;
+   DICacheEntry *entry, *next;
 
    _MSG("a_Dicache_cleanup\n");
    for (i = 0; i < dList_length(CachedIMGs); ++i) {
       node = dList_nth_data(CachedIMGs, i);
       /* iterate each entry of this node */
-      for (entry = node->first; entry; entry = entry->next) {
+      for (entry = node->first; entry; entry = next) {
+         next = entry->next;
          if (entry->v_imgbuf &&
              a_Imgbuf_last_reference(entry->v_imgbuf)) {
             /* free this unused entry */
             _MSG("a_Dicache_cleanup: removing entry...\n");
-            if (entry->next) {
-               Dicache_remove(node->url, entry->version);
-            } else {
-               Dicache_remove(node->url, entry->version);
-               --i;
-               break;
-            }
+            Dicache_remove(node->url, entry->version);
+            if (!next && node != dList_nth_data(CachedIMGs, i))
+               --i; /* removed node, adjust counter */
          }
       }
    }

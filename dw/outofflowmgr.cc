@@ -1366,10 +1366,12 @@ Widget *OutOfFlowMgr::getFloatWidgetAtPoint (SortedFloatsVector *list,
    for (int i = 0; i < list->size(); i++) {
       // Could use binary search to be faster.
       Float *vloat = list->get(i);
-      Widget *childAtPoint =
-         vloat->getWidget()->getWidgetAtPoint (x, y, level + 1);
-      if (childAtPoint)
-         return childAtPoint;
+      if (vloat->getWidget()->wasAllocated ()) {
+         Widget *childAtPoint =
+            vloat->getWidget()->getWidgetAtPoint (x, y, level + 1);
+         if (childAtPoint)
+            return childAtPoint;
+      }
    }
 
    return NULL;
@@ -1380,9 +1382,12 @@ Widget *OutOfFlowMgr::getAbsolutelyPositionedWidgetAtPoint (int x, int y,
 {
    for (int i = 0; i < absolutelyPositioned->size(); i++) {
       AbsolutelyPositioned *abspos = absolutelyPositioned->get(i);
-      Widget *childAtPoint = abspos->widget->getWidgetAtPoint (x, y, level + 1);
-      if (childAtPoint)
-         return childAtPoint;
+      if (abspos->widget->wasAllocated ()) {
+         Widget *childAtPoint =
+            abspos->widget->getWidgetAtPoint (x, y, level + 1);
+         if (childAtPoint)
+            return childAtPoint;
+      }
    }
 
    return NULL;
