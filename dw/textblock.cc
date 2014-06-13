@@ -389,21 +389,12 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
          requisition->descent = oofHeight - requisition->ascent;
    }   
 
-   DBG_OBJ_MSGF ("resize", 1,
-                 "before considering lineBreakWidth (= %d): %d * (%d + %d)",
-                 lineBreakWidth, requisition->width, requisition->ascent,
-                 requisition->descent);
-
-   // TODO The following will not be necessary anymore:
-   if (requisition->width < lineBreakWidth) {
-      requisition->width = lineBreakWidth;
-      DBG_OBJ_MSGF ("resize", 1, "adjusting to lineBreakWidth => %d",
-                    requisition->width);
-   }
+   DBG_OBJ_MSGF ("resize", 1, "before correction: %d * (%d + %d)",
+                 requisition->width, requisition->ascent, requisition->descent);
 
    correctRequisition (requisition, core::splitHeightPreserveAscent);
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
+   DBG_OBJ_MSGF ("resize", 1, "final: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
    DBG_OBJ_MSG_END ();
 }
