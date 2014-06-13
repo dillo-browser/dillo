@@ -1206,6 +1206,9 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
       case FLOAT_LEFT:
          leftFloatsAll->put (vloat);
          DBG_OBJ_SET_NUM ("leftFloatsAll.size", leftFloatsAll->size());
+         DBG_OBJ_ARRATTRSET_PTR ("leftFloatsAll", leftFloatsAll->size() - 1,
+                                 "widget", vloat->getWidget ());
+
          widget->parentRef = createRefLeftFloat (leftFloatsAll->size() - 1);
          tbInfo->leftFloatsGB->put (vloat);
 
@@ -1230,6 +1233,9 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
       case FLOAT_RIGHT:
          rightFloatsAll->put (vloat);
          DBG_OBJ_SET_NUM ("rightFloatsAll.size", rightFloatsAll->size());
+         DBG_OBJ_ARRATTRSET_PTR ("rightFloatsAll", rightFloatsAll->size() - 1,
+                                 "widget", vloat->getWidget ());
+
          widget->parentRef = createRefRightFloat (rightFloatsAll->size() - 1);
          tbInfo->rightFloatsGB->put (vloat);
 
