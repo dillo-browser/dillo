@@ -344,7 +344,7 @@ void Widget::sizeRequest (Requisition *requisition)
  * Return available width including margin/border/padding
  * (extraSpace?), not only the content width.
  */
-int Widget::getAvailWidth ()
+int Widget::getAvailWidth (bool forceValue)
 {
    // TODO Correct by extremes?
 
@@ -369,7 +369,7 @@ int Widget::getAvailWidth ()
             width = viewportWidth;
       }
    } else
-      width = container->getAvailWidthOfChild (this);
+      width = container->getAvailWidthOfChild (this, forceValue);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_MSG_END ();
@@ -381,7 +381,7 @@ int Widget::getAvailWidth ()
  * Return available height including margin/border/padding
  * (extraSpace?), not only the content height.
  */
-int Widget::getAvailHeight ()
+int Widget::getAvailHeight (bool forceValue)
 {
    // TODO Correct by ... not extremes, but ...? (Height extremes?)
 
@@ -406,7 +406,7 @@ int Widget::getAvailHeight ()
       else
          height = layout->viewportHeight;
    } else
-      height = container->getAvailHeightOfChild (this);
+      height = container->getAvailHeightOfChild (this, forceValue);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
    DBG_OBJ_MSG_END ();
@@ -966,7 +966,7 @@ void Widget::markExtremesChange (int ref)
 {
 }
 
-int Widget::getAvailWidthOfChild (Widget *child)
+int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
    // This is a halfway suitable implementation for all
    // containers. For simplification, this will be used during the
@@ -974,7 +974,8 @@ int Widget::getAvailWidthOfChild (Widget *child)
 
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p)", child);
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p, %s)",
+                 child, forceValue ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    int width;
@@ -983,15 +984,20 @@ int Widget::getAvailWidthOfChild (Widget *child)
       width = style::absLengthVal (child->getStyle()->width)
          + child->boxDiffWidth ();
    else {
-      int containerContentWidth = getAvailWidth () - boxDiffWidth ();
-      if (style::isPerLength (child->getStyle()->width))
-         width = style::multiplyWithPerLength (containerContentWidth,
-                                               child->getStyle()->width)
-            + child->boxDiffWidth ();
-      else
-         // Some widgets will use the whole width, so this is a
-         // meaningful value.
-         width = containerContentWidth;
+      int availWidth = getAvailWidth (forceValue);
+      if (availWidth == -1)
+         width = -1;
+      else {
+         int containerContentWidth = availWidth - boxDiffWidth ();
+         if (style::isPerLength (child->getStyle()->width))
+            width = style::multiplyWithPerLength (containerContentWidth,
+                                                  child->getStyle()->width)
+               + child->boxDiffWidth ();
+         else
+            // Some widgets will use the whole width, so this is a
+            // meaningful value.
+            width = containerContentWidth;
+      }
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
@@ -1000,13 +1006,14 @@ int Widget::getAvailWidthOfChild (Widget *child)
    return width;
 }
 
-int Widget::getAvailHeightOfChild (Widget *child)
+int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
 {
    // Again, a suitable implementation for all widgets (perhaps).
 
    // TODO Correct by extremes? (Height extemes?)
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailHeightOfChild</b> (%p)", child);
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailHeightOfChild</b> (%p, %s)",
+                 child, forceValue ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    int height;
@@ -1015,15 +1022,20 @@ int Widget::getAvailHeightOfChild (Widget *child)
       height = style::absLengthVal (child->getStyle()->height)
          + child->boxDiffHeight ();
    else {
-      int containerContentHeight = getAvailHeight () - boxDiffHeight ();
-      if (style::isPerLength (child->getStyle()->height))
-         height = style::multiplyWithPerLength (containerContentHeight,
-                                                child->getStyle()->height)
-            + child->boxDiffHeight ();
-      else
-         // Although no widget will probably use the whole height, we
-         // have to return some value here.
-         height = containerContentHeight;
+      int availHeight = getAvailHeight (forceValue);
+      if (availHeight == -1)
+         height = -1;
+      else {
+         int containerContentHeight = availHeight - boxDiffHeight ();
+         if (style::isPerLength (child->getStyle()->height))
+            height = style::multiplyWithPerLength (containerContentHeight,
+                                                   child->getStyle()->height)
+               + child->boxDiffHeight ();
+         else
+            // Although no widget will probably use the whole height, we
+            // have to return some value here.
+            height = containerContentHeight;
+      }
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
@@ -1051,11 +1063,14 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
       requisition->width = style::absLengthVal (child->getStyle()->width)
          + child->boxDiffWidth ();
    else if (style::isPerLength (child->getStyle()->width)) {
-      int containerWidth = getAvailWidth () - boxDiffWidth ();
-      requisition->width =
-         style::multiplyWithPerLength (containerWidth,
-                                       child->getStyle()->width)
-         + child->boxDiffWidth ();
+      int availWidth = getAvailWidth (false);
+      if (availWidth != -1) {
+         int containerWidth = availWidth - boxDiffWidth ();
+         requisition->width =
+            style::multiplyWithPerLength (containerWidth,
+                                          child->getStyle()->width)
+            + child->boxDiffWidth ();
+      }
    }
 
    // TODO Perhaps split first, then add box ascent and descent.
@@ -1064,11 +1079,14 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
                       + child->boxDiffHeight (),
                       &requisition->ascent, &requisition->descent);
    else if (style::isPerLength (child->getStyle()->height)) {
-      int containerHeight = getAvailHeight () - boxDiffHeight ();
-      splitHeightFun (style::multiplyWithPerLength (containerHeight,
-                                                    child->getStyle()->height)
-                      + child->boxDiffHeight (),
-                      &requisition->ascent, &requisition->descent);
+      int availHeight = getAvailHeight (false);
+      if (availHeight != -1) {
+         int containerHeight = availHeight - boxDiffHeight ();
+         splitHeightFun (style::multiplyWithPerLength
+                         (containerHeight, child->getStyle()->height)
+                         + child->boxDiffHeight (),
+                         &requisition->ascent, &requisition->descent);
+      }
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
@@ -1093,10 +1111,14 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
          style::absLengthVal (child->getStyle()->width)
          + child->boxDiffWidth ();
    else if (style::isPerLength (child->getStyle()->width)) {
-      int containerWidth = getAvailWidth () - boxDiffWidth ();
-      extremes->minWidth =extremes->maxWidth =
-         style::multiplyWithPerLength (containerWidth, child->getStyle()->width)
-         + child->boxDiffWidth ();
+      int availWidth = getAvailWidth (false);
+      if (availWidth != -1) {
+         int containerWidth = availWidth - boxDiffWidth ();
+         extremes->minWidth =extremes->maxWidth =
+            style::multiplyWithPerLength (containerWidth,
+                                          child->getStyle()->width)
+            + child->boxDiffWidth ();
+      }
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",

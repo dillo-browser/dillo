@@ -333,7 +333,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b> ()");
    DBG_OBJ_MSG_START ();
 
-   lineBreakWidth = getAvailWidth ();
+   lineBreakWidth = getAvailWidth (true);
 
    rewrap ();
    showMissingLines ();

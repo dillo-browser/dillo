@@ -426,7 +426,7 @@ protected:
    void sizeAllocateImpl (core::Allocation *allocation);
    void resizeDrawImpl ();
 
-   int getAvailWidthOfChild (Widget *child);
+   int getAvailWidthOfChild (Widget *child, bool forceValue);
 
    bool isBlockLevel ();
 

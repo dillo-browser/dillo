@@ -192,12 +192,11 @@ void Table::resizeDrawImpl ()
    redrawY = getHeight ();
 }
 
-int Table::getAvailWidthOfChild (Widget *child)
+int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p)", child);
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p, %s)",
+                 child, forceValue ? "true" : "false");
    DBG_OBJ_MSG_START ();
-
-   calcCellSizes (false);
 
    int width;
 
@@ -207,38 +206,48 @@ int Table::getAvailWidthOfChild (Widget *child)
          + child->boxDiffWidth ();
    } else if (core::style::isPerLength (child->getStyle()->width)) {
       DBG_OBJ_MSG ("resize", 1, "percentage length");
-      int containerContentWidth = getAvailWidth () - boxDiffWidth ();
-      width = core::style::multiplyWithPerLength (containerContentWidth,
-                                                  child->getStyle()->width)
-         + child->boxDiffWidth ();
+      int availWidth = getAvailWidth (forceValue);
+      if (availWidth == -1)
+         width = -1;
+      else {
+         int containerContentWidth = availWidth - boxDiffWidth ();
+         width = core::style::multiplyWithPerLength (containerContentWidth,
+                                                     child->getStyle()->width)
+            + child->boxDiffWidth ();
+      }
    } else {
-      width = -1;
       DBG_OBJ_MSG ("resize", 1, "no length specified");
 
-      // "child" is not a direct child, but a direct descendant. Search
-      // for the actual childs.
-      Widget *actualChild = child;
-      while (actualChild != NULL && actualChild->getParent () != this)
-         actualChild = actualChild->getParent ();
+      width = -1;
 
-      assert (actualChild != NULL);
-
-      // TODO This is inefficient. (Use parentRef?)
-      for (int row = numRows - 1; width == -1 && row >= 0; row--) {
-         for (int col = 0; width == -1 && col < numCols; col++) {
-            int n = row * numCols + col;
-            if (childDefined (n) &&
-                children->get(n)->cell.widget == actualChild) {
-               DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
-               width = (children->get(n)->cell.colspanEff - 1)
-                  * getStyle()->hBorderSpacing;
-               for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
-                  width += colWidths->get (col + i);
+      if (forceValue) {
+         calcCellSizes (false);
+         
+         // "child" is not a direct child, but a direct descendant. Search
+         // for the actual childs.
+         Widget *actualChild = child;
+         while (actualChild != NULL && actualChild->getParent () != this)
+            actualChild = actualChild->getParent ();
+         
+         assert (actualChild != NULL);
+         
+         // TODO This is inefficient. (Use parentRef?)
+         for (int row = numRows - 1; width == -1 && row >= 0; row--) {
+            for (int col = 0; width == -1 && col < numCols; col++) {
+               int n = row * numCols + col;
+               if (childDefined (n) &&
+                   children->get(n)->cell.widget == actualChild) {
+                  DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
+                  width = (children->get(n)->cell.colspanEff - 1)
+                     * getStyle()->hBorderSpacing;
+                  for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
+                     width += colWidths->get (col + i);
+               }
             }
          }
+         
+         assert (width != -1);
       }
-      
-      assert (width != -1);
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
@@ -534,7 +543,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
    // Will also call calcColumnExtremes(), when needed.
    getExtremes (&extremes);
 
-   totalWidth = getAvailWidth ();
+   totalWidth = getAvailWidth (true);
 
    if (totalWidth < extremes.minWidth)
       totalWidth = extremes.minWidth;
