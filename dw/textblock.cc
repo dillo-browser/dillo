@@ -266,7 +266,6 @@ Textblock::Textblock (bool limitTextWidth)
 
    // random value
    lineBreakWidth = 100;
-
    DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
 
    verticalOffset = 0;
@@ -334,6 +333,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSG_START ();
 
    lineBreakWidth = getAvailWidth (true);
+   DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
 
    rewrap ();
    showMissingLines ();

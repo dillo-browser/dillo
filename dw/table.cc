@@ -544,6 +544,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
    getExtremes (&extremes);
 
    totalWidth = getAvailWidth (true);
+   DBG_OBJ_SET_NUM ("totalWidth", totalWidth);
 
    if (totalWidth < extremes.minWidth)
       totalWidth = extremes.minWidth;
@@ -697,15 +698,25 @@ void Table::forceCalcColumnExtremes ()
 
       // 1. cells with colspan = 1
       for (int col = 0; col < numCols; col++) {
+         DBG_OBJ_MSGF ("resize", 1, "column %d", col);
+         DBG_OBJ_MSG_START ();
+
          colExtremes->getRef(col)->minWidth = 0;
          colExtremes->getRef(col)->maxWidth = 0;
          
          for (int row = 0; row < numRows; row++) {
+            DBG_OBJ_MSGF ("resize", 1, "row %d", row);
+            DBG_OBJ_MSG_START ();
+
             int n = row * numCols + col;
+
             if (childDefined (n)) {
                if (children->get(n)->cell.colspanEff == 1) {
                   core::Extremes cellExtremes;
                   children->get(n)->cell.widget->getExtremes (&cellExtremes);
+
+                  DBG_OBJ_MSGF ("resize", 1, "child: %d / %d",
+                                cellExtremes.minWidth, cellExtremes.maxWidth);
                   
                   colExtremes->getRef(col)->minWidth =
                      misc::max (colExtremes->getRef(col)->minWidth,
@@ -713,13 +724,21 @@ void Table::forceCalcColumnExtremes ()
                   colExtremes->getRef(col)->maxWidth =
                      misc::max (colExtremes->getRef(col)->minWidth,
                                 colExtremes->getRef(col)->maxWidth,
-                                cellExtremes.minWidth);
+                                cellExtremes.maxWidth);
+
+                  DBG_OBJ_MSGF ("resize", 1, "column: %d / %d",
+                                colExtremes->getRef(col)->minWidth,
+                                colExtremes->getRef(col)->maxWidth);
                } else {
                   colSpanCells.increase ();
                   colSpanCells.setLast (n);
                }
             }
+
+            DBG_OBJ_MSG_END ();
          }
+
+         DBG_OBJ_MSG_END ();
       }
 
       // 2. cells with colspan > 1
@@ -805,7 +824,7 @@ void Table::apportion2 (int totalWidth, bool forceTotalWidth,
          minWidth += colExtremes->get(col).minWidth;
       }
       
-      dest->setSize (destOffset + lastCol - firstCol + 11, 0);
+      dest->setSize (destOffset + lastCol - firstCol + 1, 0);
       
       if (!forceTotalWidth && maxWidth < totalWidth) {
          // Enough space for the maximum table, don't widen past max.
