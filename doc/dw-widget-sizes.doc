@@ -1,5 +1,9 @@
 /** \page dw-widget-sizes Sizes of Dillo Widgets
 
+<div style="border: 2px solid #ff4040; margin-bottom: 0.5em;
+padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
+Not up to date, see \ref dw-grows.</div>
+
 Allocation
 ==========
 
@@ -87,23 +91,9 @@ the image buffer when allocated at another size.)
 Size Hints
 ==========
 
-Some widgets do not have an inherent size, but depend on the context,
-e.g. the viewport size. These widgets should adhere to <i>size hints</i>,
-i.e. implement the methods dw::core::Widget::setWidth,
-dw::core::Widget::setAscent and dw::core::Widget::setDescent. The values
-passed to the callees are
-
-- the viewport size (ascent is the heigt here, while descent is 0) for
-  the toplevel widget, and
-- determined by the parent for its child widgets.
-
-Generally, the values should define the available space for the
-widget.
-
-A widget, which depends on size hints, should call
-dw::core::Widget::queueResize, when apropriate.
-
-\todo There should be a definition of "available space".
+<div style="border: 2px solid #ff4040; margin-bottom: 0.5em;
+padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
+Size hints have been removed, see \ref dw-grows.</div>
 
 
 Width Extremes
