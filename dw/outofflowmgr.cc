@@ -1074,7 +1074,7 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
                  gbWidth, gbLineBreakWidth);
    DBG_OBJ_MSG_START ();
 
-   int gbActualWidth, x;
+   int x;
 
    switch (side) {
    case LEFT:
@@ -1086,22 +1086,20 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
       break;
 
    case RIGHT:
-      // In some cases, the actual (allocated) width is too large; we
-      // use the line break width here.
-      gbActualWidth = min (gbWidth, gbLineBreakWidth);
-      DBG_OBJ_MSGF ("resize.oofm", 1,
-                    "right: gbActualWidth = min (%d, %d) = %d",
-                    gbWidth, gbLineBreakWidth, gbActualWidth);
-
       // Similar for right floats, but in this case, floats are
       // shifted to the right when they are too big (instead of
       // shifting the generator to the right).
-      x = max (gbX + gbActualWidth - vloat->size.width
+
+      // Notice that not the actual width, but the line break width is
+      // used. (This changed for GROWS, where the width of a textblock
+      // is often smaller that the line break.)
+
+      x = max (gbX + gbLineBreakWidth - vloat->size.width
                - vloat->generatingBlock->getStyle()->boxRestWidth(),
                // Do not exceed CB allocation:
                0);
       DBG_OBJ_MSGF ("resize.oofm", 1, "x = max (%d + %d - %d - %d, 0) = %d",
-                    gbX, gbActualWidth, vloat->size.width,
+                    gbX, gbLineBreakWidth, vloat->size.width,
                     vloat->generatingBlock->getStyle()->boxRestWidth(), x);
       break;
 
