@@ -69,7 +69,7 @@ int ListItem::getValue ()
 
 void ListItem::setMaxValue (int maxValue, int value)
 {
-   innerPadding = maxValue;
+   leftInnerPadding = maxValue;
    line1Offset = - value;
    redrawY = 0;
    queueResize (0, true);

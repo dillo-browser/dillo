@@ -442,7 +442,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    int leftBorder = mustBorderBeRegarded (line) ? newLineLeftBorder : 0;
    line->offsetCompleteWidget =
       misc::max (leftBorder,
-                 getStyle()->boxOffsetX() + innerPadding
+                 getStyle()->boxOffsetX() + leftInnerPadding
                  + (lineIndex == 0 ? line1OffsetEff : 0))
       + line->leftOffset;
 
@@ -1603,7 +1603,7 @@ int Textblock::calcLineBreakWidth (int lineIndex)
                  lineIndex, lines->size());
    DBG_OBJ_MSG_START ();
 
-   int lineBreakWidth = this->lineBreakWidth - innerPadding;
+   int lineBreakWidth = this->lineBreakWidth - leftInnerPadding;
    if (limitTextWidth &&
        layout->getUsesViewport () &&
        // margin/border/padding will be subtracted later,  via OOFM.
@@ -1626,8 +1626,8 @@ int Textblock::calcLineBreakWidth (int lineIndex)
    lineBreakWidth -= (leftBorder + rightBorder);
 
    DBG_OBJ_MSGF ("construct.word.width", 2, "=> %d - %d - (%d + %d) = %d\n",
-                 this->lineBreakWidth, innerPadding, leftBorder, rightBorder,
-                 lineBreakWidth);
+                 this->lineBreakWidth, leftInnerPadding, leftBorder,
+                 rightBorder, lineBreakWidth);
 
    DBG_OBJ_MSG_END ();
    return lineBreakWidth;

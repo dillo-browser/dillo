@@ -472,7 +472,7 @@ protected:
    /* These fields provide some ad-hoc-functionality, used by sub-classes. */
    bool hasListitemValue; /* If true, the first word of the page is treated
                           specially (search in source). */
-   int innerPadding;    /* This is an additional padding on the left side
+   int leftInnerPadding;  /* This is an additional padding on the left side
                             (used by ListItem). */
    int line1Offset;     /* This is an additional offset of the first line.
                            May be negative (shift to left) or positive

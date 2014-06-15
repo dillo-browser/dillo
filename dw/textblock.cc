@@ -230,7 +230,7 @@ Textblock::Textblock (bool limitTextWidth)
 
    containingBlock = NULL;
    hasListitemValue = false;
-   innerPadding = 0;
+   leftInnerPadding = 0;
    line1Offset = 0;
    ignoreLine1OffsetSometimes = false;
    mustQueueResize = false;
@@ -366,10 +366,10 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       requisition->descent = 0;
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "inner padding = %d, boxDiffWidth = %d",
-                 innerPadding, getStyle()->boxDiffWidth ());
+   DBG_OBJ_MSGF ("resize", 1, "left inner padding = %d, boxDiffWidth = %d",
+                 leftInnerPadding, getStyle()->boxDiffWidth ());
 
-   requisition->width += innerPadding + getStyle()->boxDiffWidth ();
+   requisition->width += leftInnerPadding + getStyle()->boxDiffWidth ();
    requisition->ascent += verticalOffset + getStyle()->boxOffsetY ();
    requisition->descent += getStyle()->boxRestHeight ();
 
@@ -432,7 +432,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                     paragraphs->size () - 1, lastPar->maxParMax);
    }
 
-   int diff = innerPadding + getStyle()->boxDiffWidth ();
+   int diff = leftInnerPadding + getStyle()->boxDiffWidth ();
    extremes->minWidth += diff;
    extremes->maxWidth += diff;
 
