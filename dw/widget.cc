@@ -453,11 +453,16 @@ void Widget::correctRequisition (Requisition *requisition,
          DBG_OBJ_MSGF ("resize", 1, "percentage height: %g%%",
                        100 * style::perLengthVal_useThisOnlyForDebugging
                                 (getStyle()->height));
+#if 0
+         // TODO Percentage heights are somewhat more complicated. Has
+         // to be clarified.
+
          // For layout->viewportHeight, see comment in getAvailHeight().
          splitHeightFun (style::multiplyWithPerLength (layout->viewportHeight,
                                                        getStyle()->height)
                          + boxDiffHeight (),
                          &requisition->ascent, &requisition->descent);
+#endif
       }
    } else
       container->correctRequisitionOfChild (this, requisition, splitHeightFun);
