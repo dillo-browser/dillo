@@ -425,10 +425,15 @@ void Widget::correctRequisition (Requisition *requisition,
    DBG_OBJ_MSG_START ();
 
    if (container == NULL) {
-      if (style::isAbsLength (getStyle()->width))
+      if (style::isAbsLength (getStyle()->width)) {
+         DBG_OBJ_MSGF ("resize", 1, "absolute width: %dpx",
+                       style::absLengthVal (getStyle()->width));
          requisition->width =
             style::absLengthVal (getStyle()->width) + boxDiffWidth ();
-      else if (style::isPerLength (getStyle()->width)) {
+      } else if (style::isPerLength (getStyle()->width)) {
+         DBG_OBJ_MSGF ("resize", 1, "percentage width: %g%%",
+                       100 * style::perLengthVal_useThisOnlyForDebugging
+                                (getStyle()->width));
          int viewportWidth =
             layout->viewportWidth - (layout->canvasHeightGreater ?
                                      layout->vScrollbarThickness : 0);
@@ -438,11 +443,16 @@ void Widget::correctRequisition (Requisition *requisition,
       }
 
       // TODO Perhaps split first, then add box ascent and descent.
-      if (style::isAbsLength (getStyle()->height))
+      if (style::isAbsLength (getStyle()->height)) {
+         DBG_OBJ_MSGF ("resize", 1, "absolute height: %dpx",
+                       style::absLengthVal (getStyle()->height));
          splitHeightFun (style::absLengthVal (getStyle()->height)
                          + boxDiffHeight (),
                          &requisition->ascent, &requisition->descent);
-      else if (style::isPerLength (getStyle()->height)) {
+      } else if (style::isPerLength (getStyle()->height)) {
+         DBG_OBJ_MSGF ("resize", 1, "percentage height: %g%%",
+                       100 * style::perLengthVal_useThisOnlyForDebugging
+                                (getStyle()->height));
          // For layout->viewportHeight, see comment in getAvailHeight().
          splitHeightFun (style::multiplyWithPerLength (layout->viewportHeight,
                                                        getStyle()->height)

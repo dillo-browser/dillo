@@ -435,7 +435,8 @@ inline int absLengthVal(Length l) { return l >> 2; }
  * When possible, do not use this function directly; it may be removed
  * soon. Instead, use multiplyWithPerLength or multiplyWithPerLengthRounded.
  */
-inline double perLengthVal(Length l) { return (double)(l & ~3) / (1 << 18); }
+inline double perLengthVal_useThisOnlyForDebugging(Length l)
+{ return (double)(l & ~3) / (1 << 18); }
 
 /** \brief Returns the value of a relative length, as a float.
  *
@@ -450,7 +451,7 @@ inline double relLengthVal(Length l) { return (double)(l & ~3) / (1 << 18); }
  * Use this instead of perLengthVal, when possible.
  */
 inline int multiplyWithPerLength(int x, Length l) {
-   return x * perLengthVal(l);
+   return x * perLengthVal_useThisOnlyForDebugging (l);
 }
 
 /**
@@ -459,8 +460,8 @@ inline int multiplyWithPerLength(int x, Length l) {
  *
  * (This function exists for backward compatibility.)
  */
-inline int multiplyWithPerLengthRounded (int x, Length l) {
-   return lout::misc::roundInt (x * perLengthVal(l));
+inline int multiplyWithPerLengthRounded(int x, Length l) {
+   return lout::misc::roundInt (x * perLengthVal_useThisOnlyForDebugging (l));
 }
 
 inline int multiplyWithRelLength(int x, Length l) {
