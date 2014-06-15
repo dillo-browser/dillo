@@ -1925,10 +1925,9 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                   thisBorder =
                      tba->x + textblock->getLineBreakWidth () - fla->x;
                   DBG_OBJ_MSGF ("border", 1,
-                                "not GB: thisBorder = %d + min (%d, %d) - %d "
+                                "not GB: thisBorder = %d + %d - %d "
                                 "= %d",
-                                tba->x, tba->width,
-                                textblock->getLineBreakWidth (), fla->x,
+                                tba->x, textblock->getLineBreakWidth (), fla->x,
                                 thisBorder);
                }
             }
