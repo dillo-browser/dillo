@@ -362,6 +362,7 @@ protected:
       int lastOofRefPositionedBeforeThisLine;
 
       int leftOffset, rightOffset;
+      enum { LEFT, RIGHT, CENTER } alignment;
    };
 
    struct Word
@@ -741,6 +742,7 @@ protected:
    int calcLineBreakWidth (int lineIndex);
    void initLine1Offset (int wordIndex);
    void alignLine (int lineIndex);
+   void calcTextOffset (int lineIndex, int totalWidth);
 
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);

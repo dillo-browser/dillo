@@ -413,6 +413,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                                   boxRestWidth ());
 
    alignLine (lineIndex);
+   calcTextOffset (lineIndex, lineBreakWidth);
 
    for (int i = line->firstWord; i < line->lastWord; i++) {
       Word *word = words->getRef (i);
@@ -1684,18 +1685,18 @@ void Textblock::alignLine (int lineIndex)
          case core::style::TEXT_ALIGN_LEFT:
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: left'");
-            line->textOffset = line->leftOffset;
+            line->alignment = Line::LEFT;
             break;
          case core::style::TEXT_ALIGN_STRING:   /* handled elsewhere (in the
                                                  * future)? */
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: string'");
-            line->textOffset = line->leftOffset;
+            line->alignment = Line::LEFT;
             break;
          case core::style::TEXT_ALIGN_JUSTIFY:  /* see some lines above */
-            line->textOffset = line->leftOffset;
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: justify'");
+            line->alignment = Line::LEFT;
             // Do not justify the last line of a paragraph (which ends on a
             // BREAK or with the last word of the page).
             if(!(lastWord->content.type == core::Content::BREAK ||
@@ -1710,29 +1711,56 @@ void Textblock::alignLine (int lineIndex)
          case core::style::TEXT_ALIGN_RIGHT:
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: right'");
-            line->textOffset =
-               line->leftOffset + (lineBreakWidth - lastWord->totalWidth);
+            line->alignment = Line::RIGHT;
             break;
          case core::style::TEXT_ALIGN_CENTER:
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: center'");
-            line->textOffset =
-               line->leftOffset + (lineBreakWidth - lastWord->totalWidth) / 2;
+            line->alignment = Line::CENTER;
             break;
          default:
-            /* compiler happiness */
-            line->textOffset = line->leftOffset;
+            // compiler happiness
+            line->alignment = Line::LEFT;
          }
 
-         /* For large lines (images etc), which do not fit into the viewport: */
-         if (line->textOffset < line->leftOffset)
-            line->textOffset = line->leftOffset;
-      }
+      } else
+         // empty line (only line break);
+         line->alignment = Line::LEFT;
    } else
       // empty line
-      line->textOffset = line->leftOffset;
+      line->alignment = Line::LEFT;
 
    DBG_OBJ_MSG_END ();
+}
+
+void Textblock::calcTextOffset (int lineIndex, int totalWidth)
+{
+   Line *line = lines->getRef (lineIndex);
+   int lineWidth = line->firstWord <= line->lastWord ?
+      words->getRef(line->lastWord)->totalWidth : 0;
+   
+   switch (line->alignment) {
+   case Line::LEFT:
+      line->textOffset = line->leftOffset;
+      break;
+
+   case Line::RIGHT:
+      line->textOffset = totalWidth - line->rightOffset - lineWidth;
+      break;
+
+   case Line::CENTER:
+      line->textOffset =
+         (line->leftOffset + totalWidth - line->rightOffset - lineWidth) / 2;
+      break;
+
+   default:
+      misc::assertNotReached ();
+      break;
+   }
+
+   // For large lines (images etc), which do not fit into the viewport:
+   if (line->textOffset < line->leftOffset)
+      line->textOffset = line->leftOffset;
 }
 
 /**
