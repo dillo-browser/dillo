@@ -778,9 +778,10 @@ void Table::forceCalcColumnExtremes ()
             
             for (int j = 0; j < cs; j++) {
                if (changeMin)
-                  colExtremes->getRef(col + j)->minWidth = newMin.get (i);
+                  colExtremes->getRef(col + j)->minWidth = newMin.get (j);
                if (changeMax)
-                  colExtremes->getRef(col + j)->maxWidth = newMax.get (i);
+                  colExtremes->getRef(col + j)->maxWidth = newMax.get (j);
+
                // For cases where min and max are somewhat confused:
                colExtremes->getRef(col + j)->maxWidth =
                   misc::max (colExtremes->getRef(col + j)->minWidth,
@@ -863,10 +864,10 @@ void Table::apportion2 (int totalWidth, bool forceTotalWidth,
          // TODO Adapted from old inline function "setColWidth". But
          // (i) is this anyway correct (w is not x)? And does the
          // performance gain actually play a role?
-         if (setRedrawX && w != dest->get (destOffset + col))
+         if (setRedrawX && w != dest->get (destOffset - firstCol + col))
             redrawX = lout::misc::min (redrawX, w);
 
-         dest->set (destOffset + col, w);
+         dest->set (destOffset - firstCol + col, w);
       }
    }
    
