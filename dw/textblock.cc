@@ -482,7 +482,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
    for (lineIndex = 0; lineIndex < lines->size (); lineIndex++) {
       line = lines->getRef (lineIndex);
-      xCursor = line->offsetCompleteWidget;
+      xCursor = line->textOffset;
 
       for (wordIndex = line->firstWord; wordIndex <= line->lastWord;
            wordIndex++) {
@@ -849,11 +849,11 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
             // Choose this break.
             wordIndex = line->lastWord;
             charPos = core::SelectionState::END_OF_WORD;
-         } else if (event->xWidget < line->offsetCompleteWidget) {
+         } else if (event->xWidget < line->textOffset) {
             // Left of the first word in the line.
             wordIndex = line->firstWord;
          } else {
-            int nextWordStartX = line->offsetCompleteWidget;
+            int nextWordStartX = line->textOffset;
 
             for (wordIndex = line->firstWord;
                  wordIndex <= line->lastWord;
@@ -1301,7 +1301,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                  area->x, area->y, area->width, area->height);
    DBG_OBJ_MSG_START ();
    
-   int xWidget = line->offsetCompleteWidget;
+   int xWidget = line->textOffset;
    int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
 
    DBG_OBJ_MSGF ("draw", 1, "line from %d to %d (%d words), at (%d, %d)",
@@ -1494,7 +1494,7 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
    if (yWidgetBase + line->boxDescent <= y)
       return NULL;
 
-   xCursor = line->offsetCompleteWidget;
+   xCursor = line->textOffset;
    for (wordIndex = line->firstWord; wordIndex <= line->lastWord;wordIndex++) {
       word = words->getRef (wordIndex);
       lastXCursor = xCursor;

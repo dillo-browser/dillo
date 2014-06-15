@@ -334,8 +334,7 @@ protected:
       int contentAscent;        /* ??? */
       int contentDescent;       /* ??? */
       int breakSpace;           /* Space between this line and the next one. */
-      int leftOffset;           /* ??? */
-      int offsetCompleteWidget; /* ??? */
+      int textOffset;           /* ??? */
 
       /* This is similar to descent, but includes the bottom margins of the
        * widgets within this line. */
@@ -361,6 +360,8 @@ protected:
        * even a following line, when positioned before (this is the
        * reason this attribute exists); see \ref dw-out-of-flow. */
       int lastOofRefPositionedBeforeThisLine;
+
+      int leftOffset, rightOffset;
    };
 
    struct Word
