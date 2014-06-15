@@ -1922,12 +1922,13 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                                 fla->x, fla->width, tba->x, thisBorder);
                } else {
                   // See also calcFloatX.
-                  int tbAvWidth = textblock->getLineBreakWidth ();
-                  thisBorder = tba->x + min (tba->width, tbAvWidth) - fla->x;
+                  thisBorder =
+                     tba->x + textblock->getLineBreakWidth () - fla->x;
                   DBG_OBJ_MSGF ("border", 1,
                                 "not GB: thisBorder = %d + min (%d, %d) - %d "
                                 "= %d",
-                                tba->x, tba->width, tbAvWidth, fla->x,
+                                tba->x, tba->width,
+                                textblock->getLineBreakWidth (), fla->x,
                                 thisBorder);
                }
             }
