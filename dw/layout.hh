@@ -157,13 +157,15 @@ private:
    public:
       Widget *widget;
       int ref;
-      bool extremesChanged;
+      bool extremesChanged, fast;
       
-      inline QueueResizeItem (Widget *widget, int ref, bool extremesChanged)
+      inline QueueResizeItem (Widget *widget, int ref, bool extremesChanged,
+                              bool fast)
       {
          this->widget = widget;
          this->ref = ref;
          this->extremesChanged = extremesChanged;
+         this->fast = fast;
       }
    };
 
@@ -267,8 +269,7 @@ private:
    void enterResizeIdle () { resizeIdleCounter++; }
    void leaveResizeIdle () { resizeIdleCounter--; }
 
-   bool widgetAffectedByContainerSizeChange (Widget *widget);
-   void containerSizeChanged (Widget *widget);
+   void containerSizeChanged ();
 
 public:
    Layout (Platform *platform);

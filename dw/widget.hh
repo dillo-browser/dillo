@@ -166,7 +166,12 @@ private:
     */
    bool buttonSensitiveSet;
 
-   void actualQueueResize (int ref, bool extremesChanged);
+   void queueResize (int ref, bool extremesChanged, bool fast);
+   inline void queueResizeFast (int ref, bool extremesChanged)
+   { queueResize (ref, extremesChanged, true); }
+   void actualQueueResize (int ref, bool extremesChanged, bool fast);
+
+   void containerSizeChanged ();
 
 public:
    /**
@@ -275,11 +280,10 @@ protected:
 
 
    inline void queueDraw ()
-   {
-      queueDrawArea (0, 0, allocation.width, getHeight());
-   }
+   { queueDrawArea (0, 0, allocation.width, getHeight()); }
    void queueDrawArea (int x, int y, int width, int height);
-   void queueResize (int ref, bool extremesChanged);
+   inline void queueResize (int ref, bool extremesChanged)
+   { queueResize (ref, extremesChanged, false); }
 
    /**
     * \brief See \ref dw-widget-sizes.
@@ -322,6 +326,7 @@ protected:
                                                                   *descent));
    virtual void correctExtremesOfChild (Widget *child, Extremes *extremes);
 
+   virtual void containerSizeChangedForChildren ();
 
    virtual void notifySetAsTopLevel();
    virtual void notifySetParent();

@@ -195,7 +195,7 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
 /**
  * \brief This method should be called, when a widget changes its size.
  */
-void Widget::queueResize (int ref, bool extremesChanged)
+void Widget::queueResize (int ref, bool extremesChanged, bool fast)
 {
    DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%d, %s)",
                  ref, extremesChanged ? "true" : "false");
@@ -207,15 +207,16 @@ void Widget::queueResize (int ref, bool extremesChanged)
    if (queueResizeEntered ()) {
       DBG_OBJ_MSG ("resize", 1, "put into queue");
       layout->queueQueueResizeList->put (new Layout::QueueResizeItem
-                                         (this, ref, extremesChanged));
+                                         (this, ref, extremesChanged, fast));
    } else {
-      actualQueueResize (ref, extremesChanged);
+      actualQueueResize (ref, extremesChanged, fast);
       
       while (layout != NULL && layout->queueQueueResizeList->size () > 0) {
          Layout::QueueResizeItem *item = layout->queueQueueResizeList->get (0);
          DBG_OBJ_MSGF ("resize", 1, "taken out of queue queue (size = %d)",
                       layout->queueQueueResizeList->size ());
-         item->widget->actualQueueResize (item->ref, item->extremesChanged);
+         item->widget->actualQueueResize (item->ref, item->extremesChanged,
+                                          item->fast);
          layout->queueQueueResizeList->remove (0); // hopefully not too large
       }
    }
@@ -223,7 +224,7 @@ void Widget::queueResize (int ref, bool extremesChanged)
    DBG_OBJ_MSG_END ();
 }
 
-void Widget::actualQueueResize (int ref, bool extremesChanged)
+void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
 {
    assert (!queueResizeEntered ());
    
@@ -234,10 +235,6 @@ void Widget::actualQueueResize (int ref, bool extremesChanged)
    enterQueueResize ();
 
    Widget *widget2, *child;
-
-   //printf("The %stop-level %s %p with parentRef = %d has changed its size. "
-   //       "Layout = %p.\n",
-   //       parent ? "non-" : "", getClassName(), this, parentRef, layout);
 
    Flags resizeFlag, extremesFlag;
 
@@ -261,36 +258,49 @@ void Widget::actualQueueResize (int ref, bool extremesChanged)
       setFlags (extremesFlag);
       markExtremesChange (ref);
    }
-      
-   for (widget2 = parent, child = this; widget2;
-        child = widget2, widget2 = widget2->parent) {      
-      //printf ("   Setting %s and ALLOCATE_QUEUED for the "
-      //        "%stop-level %s %p with parentRef = %d\n",
-      //        resizeFlag == RESIZE_QUEUED ? "RESIZE_QUEUED" : "NEEDS_RESIZE",
-      //        widget2->parent ? "non-" : "", widget2->getClassName(), widget2,
-      //        widget2->parentRef);
 
-      if (layout && !widget2->resizeQueued ())
-         layout->queueResizeList->put (widget2);
-
-      widget2->setFlags (resizeFlag);
-      widget2->markSizeChange (child->parentRef);
-      widget2->setFlags (ALLOCATE_QUEUED);
-
-      if (extremesChanged) {
-         widget2->setFlags (extremesFlag);
-         widget2->markExtremesChange (child->parentRef);
+   if (!fast) {
+      for (widget2 = parent, child = this; widget2;
+           child = widget2, widget2 = widget2->parent) {      
+         if (layout && !widget2->resizeQueued ())
+            layout->queueResizeList->put (widget2);
+         
+         widget2->setFlags (resizeFlag);
+         widget2->markSizeChange (child->parentRef);
+         widget2->setFlags (ALLOCATE_QUEUED);
+         
+         if (extremesChanged) {
+            widget2->setFlags (extremesFlag);
+            widget2->markExtremesChange (child->parentRef);
+         }
       }
-   }
 
-   if (layout)
-      layout->queueResize (extremesChanged);
+      if (layout)
+         layout->queueResize (extremesChanged);
+   }
 
    leaveQueueResize ();
 
    DBG_OBJ_MSG_END ();
 }
 
+void Widget::containerSizeChanged ()
+{
+   // TODO Can be largely optimized.
+   queueResizeFast (0, true);
+   containerSizeChangedForChildren ();
+}
+
+void Widget::containerSizeChangedForChildren ()
+{
+   // Working, but inefficient standard implementation.
+   Iterator *it = iterator ((Content::Type)(Content::WIDGET_IN_FLOW |
+                                            Content::WIDGET_OOF_CONT),
+                            false);
+   while (it->next ())
+      it->getContent()->widget->containerSizeChanged ();
+   it->unref ();
+}
 
 /**
  *  \brief This method is a wrapper for Widget::sizeRequestImpl(); it calls
