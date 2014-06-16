@@ -197,8 +197,9 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
  */
 void Widget::queueResize (int ref, bool extremesChanged, bool fast)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%d, %s)",
-                 ref, extremesChanged ? "true" : "false");
+   DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%d, %s, %s)",
+                 ref, extremesChanged ? "true" : "false",
+                 fast ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    // queueResize() can be called recursively; calls are queued, so
@@ -228,8 +229,9 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
 {
    assert (!queueResizeEntered ());
    
-   DBG_OBJ_MSGF ("resize", 0, "<b>actualQueueResize</b> (%d, %s)",
-                 ref, extremesChanged ? "true" : "false");
+   DBG_OBJ_MSGF ("resize", 0, "<b>actualQueueResize</b> (%d, %s, %s)",
+                 ref, extremesChanged ? "true" : "false",
+                 fast ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    enterQueueResize ();
@@ -286,13 +288,21 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
 
 void Widget::containerSizeChanged ()
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>containerSizeChanged</b> ()");
+   DBG_OBJ_MSG_START ();
+
    // TODO Can be largely optimized.
    queueResizeFast (0, true);
    containerSizeChangedForChildren ();
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Widget::containerSizeChangedForChildren ()
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>containerSizeChangedForChildren</b> ()");
+   DBG_OBJ_MSG_START ();
+
    // Working, but inefficient standard implementation.
    Iterator *it = iterator ((Content::Type)(Content::WIDGET_IN_FLOW |
                                             Content::WIDGET_OOF_CONT),
@@ -300,6 +310,8 @@ void Widget::containerSizeChangedForChildren ()
    while (it->next ())
       it->getContent()->widget->containerSizeChanged ();
    it->unref ();
+
+   DBG_OBJ_MSG_END ();
 }
 
 /**

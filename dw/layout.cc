@@ -1268,8 +1268,9 @@ void Layout::scrollPosChanged (View *view, int x, int y)
  */
 void Layout::viewportSizeChanged (View *view, int width, int height)
 {
-   _MSG("Layout::viewportSizeChanged w=%d h=%d new_w=%d new_h=%d\n",
-        viewportWidth, viewportHeight, width, height);
+   DBG_OBJ_MSGF ("resize", 0, "<b>viewportSizeChanged</b> (%p, %d, %d)",
+                 view, width, height);
+   DBG_OBJ_MSG_START ();
 
    /* If the width has become higher, we test again, whether the vertical
     * scrollbar (so to speak) can be hidden again. */
@@ -1296,14 +1297,21 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
    DBG_OBJ_SET_NUM ("viewportHeight", viewportHeight);
 
    containerSizeChanged ();
+
+   DBG_OBJ_MSG_END ();
 }
 
 void Layout::containerSizeChanged ()
 {
+   DBG_OBJ_MSG ("resize", 0, "<b>containerSizeChanged</b> ()");
+   DBG_OBJ_MSG_START ();
+
    if (topLevel) {
       topLevel->containerSizeChanged ();
       queueResize (true);
    }
+
+   DBG_OBJ_MSG_END ();
 }
 
 } // namespace core
