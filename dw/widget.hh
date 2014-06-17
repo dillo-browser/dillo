@@ -171,8 +171,6 @@ private:
    { queueResize (ref, extremesChanged, true); }
    void actualQueueResize (int ref, bool extremesChanged, bool fast);
 
-   void containerSizeChanged ();
-
 public:
    /**
     * \brief This value is defined by the parent widget, and used for
@@ -453,6 +451,8 @@ public:
    
    virtual bool isBlockLevel ();
    virtual bool isPossibleContainer ();
+
+   void containerSizeChanged ();
 
    bool intersects (Rectangle *area, Rectangle *intersection);
 

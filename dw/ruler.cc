@@ -51,6 +51,11 @@ bool Ruler::isBlockLevel ()
    return true;
 }
 
+void Ruler::containerSizeChangedForChildren ()
+{
+   // Nothing to do.
+}
+
 bool Ruler::usesAvailWidth ()
 {
    return true;

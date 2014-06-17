@@ -641,6 +641,16 @@ void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
    DBG_OBJ_MSG_END ();
 }
 
+void OutOfFlowMgr::containerSizeChangedForChildren ()
+{
+   for (int i = 0; i < leftFloatsCB->size (); i++)
+      leftFloatsCB->get(i)->getWidget()->containerSizeChanged ();
+   for (int i = 0; i < rightFloatsCB->size (); i++)
+      rightFloatsCB->get(i)->getWidget()->containerSizeChanged ();
+   for (int i = 0; i < absolutelyPositioned->size(); i++)
+      absolutelyPositioned->get(i)->widget->containerSizeChanged ();
+}
+
 bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, int *minFloatPos,
                                        Widget **minFloat)
 {

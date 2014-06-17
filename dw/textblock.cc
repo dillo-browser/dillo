@@ -607,6 +607,18 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    }
 }
 
+void Textblock::containerSizeChangedForChildren ()
+{
+   for (int i = 0; i < words->size (); i++) {
+      Word *word = words->getRef (i);
+      if (word->content.type == core::Content::WIDGET_IN_FLOW)
+         word->content.widget->containerSizeChanged ();
+   }
+
+   if (outOfFlowMgr)
+      outOfFlowMgr->containerSizeChangedForChildren ();
+}
+
 bool Textblock::usesAvailWidth ()
 {
    return true;

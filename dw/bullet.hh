@@ -15,6 +15,7 @@ class Bullet: public core::Widget
 {
 protected:
    void sizeRequestImpl (core::Requisition *requisition);
+   void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area);
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 

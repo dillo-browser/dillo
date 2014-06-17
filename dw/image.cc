@@ -252,6 +252,11 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
    }
 }
 
+void Image::containerSizeChangedForChildren ()
+{
+   // Nothing to do.
+}
+
 void Image::enterNotifyImpl (core::EventCrossing *event)
 {
    // BUG: this is wrong for image maps, but the cursor position is unknown.

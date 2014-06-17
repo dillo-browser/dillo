@@ -231,6 +231,7 @@ protected:
    void sizeRequestImpl (Requisition *requisition);
    void getExtremesImpl (Extremes *extremes);
    void sizeAllocateImpl (Allocation *allocation);
+   void containerSizeChangedForChildren ();
    void enterNotifyImpl (core::EventCrossing *event);
    void leaveNotifyImpl (core::EventCrossing *event);
    bool buttonPressImpl (core::EventButton *event);

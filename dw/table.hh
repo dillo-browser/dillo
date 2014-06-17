@@ -427,6 +427,7 @@ protected:
    void resizeDrawImpl ();
 
    int getAvailWidthOfChild (Widget *child, bool forceValue);
+   void containerSizeChangedForChildren ();
    bool usesAvailWidth ();
 
    bool isBlockLevel ();

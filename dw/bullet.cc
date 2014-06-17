@@ -36,6 +36,11 @@ void Bullet::sizeRequestImpl (core::Requisition *requisition)
    requisition->descent = 0;
 }
 
+void Bullet::containerSizeChangedForChildren ()
+{
+   // Nothing to do.
+}
+
 void Bullet::draw (core::View *view, core::Rectangle *area)
 {
    int x, y, l;

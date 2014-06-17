@@ -394,6 +394,7 @@ public:
 
    void sizeAllocateStart (Textblock *caller, core::Allocation *allocation);
    void sizeAllocateEnd (Textblock *caller);
+   void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area);
 
    void markSizeChange (int ref);

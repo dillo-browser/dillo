@@ -64,6 +64,11 @@ void Embed::sizeAllocateImpl (Allocation *allocation)
    resource->sizeAllocate (allocation);
 }
 
+void Embed::containerSizeChangedForChildren ()
+{
+   // Nothing to do (as long as all resources return empty iterators).
+}
+
 void Embed::enterNotifyImpl (core::EventCrossing *event)
 {
    resource->emitEnter();

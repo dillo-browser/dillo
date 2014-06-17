@@ -255,6 +255,17 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
    return width;
 }
 
+void Table::containerSizeChangedForChildren ()
+{
+   for (int col = 0; col < numCols; col++) {
+      for (int row = 0; row < numRows; row++) {
+         int n = row * numCols + col;
+         if (childDefined (n))
+            children->get(n)->cell.widget->containerSizeChanged ();
+      }
+   }
+}
+
 bool Table::usesAvailWidth ()
 {
    return true;
