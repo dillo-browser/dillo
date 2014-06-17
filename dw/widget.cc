@@ -194,6 +194,10 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
 
 /**
  * \brief This method should be called, when a widget changes its size.
+ *
+ * A "fast" queueResize will ignore the anchestors, and furthermore
+ * not trigger the idle function. Used only within
+ * viewportSizeChanged, and not available outside Layout and Widget.
  */
 void Widget::queueResize (int ref, bool extremesChanged, bool fast)
 {
