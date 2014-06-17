@@ -76,4 +76,10 @@ dw::core::Widget::correctExtremes, respectively, is called).
 *Not* honouring the CSS size specification in all cases could improve
 readability in some cases, so this could depend on a user preference.
 
+**Percentage values for margins and paddings, as well as negative
+margins** are interesting applications, but have not been considered
+yet. For negative margins, a new attribute
+dw::core::Widget::extraSpace could solve the problem of widgets
+sticking out of the allocation of parent.
+
 */
