@@ -171,6 +171,7 @@ private:
    { queueResize (ref, extremesChanged, true); }
    void actualQueueResize (int ref, bool extremesChanged, bool fast);
 
+   bool affectedByContainerSizeChange ();
    void containerSizeChanged ();
 
 public:

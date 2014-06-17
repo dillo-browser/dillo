@@ -286,14 +286,33 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
    DBG_OBJ_MSG_END ();
 }
 
+bool Widget::affectedByContainerSizeChange ()
+{
+   return true;
+}
+
 void Widget::containerSizeChanged ()
 {
    DBG_OBJ_MSG ("resize", 0, "<b>containerSizeChanged</b> ()");
    DBG_OBJ_MSG_START ();
 
-   // TODO Can be largely optimized.
-   queueResizeFast (0, true);
-   containerSizeChangedForChildren ();
+   // If there is a container widget (not the viewport), which has not
+   // changed its size (which can be determined by the respective
+   // flags: this method is called recursively), this widget will
+   // neither change its size. Also, the recursive iteration can be
+   // stopped, since the children of this widget will
+   if (container == NULL || 
+       container->needsResize () || container->resizeQueued () ||
+       container->extremesChanged () || container->extremesQueued ()) {
+      // Viewport (container == NULL) or container widget has changed
+      // its size.
+      if (affectedByContainerSizeChange ())
+         queueResizeFast (0, true);
+
+      // Even if *this* widget is not affected, children may be, so
+      // iterate over children.
+      containerSizeChangedForChildren ();
+   }
 
    DBG_OBJ_MSG_END ();
 }
