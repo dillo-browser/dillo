@@ -18,6 +18,7 @@ class Ruler: public core::Widget
 protected:
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);
+   bool usesAvailWidth ();
    void draw (core::View *view, core::Rectangle *area);
 
 public:

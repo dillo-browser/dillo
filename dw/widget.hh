@@ -171,7 +171,6 @@ private:
    { queueResize (ref, extremesChanged, true); }
    void actualQueueResize (int ref, bool extremesChanged, bool fast);
 
-   bool affectedByContainerSizeChange ();
    void containerSizeChanged ();
 
 public:
@@ -328,6 +327,11 @@ protected:
    virtual void correctExtremesOfChild (Widget *child, Extremes *extremes);
 
    virtual void containerSizeChangedForChildren ();
+
+   virtual bool affectedByContainerSizeChange ();
+   virtual bool affectsSizeChangeContainerChild (Widget *child);
+   virtual bool usesAvailWidth ();
+   virtual bool usesAvailHeight ();
 
    virtual void notifySetAsTopLevel();
    virtual void notifySetParent();

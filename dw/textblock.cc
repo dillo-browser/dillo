@@ -607,6 +607,11 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    }
 }
 
+bool Textblock::usesAvailWidth ()
+{
+   return true;
+}
+
 void Textblock::resizeDrawImpl ()
 {
    DBG_OBJ_MSG ("draw", 0, "<b>resizeDrawImpl</b> ()");

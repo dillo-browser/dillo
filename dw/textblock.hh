@@ -747,6 +747,7 @@ protected:
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
+   bool usesAvailWidth ();
    void resizeDrawImpl ();
 
    void markSizeChange (int ref);

@@ -51,6 +51,11 @@ bool Ruler::isBlockLevel ()
    return true;
 }
 
+bool Ruler::usesAvailWidth ()
+{
+   return true;
+}
+
 void Ruler::draw (core::View *view, core::Rectangle *area)
 {
    drawWidgetBox (view, area, false);

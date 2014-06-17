@@ -255,6 +255,11 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
    return width;
 }
 
+bool Table::usesAvailWidth ()
+{
+   return true;
+}
+
 bool Table::isBlockLevel ()
 {
    return true;

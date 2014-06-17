@@ -286,11 +286,6 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
    DBG_OBJ_MSG_END ();
 }
 
-bool Widget::affectedByContainerSizeChange ()
-{
-   return true;
-}
-
 void Widget::containerSizeChanged ()
 {
    DBG_OBJ_MSG ("resize", 0, "<b>containerSizeChanged</b> ()");
@@ -317,6 +312,75 @@ void Widget::containerSizeChanged ()
    DBG_OBJ_MSG_END ();
 }
 
+bool Widget::affectedByContainerSizeChange ()
+{
+   DBG_OBJ_MSG ("resize", 0, "<b>affectedByContainerSizeChange</b> ()");
+   DBG_OBJ_MSG_START ();
+
+   bool ret;
+
+   // This standard implementation is suitable for all widgets which
+   // call correctRequisition() and correctExtremes(), even in the way
+   // how Textblock and Image do (see comments there). Has to be kept
+   // in sync.
+
+   if (container == NULL) {
+      if (style::isAbsLength (getStyle()->width) &&
+          style::isAbsLength (getStyle()->height))
+         // Both absolute, i. e. fixed: no dependency.
+         ret = false;
+      else if (style::isPerLength (getStyle()->width) ||
+               style::isPerLength (getStyle()->height)) {
+         // Any percentage: certainly dependenant.
+         ret = true;
+      } else
+         // One or both is "auto": depends ...
+         ret =
+            (getStyle()->width == style::LENGTH_AUTO ?
+             usesAvailWidth () : false) ||
+            (getStyle()->height == style::LENGTH_AUTO ?
+             usesAvailHeight () : false);
+   } else
+      ret = this->affectsSizeChangeContainerChild (this);
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
+   DBG_OBJ_MSG_END ();
+   return ret;
+}
+
+bool Widget::affectsSizeChangeContainerChild (Widget *child)
+{
+   DBG_OBJ_MSGF ("resize", 0, "<b>affectsSizeChangeContainerChild</b> (%p)",
+                 child);
+   DBG_OBJ_MSG_START ();
+
+   bool ret;
+
+   // From the point of view of the container. This standard
+   // implementation should be suitable for most (if not all)
+   // containers.
+
+   if (style::isAbsLength (child->getStyle()->width) &&
+       style::isAbsLength (child->getStyle()->height))
+      // Both absolute, i. e. fixed: no dependency.
+      ret = false;
+   else if (style::isPerLength (child->getStyle()->width) ||
+            style::isPerLength (child->getStyle()->height)) {
+      // Any percentage: certainly dependenant.
+      ret = true;
+   } else
+      // One or both is "auto": depends ...
+      ret =
+         (child->getStyle()->width == style::LENGTH_AUTO ?
+          child->usesAvailWidth () : false) ||
+         (child->getStyle()->height == style::LENGTH_AUTO ?
+          child->usesAvailHeight () : false);
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
+   DBG_OBJ_MSG_END ();
+   return ret;  
+}
+
 void Widget::containerSizeChangedForChildren ()
 {
    DBG_OBJ_MSG ("resize", 0, "<b>containerSizeChangedForChildren</b> ()");
@@ -331,6 +395,24 @@ void Widget::containerSizeChangedForChildren ()
    it->unref ();
 
    DBG_OBJ_MSG_END ();
+}
+
+/**
+ * \brief Must be implemengted by a method returning true, when
+ *    getAvailWidth() is called.
+ */
+bool Widget::usesAvailWidth ()
+{
+   return false;
+}
+
+/**
+ * \brief Must be implemengted by a method returning true, when
+ *    getAvailHeight() is called.
+ */
+bool Widget::usesAvailHeight ()
+{
+   return false;
 }
 
 /**
