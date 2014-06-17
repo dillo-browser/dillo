@@ -373,10 +373,25 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    requisition->ascent += verticalOffset + getStyle()->boxOffsetY ();
    requisition->descent += getStyle()->boxRestHeight ();
 
+   DBG_OBJ_MSGF ("resize", 1, "before correction: %d * (%d + %d)",
+                 requisition->width, requisition->ascent, requisition->descent);
+
+   correctRequisition (requisition, core::splitHeightPreserveAscent);
+
    // Dealing with parts out of flow, which may overlap the borders of
    // the text block. Base lines are ignored here: they do not play a
    // role (currently) and caring about them (for the future) would
    // cause too much problems.
+
+   // Notice that the order is not typical: correctRequisition should
+   // be the last call. However, calling correctRequisition after
+   // outOfFlowMgr->getSize may result again in a size which is too
+   // small for floats, so triggering again (and again) the resize
+   // idle function resulting in CPU hogging. See also
+   // getExtremesImpl.
+   //
+   // Is this really what we want? An alternative could be that
+   // OutOfFlowMgr::getSize honours CSS attributes an corrected sizes.
 
    DBG_OBJ_MSGF ("resize", 1, "before considering OOF widgets: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
@@ -388,11 +403,6 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       if (oofHeight > requisition->ascent + requisition->descent)
          requisition->descent = oofHeight - requisition->ascent;
    }   
-
-   DBG_OBJ_MSGF ("resize", 1, "before correction: %d * (%d + %d)",
-                 requisition->width, requisition->ascent, requisition->descent);
-
-   correctRequisition (requisition, core::splitHeightPreserveAscent);
 
    DBG_OBJ_MSGF ("resize", 1, "final: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
@@ -436,6 +446,10 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidth += diff;
    extremes->maxWidth += diff;
 
+   // For the order, see similar reasoning in sizeRequestImpl.
+
+   correctExtremes (extremes);
+
    if (outOfFlowMgr) {
       int oofMinWidth, oofMaxWidth;
       outOfFlowMgr->getExtremes (extremes, &oofMinWidth, &oofMaxWidth);
@@ -447,8 +461,6 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       extremes->minWidth = misc::max (extremes->minWidth, oofMinWidth);
       extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);     
    }   
-
-   correctExtremes (extremes);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
                  extremes->minWidth, extremes->maxWidth);
