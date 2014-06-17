@@ -14,7 +14,9 @@ calculating widget sizes. Goals are:
   - *display: inline-block*;
   - <button>.
 
-A short sketch:
+
+A short sketch
+==============
 
 **dw::core::Widget::sizeRequest and dw::core::Widget::getExtremes will
 return final results.** The caller does not have to correct the size,
@@ -54,5 +56,24 @@ and its container:**
 **Size hints are removed.** Instead, the container methods in the
 previous paragraph are used. Changes of container sizes (especially
 viewport the size) are handled in a different way.
+
+
+Open issues
+===========
+
+**Do CSS size dimensions override intrinsic sizes in all cases?** If a
+textblock needs at least, say, 100 pixels width so that the text can
+be read, but has a specification "width: 50px", should half of the
+text be invisible? Or should the width be corrected again to 100
+pixels?
+
+Currently, in the CSS size specification is honoured in all cases,
+with one exception: see dw::Textblock::sizeRequestImpl and see
+dw::Textblock::getExtremesImpl (the time when
+dw::core::Widget::correctRequisition and
+dw::core::Widget::correctExtremes, respectively, is called).
+
+*Not* honouring the CSS size specification in all cases could improve
+readability in some cases, so this could depend on a user preference.
 
 */
