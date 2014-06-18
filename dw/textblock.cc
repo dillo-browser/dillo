@@ -264,8 +264,8 @@ Textblock::Textblock (bool limitTextWidth)
 
    hoverLink = -1;
 
-   // random value
-   lineBreakWidth = 100;
+   // -1 means undefined.
+   lineBreakWidth = -1;
    DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
 
    verticalOffset = 0;
@@ -332,9 +332,14 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b> ()");
    DBG_OBJ_MSG_START ();
 
-   lineBreakWidth = getAvailWidth (true);
-   DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
-
+   int newLineBreakWidth = getAvailWidth (true);
+   if (newLineBreakWidth != lineBreakWidth) {
+      lineBreakWidth = newLineBreakWidth;
+      wrapRefLines = 0;
+      DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
+      DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
+   }
+   
    rewrap ();
    showMissingLines ();
 
@@ -424,6 +429,19 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 {
    DBG_OBJ_MSG ("resize", 0, "<b>getExtremesImpl</b>");
    DBG_OBJ_MSG_START ();
+
+   // TODO Can extremes depend on the available width? Should not; if
+   // they do, the following code must be reactivated, but it causes
+   // an endless recursion.
+#if 0
+   int newLineBreakWidth = getAvailWidth (true);
+   if (newLineBreakWidth != lineBreakWidth) {
+      lineBreakWidth = newLineBreakWidth;
+      wrapRefParagraphs = 0;
+      DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
+      DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefLines);
+   }
+#endif
 
    fillParagraphs ();
 
@@ -1600,6 +1618,11 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
    DBG_OBJ_MSGF ("construct.word", 0, "<b>addWord</b> (%d * (%d + %d), %d, %p)",
                  width, ascent, descent, flags, style);
    DBG_OBJ_MSG_START ();
+
+   if (lineBreakWidth == -1) {
+      lineBreakWidth = getAvailWidth (true);
+      DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
+   }
 
    words->increase ();
    DBG_OBJ_SET_NUM ("words.size", words->size ());
