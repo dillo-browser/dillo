@@ -553,19 +553,21 @@ void Table::forceCalcCellSizes (bool calcHeights)
    DBG_OBJ_MSG ("resize", 0, "<b>forceCalcCellSizes</b>");
    DBG_OBJ_MSG_START ();
 
-   int totalWidth = 0, childHeight;
+   int childHeight;
    core::Extremes extremes;
 
    // Will also call calcColumnExtremes(), when needed.
    getExtremes (&extremes);
 
-   totalWidth = getAvailWidth (true);
-   DBG_OBJ_SET_NUM ("totalWidth", totalWidth);
+   int totalWidth = getAvailWidth (true);
+   DBG_OBJ_MSGF ("resize", 1, "(i) totalWidth = %d", totalWidth);
 
    if (totalWidth < extremes.minWidth)
       totalWidth = extremes.minWidth;
    totalWidth -= ((numCols + 1) * getStyle()->hBorderSpacing
                   + getStyle()->boxDiffWidth ());
+
+   DBG_OBJ_MSGF ("resize", 1, "(ii) totalWidth = %d", totalWidth);
 
    colWidths->setSize (numCols, 0);
    cumHeight->setSize (numRows + 1, 0);

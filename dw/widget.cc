@@ -475,7 +475,8 @@ int Widget::getAvailWidth (bool forceValue)
 {
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSG ("resize", 0, "<b>getAvailWidth</b> ()");
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidth</b> (%s)",
+                 forceValue ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    int width;
@@ -512,7 +513,8 @@ int Widget::getAvailHeight (bool forceValue)
 {
    // TODO Correct by ... not extremes, but ...? (Height extremes?)
 
-   DBG_OBJ_MSG ("resize", 0, "<b>getAvailHeight</b> ()");
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailHeight</b> (%s)",
+                 forceValue ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    int height;
@@ -813,6 +815,28 @@ void Widget::setStyle (style::Style *style)
       queueResize (0, true);
    else
       queueDraw ();
+
+   // These should better be attributed to the style itself, and a
+   // script processing RTFL messages could transfer it to something
+   // equivalent:
+
+   DBG_OBJ_SET_NUM ("style.margin.top", style->margin.top);
+   DBG_OBJ_SET_NUM ("style.margin.bottom", style->margin.bottom);
+   DBG_OBJ_SET_NUM ("style.margin.left", style->margin.left);
+   DBG_OBJ_SET_NUM ("style.margin.right", style->margin.right);
+
+   DBG_OBJ_SET_NUM ("style.border-width.top", style->borderWidth.top);
+   DBG_OBJ_SET_NUM ("style.border-width.bottom", style->borderWidth.bottom);
+   DBG_OBJ_SET_NUM ("style.border-width.left", style->borderWidth.left);
+   DBG_OBJ_SET_NUM ("style.border-width.right", style->borderWidth.right);
+
+   DBG_OBJ_SET_NUM ("style.padding.top", style->padding.top);
+   DBG_OBJ_SET_NUM ("style.padding.bottom", style->padding.bottom);
+   DBG_OBJ_SET_NUM ("style.padding.left", style->padding.left);
+   DBG_OBJ_SET_NUM ("style.padding.right", style->padding.right);
+
+   DBG_OBJ_SET_NUM ("style.border-spacing (h)", style->hBorderSpacing);
+   DBG_OBJ_SET_NUM ("style.border-spacing (v)", style->vBorderSpacing);
 }
 
 /**
@@ -1131,6 +1155,9 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
          width = -1;
       else {
          int containerContentWidth = availWidth - boxDiffWidth ();
+         DBG_OBJ_MSGF ("resize", 1, "containerContentWidth = %d - %d = %d",
+                       availWidth, boxDiffWidth (), containerContentWidth);
+
          if (style::isPerLength (child->getStyle()->width))
             width = style::multiplyWithPerLength (containerContentWidth,
                                                   child->getStyle()->width)
@@ -1169,6 +1196,9 @@ int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
          height = -1;
       else {
          int containerContentHeight = availHeight - boxDiffHeight ();
+         DBG_OBJ_MSGF ("resize", 1, "containerContentHeight = %d - %d = %d",
+                       availHeight, boxDiffHeight (), containerContentHeight);
+
          if (style::isPerLength (child->getStyle()->height))
             height = style::multiplyWithPerLength (containerContentHeight,
                                                    child->getStyle()->height)
