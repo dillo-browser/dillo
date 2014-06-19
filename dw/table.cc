@@ -210,10 +210,11 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
       if (availWidth == -1)
          width = -1;
       else {
+         // Within tables, a percentage 'width' specifies the total
+         // width, not the content width.
          int containerContentWidth = availWidth - boxDiffWidth ();
          width = core::style::multiplyWithPerLength (containerContentWidth,
-                                                     child->getStyle()->width)
-            + child->boxDiffWidth ();
+                                                     child->getStyle()->width);
       }
    } else {
       DBG_OBJ_MSG ("resize", 1, "no length specified");
@@ -253,6 +254,93 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_MSG_END ();
    return width;
+}
+
+void Table::correctRequisitionOfChild (Widget *child,
+                                       core::Requisition *requisition,
+                                       void (*splitHeightFun)(int height,
+                                                              int *ascent,
+                                                              int *descent))
+{
+   // (Mostly copied from Widget::correctRequisitionOfChild; could be
+   // cleaned up a bit.)
+   
+   // TODO Correct by extremes?
+
+   DBG_OBJ_MSGF ("resize", 0,
+                 "<b>correctRequisitionOfChild</b> (%p, %d * (%d + %d), ...)",
+                 child, requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_MSG_START ();
+
+   if (core::style::isAbsLength (child->getStyle()->width))
+      requisition->width = core::style::absLengthVal (child->getStyle()->width)
+         + child->boxDiffWidth ();
+   else if (core::style::isPerLength (child->getStyle()->width)) {
+      int availWidth = getAvailWidth (false);
+      if (availWidth != -1) {
+         // Within tables, a percentage 'width' specifies the total
+         // width, not the content width.
+         int containerWidth = availWidth - boxDiffWidth ();
+         requisition->width =
+            core::style::multiplyWithPerLength (containerWidth,
+                                          child->getStyle()->width);
+      }
+   }
+
+   // TODO Perhaps split first, then add box ascent and descent.
+   if (core::style::isAbsLength (child->getStyle()->height))
+      splitHeightFun (core::style::absLengthVal (child->getStyle()->height)
+                      + child->boxDiffHeight (),
+                      &requisition->ascent, &requisition->descent);
+   else if (core::style::isPerLength (child->getStyle()->height)) {
+      int availHeight = getAvailHeight (false);
+      if (availHeight != -1) {
+         int containerHeight = availHeight - boxDiffHeight ();
+         splitHeightFun (core::style::multiplyWithPerLength
+                         (containerHeight, child->getStyle()->height)
+                         + child->boxDiffHeight (),
+                         &requisition->ascent, &requisition->descent);
+      }
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
+                 requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_MSG_END ();
+}
+
+void Table::correctExtremesOfChild (Widget *child, core::Extremes *extremes)
+{
+   // (Mostly copied from Widget::correctExtremesOfChild; could be
+   // cleaned up a bit.)
+
+   // TODO Extremes only corrected?
+
+   DBG_OBJ_MSGF ("resize", 0,
+                 "<b>correctExtremedOfChild</b> (%p, %d / %d)",
+                 child, extremes->minWidth, extremes->maxWidth);
+   DBG_OBJ_MSG_START ();
+
+   if (core::style::isAbsLength (child->getStyle()->width))
+      extremes->minWidth =extremes->maxWidth =
+         core::style::absLengthVal (child->getStyle()->width)
+         + child->boxDiffWidth ();
+   else if (core::style::isPerLength (child->getStyle()->width)) {
+      int availWidth = getAvailWidth (false);
+      if (availWidth != -1) {
+         // Within tables, a percentage 'width' specifies the total
+         // width, not the content width.
+         int containerWidth = availWidth - boxDiffWidth ();
+         extremes->minWidth =extremes->maxWidth =
+            core::style::multiplyWithPerLength (containerWidth,
+                                                child->getStyle()->width);
+      }
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
+                 extremes->minWidth, extremes->maxWidth);
+   DBG_OBJ_MSG_END ();
 }
 
 void Table::containerSizeChangedForChildren ()

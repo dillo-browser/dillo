@@ -427,6 +427,13 @@ protected:
    void resizeDrawImpl ();
 
    int getAvailWidthOfChild (Widget *child, bool forceValue);
+   void correctRequisitionOfChild (Widget *child,
+                                   core::Requisition *requisition,
+                                   void (*splitHeightFun)(int height,
+                                                          int *ascent,
+                                                          int *descent));
+   void correctExtremesOfChild (Widget *child, core::Extremes *extremes);
+
    void containerSizeChangedForChildren ();
    bool usesAvailWidth ();
 
