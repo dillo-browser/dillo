@@ -289,6 +289,7 @@
 #define DBG_OBJ_SET_SYM(var, val)                    D_STMT_NOP
 #define DBG_OBJ_SET_STR(var, val)                    D_STMT_NOP
 #define DBG_OBJ_SET_PTR(var, val)                    D_STMT_NOP
+#define DBG_OBJ_SET_BOOL(var, val)                   D_STMT_NOP
 #define DBG_OBJ_SET_PTR_O(obj, var, val)             D_STMT_NOP
 #define DBG_OBJ_ARRSET_NUM(var, ind, val)            D_STMT_NOP
 #define DBG_OBJ_ARRSET_SYM(var, ind, val)            D_STMT_NOP
