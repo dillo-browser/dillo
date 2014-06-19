@@ -224,6 +224,8 @@ void a_Dicache_unref(const DilloUrl *Url, int version)
       if (entry->RefCount > 0) --entry->RefCount;
       if (entry->v_imgbuf == NULL ||
           (entry->RefCount == 0 && a_Imgbuf_last_reference(entry->v_imgbuf)))
+      if (entry->RefCount == 0 &&
+          (!entry->v_imgbuf || a_Imgbuf_last_reference(entry->v_imgbuf)))
          Dicache_remove(Url, version);
    }
 }
