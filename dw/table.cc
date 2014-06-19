@@ -46,6 +46,9 @@ Table::Table(bool limitTextWidth)
    curRow = -1;
    curCol = 0;
 
+   DBG_OBJ_SET_NUM ("numCols", numCols);
+   DBG_OBJ_SET_NUM ("numRows", numCols);
+
    children = new misc::SimpleVector <Child*> (16);
    colExtremes = new misc::SimpleVector<core::Extremes> (8);
    colWidths = new misc::SimpleVector <int> (8);
@@ -618,13 +621,17 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
 
    numCols = newNumCols;
    numRows = newNumRows;
+
+   DBG_OBJ_SET_NUM ("numCols", numCols);
+   DBG_OBJ_SET_NUM ("numRows", numCols);
 }
 
 // ----------------------------------------------------------------------
 
 void Table::calcCellSizes (bool calcHeights)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>calcCellSizes</b>");
+   DBG_OBJ_MSGF ("resize", 0, "<b>calcCellSizes</b> (%s)",
+                 calcHeights ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    if ((calcHeights && (needsResize () || resizeQueued () ||
