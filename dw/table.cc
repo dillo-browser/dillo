@@ -116,6 +116,8 @@ void Table::sizeRequestImpl (core::Requisition *requisition)
       + getStyle()->vBorderSpacing;
    requisition->descent = 0;
 
+   correctRequisition (requisition, core::splitHeightPreserveDescent);
+
    DBG_OBJ_MSG_END ();
 }
 
@@ -135,10 +137,10 @@ void Table::getExtremesImpl (core::Extremes *extremes)
       for (int col = 0; col < numCols; col++) {
          extremes->minWidth += colExtremes->getRef(col)->minWidth;
          extremes->maxWidth += colExtremes->getRef(col)->maxWidth;
-      }
-      
-      correctExtremes (extremes);
+      }     
    }
+
+   correctExtremes (extremes);
 
    DBG_OBJ_MSG_END ();
 }
