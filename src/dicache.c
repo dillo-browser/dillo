@@ -572,7 +572,7 @@ void a_Dicache_cleanup(void)
 
 /*
  * Deallocate memory used by dicache module
- * (Call this one at exit time)
+ * (Call this one at exit time, with no cache clients queued)
  */
 void a_Dicache_freeall(void)
 {
@@ -587,6 +587,7 @@ void a_Dicache_freeall(void)
          a_Bitvec_free(entry->BitVec);
          a_Imgbuf_unref(entry->v_imgbuf);
          dicache_size_total -= entry->TotalSize;
+         dFree(entry);
       }
       dList_remove_fast(CachedIMGs, node);
       a_Url_free(node->url);
