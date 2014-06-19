@@ -392,6 +392,8 @@ private:
 
    lout::misc::SimpleVector<core::style::Style*> *rowStyle;
 
+   bool colWidthsUpToDateWidthColExtremes;
+
    inline bool childDefined(int n)
    {
       return n < children->size() && children->get(n) != NULL &&

@@ -189,6 +189,13 @@
       fflush (stdout); \
    } D_STMT_END
 
+#define DBG_OBJ_SET_BOOL(var, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s:%s\n", \
+              RTFL_PREFIX_ARGS, this, var, val ? "true" : "false");     \
+      fflush (stdout); \
+   } D_STMT_END
+
 #define DBG_OBJ_SET_PTR_O(obj, var, val)         \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-set:%p:%s:%p\n", \

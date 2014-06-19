@@ -57,6 +57,10 @@ Table::Table(bool limitTextWidth)
    baseline = new misc::SimpleVector <int> (8);
    rowStyle = new misc::SimpleVector <core::style::Style*> (8);
 
+   colWidthsUpToDateWidthColExtremes = true;
+   DBG_OBJ_SET_BOOL ("colWidthsUpToDateWidthColExtremes",
+                     colWidthsUpToDateWidthColExtremes);
+
    redrawX = 0;
    redrawY = 0;
 }
@@ -634,9 +638,11 @@ void Table::calcCellSizes (bool calcHeights)
                  calcHeights ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
-   if ((calcHeights && (needsResize () || resizeQueued () ||
-                        extremesChanged () || extremesQueued ())) ||
-       (extremesChanged () || extremesQueued ()))
+   bool sizeChanged = needsResize () || resizeQueued ();
+   bool extremesChanges = extremesChanged () || extremesQueued ();
+
+   if (calcHeights ? (extremesChanges || sizeChanged) :
+       (extremesChanges || !colWidthsUpToDateWidthColExtremes))
       forceCalcCellSizes (calcHeights);
 
    DBG_OBJ_MSG_END ();
@@ -677,6 +683,10 @@ void Table::forceCalcCellSizes (bool calcHeights)
       for (int i = 0; i < colWidths->size (); i++)
          DBG_OBJ_ARRSET_NUM ("colWidths", i, colWidths->get (i));
    }
+
+   colWidthsUpToDateWidthColExtremes = true;
+   DBG_OBJ_SET_BOOL ("colWidthsUpToDateWidthColExtremes",
+                     colWidthsUpToDateWidthColExtremes);
 
    if (calcHeights) {
       setCumHeight (0, 0);
@@ -913,6 +923,10 @@ void Table::forceCalcColumnExtremes ()
                                  colExtremes->get(i).maxWidth);
       }
    }
+
+   colWidthsUpToDateWidthColExtremes = false;
+   DBG_OBJ_SET_BOOL ("colWidthsUpToDateWidthColExtremes",
+                     colWidthsUpToDateWidthColExtremes);
 
    DBG_OBJ_MSG_END ();
 }
