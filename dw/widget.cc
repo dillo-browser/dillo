@@ -482,22 +482,38 @@ int Widget::getAvailWidth (bool forceValue)
    int width;
 
    if (container == NULL) {
+      DBG_OBJ_MSG ("resize", 1, "no container, regarding viewport");
+      DBG_OBJ_MSG_START ();
+
       // TODO Consider nested layouts (e. g. <button>).
-      if (style::isAbsLength (getStyle()->width))
+      if (style::isAbsLength (getStyle()->width)) {
+         DBG_OBJ_MSGF ("resize", 1, "absolute width: %dpx",
+                       style::absLengthVal (getStyle()->width));
          width = style::absLengthVal (getStyle()->width) + boxDiffWidth ();
-      else {
+      } else {
          int viewportWidth =
             layout->viewportWidth - (layout->canvasHeightGreater ?
                                      layout->vScrollbarThickness : 0);
          if (style::isPerLength (getStyle()->width)) {
+            DBG_OBJ_MSGF ("resize", 1, "percentage width: %g%%",
+                          100 * style::perLengthVal_useThisOnlyForDebugging
+                          (getStyle()->width));
             width = style::multiplyWithPerLength (viewportWidth,
                                                   getStyle()->width)
                + boxDiffWidth ();
-         } else
+         } else {
+            DBG_OBJ_MSG ("resize", 1, "no specification");
             width = viewportWidth;
+         }
+
       }
-   } else
+      DBG_OBJ_MSG_END ();
+   } else {
+      DBG_OBJ_MSG ("resize", 1, "delegatet to container");
+      DBG_OBJ_MSG_START ();
       width = container->getAvailWidthOfChild (this, forceValue);
+      DBG_OBJ_MSG_END ();
+   }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_MSG_END ();
@@ -1146,10 +1162,12 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
 
    int width;
 
-   if (style::isAbsLength (child->getStyle()->width))
+   if (style::isAbsLength (child->getStyle()->width)) {
+      DBG_OBJ_MSGF ("resize", 1, "absolute width: %dpx",
+                    style::absLengthVal (child->getStyle()->width));
       width = style::absLengthVal (child->getStyle()->width)
          + child->boxDiffWidth ();
-   else {
+   } else {
       int availWidth = getAvailWidth (forceValue);
       if (availWidth == -1)
          width = -1;
@@ -1158,14 +1176,19 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
          DBG_OBJ_MSGF ("resize", 1, "containerContentWidth = %d - %d = %d",
                        availWidth, boxDiffWidth (), containerContentWidth);
 
-         if (style::isPerLength (child->getStyle()->width))
+         if (style::isPerLength (child->getStyle()->width)) {
+            DBG_OBJ_MSGF ("resize", 1, "percentage width: %g%%",
+                          100 * style::perLengthVal_useThisOnlyForDebugging
+                          (child->getStyle()->width));
             width = style::multiplyWithPerLength (containerContentWidth,
                                                   child->getStyle()->width)
                + child->boxDiffWidth ();
-         else
+         } else {
+            DBG_OBJ_MSG ("resize", 1, "no specification");
             // Some widgets will use the whole width, so this is a
             // meaningful value.
             width = containerContentWidth;
+         }
       }
    }
 
