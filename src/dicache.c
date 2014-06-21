@@ -300,7 +300,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
 /*
  * Implement the set_cmap method for the Image
  */
-void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
+void a_Dicache_set_cmap(DilloUrl *url, int version, int bg_color,
                         const uchar_t *cmap, uint_t num_colors,
                         int num_colors_max, int bg_index)
 {
@@ -313,9 +313,9 @@ void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
    DicEntry->cmap = dNew0(uchar_t, 3 * num_colors_max);
    memcpy(DicEntry->cmap, cmap, 3 * num_colors);
    if (bg_index >= 0 && (uint_t)bg_index < num_colors) {
-      DicEntry->cmap[bg_index * 3]     = (Image->bg_color >> 16) & 0xff;
-      DicEntry->cmap[bg_index * 3 + 1] = (Image->bg_color >> 8) & 0xff;
-      DicEntry->cmap[bg_index * 3 + 2] = (Image->bg_color) & 0xff;
+      DicEntry->cmap[bg_index * 3]     = (bg_color >> 16) & 0xff;
+      DicEntry->cmap[bg_index * 3 + 1] = (bg_color >> 8) & 0xff;
+      DicEntry->cmap[bg_index * 3 + 2] = (bg_color) & 0xff;
    }
 
    DicEntry->State = DIC_SetCmap;

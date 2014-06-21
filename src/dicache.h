@@ -61,7 +61,7 @@ void a_Dicache_callback(int Op, CacheClient_t *Client);
 void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
                          uint_t width, uint_t height, DilloImgType type,
                          double gamma);
-void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
+void a_Dicache_set_cmap(DilloUrl *url, int version, int bg_color,
                         const uchar_t *cmap, uint_t num_colors,
                         int num_colors_max, int bg_index);
 void a_Dicache_new_scan(const DilloUrl *url, int version);
