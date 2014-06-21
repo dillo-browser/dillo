@@ -62,6 +62,7 @@ typedef struct {
    DilloImage *Image;           /* Image meta data */
    DilloUrl *url;               /* Primary Key for the dicache */
    int version;                 /* Secondary Key for the dicache */
+   int bgcolor;                 /* Parent widget background color */
 
    png_uint_32 width;           /* png image width */
    png_uint_32 height;          /* png image height */
@@ -204,6 +205,7 @@ Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
    a_Dicache_set_parms(png->url, png->version, png->Image,
                        (uint_t)png->width, (uint_t)png->height,
                        DILLO_IMG_TYPE_RGB, file_gamma);
+   png->Image = NULL; /* safeguard: hereafter it may be freed by its owner */
 }
 
 static void
@@ -244,9 +246,9 @@ static void
 
         /* TODO: maybe change prefs.bg_color to `a_Dw_widget_get_bg_color`,
          * when background colors are correctly implementated */
-        bg_blue  = (png->Image->bg_color) & 0xFF;
-        bg_green = (png->Image->bg_color>>8) & 0xFF;
-        bg_red   = (png->Image->bg_color>>16) & 0xFF;
+        bg_blue  = (png->bgcolor) & 0xFF;
+        bg_green = (png->bgcolor>>8) & 0xFF;
+        bg_red   = (png->bgcolor>>16) & 0xFF;
 
         for (i = 0; i < png->width; i++) {
            a = *(data+3);
@@ -433,6 +435,7 @@ void *a_Png_new(DilloImage *Image, DilloUrl *url, int version)
    png->Image = Image;
    png->url = url;
    png->version = version;
+   png->bgcolor = Image->bg_color;
    png->error = 0;
    png->ipbuf = NULL;
    png->ipbufstart = 0;
