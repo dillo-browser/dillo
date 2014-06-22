@@ -428,8 +428,7 @@ protected:
    void sizeAllocateImpl (core::Allocation *allocation);
    void resizeDrawImpl ();
 
-   int applyPerWidth (int containerWidth, core::style::Length perWidth);
-   int applyPerHeight (int containerHeight, core::style::Length perHeight);
+   int getAvailWidthOfChild (Widget *child, bool forceValue);
 
    void containerSizeChangedForChildren ();
    bool usesAvailWidth ();
@@ -449,6 +448,9 @@ public:
 
    Table(bool limitTextWidth);
    ~Table();
+
+   int applyPerWidth (int containerWidth, core::style::Length perWidth);
+   int applyPerHeight (int containerHeight, core::style::Length perHeight);
 
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 

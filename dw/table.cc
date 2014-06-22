@@ -201,6 +201,68 @@ void Table::resizeDrawImpl ()
    redrawY = getHeight ();
 }
 
+int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
+{
+   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p, %s)",
+                 child, forceValue ? "true" : "false");
+   DBG_OBJ_MSG_START ();
+
+   int width;
+
+   if (core::style::isAbsLength (child->getStyle()->width)) {
+      DBG_OBJ_MSG ("resize", 1, "absolute length");
+      width = core::style::absLengthVal (child->getStyle()->width)
+         + child->boxDiffWidth ();
+   } else if (core::style::isPerLength (child->getStyle()->width)) {
+      DBG_OBJ_MSG ("resize", 1, "percentage length");
+      int availWidth = getAvailWidth (forceValue);
+      if (availWidth == -1)
+         width = -1;
+      else {
+         int containerContentWidth = availWidth - boxDiffWidth ();
+         width = child->applyPerWidth (containerContentWidth,
+                                       child->getStyle()->width);
+      }
+   } else {
+      DBG_OBJ_MSG ("resize", 1, "no length specified");
+
+      width = -1;
+
+      if (forceValue) {
+         calcCellSizes (false);
+         
+         // "child" is not a direct child, but a direct descendant. Search
+         // for the actual childs.
+         Widget *actualChild = child;
+         while (actualChild != NULL && actualChild->getParent () != this)
+            actualChild = actualChild->getParent ();
+         
+         assert (actualChild != NULL);
+         
+         // TODO This is inefficient. (Use parentRef?)
+         for (int row = numRows - 1; width == -1 && row >= 0; row--) {
+            for (int col = 0; width == -1 && col < numCols; col++) {
+               int n = row * numCols + col;
+               if (childDefined (n) &&
+                   children->get(n)->cell.widget == actualChild) {
+                  DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
+                  width = (children->get(n)->cell.colspanEff - 1)
+                     * getStyle()->hBorderSpacing;
+                  for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
+                     width += colWidths->get (col + i);
+               }
+            }
+         }
+         
+         assert (width != -1);
+      }
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
+   DBG_OBJ_MSG_END ();
+   return width;
+}
+
 int Table::applyPerWidth (int containerWidth, core::style::Length perWidth)
 {
    return core::style::multiplyWithPerLength (containerWidth, perWidth);
@@ -538,6 +600,9 @@ void Table::forceCalcCellSizes (bool calcHeights)
    rowSpanCells->setSize (0);
    baseline->setSize (numRows);
 
+   misc::SimpleVector<int> *oldColWidths = colWidths;
+   colWidths = new misc::SimpleVector <int> (8);
+
    apportion2 (totalWidth, getStyle()->width != core::style::LENGTH_AUTO,
                0, colExtremes->size() - 1, colWidths, 0, true);
 
@@ -550,6 +615,22 @@ void Table::forceCalcCellSizes (bool calcHeights)
    colWidthsUpToDateWidthColExtremes = true;
    DBG_OBJ_SET_BOOL ("colWidthsUpToDateWidthColExtremes",
                      colWidthsUpToDateWidthColExtremes);
+
+   for (int col = 0; col < numCols; col++) {
+      if (col >= oldColWidths->size () || col >= colWidths->size () ||
+          oldColWidths->get (col) != colWidths->get (col)) {
+         // Column width has changed, tell children about this.
+         for (int row = 0; row < numRows; row++) {
+            int n = row * numCols + col;
+            // TODO: Columns spanning several rows are only regarded
+            // when the first column is affected.
+            if (childDefined (n))
+               children->get(n)->cell.widget->containerSizeChanged ();
+         }
+      }
+   }
+
+   delete oldColWidths;
 
    if (calcHeights) {
       setCumHeight (0, 0);

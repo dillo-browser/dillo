@@ -314,9 +314,6 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
-   virtual int applyPerWidth (int containerWidth, style::Length perWidth);
-   virtual int applyPerHeight (int containerHeight, style::Length perHeight);
-
    virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
    virtual int getAvailHeightOfChild (Widget *child, bool forceValue);
    virtual void correctRequisitionOfChild (Widget *child,
@@ -448,6 +445,9 @@ public:
    void correctRequisition (Requisition *requisition,
                             void (*splitHeightFun) (int, int*, int*));
    void correctExtremes (Extremes *extremes);
+
+   virtual int applyPerWidth (int containerWidth, style::Length perWidth);
+   virtual int applyPerHeight (int containerHeight, style::Length perHeight);
    
    virtual bool isBlockLevel ();
    virtual bool isPossibleContainer ();
