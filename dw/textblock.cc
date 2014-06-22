@@ -1018,7 +1018,6 @@ core::Iterator *Textblock::iterator (core::Content::Type mask, bool atEnd)
    return new TextblockIterator (this, mask, atEnd);
 }
 
-
 /**
  * Calculate the size of a widget within the page.
  * (Subject of change in the near future!)

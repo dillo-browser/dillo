@@ -43,4 +43,16 @@ bool SimpleTableCell::isBlockLevel ()
    return false;
 }
 
+int SimpleTableCell::applyPerWidth (int containerWidth,
+                                     core::style::Length perWidth)
+{
+   return core::style::multiplyWithPerLength (containerWidth, perWidth);
+}
+
+int SimpleTableCell::applyPerHeight (int containerHeight,
+                                     core::style::Length perHeight)
+{
+   return core::style::multiplyWithPerLength (containerHeight, perHeight);
+}
+
 } // namespace dw

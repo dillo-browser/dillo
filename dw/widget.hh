@@ -314,14 +314,15 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
+   virtual int applyPerWidth (int containerWidth, style::Length perWidth);
+   virtual int applyPerHeight (int containerHeight, style::Length perHeight);
+
    virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
    virtual int getAvailHeightOfChild (Widget *child, bool forceValue);
    virtual void correctRequisitionOfChild (Widget *child,
                                            Requisition *requisition,
-                                           void (*splitHeightFun)(int height,
-                                                                  int *ascent,
-                                                                  int
-                                                                  *descent));
+                                           void (*splitHeightFun) (int, int*,
+                                                                   int*));
    virtual void correctExtremesOfChild (Widget *child, Extremes *extremes);
 
    virtual void containerSizeChangedForChildren ();
@@ -445,8 +446,7 @@ public:
    int getAvailWidth (bool forceValue);
    int getAvailHeight (bool forceValue);
    void correctRequisition (Requisition *requisition,
-                            void (*splitHeightFun)(int height, int *ascent,
-                                                   int *descent));
+                            void (*splitHeightFun) (int, int*, int*));
    void correctExtremes (Extremes *extremes);
    
    virtual bool isBlockLevel ();
@@ -513,7 +513,6 @@ public:
 
 void splitHeightPreserveAscent (int height, int *ascent, int *descent);
 void splitHeightPreserveDescent (int height, int *ascent, int *descent);
-
 
 } // namespace core
 } // namespace dw

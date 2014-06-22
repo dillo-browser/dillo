@@ -201,155 +201,14 @@ void Table::resizeDrawImpl ()
    redrawY = getHeight ();
 }
 
-int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
+int Table::applyPerWidth (int containerWidth, core::style::Length perWidth)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p, %s)",
-                 child, forceValue ? "true" : "false");
-   DBG_OBJ_MSG_START ();
-
-   int width;
-
-   if (core::style::isAbsLength (child->getStyle()->width)) {
-      DBG_OBJ_MSG ("resize", 1, "absolute length");
-      width = core::style::absLengthVal (child->getStyle()->width)
-         + child->boxDiffWidth ();
-   } else if (core::style::isPerLength (child->getStyle()->width)) {
-      DBG_OBJ_MSG ("resize", 1, "percentage length");
-      int availWidth = getAvailWidth (forceValue);
-      if (availWidth == -1)
-         width = -1;
-      else {
-         // Within tables, a percentage 'width' specifies the total
-         // width, not the content width.
-         int containerContentWidth = availWidth - boxDiffWidth ();
-         width = core::style::multiplyWithPerLength (containerContentWidth,
-                                                     child->getStyle()->width);
-      }
-   } else {
-      DBG_OBJ_MSG ("resize", 1, "no length specified");
-
-      width = -1;
-
-      if (forceValue) {
-         calcCellSizes (false);
-         
-         // "child" is not a direct child, but a direct descendant. Search
-         // for the actual childs.
-         Widget *actualChild = child;
-         while (actualChild != NULL && actualChild->getParent () != this)
-            actualChild = actualChild->getParent ();
-         
-         assert (actualChild != NULL);
-         
-         // TODO This is inefficient. (Use parentRef?)
-         for (int row = numRows - 1; width == -1 && row >= 0; row--) {
-            for (int col = 0; width == -1 && col < numCols; col++) {
-               int n = row * numCols + col;
-               if (childDefined (n) &&
-                   children->get(n)->cell.widget == actualChild) {
-                  DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
-                  width = (children->get(n)->cell.colspanEff - 1)
-                     * getStyle()->hBorderSpacing;
-                  for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
-                     width += colWidths->get (col + i);
-               }
-            }
-         }
-         
-         assert (width != -1);
-      }
-   }
-
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
-   DBG_OBJ_MSG_END ();
-   return width;
+   return core::style::multiplyWithPerLength (containerWidth, perWidth);
 }
 
-void Table::correctRequisitionOfChild (Widget *child,
-                                       core::Requisition *requisition,
-                                       void (*splitHeightFun)(int height,
-                                                              int *ascent,
-                                                              int *descent))
+int Table::applyPerHeight (int containerHeight, core::style::Length perHeight)
 {
-   // (Mostly copied from Widget::correctRequisitionOfChild; could be
-   // cleaned up a bit.)
-   
-   // TODO Correct by extremes?
-
-   DBG_OBJ_MSGF ("resize", 0,
-                 "<b>correctRequisitionOfChild</b> (%p, %d * (%d + %d), ...)",
-                 child, requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_MSG_START ();
-
-   if (core::style::isAbsLength (child->getStyle()->width))
-      requisition->width = core::style::absLengthVal (child->getStyle()->width)
-         + child->boxDiffWidth ();
-   else if (core::style::isPerLength (child->getStyle()->width)) {
-      int availWidth = getAvailWidth (false);
-      if (availWidth != -1) {
-         // Within tables, a percentage 'width' specifies the total
-         // width, not the content width.
-         int containerWidth = availWidth - boxDiffWidth ();
-         requisition->width =
-            core::style::multiplyWithPerLength (containerWidth,
-                                          child->getStyle()->width);
-      }
-   }
-
-   // TODO Perhaps split first, then add box ascent and descent.
-   if (core::style::isAbsLength (child->getStyle()->height))
-      splitHeightFun (core::style::absLengthVal (child->getStyle()->height)
-                      + child->boxDiffHeight (),
-                      &requisition->ascent, &requisition->descent);
-   else if (core::style::isPerLength (child->getStyle()->height)) {
-      int availHeight = getAvailHeight (false);
-      if (availHeight != -1) {
-         int containerHeight = availHeight - boxDiffHeight ();
-         splitHeightFun (core::style::multiplyWithPerLength
-                         (containerHeight, child->getStyle()->height)
-                         + child->boxDiffHeight (),
-                         &requisition->ascent, &requisition->descent);
-      }
-   }
-
-   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
-                 requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_MSG_END ();
-}
-
-void Table::correctExtremesOfChild (Widget *child, core::Extremes *extremes)
-{
-   // (Mostly copied from Widget::correctExtremesOfChild; could be
-   // cleaned up a bit.)
-
-   // TODO Extremes only corrected?
-
-   DBG_OBJ_MSGF ("resize", 0,
-                 "<b>correctExtremedOfChild</b> (%p, %d / %d)",
-                 child, extremes->minWidth, extremes->maxWidth);
-   DBG_OBJ_MSG_START ();
-
-   if (core::style::isAbsLength (child->getStyle()->width))
-      extremes->minWidth =extremes->maxWidth =
-         core::style::absLengthVal (child->getStyle()->width)
-         + child->boxDiffWidth ();
-   else if (core::style::isPerLength (child->getStyle()->width)) {
-      int availWidth = getAvailWidth (false);
-      if (availWidth != -1) {
-         // Within tables, a percentage 'width' specifies the total
-         // width, not the content width.
-         int containerWidth = availWidth - boxDiffWidth ();
-         extremes->minWidth =extremes->maxWidth =
-            core::style::multiplyWithPerLength (containerWidth,
-                                                child->getStyle()->width);
-      }
-   }
-
-   DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
-                 extremes->minWidth, extremes->maxWidth);
-   DBG_OBJ_MSG_END ();
+   return core::style::multiplyWithPerLength (containerHeight, perHeight);
 }
 
 void Table::containerSizeChangedForChildren ()
@@ -667,10 +526,12 @@ void Table::forceCalcCellSizes (bool calcHeights)
 
    if (totalWidth < extremes.minWidth)
       totalWidth = extremes.minWidth;
-   totalWidth -= ((numCols + 1) * getStyle()->hBorderSpacing
-                  + getStyle()->boxDiffWidth ());
 
    DBG_OBJ_MSGF ("resize", 1, "(ii) totalWidth = %d", totalWidth);
+
+   totalWidth -= ((numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ());
+
+   DBG_OBJ_MSGF ("resize", 1, "(iii) totalWidth = %d", totalWidth);
 
    colWidths->setSize (numCols, 0);
    cumHeight->setSize (numRows + 1, 0);

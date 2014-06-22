@@ -12,6 +12,9 @@ private:
    int charWordIndex, charWordPos;
 
 protected:
+   int applyPerWidth (int containerWidth, core::style::Length perWidth);
+   int applyPerHeight (int containerHeight, core::style::Length perHeight);
+
    int wordWrap (int wordIndex, bool wrapAll);
 
    int getValue ();

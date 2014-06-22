@@ -7,6 +7,10 @@ namespace dw {
 
 class SimpleTableCell: public Textblock
 {
+protected:
+   int applyPerWidth (int containerWidth, core::style::Length perWidth);
+   int applyPerHeight (int containerHeight, core::style::Length perHeight);
+
 public:
    static int CLASS_ID;
 

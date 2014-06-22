@@ -50,6 +50,18 @@ bool AlignedTableCell::isBlockLevel ()
    return false;
 }
 
+int AlignedTableCell::applyPerWidth (int containerWidth,
+                                     core::style::Length perWidth)
+{
+   return core::style::multiplyWithPerLength (containerWidth, perWidth);
+}
+
+int AlignedTableCell::applyPerHeight (int containerHeight,
+                                      core::style::Length perHeight)
+{
+   return core::style::multiplyWithPerLength (containerHeight, perHeight);
+}
+
 int AlignedTableCell::wordWrap(int wordIndex, bool wrapAll)
 {
    Textblock::Word *word;
