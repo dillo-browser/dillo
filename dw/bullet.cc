@@ -27,6 +27,12 @@ namespace dw {
 
 Bullet::Bullet ()
 {
+   DBG_OBJ_CREATE ("dw::Bullet");
+}
+
+Bullet::~Bullet ()
+{
+   DBG_OBJ_DELETE ();
 }
 
 void Bullet::sizeRequestImpl (core::Requisition *requisition)

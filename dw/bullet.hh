@@ -21,6 +21,7 @@ protected:
 
 public:
    Bullet ();
+   ~Bullet ();
 };
 
 } // namespace dw
