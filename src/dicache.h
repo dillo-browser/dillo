@@ -26,8 +26,9 @@ typedef enum {
 
 typedef struct DICacheEntry {
    DilloUrl *url;          /* Image URL for this entry */
-   uint_t width, height;   /* As taken from image data */
    DilloImgType type;      /* Image type */
+   uint_t width, height;   /* As taken from image data */
+   int SurvCleanup;        /* Cleanup-pass survival for unused images */
    uchar_t *cmap;          /* Color map */
    void *v_imgbuf;         /* Void pointer to an Imgbuf object */
    uint_t TotalSize;       /* Amount of memory the image takes up */
@@ -38,9 +39,9 @@ typedef struct DICacheEntry {
    int version;            /* Version number, used for different
                               versions of the same URL image */
 
+   uint_t DecodedSize;     /* Size of already decoded data */
    CA_Callback_t Decoder;  /* Client function */
    void *DecoderData;      /* Client function data */
-   uint_t DecodedSize;     /* Size of already decoded data */
 
    struct DICacheEntry *next; /* Link to the next "newer" version */
 } DICacheEntry;
