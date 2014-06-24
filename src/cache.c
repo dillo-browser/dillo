@@ -110,7 +110,7 @@ static int Cache_entry_by_url_cmp(const void *v1, const void *v2)
 }
 
 /*
- * Initialize dicache data
+ * Initialize cache data
  */
 void a_Cache_init(void)
 {

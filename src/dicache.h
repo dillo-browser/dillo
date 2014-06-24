@@ -12,6 +12,9 @@ extern "C" {
 
 /* Symbolic name to request the last version of an image */
 #define DIC_Last  -1
+/* Flags: Last version, Valid entry */
+#define DIF_Last  1
+#define DIF_Valid 2
 
 
 /* These will reflect the entry's "state" */
@@ -28,7 +31,8 @@ typedef struct DICacheEntry {
    DilloUrl *url;          /* Image URL for this entry */
    DilloImgType type;      /* Image type */
    uint_t width, height;   /* As taken from image data */
-   int SurvCleanup;        /* Cleanup-pass survival for unused images */
+   short Flags;            /* See Flags */
+   short SurvCleanup;      /* Cleanup-pass survival for unused images */
    uchar_t *cmap;          /* Color map */
    void *v_imgbuf;         /* Void pointer to an Imgbuf object */
    uint_t TotalSize;       /* Amount of memory the image takes up */
@@ -42,8 +46,6 @@ typedef struct DICacheEntry {
    uint_t DecodedSize;     /* Size of already decoded data */
    CA_Callback_t Decoder;  /* Client function */
    void *DecoderData;      /* Client function data */
-
-   struct DICacheEntry *next; /* Link to the next "newer" version */
 } DICacheEntry;
 
 
