@@ -83,6 +83,7 @@ static DICacheEntry *Dicache_entry_new(void)
 
    entry->width = 0;
    entry->height = 0;
+   entry->SurvCleanup = 0;
    entry->type = DILLO_IMG_TYPE_NOTSET;
    entry->cmap = NULL;
    entry->v_imgbuf = NULL;
@@ -209,23 +210,21 @@ static void Dicache_remove(const DilloUrl *Url, int version)
 }
 
 /*
- * Unrefs the counter of a dicache entry, and _if_ no DwImage is acessing
- * this buffer, then we call Dicache_remove() to do the job.
+ * Unrefs the counter of a dicache entry (it counts cache clients).
+ * If there're no clients and no imgbuf, remove the entry.
+ * Otherwise, let a_Dicache_cleanup() do the job later
+ * (keeping it cached meanwhile for e.g. reload, repush, back/fwd).
  */
 void a_Dicache_unref(const DilloUrl *Url, int version)
 {
    DICacheEntry *entry;
 
-   _MSG("a_Dicache_unref\n");
    if ((entry = a_Dicache_get_entry(Url, version))) {
-      _MSG(" a_Dicache_unref: RefCount=%d\n", entry->RefCount);
-      _MSG(" a_Dicache_unref: ImgbufLastRef=%d\n",
+      _MSG("a_Dicache_unref: RefCount=%d State=%d ImgbufLastRef=%d\n",
+          entry->RefCount, entry->State,
           entry->v_imgbuf ? a_Imgbuf_last_reference(entry->v_imgbuf) : -1);
       if (entry->RefCount > 0) --entry->RefCount;
-      if (entry->v_imgbuf == NULL ||
-          (entry->RefCount == 0 && a_Imgbuf_last_reference(entry->v_imgbuf)))
-      if (entry->RefCount == 0 &&
-          (!entry->v_imgbuf || a_Imgbuf_last_reference(entry->v_imgbuf)))
+      if (entry->RefCount == 0 && entry->v_imgbuf == NULL)
          Dicache_remove(Url, version);
    }
 }
@@ -441,6 +440,8 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
       /* Repeated image */
       a_Dicache_ref(DicEntry->url, DicEntry->version);
    }
+   /* Survive three cleanup passes (set to zero = old behaviour). */
+   DicEntry->SurvCleanup = 3;
 
    *Data = DicEntry->DecoderData;
    *Call = (CA_Callback_t) a_Dicache_callback;
@@ -552,14 +553,18 @@ void a_Dicache_cleanup(void)
    DICacheNode *node;
    DICacheEntry *entry, *next;
 
-   _MSG("a_Dicache_cleanup\n");
+   MSG("a_Dicache_cleanup\n");
    for (i = 0; i < dList_length(CachedIMGs); ++i) {
       node = dList_nth_data(CachedIMGs, i);
       /* iterate each entry of this node */
       for (entry = node->first; entry; entry = next) {
          next = entry->next;
-         if (entry->v_imgbuf &&
-             a_Imgbuf_last_reference(entry->v_imgbuf)) {
+         MSG(" SurvCleanup = %d\n", entry->SurvCleanup);
+         if (entry->RefCount == 0 &&
+             (!entry->v_imgbuf || a_Imgbuf_last_reference(entry->v_imgbuf))) {
+            if (--entry->SurvCleanup >= 0)
+               continue;  /* keep the entry one more pass */
+
             /* free this unused entry */
             _MSG("a_Dicache_cleanup: removing entry...\n");
             Dicache_remove(node->url, entry->version);
