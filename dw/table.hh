@@ -394,7 +394,7 @@ private:
 
    bool colWidthsUpToDateWidthColExtremes;
 
-   enum ExtrMod { MIN, MIN_INTR, MAX, MAX_INTR };
+   enum ExtrMod { MIN, MIN_INTR, MIN_MIN, MAX_MIN, MAX, MAX_INTR };
 
    const char *getExtrModName (ExtrMod mod);
    int getExtreme (core::Extremes *extremes, ExtrMod mod);

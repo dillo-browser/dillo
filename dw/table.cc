@@ -490,6 +490,12 @@ const char *Table::getExtrModName (ExtrMod mod)
    case MIN_INTR:
       return "MIN_INTR";
 
+   case MIN_MIN:
+      return "MIN_MIN";
+
+   case MAX_MIN:
+      return "MAX_MIN";
+
    case MAX:
       return "MAX";
 
@@ -510,6 +516,12 @@ int Table::getExtreme (core::Extremes *extremes, ExtrMod mod)
 
    case MIN_INTR:
       return extremes->minWidthIntrinsic;
+
+   case MIN_MIN:
+      return misc::min (extremes->minWidth, extremes->minWidthIntrinsic);
+
+   case MAX_MIN:
+      return misc::max (extremes->minWidth, extremes->minWidthIntrinsic);
 
    case MAX:
       return extremes->maxWidth;
@@ -532,6 +544,8 @@ void Table::setExtreme (core::Extremes *extremes, ExtrMod mod, int value)
    case MIN_INTR:
       extremes->minWidthIntrinsic = value;
       break;
+
+   // MIN_MIN and MAX_MIN not supported here.
 
    case MAX:
       extremes->maxWidth = value;
@@ -668,8 +682,16 @@ void Table::forceCalcCellSizes (bool calcHeights)
    misc::SimpleVector<int> *oldColWidths = colWidths;
    colWidths = new misc::SimpleVector <int> (8);
 
-   apportion2 (totalWidth, getStyle()->width != core::style::LENGTH_AUTO,
-               0, colExtremes->size() - 1, MIN, MAX, colWidths, 0, true);
+   int minWidth = 0;
+   for (int col = 0; col < colExtremes->size(); col++)
+      minWidth += getColExtreme (col, MIN);
+      
+   if (minWidth > totalWidth)
+      apportion2 (totalWidth, false, 0, colExtremes->size() - 1,
+                  MIN_MIN, MAX_MIN, colWidths, 0, true);
+   else
+      apportion2 (totalWidth, getStyle()->width != core::style::LENGTH_AUTO,
+                  0, colExtremes->size() - 1, MIN, MAX, colWidths, 0, true);
 
    DBG_IF_RTFL {
       DBG_OBJ_SET_NUM ("colWidths.size", colWidths->size ());
