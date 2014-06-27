@@ -481,6 +481,71 @@ AlignedTableCell *Table::getCellRef ()
    return NULL;
 }
 
+const char *Table::getExtrModName (ExtrMod mod)
+{
+   switch (mod) {
+   case MIN:
+      return "MIN";
+
+   case MIN_INTR:
+      return "MIN_INTR";
+
+   case MAX:
+      return "MAX";
+
+   case MAX_INTR:
+      return "MAX_INTR";
+
+   default:
+      misc::assertNotReached ();
+      return NULL;
+   }
+}
+
+int Table::getExtreme (core::Extremes *extremes, ExtrMod mod)
+{
+   switch (mod) {
+   case MIN:
+      return extremes->minWidth;
+
+   case MIN_INTR:
+      return extremes->minWidthIntrinsic;
+
+   case MAX:
+      return extremes->maxWidth;
+
+   case MAX_INTR:
+      return extremes->maxWidthIntrinsic;
+
+   default:
+      misc::assertNotReached (); return 0;
+   }
+}
+
+void Table::setExtreme (core::Extremes *extremes, ExtrMod mod, int value)
+{
+   switch (mod) {
+   case MIN:
+      extremes->minWidth = value;
+      break;
+
+   case MIN_INTR:
+      extremes->minWidthIntrinsic = value;
+      break;
+
+   case MAX:
+      extremes->maxWidth = value;
+      break;
+
+   case MAX_INTR:
+      extremes->maxWidthIntrinsic = value;
+      break;
+
+   default:
+      misc::assertNotReached ();
+   }
+}
+
 void Table::reallocChildren (int newNumCols, int newNumRows)
 {
    assert (newNumCols >= numCols);
@@ -604,7 +669,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
    colWidths = new misc::SimpleVector <int> (8);
 
    apportion2 (totalWidth, getStyle()->width != core::style::LENGTH_AUTO,
-               0, colExtremes->size() - 1, colWidths, 0, true);
+               0, colExtremes->size() - 1, MIN, MAX, colWidths, 0, true);
 
    DBG_IF_RTFL {
       DBG_OBJ_SET_NUM ("colWidths.size", colWidths->size ());
@@ -769,7 +834,9 @@ void Table::forceCalcColumnExtremes ()
          DBG_OBJ_MSG_START ();
 
          colExtremes->getRef(col)->minWidth = 0;
+         colExtremes->getRef(col)->minWidthIntrinsic = 0;
          colExtremes->getRef(col)->maxWidth = 0;
+         colExtremes->getRef(col)->maxWidthIntrinsic = 0;
          
          for (int row = 0; row < numRows; row++) {
             DBG_OBJ_MSGF ("resize", 1, "row %d", row);
@@ -784,6 +851,14 @@ void Table::forceCalcColumnExtremes ()
 
                   DBG_OBJ_MSGF ("resize", 1, "child: %d / %d",
                                 cellExtremes.minWidth, cellExtremes.maxWidth);
+
+                  colExtremes->getRef(col)->minWidthIntrinsic =
+                     misc::max (colExtremes->getRef(col)->minWidthIntrinsic,
+                                cellExtremes.minWidthIntrinsic);
+                  colExtremes->getRef(col)->maxWidthIntrinsic =
+                     misc::max (colExtremes->getRef(col)->minWidthIntrinsic,
+                                colExtremes->getRef(col)->maxWidthIntrinsic,
+                                cellExtremes.maxWidthIntrinsic);
                   
                   colExtremes->getRef(col)->minWidth =
                      misc::max (colExtremes->getRef(col)->minWidth,
@@ -793,9 +868,11 @@ void Table::forceCalcColumnExtremes ()
                                 colExtremes->getRef(col)->maxWidth,
                                 cellExtremes.maxWidth);
 
-                  DBG_OBJ_MSGF ("resize", 1, "column: %d / %d",
+                  DBG_OBJ_MSGF ("resize", 1, "column: %d / %d (%d / %d)",
                                 colExtremes->getRef(col)->minWidth,
-                                colExtremes->getRef(col)->maxWidth);
+                                colExtremes->getRef(col)->maxWidth,
+                                colExtremes->getRef(col)->minWidthIntrinsic,
+                                colExtremes->getRef(col)->maxWidthIntrinsic);
                } else {
                   colSpanCells.increase ();
                   colSpanCells.setLast (n);
@@ -809,52 +886,20 @@ void Table::forceCalcColumnExtremes ()
       }
 
       // 2. cells with colspan > 1
-      
+
       // TODO: Is this old comment still relevant? "If needed, here we
       // set proportionally apportioned col maximums."
 
       for (int i = 0; i < colSpanCells.size(); i++) {
          int n = colSpanCells.get (i);
          int col = n % numCols;
-         int cs = children->get(n)->cell.colspanEff;        
+         int cs = children->get(n)->cell.colspanEff;
 
          core::Extremes cellExtremes;
          children->get(n)->cell.widget->getExtremes (&cellExtremes);
 
-         int minSumCols = 0, maxSumCols = 0;
-         for (int j = 0; j < cs; j++) {
-            minSumCols += colExtremes->getRef(col + j)->minWidth;
-            maxSumCols += colExtremes->getRef(col + j)->maxWidth;
-         }
-
-         DBG_OBJ_MSGF ("resize", 1, "cs = %d cell: %d / %d, sum: %d / %d\n",
-                       cs, cellExtremes.minWidth, cellExtremes.maxWidth,
-                       minSumCols, maxSumCols);
-
-         bool changeMin = cellExtremes.minWidth > minSumCols;
-         bool changeMax = cellExtremes.maxWidth > maxSumCols;
-         if (changeMin || changeMax) {
-            // TODO This differs from the documentation? Should work, anyway.
-            misc::SimpleVector<int> newMin, newMax;
-            if (changeMin)
-               apportion2 (cellExtremes.minWidth, true, col, col + cs - 1,
-                           &newMin, 0, false);
-            if (changeMax)
-               apportion2 (cellExtremes.maxWidth, true, col, col + cs - 1,
-                           &newMax, 0, false);
-            
-            for (int j = 0; j < cs; j++) {
-               if (changeMin)
-                  colExtremes->getRef(col + j)->minWidth = newMin.get (j);
-               if (changeMax)
-                  colExtremes->getRef(col + j)->maxWidth = newMax.get (j);
-
-               // For cases where min and max are somewhat confused:
-               colExtremes->getRef(col + j)->maxWidth =
-                  misc::max (colExtremes->getRef(col + j)->minWidth,
-                             colExtremes->getRef(col + j)->maxWidth);
-            }
-         }
+         calcExtremesSpanMulteCols (col, cs, &cellExtremes, MIN, MAX);
+         calcExtremesSpanMulteCols (col, cs, &cellExtremes, MIN_INTR, MAX_INTR);
       }
    }
 
@@ -863,8 +908,12 @@ void Table::forceCalcColumnExtremes ()
       for (int i = 0; i < colExtremes->size (); i++) {
          DBG_OBJ_ARRATTRSET_NUM ("colExtremes", i, "minWidth",
                                  colExtremes->get(i).minWidth);
+         DBG_OBJ_ARRATTRSET_NUM ("colExtremes", i, "minWidthIntrinsic",
+                                 colExtremes->get(i).minWidthIntrinsic);
          DBG_OBJ_ARRATTRSET_NUM ("colExtremes", i, "maxWidth",
                                  colExtremes->get(i).maxWidth);
+         DBG_OBJ_ARRATTRSET_NUM ("colExtremes", i, "maxWidthIntrinsic",
+                                 colExtremes->get(i).maxWidthIntrinsic);
       }
    }
 
@@ -875,25 +924,80 @@ void Table::forceCalcColumnExtremes ()
    DBG_OBJ_MSG_END ();
 }
 
+void Table::calcExtremesSpanMulteCols (int col, int cs,
+                                       core::Extremes *cellExtremes,
+                                       ExtrMod minExtrMod, ExtrMod maxExtrMod)
+{
+   DBG_OBJ_MSGF ("resize", 0,
+                 "<b>calcExtremesSpanMulteCols (%d, %d, ..., %s, %s)",
+                 col, cs, getExtrModName (minExtrMod),
+                 getExtrModName (minExtrMod));
+   DBG_OBJ_MSG_START ();
+   
+   int cellMin = getExtreme (cellExtremes, minExtrMod);
+   int cellMax = getExtreme (cellExtremes, maxExtrMod);
+
+   int minSumCols = 0, maxSumCols = 0;
+
+   for (int j = 0; j < cs; j++) {
+      minSumCols += getColExtreme (col + j, minExtrMod);
+      maxSumCols += getColExtreme (col + j, maxExtrMod);
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "cs = %d, cell: %d / %d, sum: %d / %d\n",
+                 cs, cellMin, cellMax, minSumCols, maxSumCols);
+
+   bool changeMin = cellMin > minSumCols;
+   bool changeMax = cellMax > maxSumCols; 
+   if (changeMin || changeMax) {
+      // TODO This differs from the documentation? Should work, anyway.
+      misc::SimpleVector<int> newMin, newMax;
+      if (changeMin)
+         apportion2 (cellMin, true, col, col + cs - 1, MIN, MAX, &newMin, 0,
+                     false);
+      if (changeMax)
+         apportion2 (cellMax, true, col, col + cs - 1, MIN, MAX, &newMax, 0,
+                     false);
+      
+      for (int j = 0; j < cs; j++) {
+         if (changeMin)
+            setColExtreme (col + j, minExtrMod, newMin.get (j));
+         if (changeMax)
+            setColExtreme (col + j, maxExtrMod, newMax.get (j));
+         
+         // For cases where min and max are somewhat confused:
+         setColExtreme (col + j, maxExtrMod,
+                        misc::max (getColExtreme (col + j, minExtrMod),
+                                   getColExtreme (col + j, maxExtrMod)));
+      }
+   }
+
+   DBG_OBJ_MSG_END ();
+}
+
 /**
  * \brief Actual apportionment function.
  */
 void Table::apportion2 (int totalWidth, bool forceTotalWidth,
                         int firstCol, int lastCol,
+                        ExtrMod minExtrMod, ExtrMod maxExtrMod,
                         misc::SimpleVector<int> *dest, int destOffset,
                         bool setRedrawX)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>apportion2</b> (%d, %s, %d, %d, ..., %d, %s)",
+   DBG_OBJ_MSGF ("resize", 0,
+                 "<b>apportion2</b> (%d, %s, %d, %d, %s, %s, ..., %d, %s)",
                  totalWidth, forceTotalWidth ? "true" : "false", firstCol,
-                 lastCol, destOffset, setRedrawX ? "true" : "false");
+                 lastCol, getExtrModName (minExtrMod),
+                 getExtrModName (maxExtrMod), destOffset,
+                 setRedrawX ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    if (lastCol >= firstCol) {
       int minWidth = 0, maxWidth = 0, availWidth;
       
       for (int col = firstCol; col <= lastCol; col++) {
-         maxWidth += colExtremes->get(col).maxWidth;
-         minWidth += colExtremes->get(col).minWidth;
+         minWidth += getColExtreme (col, minExtrMod);
+         maxWidth += getColExtreme (col, maxExtrMod);
       }
       
       dest->setSize (destOffset + lastCol - firstCol + 1, 0);
@@ -915,8 +1019,8 @@ void Table::apportion2 (int totalWidth, bool forceTotalWidth,
       int curNewWidth = minWidth;
 
       for (int col = firstCol; col <= lastCol; col++) {
-         int colMinWidth = colExtremes->getRef(col)->minWidth;
-         int colMaxWidth = colExtremes->getRef(col)->maxWidth;
+         int colMinWidth = getColExtreme (col, minExtrMod);
+         int colMaxWidth = getColExtreme (col, maxExtrMod);
          int w = (curMaxWidth <= 0) ? 0 :
             (int)((float)curTargetWidth * colMaxWidth/curMaxWidth);
 

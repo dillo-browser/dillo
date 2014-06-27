@@ -394,6 +394,17 @@ private:
 
    bool colWidthsUpToDateWidthColExtremes;
 
+   enum ExtrMod { MIN, MIN_INTR, MAX, MAX_INTR };
+
+   const char *getExtrModName (ExtrMod mod);
+   int getExtreme (core::Extremes *extremes, ExtrMod mod);
+   void setExtreme (core::Extremes *extremes, ExtrMod mod, int value);
+
+   inline int getColExtreme (int col, ExtrMod mod) {
+      return getExtreme (colExtremes->getRef(col), mod); }
+   inline void setColExtreme (int col, ExtrMod mod, int value) {
+      setExtreme (colExtremes->getRef(col), mod, value); }
+
    inline bool childDefined(int n)
    {
       return n < children->size() && children->get(n) != NULL &&
@@ -408,9 +419,13 @@ private:
 
    void calcColumnExtremes ();
    void forceCalcColumnExtremes ();
+   void calcExtremesSpanMulteCols (int col, int cs,
+                                   core::Extremes *cellExtremes,
+                                   ExtrMod minExtrMod, ExtrMod maxExtrMod);
 
    void apportion2 (int totalWidth, bool forceTotalWidth,
                     int firstCol, int lastCol,
+                    ExtrMod minExtrMod, ExtrMod maxExtrMod,
                     lout::misc::SimpleVector<int> *dest, int destOffset,
                     bool setRedrawX);
 
