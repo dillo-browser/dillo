@@ -180,6 +180,8 @@ struct Extremes
 {
    int minWidth;
    int maxWidth;
+   int minWidthIntrinsic;
+   int maxWidthIntrinsic;
 };
 
 struct Content

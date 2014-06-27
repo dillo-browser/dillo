@@ -614,6 +614,9 @@ void Widget::correctExtremes (Extremes *extremes)
 {
    // TODO Extremes only corrected?
 
+   extremes->minWidthIntrinsic = extremes->minWidth;
+   extremes->maxWidthIntrinsic = extremes->maxWidth;
+
    DBG_OBJ_MSGF ("resize", 0, "<b>correctExtremes</b> (%d / %d)",
                  extremes->minWidth, extremes->maxWidth);
    DBG_OBJ_MSG_START ();
@@ -659,12 +662,26 @@ void Widget::getExtremes (Extremes *extremes)
    }
 
    if (extremesChanged ()) {
+      // For backward compatibility (part 1/2):
+      extremes->minWidthIntrinsic = extremes->maxWidthIntrinsic = -1;
+
       getExtremesImpl (extremes);
+
+      // For backward compatibility (part 2/2):
+      if (extremes->minWidthIntrinsic == -1)
+         extremes->minWidthIntrinsic = extremes->minWidth;
+      if (extremes->maxWidthIntrinsic == -1)
+         extremes->maxWidthIntrinsic = extremes->maxWidth;
+
       this->extremes = *extremes;
       unsetFlags (EXTREMES_CHANGED);
 
       DBG_OBJ_SET_NUM ("extremes.minWidth", extremes->minWidth);
+      DBG_OBJ_SET_NUM ("extremes.minWidthIntrinsic",
+                       extremes->minWidthIntrinsic);
       DBG_OBJ_SET_NUM ("extremes.maxWidth", extremes->maxWidth);
+      DBG_OBJ_SET_NUM ("extremes.maxWidthIntrinsic",
+                       extremes->maxWidthIntrinsic);
    } else
       *extremes = this->extremes;
 
