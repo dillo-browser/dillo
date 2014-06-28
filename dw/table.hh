@@ -425,8 +425,7 @@ private:
 
    void apportion2 (int width, int firstCol, int lastCol,
                     ExtrMod minExtrMod, ExtrMod maxExtrMod,
-                    lout::misc::SimpleVector<int> *dest, int destOffset,
-                    bool setRedrawX);
+                    lout::misc::SimpleVector<int> *dest, int destOffset);
 
    void setCumHeight (int row, int value)
    {

@@ -681,7 +681,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
       // (which means that sometimes CSS values are handled
       // incorrectly).
       apportion2 (totalWidth, 0, colExtremes->size() - 1, MIN_MIN, MAX_MIN,
-                  colWidths, 0, true);
+                  colWidths, 0);
    else {
       // Normal apportioning.
       int width;
@@ -697,10 +697,17 @@ void Table::forceCalcCellSizes (bool calcHeights)
          // CSS 'width' defined: force this width.
          width = totalWidth;
 
-      apportion2 (width, 0, colExtremes->size() - 1, MIN, MAX, colWidths, 0,
-                  true);
+      apportion2 (width, 0, colExtremes->size() - 1, MIN, MAX, colWidths, 0);
    }
 
+   // TODO: Adapted from old inline function "setColWidth". But (i) is
+   // this anyway correct (col width is is not x)? And does the
+   // performance gain actually play a role?
+   for (int col = 0; col < colExtremes->size(); col++) {
+      if (colWidths->get (col) != oldColWidths->get (col))
+         redrawX = lout::misc::min (redrawX, colWidths->get (col));
+   }
+   
    DBG_IF_RTFL {
       DBG_OBJ_SET_NUM ("colWidths.size", colWidths->size ());
       for (int i = 0; i < colWidths->size (); i++)
@@ -983,9 +990,9 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
       // TODO This differs from the documentation? Should work, anyway.
       misc::SimpleVector<int> newMin, newMax;
       if (changeMin)
-         apportion2 (cellMin, col, col + cs - 1, MIN, MAX, &newMin, 0, false);
+         apportion2 (cellMin, col, col + cs - 1, MIN, MAX, &newMin, 0);
       if (changeMax)
-         apportion2 (cellMax, col, col + cs - 1, MIN, MAX, &newMax, 0, false);
+         apportion2 (cellMax, col, col + cs - 1, MIN, MAX, &newMax, 0);
       
       for (int j = 0; j < cs; j++) {
          if (changeMin)
@@ -1008,14 +1015,12 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
  */
 void Table::apportion2 (int width, int firstCol, int lastCol,
                         ExtrMod minExtrMod, ExtrMod maxExtrMod,
-                        misc::SimpleVector<int> *dest, int destOffset,
-                        bool setRedrawX)
+                        misc::SimpleVector<int> *dest, int destOffset)
 {
    DBG_OBJ_MSGF ("resize", 0,
-                 "<b>apportion2</b> (%d, %d, %d, %s, %s, ..., %d, %s)",
+                 "<b>apportion2</b> (%d, %d, %d, %s, %s, ..., %d)",
                  width, firstCol, lastCol, getExtrModName (minExtrMod),
-                 getExtrModName (maxExtrMod), destOffset,
-                 setRedrawX ? "true" : "false");
+                 getExtrModName (maxExtrMod), destOffset);
    DBG_OBJ_MSG_START ();
 
    if (lastCol >= firstCol) {
@@ -1054,12 +1059,6 @@ void Table::apportion2 (int width, int firstCol, int lastCol,
          curMaxWidth -= colMaxWidth;
          curExtraWidth -= (w - colMinWidth);
          curTargetWidth -= w;
-
-         // TODO Adapted from old inline function "setColWidth". But
-         // (i) is this anyway correct (w is not x)? And does the
-         // performance gain actually play a role?
-         if (setRedrawX && w != dest->get (destOffset - firstCol + col))
-            redrawX = lout::misc::min (redrawX, w);
 
          dest->set (destOffset - firstCol + col, w);
       }
