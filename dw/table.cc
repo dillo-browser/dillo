@@ -207,55 +207,39 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
                  child, forceValue ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
-   int width;
+   int width = -1;
 
-   if (core::style::isAbsLength (child->getStyle()->width)) {
-      DBG_OBJ_MSG ("resize", 1, "absolute length");
-      width = core::style::absLengthVal (child->getStyle()->width)
-         + child->boxDiffWidth ();
-   } else if (core::style::isPerLength (child->getStyle()->width)) {
-      DBG_OBJ_MSG ("resize", 1, "percentage length");
-      int availWidth = getAvailWidth (forceValue);
-      if (availWidth == -1)
-         width = -1;
-      else {
-         int containerContentWidth = availWidth - boxDiffWidth ();
-         width = child->applyPerWidth (containerContentWidth,
-                                       child->getStyle()->width);
-      }
-   } else {
-      DBG_OBJ_MSG ("resize", 1, "no length specified");
-
-      width = -1;
-
-      if (forceValue) {
-         calcCellSizes (false);
-         
-         // "child" is not a direct child, but a direct descendant. Search
-         // for the actual childs.
-         Widget *actualChild = child;
-         while (actualChild != NULL && actualChild->getParent () != this)
-            actualChild = actualChild->getParent ();
-         
-         assert (actualChild != NULL);
-         
-         // TODO This is inefficient. (Use parentRef?)
-         for (int row = numRows - 1; width == -1 && row >= 0; row--) {
-            for (int col = 0; width == -1 && col < numCols; col++) {
-               int n = row * numCols + col;
-               if (childDefined (n) &&
-                   children->get(n)->cell.widget == actualChild) {
-                  DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
-                  width = (children->get(n)->cell.colspanEff - 1)
-                     * getStyle()->hBorderSpacing;
-                  for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
-                     width += colWidths->get (col + i);
-               }
+   // Unlike other containers, the table widget sometimes narrows
+   // columns to a width less than specified by CSS (see
+   // forceCalcCellSizes). For this reason, the column widths have to
+   // be calculated in all cases.
+   if (forceValue) {
+      calcCellSizes (false);
+      
+      // "child" is not a direct child, but a direct descendant.
+      // Search for the actual childs.
+      Widget *actualChild = child;
+      while (actualChild != NULL && actualChild->getParent () != this)
+         actualChild = actualChild->getParent ();
+      
+      assert (actualChild != NULL);
+      
+      // TODO This is inefficient. (Use parentRef?)
+      for (int row = numRows - 1; width == -1 && row >= 0; row--) {
+         for (int col = 0; width == -1 && col < numCols; col++) {
+            int n = row * numCols + col;
+            if (childDefined (n) &&
+                children->get(n)->cell.widget == actualChild) {
+               DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
+               width = (children->get(n)->cell.colspanEff - 1)
+                  * getStyle()->hBorderSpacing;
+               for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
+                  width += colWidths->get (col + i);
             }
          }
-         
-         assert (width != -1);
       }
+      
+      assert (width != -1);
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
@@ -687,9 +671,19 @@ void Table::forceCalcCellSizes (bool calcHeights)
       minWidth += getColExtreme (col, MIN);
       
    if (minWidth > totalWidth)
+      // The sum of all column minima is larger than the available
+      // width, so we narrow the columns (see also CSS2 spec,
+      // section 17.5, #6). We use a similar apportioning, but not
+      // bases on minimal and maximal widths, but on intrinsic minimal
+      // widths and corrected minimal widths. This way, intrinsic
+      // extremes are preferred (so avoiding columns too narrow for
+      // the actual contents), at the expenses of corrected ones
+      // (which means that sometimes CSS values are handled
+      // incorrectly).
       apportion2 (totalWidth, false, 0, colExtremes->size() - 1,
                   MIN_MIN, MAX_MIN, colWidths, 0, true);
    else
+      // Normal apportioning.
       apportion2 (totalWidth, getStyle()->width != core::style::LENGTH_AUTO,
                   0, colExtremes->size() - 1, MIN, MAX, colWidths, 0, true);
 
