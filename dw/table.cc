@@ -646,12 +646,14 @@ void Table::forceCalcCellSizes (bool calcHeights)
    // Will also call calcColumnExtremes(), when needed.
    getExtremes (&extremes);
 
-   int totalWidth = getAvailWidth (true);
-   DBG_OBJ_MSGF ("resize", 1, "(i) totalWidth = %d", totalWidth);
+   int availWidth = getAvailWidth (true);
+   int totalWidth = availWidth -
+      ((numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ());
 
-   totalWidth -= ((numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ());
-
-   DBG_OBJ_MSGF ("resize", 1, "(ii) totalWidth = %d", totalWidth);
+   DBG_OBJ_MSGF ("resize", 1,
+                 "totalWidth = %d - ((%d - 1) * %d + %d) = <b>%d</b>",
+                 availWidth, numCols, getStyle()->hBorderSpacing,
+                 boxDiffWidth (), totalWidth);
 
    colWidths->setSize (numCols, 0);
    cumHeight->setSize (numRows + 1, 0);
@@ -664,6 +666,9 @@ void Table::forceCalcCellSizes (bool calcHeights)
    int minWidth = 0;
    for (int col = 0; col < colExtremes->size(); col++)
       minWidth += getColExtreme (col, MIN);
+
+   DBG_OBJ_MSGF ("resize", 1, "minWidth (= %d) > totalWidth (= %d)?",
+                 minWidth, totalWidth);
       
    if (minWidth > totalWidth)
       // The sum of all column minima is larger than the available
@@ -675,12 +680,26 @@ void Table::forceCalcCellSizes (bool calcHeights)
       // the actual contents), at the expenses of corrected ones
       // (which means that sometimes CSS values are handled
       // incorrectly).
-      apportion2 (totalWidth, false, 0, colExtremes->size() - 1,
-                  MIN_MIN, MAX_MIN, colWidths, 0, true);
-   else
+      apportion2 (totalWidth, 0, colExtremes->size() - 1, MIN_MIN, MAX_MIN,
+                  colWidths, 0, true);
+   else {
       // Normal apportioning.
-      apportion2 (totalWidth, getStyle()->width != core::style::LENGTH_AUTO,
-                  0, colExtremes->size() - 1, MIN, MAX, colWidths, 0, true);
+      int width;
+      if (getStyle()->width == core::style::LENGTH_AUTO) {
+         // Do not force width, when maximal width is smaller.
+         int maxWidth = 0;
+         for (int col = 0; col < colExtremes->size(); col++)
+            maxWidth += getColExtreme (col, MAX);
+         width = misc::min (totalWidth, maxWidth);
+         DBG_OBJ_MSGF ("resize", 1, "width = min (%d, %d) = %d",
+                       totalWidth, maxWidth, width);
+      } else
+         // CSS 'width' defined: force this width.
+         width = totalWidth;
+
+      apportion2 (width, 0, colExtremes->size() - 1, MIN, MAX, colWidths, 0,
+                  true);
+   }
 
    DBG_IF_RTFL {
       DBG_OBJ_SET_NUM ("colWidths.size", colWidths->size ());
@@ -964,11 +983,9 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
       // TODO This differs from the documentation? Should work, anyway.
       misc::SimpleVector<int> newMin, newMax;
       if (changeMin)
-         apportion2 (cellMin, true, col, col + cs - 1, MIN, MAX, &newMin, 0,
-                     false);
+         apportion2 (cellMin, col, col + cs - 1, MIN, MAX, &newMin, 0, false);
       if (changeMax)
-         apportion2 (cellMax, true, col, col + cs - 1, MIN, MAX, &newMax, 0,
-                     false);
+         apportion2 (cellMax, col, col + cs - 1, MIN, MAX, &newMax, 0, false);
       
       for (int j = 0; j < cs; j++) {
          if (changeMin)
@@ -989,22 +1006,20 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
 /**
  * \brief Actual apportionment function.
  */
-void Table::apportion2 (int totalWidth, bool forceTotalWidth,
-                        int firstCol, int lastCol,
+void Table::apportion2 (int width, int firstCol, int lastCol,
                         ExtrMod minExtrMod, ExtrMod maxExtrMod,
                         misc::SimpleVector<int> *dest, int destOffset,
                         bool setRedrawX)
 {
    DBG_OBJ_MSGF ("resize", 0,
-                 "<b>apportion2</b> (%d, %s, %d, %d, %s, %s, ..., %d, %s)",
-                 totalWidth, forceTotalWidth ? "true" : "false", firstCol,
-                 lastCol, getExtrModName (minExtrMod),
+                 "<b>apportion2</b> (%d, %d, %d, %s, %s, ..., %d, %s)",
+                 width, firstCol, lastCol, getExtrModName (minExtrMod),
                  getExtrModName (maxExtrMod), destOffset,
                  setRedrawX ? "true" : "false");
    DBG_OBJ_MSG_START ();
 
    if (lastCol >= firstCol) {
-      int minWidth = 0, maxWidth = 0, availWidth;
+      int minWidth = 0, maxWidth = 0;
       
       for (int col = firstCol; col <= lastCol; col++) {
          minWidth += getColExtreme (col, minExtrMod);
@@ -1013,18 +1028,11 @@ void Table::apportion2 (int totalWidth, bool forceTotalWidth,
       
       dest->setSize (destOffset + lastCol - firstCol + 1, 0);
       
-      if (!forceTotalWidth && maxWidth < totalWidth) {
-         // Enough space for the maximum table, don't widen past max.
-         availWidth = maxWidth;
-      } else
-         availWidth = totalWidth;
-
-      DBG_OBJ_MSGF ("resize", 1,
-                    "maxWidth = %d, minWidth = %d, availWidth = %d",
-                    maxWidth, minWidth, availWidth);
+      DBG_OBJ_MSGF ("resize", 1, "width = %d, minWidth = %d, maxWidth = %d",
+                    width, minWidth, maxWidth);
 
       // General case.
-      int curTargetWidth = misc::max (availWidth, minWidth);
+      int curTargetWidth = misc::max (width, minWidth);
       int curExtraWidth = curTargetWidth - minWidth;
       int curMaxWidth = maxWidth;
       int curNewWidth = minWidth;
