@@ -680,8 +680,15 @@ void Table::forceCalcCellSizes (bool calcHeights)
       // the actual contents), at the expenses of corrected ones
       // (which means that sometimes CSS values are handled
       // incorrectly).
-      apportion2 (totalWidth, 0, colExtremes->size() - 1, MIN_MIN, MAX_MIN,
-                  colWidths, 0);
+
+      //apportion2 (totalWidth, 0, colExtremes->size() - 1, MIN_MIN, MAX_MIN,
+      //            colWidths, 0);
+
+      // Update: the concept of "intrinsic" extremes is still very
+      // imperfect; fot this reason, we use the corrected minima:
+
+      apportion2 (totalWidth, 0, colExtremes->size() - 1, MIN, MIN, colWidths,
+                  0);
    else {
       // Normal apportioning.
       int width;
@@ -1035,9 +1042,6 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
       DBG_OBJ_MSGF ("resize", 1,
                     "totalWidth = %d, totalMin = %d, totalMax = %d",
                     totalWidth, totalMin, totalMax);
-
-      // The following line must be removed soon:
-      totalWidth = misc::max (totalWidth, totalMin);
 
       // The actual calculation is rather simple, the ith value is:
       //

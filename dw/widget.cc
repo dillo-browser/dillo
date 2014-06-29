@@ -481,8 +481,8 @@ int Widget::getAvailWidth (bool forceValue)
 
    int width;
 
-   if (container == NULL) {
-      DBG_OBJ_MSG ("resize", 1, "no container, regarding viewport");
+   if (parent == NULL) {
+      DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
 
       // TODO Consider nested layouts (e. g. <button>).
@@ -507,9 +507,9 @@ int Widget::getAvailWidth (bool forceValue)
       }
       DBG_OBJ_MSG_END ();
    } else {
-      DBG_OBJ_MSG ("resize", 1, "delegated to container");
+      DBG_OBJ_MSG ("resize", 1, "delegated to parent");
       DBG_OBJ_MSG_START ();
-      width = container->getAvailWidthOfChild (this, forceValue);
+      width = parent->getAvailWidthOfChild (this, forceValue);
       DBG_OBJ_MSG_END ();
    }
 
@@ -1182,32 +1182,46 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
 
    int width;
 
-   if (style::isAbsLength (child->getStyle()->width)) {
-      DBG_OBJ_MSGF ("resize", 1, "absolute width: %dpx",
-                    style::absLengthVal (child->getStyle()->width));
-      width = style::absLengthVal (child->getStyle()->width)
-         + child->boxDiffWidth ();
-   } else {
+   if (child->getStyle()->width == style::LENGTH_AUTO) {
+      DBG_OBJ_MSG ("resize", 1, "no specification");
       int availWidth = getAvailWidth (forceValue);
       if (availWidth == -1)
          width = -1;
-      else {
-         int containerContentWidth = availWidth - boxDiffWidth ();
-         DBG_OBJ_MSGF ("resize", 1, "containerContentWidth = %d - %d = %d",
-                       availWidth, boxDiffWidth (), containerContentWidth);
-
-         if (style::isPerLength (child->getStyle()->width)) {
+      else
+         width = misc::max (availWidth - boxDiffWidth (), 0);
+   } else {
+      // In most cases, the toplevel widget should be a container, so
+      // the container is non-NULL when the parent is non-NULL. Just
+      // in case ...:
+      Widget *effContainer =
+         child->container ? child->container : child->parent;
+      
+      if (effContainer == this) {
+         if (style::isAbsLength (child->getStyle()->width)) {
+            DBG_OBJ_MSGF ("resize", 1, "absolute width: %dpx",
+                          style::absLengthVal (child->getStyle()->width));
+            width = misc::max (style::absLengthVal (child->getStyle()->width)
+                               + child->boxDiffWidth (), 0);
+         } else {
+            assert (style::isPerLength (child->getStyle()->width));
             DBG_OBJ_MSGF ("resize", 1, "percentage width: %g%%",
                           100 * style::perLengthVal_useThisOnlyForDebugging
                           (child->getStyle()->width));
-            width = child->applyPerWidth (containerContentWidth,
-                                          child->getStyle()->width);
-         } else {
-            DBG_OBJ_MSG ("resize", 1, "no specification");
-            // Some widgets will use the whole width, so this is a
-            // meaningful value.
-            width = containerContentWidth;
+                    
+            int availWidth = getAvailWidth (forceValue);
+            if (availWidth == -1)
+               width = -1;
+            else
+               width =
+                  misc::max (child->applyPerWidth (availWidth - boxDiffWidth (),
+                                                   child->getStyle()->width),
+                             0);
          }
+      } else {
+         DBG_OBJ_MSG ("resize", 1, "delegated to (effective) container");
+         DBG_OBJ_MSG_START ();
+         width = effContainer->getAvailWidthOfChild (child, forceValue);
+         DBG_OBJ_MSG_END ();
       }
    }
 
