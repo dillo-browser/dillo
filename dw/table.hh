@@ -423,7 +423,7 @@ private:
                                    core::Extremes *cellExtremes,
                                    ExtrMod minExtrMod, ExtrMod maxExtrMod);
 
-   void apportion2 (int width, int firstCol, int lastCol,
+   void apportion2 (int totalWidth, int firstCol, int lastCol,
                     ExtrMod minExtrMod, ExtrMod maxExtrMod,
                     lout::misc::SimpleVector<int> *dest, int destOffset);
 

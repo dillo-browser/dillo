@@ -1013,54 +1013,130 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
 /**
  * \brief Actual apportionment function.
  */
-void Table::apportion2 (int width, int firstCol, int lastCol,
+void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
                         ExtrMod minExtrMod, ExtrMod maxExtrMod,
                         misc::SimpleVector<int> *dest, int destOffset)
 {
    DBG_OBJ_MSGF ("resize", 0,
                  "<b>apportion2</b> (%d, %d, %d, %s, %s, ..., %d)",
-                 width, firstCol, lastCol, getExtrModName (minExtrMod),
+                 totalWidth, firstCol, lastCol, getExtrModName (minExtrMod),
                  getExtrModName (maxExtrMod), destOffset);
    DBG_OBJ_MSG_START ();
 
    if (lastCol >= firstCol) {
-      int minWidth = 0, maxWidth = 0;
-      
-      for (int col = firstCol; col <= lastCol; col++) {
-         minWidth += getColExtreme (col, minExtrMod);
-         maxWidth += getColExtreme (col, maxExtrMod);
-      }
-      
       dest->setSize (destOffset + lastCol - firstCol + 1, 0);
-      
-      DBG_OBJ_MSGF ("resize", 1, "width = %d, minWidth = %d, maxWidth = %d",
-                    width, minWidth, maxWidth);
 
-      // General case.
-      int curTargetWidth = misc::max (width, minWidth);
-      int curExtraWidth = curTargetWidth - minWidth;
-      int curMaxWidth = maxWidth;
-      int curNewWidth = minWidth;
-
+      int totalMin = 0, totalMax = 0;
       for (int col = firstCol; col <= lastCol; col++) {
-         int colMinWidth = getColExtreme (col, minExtrMod);
-         int colMaxWidth = getColExtreme (col, maxExtrMod);
-         int w = (curMaxWidth <= 0) ? 0 :
-            (int)((float)curTargetWidth * colMaxWidth/curMaxWidth);
+         totalMin += getColExtreme (col, minExtrMod);
+         totalMax += getColExtreme (col, maxExtrMod);
+      }
+   
+      DBG_OBJ_MSGF ("resize", 1,
+                    "totalWidth = %d, totalMin = %d, totalMax = %d",
+                    totalWidth, totalMin, totalMax);
 
-         if (w <= colMinWidth)
-            w = colMinWidth;
-         else if (curNewWidth - colMinWidth + w > curTargetWidth)
-            w = colMinWidth + curExtraWidth;
+      // The following line must be removed soon:
+      totalWidth = misc::max (totalWidth, totalMin);
 
-         _MSG("w = %d\n", w);
+      // The actual calculation is rather simple, the ith value is:
+      //
+      //
+      //                       (max[i] - min[i]) * (totalMax - totalMin)
+      // width[i] = totalMin + -----------------------------------------
+      //                                (totalWidth - totalMin)
+      //
+      // (Regard "total" as "sum".) With the following general
+      // definitions (for both the list and sums):
+      //
+      //    diffExtr = max - min
+      //    diffWidth = width - min
+      //
+      // it is simplified to:
+      //
+      //                   diffExtr[i] * totalDiffWidth
+      //    diffWidth[i] = ----------------------------
+      //                           totalDiffExtr
+      //
+      // Of course, if totalDiffExtr is 0, this is not defined;
+      // instead, we apportion according to the minima:
+      //
+      //               min[i] * totalWidth
+      //    width[i] = -------------------
+      //                    totalMin
+      //
+      // Since min[i] <= max[i] for all i, totalMin == totalMax
+      // implies that min[i] == max[i] for all i.
+      //
+      // Third, it totalMin == 0 (which also implies min[i] = max[i] = 0),
+      // the result is
+      //
+      //    width[i] = totalWidth / n
+      
+      int totalDiffExtr = totalMax - totalMin;
+      if (totalDiffExtr != 0) {
+         // Normal case. The algorithm described in
+         // "rounding-errors.doc" is used, with:
+         // 
+         //    x[i] = diffExtr[i]
+         //    y[i] = diffWidth[i]
+         //    a = totalDiffWidth
+         //    b = totalDiffExtr
 
-         curNewWidth -= colMinWidth;
-         curMaxWidth -= colMaxWidth;
-         curExtraWidth -= (w - colMinWidth);
-         curTargetWidth -= w;
+         DBG_OBJ_MSG ("resize", 1, "normal case");
 
-         dest->set (destOffset - firstCol + col, w);
+         int totalDiffWidth = totalWidth - totalMin;
+         int cumDiffExtr = 0, cumDiffWidth = 0;
+         
+         for (int col = firstCol; col <= lastCol; col++) {
+            int min = getColExtreme (col, minExtrMod);
+            int max = getColExtreme (col, maxExtrMod);
+            int diffExtr = max - min;
+
+            cumDiffExtr += diffExtr;
+            int diffWidth =
+               (cumDiffExtr * totalDiffWidth) / totalDiffExtr - cumDiffWidth;
+            cumDiffWidth += diffWidth;
+            
+            dest->set (destOffset - firstCol + col, diffWidth + min);
+         }
+      } else if (totalMin != 0) {
+         // Special case. Again, same algorithm, with
+         // 
+         //    x[i] = min[i]
+         //    y[i] = width[i]
+         //    a = totalWidth
+         //    b = totalMin
+
+         DBG_OBJ_MSG ("resize", 1, "special case 1");
+
+         int cumMin = 0, cumWidth = 0;
+         for (int col = firstCol; col <= lastCol; col++) {
+            int min = getColExtreme (col, minExtrMod);
+            cumMin += min;
+            int width = (cumMin * totalWidth) / totalMin - cumWidth;
+            cumWidth += width;
+
+            dest->set (destOffset - firstCol + col, width);
+         }
+      } else if (totalMin != 0) {
+         // Last special case. Ssame algorithm, with
+         // 
+         //    x[i] = 1 (so cumX = i = col - firstCol + 1)
+         //    y[i] = width[i]
+         //    a = totalWidth
+         //    b = n = lastCol - firstCol + 1
+
+         DBG_OBJ_MSG ("resize", 1, "special case 2");
+
+         int cumWidth = 0, n = (lastCol - firstCol + 1);
+         for (int col = firstCol; col <= lastCol; col++) {
+            int i = (col - firstCol + 1);
+            int width = (i * totalWidth) / n - cumWidth;
+            cumWidth += width;
+
+            dest->set (destOffset - firstCol + col, width);
+         }
       }
    }
    
