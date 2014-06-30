@@ -378,10 +378,6 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                     lineWidth);
    }
 
-   int maxOfMinWidth, sumOfMaxWidth;
-   accumulateWordExtremes (firstWord, lastWord, &maxOfMinWidth,
-                           &sumOfMaxWidth);
-
    lines->increase ();
    DBG_OBJ_SET_NUM ("lines.size", lines->size ());
 
@@ -485,44 +481,6 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
    DBG_OBJ_MSG_END ();
    return line;
-}
-
-void Textblock::accumulateWordExtremes (int firstWord, int lastWord,
-                                        int *maxOfMinWidth, int *sumOfMaxWidth)
-{
-   int parMin = 0;
-   *maxOfMinWidth = *sumOfMaxWidth = 0;
-
-   for (int i = firstWord; i <= lastWord; i++) {
-      Word *word = words->getRef (i);
-      bool atLastWord = i == lastWord;
-
-      core::Extremes extremes;
-      getWordExtremes (word, &extremes);
-
-      // Minimum: between two *possible* breaks (or at the end).
-      // TODO This is redundant to getExtremesImpl().
-      // TODO: Again, index 1 is used for lineCanBeBroken(). See getExtremes().
-      if (word->badnessAndPenalty.lineCanBeBroken (1) || atLastWord) {
-         parMin += extremes.minWidth + word->hyphenWidth;
-         *maxOfMinWidth = misc::max (*maxOfMinWidth, parMin);
-         parMin = 0;
-      } else
-         // Shrinkability could be considered, but really does not play a
-         // role.
-         parMin += extremes.minWidth + word->origSpace;
-
-      //printf ("[%p] after word: ", this);
-      //printWord (word);
-      //printf ("\n");
-
-      //printf ("[%p] (%d / %d) => parMin = %d, maxOfMinWidth = %d\n",
-      //        this, extremes.minWidth, extremes.maxWidth, parMin,
-      //        *maxOfMinWidth);
-
-      *sumOfMaxWidth += (extremes.maxWidth + word->origSpace);
-      // Notice that the last space is added. See also: Line::parMax.
-   }
 }
 
 void Textblock::processWord (int wordIndex)

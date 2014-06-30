@@ -708,8 +708,6 @@ protected:
    bool sendSelectionEvent (core::SelectionState::EventType eventType,
                             core::MousePositionEvent *event);
 
-   void accumulateWordExtremes (int firstWord, int lastWord,
-                                int *maxOfMinWidth, int *sumOfMaxWidth);
    void processWord (int wordIndex);
    virtual int wordWrap (int wordIndex, bool wrapAll);
    int wrapWordInFlow (int wordIndex, bool wrapAll);
