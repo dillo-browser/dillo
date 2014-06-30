@@ -53,10 +53,41 @@ and its container:**
 - The actual size calculation is, however, controlled by the widget
   itself, which only *uses* these methods above.
 
+<div style="border: 2px solid #ffff00; margin-top: 0.5em;
+   margin-bottom: 0.5em; padding: 0.5em 1em; background-color: #ffffe0">
+   <b>Update:</b> This is not fully correct; the parents are also involved
+   for calculating available widths and heights, at least when CSS 'width'
+   and 'height' are not set.</div>
+
 **Size hints are removed.** Instead, the container methods in the
 previous paragraph are used. Changes of container sizes (especially
 viewport the size) are handled in a different way.
 
+**Extremes are extended by intrinsic values.** In some cases (see
+dw::Table::forceCalcCellSizes, case *minWidth* > *totalWidth*, for an
+example) it is useful to know about minimal and maximal width of a
+widget independent of CSS attributes. For this, dw::core::Extremes is
+extended by:
+
+- dw::core::Extremes::minWidthIntrinsic and
+- dw::core::Extremes::maxWidthIntrinsic.
+
+The rules for the calculation:
+
+1. If a widget has no children, it calculates *minWidthIntrinsic* and
+   *maxWidthIntrinsic* as those values not affected by CSS hints.
+   (dw::core::Widget::correctExtremes will not change these values.)
+2. A widget must calculate *minWidthIntrinsic* and *maxWidthIntrinsic*
+   from *minWidthIntrinsic* and *maxWidthIntrinsic* of its children,
+   and *minWidth* and *maxWidth* from *minWidth* and *maxWidth* of its
+   children.
+3. At the end, *minWidth* and *maxWidth* of a widget are corrected by
+   CSS attributes. (dw::core::Widget::correctExtremes will do this.)
+
+<div style="border: 2px solid #ffff00; margin-top: 0.5em;
+   margin-bottom: 0.5em; padding: 0.5em 1em; background-color: #ffffe0">
+   <b>Notice:</b> Currently, dw::core::Widget::getExtremesImpl must
+   set all four members in dw::core::Extremes; this may change.</div>
 
 Open issues
 ===========
