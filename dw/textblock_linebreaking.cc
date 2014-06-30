@@ -1207,12 +1207,15 @@ void Textblock::handleWordExtremes (int wordIndex)
 
    core::Extremes wordExtremes;
    getWordExtremes (word, &wordExtremes);
-   DBG_OBJ_MSGF ("construct.paragraph", 1, "extremes: %d / %d",
-                 wordExtremes.minWidth, wordExtremes.maxWidth);
+   DBG_OBJ_MSGF ("construct.paragraph", 1, "extremes: %d (%d) / %d (%d",
+                 wordExtremes.minWidth, wordExtremes.minWidthIntrinsic,
+                 wordExtremes.maxWidth, wordExtremes.maxWidthIntrinsic);
 
    if (wordIndex == 0) {
       wordExtremes.minWidth += line1OffsetEff;
+      wordExtremes.minWidthIntrinsic += line1OffsetEff;
       wordExtremes.maxWidth += line1OffsetEff;
+      wordExtremes.maxWidthIntrinsic += line1OffsetEff;
    }
 
    if (paragraphs->size() == 0 ||
@@ -1225,13 +1228,17 @@ void Textblock::handleWordExtremes (int wordIndex)
       Paragraph *par = paragraphs->getLastRef();
 
       par->firstWord = par->lastWord = wordIndex;
-      par->parMin = par->parMax = 0;
+      par->parMin = par->parMinIntrinsic = par->parMax = par->parMaxIntrinsic
+         = 0;
 
       if (prevPar) {
          par->maxParMin = prevPar->maxParMin;
+         par->maxParMinIntrinsic = prevPar->maxParMinIntrinsic;
          par->maxParMax = prevPar->maxParMax;
+         par->maxParMaxIntrinsic = prevPar->maxParMaxIntrinsic;
       } else
-         par->maxParMin = par->maxParMax = 0;
+         par->maxParMin = par->maxParMinIntrinsic = par->maxParMax =
+            par->maxParMaxIntrinsic = 0;
 
       DBG_OBJ_MSGF ("construct.paragraph", 1, "new par: %d",
                     paragraphs->size() - 1);
@@ -1259,22 +1266,41 @@ void Textblock::handleWordExtremes (int wordIndex)
                  lastPar->firstWord, lastPar->lastWord, corrDiffMin,
                  corrDiffMax);
 
+   DBG_OBJ_MSGF ("construct.paragraph", 1,
+                 "before: parMin = %d (%d) (max = %d (%d)), "
+                 "parMax = %d (%d) (max = %d (%d))",
+                 lastPar->parMin, lastPar->parMinIntrinsic,
+                 lastPar->maxParMin, lastPar->maxParMinIntrinsic,
+                 lastPar->parMax, lastPar->parMaxIntrinsic,
+                 lastPar->maxParMax, lastPar->maxParMaxIntrinsic);
+
    // Minimum: between two *possible* breaks.
    // Shrinkability could be considered, but really does not play a role.
    lastPar->parMin += wordExtremes.minWidth + word->hyphenWidth + corrDiffMin;
+   lastPar->parMinIntrinsic +=
+      wordExtremes.minWidthIntrinsic + word->hyphenWidth + corrDiffMin;
    lastPar->maxParMin = misc::max (lastPar->maxParMin, lastPar->parMin);
+   lastPar->maxParMinIntrinsic =
+      misc::max (lastPar->maxParMinIntrinsic, lastPar->parMinIntrinsic);
    if (word->badnessAndPenalty.lineCanBeBroken (1) &&
        (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0)
-      lastPar->parMin = 0;
+      lastPar->parMin = lastPar->parMinIntrinsic = 0;
 
    // Maximum: between two *necessary* breaks.
    lastPar->parMax += wordExtremes.maxWidth + word->hyphenWidth + corrDiffMax;
+   lastPar->parMaxIntrinsic +=
+      wordExtremes.maxWidthIntrinsic + word->hyphenWidth + corrDiffMax;
    lastPar->maxParMax = misc::max (lastPar->maxParMax, lastPar->parMax);
+   lastPar->maxParMaxIntrinsic =
+      misc::max (lastPar->maxParMaxIntrinsic, lastPar->parMaxIntrinsic);
 
    DBG_OBJ_MSGF ("construct.paragraph", 1,
-                 "=> parMin = %d (max = %d), parMax = %d (max = %d)",
-                 lastPar->parMin, lastPar->maxParMin, lastPar->parMax,
-                 lastPar->maxParMax);
+                 "after: parMin = %d (%d) (max = %d (%d)), "
+                 "parMax = %d (%d) (max = %d (%d))",
+                 lastPar->parMin, lastPar->parMinIntrinsic,
+                 lastPar->maxParMin, lastPar->maxParMinIntrinsic,
+                 lastPar->parMax, lastPar->parMaxIntrinsic,
+                 lastPar->maxParMax, lastPar->maxParMaxIntrinsic);
 
    lastPar->lastWord = wordIndex;
    DBG_OBJ_MSG_END ();

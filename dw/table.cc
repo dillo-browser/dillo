@@ -127,16 +127,21 @@ void Table::getExtremesImpl (core::Extremes *extremes)
    DBG_OBJ_MSG_START ();
 
    if (numCols == 0)
-      extremes->minWidth = extremes->maxWidth = 0;
+      extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
+         extremes->maxWidthIntrinsic = boxDiffWidth ();
    else {
       forceCalcColumnExtremes ();
       
-      extremes->minWidth = extremes->maxWidth =
-         (numCols + 1) * getStyle()->hBorderSpacing
-         + getStyle()->boxDiffWidth ();
+      extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
+         extremes->maxWidthIntrinsic = 
+         (numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ();
       for (int col = 0; col < numCols; col++) {
          extremes->minWidth += colExtremes->getRef(col)->minWidth;
+         extremes->minWidthIntrinsic +=
+            colExtremes->getRef(col)->minWidthIntrinsic;
          extremes->maxWidth += colExtremes->getRef(col)->maxWidth;
+         extremes->maxWidthIntrinsic +=
+            colExtremes->getRef(col)->maxWidthIntrinsic;
       }     
    }
 

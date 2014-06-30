@@ -422,7 +422,8 @@ void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
    if (word->content.type == core::Content::WIDGET_IN_FLOW)
       word->content.widget->getExtremes (extremes);
    else
-      extremes->minWidth = extremes->maxWidth = word->size.width;
+      extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
+         extremes->maxWidthIntrinsic = word->size.width;
 }
 
 void Textblock::getExtremesImpl (core::Extremes *extremes)
@@ -448,40 +449,65 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    if (paragraphs->size () == 0) {
       /* empty page */
       extremes->minWidth = 0;
+      extremes->minWidthIntrinsic = 0;
       extremes->maxWidth = 0;
+      extremes->maxWidthIntrinsic = 0;
    } else  {
       Paragraph *lastPar = paragraphs->getLastRef ();
       extremes->minWidth = lastPar->maxParMin;
+      extremes->minWidthIntrinsic = lastPar->maxParMinIntrinsic;
       extremes->maxWidth = lastPar->maxParMax;
+      extremes->maxWidthIntrinsic = lastPar->maxParMaxIntrinsic;
 
-      DBG_OBJ_MSGF ("resize", 1, "paragraphs[%d]->maxParMin = %d",
-                    paragraphs->size () - 1, lastPar->maxParMin);
-      DBG_OBJ_MSGF ("resize", 1, "paragraphs[%d]->maxParMax = %d",
-                    paragraphs->size () - 1, lastPar->maxParMax);
+      DBG_OBJ_MSGF ("resize", 1, "paragraphs[%d]->maxParMin = %d (%d)",
+                    paragraphs->size () - 1, lastPar->maxParMin,
+                    lastPar->maxParMinIntrinsic);
+      DBG_OBJ_MSGF ("resize", 1, "paragraphs[%d]->maxParMax = %d (%d)",
+                    paragraphs->size () - 1, lastPar->maxParMax,
+                    lastPar->maxParMaxIntrinsic);
    }
+
+   DBG_OBJ_MSGF ("resize", 0, "after considering paragraphs: %d (%d) / %d (%d)",
+                 extremes->minWidth, extremes->minWidthIntrinsic,
+                 extremes->maxWidth, extremes->maxWidthIntrinsic);
 
    int diff = leftInnerPadding + getStyle()->boxDiffWidth ();
    extremes->minWidth += diff;
+   extremes->minWidthIntrinsic += diff;
    extremes->maxWidth += diff;
+   extremes->maxWidthIntrinsic += diff;
+
+   DBG_OBJ_MSGF ("resize", 0, "after adding diff: %d (%d) / %d (%d)",
+                 extremes->minWidth, extremes->minWidthIntrinsic,
+                 extremes->maxWidth, extremes->maxWidthIntrinsic);
 
    // For the order, see similar reasoning in sizeRequestImpl.
 
    correctExtremes (extremes);
 
+   DBG_OBJ_MSGF ("resize", 0, "after correction: %d (%d) / %d (%d)",
+                 extremes->minWidth, extremes->minWidthIntrinsic,
+                 extremes->maxWidth, extremes->maxWidthIntrinsic);
+
    if (outOfFlowMgr) {
       int oofMinWidth, oofMaxWidth;
       outOfFlowMgr->getExtremes (extremes, &oofMinWidth, &oofMaxWidth);
       
-      DBG_OBJ_MSGF ("resize", 1, "extremes: %d / %d, corrected: %d / %d",
-                    extremes->minWidth, extremes->maxWidth,
+      DBG_OBJ_MSGF ("resize", 1, "OOFM correction: %d / %d",
                     oofMinWidth, oofMaxWidth);
 
       extremes->minWidth = misc::max (extremes->minWidth, oofMinWidth);
+      extremes->minWidthIntrinsic =
+         misc::max (extremes->minWidthIntrinsic, oofMinWidth);
       extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);     
+      extremes->maxWidthIntrinsic =
+         misc::max (extremes->maxWidthIntrinsic, oofMinWidth);
    }   
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
-                 extremes->minWidth, extremes->maxWidth);
+   DBG_OBJ_MSGF ("resize", 0,
+                 "finally, after considering OOFM: %d (%d) / %d (%d)",
+                 extremes->minWidth, extremes->minWidthIntrinsic,
+                 extremes->maxWidth, extremes->maxWidthIntrinsic);
 
    DBG_OBJ_MSG_END ();
 }

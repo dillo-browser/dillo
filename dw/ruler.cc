@@ -43,6 +43,8 @@ void Ruler::sizeRequestImpl (core::Requisition *requisition)
 void Ruler::getExtremesImpl (core::Extremes *extremes)
 {
    extremes->minWidth = extremes->maxWidth = getStyle()->boxDiffWidth ();
+   extremes->minWidthIntrinsic = extremes->minWidth;
+   extremes->maxWidthIntrinsic = extremes->maxWidth;
    correctExtremes (extremes);
 }
 

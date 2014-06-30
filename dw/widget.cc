@@ -533,21 +533,37 @@ int Widget::getAvailHeight (bool forceValue)
 
    int height;
 
-   if (container == NULL) {
+   if (parent == NULL) {
+      DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
+      DBG_OBJ_MSG_START ();
+
       // TODO Consider nested layouts (e. g. <button>).
-      if (style::isAbsLength (getStyle()->height))
+      if (style::isAbsLength (getStyle()->height)) {
+         DBG_OBJ_MSGF ("resize", 1, "absolute height: %dpx",
+                       style::absLengthVal (getStyle()->height));
          height = style::absLengthVal (getStyle()->height) + boxDiffHeight ();
-      else if (style::isPerLength (getStyle()->height))
+      } else if (style::isPerLength (getStyle()->height)) {
+         DBG_OBJ_MSGF ("resize", 1, "percentage height: %g%%",
+                       100 * style::perLengthVal_useThisOnlyForDebugging
+                       (getStyle()->height));
          // Notice that here -- unlike getAvailWidth() --
          // layout->hScrollbarThickness is not considered here;
          // something like canvasWidthGreater (analogue to
          // canvasHeightGreater) would be complicated and lead to
          // possibly contradictory self-references.
          height = applyPerHeight (layout->viewportHeight, getStyle()->height);
-      else
+      } else {
+         DBG_OBJ_MSG ("resize", 1, "no specification");
          height = layout->viewportHeight;
-   } else
+      }
+
+      DBG_OBJ_MSG_END ();
+   } else {
+      DBG_OBJ_MSG ("resize", 1, "delegated to parent");
+      DBG_OBJ_MSG_START ();
       height = container->getAvailHeightOfChild (this, forceValue);
+      DBG_OBJ_MSG_END ();
+   }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
    DBG_OBJ_MSG_END ();
@@ -614,11 +630,9 @@ void Widget::correctExtremes (Extremes *extremes)
 {
    // TODO Extremes only corrected?
 
-   extremes->minWidthIntrinsic = extremes->minWidth;
-   extremes->maxWidthIntrinsic = extremes->maxWidth;
-
-   DBG_OBJ_MSGF ("resize", 0, "<b>correctExtremes</b> (%d / %d)",
-                 extremes->minWidth, extremes->maxWidth);
+   DBG_OBJ_MSGF ("resize", 0, "<b>correctExtremes</b> (%d (%d) / %d (%d))",
+                 extremes->minWidth, extremes->minWidthIntrinsic,
+                 extremes->maxWidth, extremes->maxWidthIntrinsic);
    DBG_OBJ_MSG_START ();
 
    if (container == NULL) {
@@ -1243,25 +1257,47 @@ int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
 
    int height;
 
-   if (style::isAbsLength (child->getStyle()->height))
-      height = style::absLengthVal (child->getStyle()->height)
-         + child->boxDiffHeight ();
-   else {
+   if (child->getStyle()->height == style::LENGTH_AUTO) {
+      DBG_OBJ_MSG ("resize", 1, "no specification");
       int availHeight = getAvailHeight (forceValue);
       if (availHeight == -1)
          height = -1;
-      else {
-         int containerContentHeight = availHeight - boxDiffHeight ();
-         DBG_OBJ_MSGF ("resize", 1, "containerContentHeight = %d - %d = %d",
-                       availHeight, boxDiffHeight (), containerContentHeight);
-
-         if (style::isPerLength (child->getStyle()->height))
-            height = child->applyPerHeight (containerContentHeight,
-                                            child->getStyle()->height);
-         else
-            // Although no widget will probably use the whole height, we
-            // have to return some value here.
-            height = containerContentHeight;
+      else
+         height = misc::max (availHeight - boxDiffHeight (), 0);
+   } else {
+      // In most cases, the toplevel widget should be a container, so
+      // the container is non-NULL when the parent is non-NULL. Just
+      // in case ...:
+      Widget *effContainer =
+         child->container ? child->container : child->parent;
+      
+      if (effContainer == this) {
+         if (style::isAbsLength (child->getStyle()->height)) {
+            DBG_OBJ_MSGF ("resize", 1, "absolute height: %dpx",
+                          style::absLengthVal (child->getStyle()->height));
+            height = misc::max (style::absLengthVal (child->getStyle()->height)
+                               + child->boxDiffHeight (), 0);
+         } else {
+            assert (style::isPerLength (child->getStyle()->height));
+            DBG_OBJ_MSGF ("resize", 1, "percentage height: %g%%",
+                          100 * style::perLengthVal_useThisOnlyForDebugging
+                          (child->getStyle()->height));
+                    
+            int availHeight = getAvailHeight (forceValue);
+            if (availHeight == -1)
+               height = -1;
+            else
+               height =
+                  misc::max (child->applyPerHeight (availHeight -
+                                                    boxDiffHeight (),
+                                                    child->getStyle()->height),
+                             0);
+         }
+      } else {
+         DBG_OBJ_MSG ("resize", 1, "delegated to (effective) container");
+         DBG_OBJ_MSG_START ();
+         height = effContainer->getAvailHeightOfChild (child, forceValue);
+         DBG_OBJ_MSG_END ();
       }
    }
 
@@ -1332,7 +1368,7 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
    if (style::isAbsLength (child->getStyle()->width)) {
       DBG_OBJ_MSGF ("resize", 1, "absolute width: %dpx",
                     style::absLengthVal (child->getStyle()->width));
-      extremes->minWidth =extremes->maxWidth =
+      extremes->minWidth = extremes->maxWidth =
          style::absLengthVal (child->getStyle()->width)
          + child->boxDiffWidth ();
    } else if (style::isPerLength (child->getStyle()->width)) {
@@ -1344,7 +1380,7 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
          int containerWidth = availWidth - boxDiffWidth ();
          DBG_OBJ_MSGF ("resize", 1, "containerWidth = %d - %d = %d", 
                        availWidth, boxDiffWidth (), containerWidth);
-         extremes->minWidth =extremes->maxWidth =
+         extremes->minWidth = extremes->maxWidth =
             child->applyPerWidth (containerWidth, child->getStyle()->width);
       }
    } else
