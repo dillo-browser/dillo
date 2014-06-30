@@ -686,14 +686,8 @@ void Table::forceCalcCellSizes (bool calcHeights)
       // (which means that sometimes CSS values are handled
       // incorrectly).
 
-      //apportion2 (totalWidth, 0, colExtremes->size() - 1, MIN_MIN, MAX_MIN,
-      //            colWidths, 0);
-
-      // Update: the concept of "intrinsic" extremes is still very
-      // imperfect; fot this reason, we use the corrected minima:
-
-      apportion2 (totalWidth, 0, colExtremes->size() - 1, MIN, MIN, colWidths,
-                  0);
+      apportion2 (totalWidth, 0, colExtremes->size() - 1, MIN_MIN, MAX_MIN,
+                  colWidths, 0);
    else {
       // Normal apportioning.
       int width;
