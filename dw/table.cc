@@ -240,6 +240,7 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
                   * getStyle()->hBorderSpacing;
                for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
                   width += colWidths->get (col + i);
+               width = misc::max (width, 0);
             }
          }
       }
