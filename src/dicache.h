@@ -12,6 +12,9 @@ extern "C" {
 
 /* Symbolic name to request the last version of an image */
 #define DIC_Last  -1
+/* Flags: Last version, Valid entry */
+#define DIF_Last  1
+#define DIF_Valid 2
 
 
 /* These will reflect the entry's "state" */
@@ -26,8 +29,10 @@ typedef enum {
 
 typedef struct DICacheEntry {
    DilloUrl *url;          /* Image URL for this entry */
-   uint_t width, height;   /* As taken from image data */
    DilloImgType type;      /* Image type */
+   uint_t width, height;   /* As taken from image data */
+   short Flags;            /* See Flags */
+   short SurvCleanup;      /* Cleanup-pass survival for unused images */
    uchar_t *cmap;          /* Color map */
    void *v_imgbuf;         /* Void pointer to an Imgbuf object */
    uint_t TotalSize;       /* Amount of memory the image takes up */
@@ -38,11 +43,9 @@ typedef struct DICacheEntry {
    int version;            /* Version number, used for different
                               versions of the same URL image */
 
+   uint_t DecodedSize;     /* Size of already decoded data */
    CA_Callback_t Decoder;  /* Client function */
    void *DecoderData;      /* Client function data */
-   uint_t DecodedSize;     /* Size of already decoded data */
-
-   struct DICacheEntry *next; /* Link to the next "newer" version */
 } DICacheEntry;
 
 
@@ -61,7 +64,7 @@ void a_Dicache_callback(int Op, CacheClient_t *Client);
 void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
                          uint_t width, uint_t height, DilloImgType type,
                          double gamma);
-void a_Dicache_set_cmap(DilloUrl *url, int version, DilloImage *Image,
+void a_Dicache_set_cmap(DilloUrl *url, int version, int bg_color,
                         const uchar_t *cmap, uint_t num_colors,
                         int num_colors_max, int bg_index);
 void a_Dicache_new_scan(const DilloUrl *url, int version);

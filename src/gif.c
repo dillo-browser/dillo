@@ -103,9 +103,7 @@ typedef struct {
    size_t ColorMap_ofs;
    uint_t ColorResolution;
    uint_t NumColors;
-#if 0
-   int Background;
-#endif
+   int    Background;
    uint_t spill_line_index;
 #if 0
    uint_t AspectRatio;    /* AspectRatio (not used) */
@@ -165,9 +163,7 @@ void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version)
    gif->state = 0;
    gif->Start_Ofs = 0;
    gif->linebuf = NULL;
-#if 0
-   gif->Background = -1;
-#endif
+   gif->Background = Image->bg_color;
    gif->transparent = -1;
    gif->num_spill_lines_max = 0;
    gif->spill_lines = NULL;
@@ -222,7 +218,7 @@ static void Gif_write(DilloGif *gif, void *Buf, uint_t BufSize)
    int bufsize, bytes_consumed;
 
    /* Sanity checks */
-   if (!Buf || !gif->Image || BufSize == 0)
+   if (!Buf || BufSize == 0)
       return;
 
    buf = ((uchar_t *) Buf) + gif->Start_Ofs;
@@ -820,6 +816,7 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
    a_Dicache_set_parms(gif->url, gif->version, gif->Image,
                        gif->Width, gif->Height, DILLO_IMG_TYPE_INDEXED,
                        1 / 2.2);
+   gif->Image = NULL; /* safeguard: hereafter it may be freed by its owner */
 
    Flags = buf[8];
 
@@ -850,8 +847,8 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
    gif->spill_line_index = 0;
    gif->linebuf = dMalloc(gif->Width);
    gif->state = 3;              /*Process the lzw data next */
-   if (gif->Image && gif->ColorMap_ofs) {
-      a_Dicache_set_cmap(gif->url, gif->version, gif->Image,
+   if (gif->ColorMap_ofs) {
+      a_Dicache_set_cmap(gif->url, gif->version, gif->Background,
                          (uchar_t *) Buf + gif->ColorMap_ofs,
                          gif->NumColors, 256, gif->transparent);
    }

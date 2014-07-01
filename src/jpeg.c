@@ -304,6 +304,7 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
                              (uint_t)jpeg->cinfo.image_width,
                              (uint_t)jpeg->cinfo.image_height,
                              type, 1 / 2.2);
+         jpeg->Image = NULL; /* safeguard: may be freed by its owner later */
 
          /* decompression step 4 (see libjpeg.doc) */
          jpeg->state = DILLO_JPEG_STARTING;
