@@ -71,6 +71,7 @@ StyleEngine::StyleEngine (dw::core::Layout *layout,
    this->pageUrl = pageUrl ? a_Url_dup(pageUrl) : NULL;
    this->baseUrl = baseUrl ? a_Url_dup(baseUrl) : NULL;
    importDepth = 0;
+   dpmm = layout->dpiX () / 25.4; /* assume dpiX == dpiY */
 
    stackPush ();
    Node *n = stack->getLastRef ();
@@ -760,11 +761,6 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
  * \brief Resolve relative lengths to absolute values.
  */
 bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
-   static float dpmm;
-
-   if (dpmm == 0.0)
-      dpmm = layout->dpiX () / 25.4; /* assume dpiX == dpiY */
-
    switch (CSS_LENGTH_TYPE (value)) {
       case CSS_LENGTH_TYPE_PX:
          *dest = (int) CSS_LENGTH_VALUE (value);
