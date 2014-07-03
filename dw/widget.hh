@@ -291,7 +291,7 @@ protected:
    /**
     * \brief See \ref dw-widget-sizes.
     */
-   virtual void getExtremesImpl (Extremes *extremes);
+   virtual void getExtremesImpl (Extremes *extremes) = 0;
 
    /**
     * \brief See \ref dw-widget-sizes.

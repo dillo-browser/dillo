@@ -1149,15 +1149,6 @@ void Widget::getPaddingArea (int *xPad, int *yPad, int *widthPad,
       - style->margin.bottom - style->borderWidth.bottom;
 }
 
-void Widget::getExtremesImpl (Extremes *extremes)
-{
-   /* Simply return the requisition width */
-   Requisition requisition;
-   sizeRequest (&requisition);
-   extremes->minWidth = extremes->maxWidth = requisition.width;
-   correctExtremes (extremes);
-}
-
 void Widget::sizeAllocateImpl (Allocation *allocation)
 {
 }

@@ -42,6 +42,12 @@ void Bullet::sizeRequestImpl (core::Requisition *requisition)
    requisition->descent = 0;
 }
 
+void Bullet::getExtremesImpl (core::Extremes *extremes)
+{
+   extremes->minWidth = extremes->maxWidth = 
+      lout::misc::max (getStyle()->font->xHeight * 4 / 5, 1);
+}
+
 void Bullet::containerSizeChangedForChildren ()
 {
    // Nothing to do.

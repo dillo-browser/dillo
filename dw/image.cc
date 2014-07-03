@@ -216,6 +216,13 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSG_END ();
 }
 
+void Image::getExtremesImpl (core::Extremes *extremes)
+{
+   extremes->minWidth = extremes->maxWidth = 
+      (buffer ? buffer->getRootWidth () : 0) + boxDiffWidth ();
+   correctExtremes (extremes);
+}
+
 void Image::sizeAllocateImpl (core::Allocation *allocation)
 {
    core::Imgbuf *oldBuffer;
