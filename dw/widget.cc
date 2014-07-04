@@ -178,9 +178,8 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
 {
    /** \todo Maybe only the intersection? */
 
-   DBG_OBJ_MSGF ("draw", 0, "<b>queueDrawArea</b> (%d, %d, %d, %d)",
-                 x, y, width, height);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("draw", 0, "queueDrawArea", "%d, %d, %d, %d",
+                  x, y, width, height);
 
    _MSG("Widget::queueDrawArea alloc(%d %d %d %d) wid(%d %d %d %d)\n",
        allocation.x, allocation.y,
@@ -189,7 +188,7 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
    if (layout)
       layout->queueDraw (x + allocation.x, y + allocation.y, width, height);
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 /**
@@ -201,10 +200,9 @@ void Widget::queueDrawArea (int x, int y, int width, int height)
  */
 void Widget::queueResize (int ref, bool extremesChanged, bool fast)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%d, %s, %s)",
-                 ref, extremesChanged ? "true" : "false",
-                 fast ? "true" : "false");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "queueResize", "%d, %s, %s",
+                  ref, extremesChanged ? "true" : "false",
+                  fast ? "true" : "false");
 
    // queueResize() can be called recursively; calls are queued, so
    // that actualQueueResize() is clean.
@@ -226,17 +224,16 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
       }
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
 {
    assert (!queueResizeEntered ());
    
-   DBG_OBJ_MSGF ("resize", 0, "<b>actualQueueResize</b> (%d, %s, %s)",
-                 ref, extremesChanged ? "true" : "false",
-                 fast ? "true" : "false");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "actualQueueResize", "%d, %s, %s",
+                  ref, extremesChanged ? "true" : "false",
+                  fast ? "true" : "false");
 
    enterQueueResize ();
 
@@ -287,13 +284,12 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
 
    leaveQueueResize ();
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Widget::containerSizeChanged ()
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>containerSizeChanged</b> ()");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChanged");
 
    // If there is a container widget (not the viewport), which has not
    // changed its size (which can be determined by the respective
@@ -313,13 +309,12 @@ void Widget::containerSizeChanged ()
       containerSizeChangedForChildren ();
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 bool Widget::affectedByContainerSizeChange ()
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>affectedByContainerSizeChange</b> ()");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "affectedByContainerSizeChange");
 
    bool ret;
 
@@ -348,15 +343,13 @@ bool Widget::affectedByContainerSizeChange ()
       ret = this->affectsSizeChangeContainerChild (this);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
    return ret;
 }
 
 bool Widget::affectsSizeChangeContainerChild (Widget *child)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>affectsSizeChangeContainerChild</b> (%p)",
-                 child);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "affectsSizeChangeContainerChild", "%p", child);
 
    bool ret;
 
@@ -381,14 +374,13 @@ bool Widget::affectsSizeChangeContainerChild (Widget *child)
           child->usesAvailHeight () : false);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
    return ret;  
 }
 
 void Widget::containerSizeChangedForChildren ()
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>containerSizeChangedForChildren</b> ()");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
 
    // Working, but inefficient standard implementation.
    Iterator *it = iterator ((Content::Type)(Content::WIDGET_IN_FLOW |
@@ -398,7 +390,7 @@ void Widget::containerSizeChangedForChildren ()
       it->getContent()->widget->containerSizeChanged ();
    it->unref ();
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 /**
@@ -427,8 +419,7 @@ void Widget::sizeRequest (Requisition *requisition)
 {
    assert (!queueResizeEntered ());
 
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequest</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequest");
 
    enterSizeRequest ();
 
@@ -464,7 +455,7 @@ void Widget::sizeRequest (Requisition *requisition)
 
    leaveSizeRequest ();
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 /**
@@ -475,9 +466,8 @@ int Widget::getAvailWidth (bool forceValue)
 {
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidth</b> (%s)",
-                 forceValue ? "true" : "false");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "getAvailWidth", "%s",
+                  forceValue ? "true" : "false");
 
    int width;
 
@@ -514,7 +504,7 @@ int Widget::getAvailWidth (bool forceValue)
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    return width;
 }
@@ -527,9 +517,8 @@ int Widget::getAvailHeight (bool forceValue)
 {
    // TODO Correct by ... not extremes, but ...? (Height extremes?)
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailHeight</b> (%s)",
-                 forceValue ? "true" : "false");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "getAvailHeight", "%s",
+                  forceValue ? "true" : "false");
 
    int height;
 
@@ -566,7 +555,7 @@ int Widget::getAvailHeight (bool forceValue)
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    return height;
 }
@@ -576,9 +565,9 @@ void Widget::correctRequisition (Requisition *requisition,
 {
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>correctRequisition</b> (%d * (%d + %d), ...)",
-                 requisition->width, requisition->ascent, requisition->descent);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "correctRequisition", "%d * (%d + %d), ...",
+                  requisition->width, requisition->ascent,
+                  requisition->descent);
 
    if (container == NULL) {
       if (style::isAbsLength (getStyle()->width)) {
@@ -623,17 +612,16 @@ void Widget::correctRequisition (Requisition *requisition,
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent,
                  requisition->descent);
-   DBG_OBJ_MSG_END ();  
+   DBG_OBJ_LEAVE ();  
 }
 
 void Widget::correctExtremes (Extremes *extremes)
 {
    // TODO Extremes only corrected?
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>correctExtremes</b> (%d (%d) / %d (%d))",
-                 extremes->minWidth, extremes->minWidthIntrinsic,
-                 extremes->maxWidth, extremes->maxWidthIntrinsic);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "correctExtremes", "%d (%d) / %d (%d)",
+                  extremes->minWidth, extremes->minWidthIntrinsic,
+                  extremes->maxWidth, extremes->maxWidthIntrinsic);
 
    if (container == NULL) {
       if (style::isAbsLength (getStyle()->width))
@@ -651,7 +639,7 @@ void Widget::correctExtremes (Extremes *extremes)
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
                  extremes->minWidth, extremes->maxWidth);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 /**
@@ -661,7 +649,7 @@ void Widget::getExtremes (Extremes *extremes)
 {
    assert (!queueResizeEntered ());
 
-   DBG_OBJ_MSG ("resize", 0, "<b>getExtremes</b>");
+   DBG_OBJ_ENTER0 ("resize", 0, "getExtremes");
    DBG_OBJ_MSG_START ();
 
    enterGetExtremes ();
@@ -701,7 +689,7 @@ void Widget::getExtremes (Extremes *extremes)
 
    leaveGetExtremes ();
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 /**
@@ -715,10 +703,9 @@ void Widget::sizeAllocate (Allocation *allocation)
    assert (!getExtremesEntered ());
    assert (resizeIdleEntered ());
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>sizeAllocate</b> (%d, %d; %d * (%d + %d))",
-                 allocation->x, allocation->y, allocation->width,
-                 allocation->ascent, allocation->descent);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "sizeAllocate", "%d, %d; %d * (%d + %d)",
+                  allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
 
    DBG_OBJ_MSGF ("resize", 1,
                  "old allocation (%d, %d; %d * (%d + %d)); needsAllocate: %s",
@@ -781,7 +768,7 @@ void Widget::sizeAllocate (Allocation *allocation)
 
    leaveSizeAllocate ();
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 bool Widget::buttonPress (EventButton *event)
@@ -1181,9 +1168,8 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
 
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p, %s)",
-                 child, forceValue ? "true" : "false");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "getAvailWidthOfChild", "%p, %s",
+                  child, forceValue ? "true" : "false");
 
    int width;
 
@@ -1231,7 +1217,7 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    return width;
 }
@@ -1242,9 +1228,8 @@ int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
 
    // TODO Correct by extremes? (Height extemes?)
 
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailHeightOfChild</b> (%p, %s)",
-                 child, forceValue ? "true" : "false");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "getAvailHeightOfChild", "%p, %s",
+                  child, forceValue ? "true" : "false");
 
    int height;
 
@@ -1293,7 +1278,7 @@ int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    return height;
 }
@@ -1306,11 +1291,10 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
 
    // TODO Correct by extremes?
 
-   DBG_OBJ_MSGF ("resize", 0,
-                 "<b>correctRequisitionOfChild</b> (%p, %d * (%d + %d), ...)",
-                 child, requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "correctRequisitionOfChild",
+                  "%p, %d * (%d + %d), ...)",
+                  child, requisition->width, requisition->ascent,
+                  requisition->descent);
 
    if (style::isAbsLength (child->getStyle()->width))
       requisition->width = style::absLengthVal (child->getStyle()->width)
@@ -1342,7 +1326,7 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent,
                  requisition->descent);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
@@ -1351,10 +1335,8 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
 
    // TODO Extremes only corrected?
 
-   DBG_OBJ_MSGF ("resize", 0,
-                 "<b>correctExtremedOfChild</b> (%p, %d / %d)",
-                 child, extremes->minWidth, extremes->maxWidth);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "correctExtremedOfChild", "%p, %d / %d",
+                  child, extremes->minWidth, extremes->maxWidth);
 
    if (style::isAbsLength (child->getStyle()->width)) {
       DBG_OBJ_MSGF ("resize", 1, "absolute width: %dpx",
@@ -1379,7 +1361,7 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
                  extremes->minWidth, extremes->maxWidth);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 /**
