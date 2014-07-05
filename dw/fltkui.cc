@@ -213,12 +213,14 @@ void FltkResource::detachView (FltkView *view)
 
 void FltkResource::sizeAllocate (core::Allocation *allocation)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>sizeAllocate</b> (%d, %d; %d * (%d + %d))",
-                 allocation->x, allocation->y, allocation->width,
-                 allocation->ascent, allocation->descent);
+   DBG_OBJ_ENTER ("resize", 0, "sizeAllocate", "%d, %d; %d * (%d + %d)",
+                  allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
 
    this->allocation = *allocation;
    view->allocateFltkWidget (widget, allocation);
+
+   DBG_OBJ_LEAVE ();
 }
 
 void FltkResource::draw (core::View *view, core::Rectangle *area)
@@ -389,8 +391,7 @@ Fl_Widget *FltkLabelButtonResource::createNewWidget (core::Allocation
 
 void FltkLabelButtonResource::sizeRequest (core::Requisition *requisition)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequest</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequest");
 
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
@@ -408,7 +409,7 @@ void FltkLabelButtonResource::sizeRequest (core::Requisition *requisition)
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 /*
@@ -674,8 +675,7 @@ void FltkEntryResource::setDisplayed(bool displayed)
 
 void FltkEntryResource::sizeRequest (core::Requisition *requisition)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequest</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequest");
 
    if (displayed() && style) {
       FltkFont *font = (FltkFont*)style->font;
@@ -696,7 +696,7 @@ void FltkEntryResource::sizeRequest (core::Requisition *requisition)
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void FltkEntryResource::sizeAllocate (core::Allocation *allocation)
@@ -831,8 +831,7 @@ void FltkMultiLineTextResource::setWidgetStyle (Fl_Widget *widget,
 
 void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequest</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequest");
 
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
@@ -855,7 +854,7 @@ void FltkMultiLineTextResource::sizeRequest (core::Requisition *requisition)
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 const char *FltkMultiLineTextResource::getText ()
@@ -923,8 +922,7 @@ void FltkToggleButtonResource<I>::setWidgetStyle (Fl_Widget *widget,
 template <class I>
 void FltkToggleButtonResource<I>::sizeRequest (core::Requisition *requisition)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequest</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequest");
 
    FltkFont *font = (FltkFont *)
       (this->FltkResource::style ? this->FltkResource::style->font : NULL);
@@ -942,7 +940,7 @@ void FltkToggleButtonResource<I>::sizeRequest (core::Requisition *requisition)
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 
@@ -1182,8 +1180,7 @@ int FltkOptionMenuResource::getMaxItemWidth()
 
 void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequest</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequest");
 
    if (style) {
       FltkFont *font = (FltkFont*)style->font;
@@ -1202,7 +1199,7 @@ void FltkOptionMenuResource::sizeRequest (core::Requisition *requisition)
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void FltkOptionMenuResource::enlargeMenu ()
@@ -1478,8 +1475,7 @@ int FltkListResource::getMaxItemWidth()
 
 void FltkListResource::sizeRequest (core::Requisition *requisition)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequest</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequest");
 
    if (style) {
       CustBrowser *b = (CustBrowser *) widget;
@@ -1504,7 +1500,7 @@ void FltkListResource::sizeRequest (core::Requisition *requisition)
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 int FltkListResource::getNumberOfItems()
