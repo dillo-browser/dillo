@@ -170,8 +170,7 @@ Image::~Image()
 
 void Image::sizeRequestImpl (core::Requisition *requisition)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b> ()");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
    if (buffer) {
       requisition->width = buffer->getRootWidth ();
@@ -213,7 +212,7 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Image::getExtremesImpl (core::Extremes *extremes)

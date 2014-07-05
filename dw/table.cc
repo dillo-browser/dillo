@@ -98,8 +98,7 @@ Table::~Table()
 
 void Table::sizeRequestImpl (core::Requisition *requisition)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequestImpl</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
    forceCalcCellSizes (true);
 
@@ -118,13 +117,12 @@ void Table::sizeRequestImpl (core::Requisition *requisition)
 
    correctRequisition (requisition, core::splitHeightPreserveDescent);
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Table::getExtremesImpl (core::Extremes *extremes)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>getExtremesImpl</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "getExtremesImpl");
 
    if (numCols == 0)
       extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
@@ -147,13 +145,12 @@ void Table::getExtremesImpl (core::Extremes *extremes)
 
    correctExtremes (extremes);
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Table::sizeAllocateImpl (core::Allocation *allocation)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeAllocateImpl</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeAllocateImpl");
 
    calcCellSizes (true);
 
@@ -195,7 +192,7 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
       x += colWidths->get (col) + getStyle()->hBorderSpacing;
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Table::resizeDrawImpl ()
@@ -208,9 +205,8 @@ void Table::resizeDrawImpl ()
 
 int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>getAvailWidthOfChild</b> (%p, %s)",
-                 child, forceValue ? "true" : "false");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "getAvailWidthOfChild", "%p, %s",
+                  child, forceValue ? "true" : "false");
 
    int width = -1;
 
@@ -249,7 +245,7 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
    return width;
 }
 
@@ -328,9 +324,8 @@ core::Iterator *Table::iterator (core::Content::Type mask, bool atEnd)
 
 void Table::addCell (Widget *widget, int colspan, int rowspan)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>addCell</b> (%p, %d, %d)",
-                 widget, colspan, rowspan);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "addCell", "%p, %d, %d",
+                  widget, colspan, rowspan);
 
    const int maxspan = 100;
    Child *child;
@@ -434,7 +429,7 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    MSG("\n");
 #endif
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Table::addRow (core::style::Style *style)
@@ -626,9 +621,8 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
 
 void Table::calcCellSizes (bool calcHeights)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>calcCellSizes</b> (%s)",
-                 calcHeights ? "true" : "false");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "calcCellSizes", "%s",
+                  calcHeights ? "true" : "false");
 
    bool sizeChanged = needsResize () || resizeQueued ();
    bool extremesChanges = extremesChanged () || extremesQueued ();
@@ -637,14 +631,13 @@ void Table::calcCellSizes (bool calcHeights)
        (extremesChanges || !colWidthsUpToDateWidthColExtremes))
       forceCalcCellSizes (calcHeights);
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 
 void Table::forceCalcCellSizes (bool calcHeights)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>forceCalcCellSizes</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "forceCalcCellSizes");
 
    int childHeight;
    core::Extremes extremes;
@@ -777,13 +770,12 @@ void Table::forceCalcCellSizes (bool calcHeights)
       apportionRowSpan ();
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Table::apportionRowSpan ()
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>apportionRowSpan</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "apportionRowSpan");
 
    int *rowHeight = NULL;
 
@@ -839,7 +831,7 @@ void Table::apportionRowSpan ()
    }
    delete[] rowHeight;
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 
@@ -850,13 +842,12 @@ void Table::apportionRowSpan ()
  */
 void Table::calcColumnExtremes ()
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>calcColumnExtremes</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "calcColumnExtremes");
 
    if (extremesChanged () || extremesQueued ())
       forceCalcColumnExtremes ();
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 
@@ -865,8 +856,7 @@ void Table::calcColumnExtremes ()
  */
 void Table::forceCalcColumnExtremes ()
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>forceCalcColumnExtremes</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "forceCalcColumnExtremes");
 
    if (numCols > 0) {
       lout::misc::SimpleVector<int> colSpanCells (8);
@@ -965,18 +955,17 @@ void Table::forceCalcColumnExtremes ()
    DBG_OBJ_SET_BOOL ("colWidthsUpToDateWidthColExtremes",
                      colWidthsUpToDateWidthColExtremes);
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Table::calcExtremesSpanMulteCols (int col, int cs,
                                        core::Extremes *cellExtremes,
                                        ExtrMod minExtrMod, ExtrMod maxExtrMod)
 {
-   DBG_OBJ_MSGF ("resize", 0,
-                 "<b>calcExtremesSpanMulteCols (%d, %d, ..., %s, %s)",
-                 col, cs, getExtrModName (minExtrMod),
-                 getExtrModName (minExtrMod));
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "calcExtremesSpanMulteCols",
+                  "%d, %d, ..., %s, %s",
+                  col, cs, getExtrModName (minExtrMod),
+                  getExtrModName (minExtrMod));
    
    int cellMin = getExtreme (cellExtremes, minExtrMod);
    int cellMax = getExtreme (cellExtremes, maxExtrMod);
@@ -1014,7 +1003,7 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
       }
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 /**
@@ -1024,11 +1013,9 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
                         ExtrMod minExtrMod, ExtrMod maxExtrMod,
                         misc::SimpleVector<int> *dest, int destOffset)
 {
-   DBG_OBJ_MSGF ("resize", 0,
-                 "<b>apportion2</b> (%d, %d, %d, %s, %s, ..., %d)",
-                 totalWidth, firstCol, lastCol, getExtrModName (minExtrMod),
-                 getExtrModName (maxExtrMod), destOffset);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "apportion2", "%d, %d, %d, %s, %s, ..., %d",
+                  totalWidth, firstCol, lastCol, getExtrModName (minExtrMod),
+                  getExtrModName (maxExtrMod), destOffset);
 
    if (lastCol >= firstCol) {
       dest->setSize (destOffset + lastCol - firstCol + 1, 0);
@@ -1144,7 +1131,7 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
       }
    }
    
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 } // namespace dw
