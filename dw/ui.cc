@@ -182,8 +182,7 @@ void Resource::setEmbed (Embed *embed)
 
 void Resource::getExtremes (Extremes *extremes)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>getExtremes</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "getExtremes");
 
    /* Simply return the requisition width */
    Requisition requisition;
@@ -192,7 +191,7 @@ void Resource::getExtremes (Extremes *extremes)
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d / %d",
                  extremes->minWidth, extremes->maxWidth);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Resource::sizeAllocate (Allocation *allocation)
@@ -254,14 +253,10 @@ Iterator *LabelButtonResource::iterator (Content::Type mask, bool atEnd)
 
 void ComplexButtonResource::LayoutReceiver::resizeQueued (bool extremesChanged)
 {
-  DBG_OBJ_MSGF_O ("resize", 0, resource,
-                   "LayoutReceiver::<b>resizeQueued</b> (%s)",
+   DBG_OBJ_ENTER ("resize", 0, "LayoutReceiver-resizeQueued", "%s",
                   extremesChanged ? "true" : "false");
-   DBG_OBJ_MSG_START_O (resource);
-
    resource->queueResize (extremesChanged);
-
-   DBG_OBJ_MSG_END_O (resource);
+   DBG_OBJ_LEAVE ();
 }
 
 ComplexButtonResource::ComplexButtonResource ()
@@ -299,8 +294,7 @@ ComplexButtonResource::~ComplexButtonResource ()
 
 void ComplexButtonResource::sizeRequest (Requisition *requisition)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>sizeRequest</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequest");
 
    Requisition widgetRequisition;
    childWidget->sizeRequest (&widgetRequisition);
@@ -310,13 +304,12 @@ void ComplexButtonResource::sizeRequest (Requisition *requisition)
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void ComplexButtonResource::getExtremes (Extremes *extremes)
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>getExtremes</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "getExtremes");
 
    Extremes widgetExtremes;
    childWidget->getExtremes (&widgetExtremes);
@@ -325,7 +318,7 @@ void ComplexButtonResource::getExtremes (Extremes *extremes)
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d / %d",
                  extremes->minWidth, extremes->maxWidth);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void ComplexButtonResource::sizeAllocate (Allocation *allocation)
