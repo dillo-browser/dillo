@@ -253,7 +253,7 @@ Iterator *LabelButtonResource::iterator (Content::Type mask, bool atEnd)
 
 void ComplexButtonResource::LayoutReceiver::resizeQueued (bool extremesChanged)
 {
-   DBG_OBJ_ENTER ("resize", 0, "LayoutReceiver-resizeQueued", "%s",
+   DBG_OBJ_ENTER ("resize", 0, "LayoutReceiver/resizeQueued", "%s",
                   extremesChanged ? "true" : "false");
    resource->queueResize (extremesChanged);
    DBG_OBJ_LEAVE ();

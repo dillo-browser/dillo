@@ -41,9 +41,8 @@ OutOfFlowMgr::WidgetInfo::WidgetInfo (OutOfFlowMgr *oofm, Widget *widget)
 void OutOfFlowMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
                                        int width, int height)
 {
-   DBG_OBJ_MSGF_O ("resize.oofm", 0, widget,
-                   "<b>update</b> (%s, %d, %d, %d, %d)",
-                   wasAllocated ? "true" : "false", xCB, yCB, width, height);
+   DBG_OBJ_ENTER_O ("resize.oofm", 0, widget, "update", "%s, %d, %d, %d, %d",
+                    wasAllocated ? "true" : "false", xCB, yCB, width, height);
 
    this->wasAllocated = wasAllocated;
    this->xCB = xCB;
@@ -55,6 +54,8 @@ void OutOfFlowMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
    DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.yCB", yCB);
    DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.width", width);
    DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.height", height);
+
+   DBG_OBJ_LEAVE_O (widget);
 }
 
 // ----------------------------------------------------------------------
@@ -85,13 +86,12 @@ OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
 
 void OutOfFlowMgr::Float::updateAllocation ()
 {
-   DBG_OBJ_MSG_O ("resize.oofm", 0, getWidget (), "<b>updateAllocation</b> ()");
-   DBG_OBJ_MSG_START_O (getWidget ());
+   DBG_OBJ_ENTER0_O ("resize.oofm", 0, getWidget (), "updateAllocation");
 
    update (isNowAllocated (), getNewXCB (), getNewYCB (), getNewWidth (),
            getNewHeight ());
 
-   DBG_OBJ_MSG_END_O (getWidget ());
+   DBG_OBJ_LEAVE_O (getWidget ());
 }
 
 void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
@@ -132,10 +132,9 @@ void OutOfFlowMgr::Float::intoStringBuffer(StringBuffer *sb)
 
 bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
 {
-   DBG_OBJ_MSGF_O ("border", 0, getOutOfFlowMgr (),
-                   "<b>covers</b> (%p, %d, %d) [vloat: %p]",
-                   textblock, y, h, getWidget ());
-   DBG_OBJ_MSG_START_O (getOutOfFlowMgr ());
+   DBG_OBJ_ENTER_O ("border", 0, getOutOfFlowMgr (), "covers",
+                    "%p, %d, %d [vloat: %p]",
+                    textblock, y, h, getWidget ());
 
    bool b;
 
@@ -176,7 +175,7 @@ bool OutOfFlowMgr::Float::covers (Textblock *textblock, int y, int h)
       }
    }
 
-   DBG_OBJ_MSG_END_O (getOutOfFlowMgr ());
+   DBG_OBJ_LEAVE_O (getOutOfFlowMgr ());
 
    return b;
 }
@@ -186,10 +185,9 @@ int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
    Float *fl1 = (Float*)o1, *fl2 = (Float*)o2;
    int r;
 
-   DBG_OBJ_MSGF_O ("border", 1, oofm,
-                   "<b>ComparePosition::compare</b> (#%d, #%d) [refTB = %p]",
-                   fl1->getIndex (type), fl2->getIndex (type), refTB);
-   DBG_OBJ_MSG_START_O (oofm);
+   DBG_OBJ_ENTER_O ("border", 1, oofm,
+                    "ComparePosition/compare", "(#%d, #%d) [refTB = %p]",
+                    fl1->getIndex (type), fl2->getIndex (type), refTB);
 
    if (refTB == fl1->generatingBlock && refTB == fl2->generatingBlock) {
       DBG_OBJ_MSG_O ("border", 2, oofm, "refTB is generating both floats");
@@ -237,7 +235,7 @@ int OutOfFlowMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
    }
 
    DBG_OBJ_MSGF_O ("border", 1, oofm, "result: %d", r);
-   DBG_OBJ_MSG_END_O (oofm);
+   DBG_OBJ_LEAVE_O (oofm);
    return r;
 }
 
@@ -252,12 +250,11 @@ int OutOfFlowMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
    Float *f1 = (Float*)o1, *f2 = (Float*)o2;
    int r = -123; // Compiler happiness: GCC 4.7 does not handle this?;
 
-   DBG_OBJ_MSGF_O ("border", 1, oofm,
-                   "<b>CompareGBAndExtIndex::compare</b> (#%d -> %p/%d, "
-                   "#%d -> %p/#%d)",
-                   f1->getIndex (type), f1->generatingBlock, f1->externalIndex,
-                   f2->getIndex (type), f2->generatingBlock, f2->externalIndex);
-   DBG_OBJ_MSG_START_O (oofm);
+   DBG_OBJ_ENTER_O ("border", 1, oofm, "CompareGBAndExtIndex/compare",
+                    "#%d -> %p/%d, #%d -> %p/#%d",
+                    f1->getIndex (type), f1->generatingBlock, f1->externalIndex,
+                    f2->getIndex (type), f2->generatingBlock,
+                    f2->externalIndex);
 
    if (f1->generatingBlock == f2->generatingBlock) {
       r = f1->externalIndex - f2->externalIndex;
@@ -301,16 +298,15 @@ int OutOfFlowMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
    }
 
    DBG_OBJ_MSGF_O ("border", 2, oofm, "result: %d", r);
-   DBG_OBJ_MSG_END_O (oofm);
+   DBG_OBJ_LEAVE_O (oofm);
    return r;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
                                                       int lastExtIndex)
 {
-   DBG_OBJ_MSGF_O ("border", 0, oofm, "<b>findFloatIndex</b> (%p, %d)",
-                   lastGB, lastExtIndex);
-   DBG_OBJ_MSG_START_O (oofm);
+   DBG_OBJ_ENTER_O ("border", 0, oofm, "findFloatIndex", "%p, %d",
+                    lastGB, lastExtIndex);
 
    Float key (oofm, NULL, lastGB, lastExtIndex);
    key.setIndex (type, -1); // for debugging
@@ -345,16 +341,15 @@ int OutOfFlowMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    //}
 
    DBG_OBJ_MSGF_O ("border", 1, oofm, "=> r = %d", r);
-   DBG_OBJ_MSG_END_O (oofm);
+   DBG_OBJ_LEAVE_O (oofm);
    return r;
 }
 
 int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
                                             int start, int end)
 {
-   DBG_OBJ_MSGF_O ("border", 0, oofm, "<b>find</b> (%p, %d, %d, %d)",
-                   textblock, y, start, end);
-   DBG_OBJ_MSG_START_O (oofm);
+   DBG_OBJ_ENTER_O ("border", 0, oofm, "find", "%p, %d, %d, %d",
+                    textblock, y, start, end);
 
    Float key (oofm, NULL, NULL, 0);
    key.generatingBlock = textblock;
@@ -364,7 +359,7 @@ int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
    int result = bsearch (&key, false, start, end, &comparator);
 
    DBG_OBJ_MSGF_O ("border", 1, oofm, "=> result = %d", result);
-   DBG_OBJ_MSG_END_O (oofm);
+   DBG_OBJ_LEAVE_O (oofm);
    return result;
 }
 
@@ -373,9 +368,8 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
                                                  Textblock *lastGB,
                                                  int lastExtIndex)
 {
-   DBG_OBJ_MSGF_O ("border", 0, oofm, "<b>findFirst</b> (%p, %d, %d, %p, %d)",
-                   textblock, y, h, lastGB, lastExtIndex);
-   DBG_OBJ_MSG_START_O (oofm);
+   DBG_OBJ_ENTER_O ("border", 0, oofm, "findFirst", "%p, %d, %d, %p, %d",
+                    textblock, y, h, lastGB, lastExtIndex);
 
    DBG_IF_RTFL {
       DBG_OBJ_MSG_O ("border", 2, oofm, "searching in list:");
@@ -420,7 +414,7 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
       result = -1;
 
    DBG_OBJ_MSGF_O ("border", 1, oofm, "=> result = %d", result);
-   DBG_OBJ_MSG_END_O (oofm);
+   DBG_OBJ_LEAVE_O (oofm);
    return result;
 }
 
@@ -461,13 +455,12 @@ OutOfFlowMgr::TBInfo::~TBInfo ()
 
 void OutOfFlowMgr::TBInfo::updateAllocation ()
 {
-   DBG_OBJ_MSG_O ("resize.oofm", 0, getWidget (), "<b>updateAllocation</b> ()");
-   DBG_OBJ_MSG_START_O (getWidget ());
+   DBG_OBJ_ENTER0_O ("resize.oofm", 0, getWidget (), "updateAllocation");
 
    update (isNowAllocated (), getNewXCB (), getNewYCB (), getNewWidth (),
            getNewHeight ());
 
-   DBG_OBJ_MSG_END_O (getWidget ());
+   DBG_OBJ_LEAVE_O (getWidget ());
 }
 
 OutOfFlowMgr::AbsolutelyPositioned::AbsolutelyPositioned (OutOfFlowMgr *oofm,
@@ -539,11 +532,10 @@ OutOfFlowMgr::~OutOfFlowMgr ()
 
 void OutOfFlowMgr::sizeAllocateStart (Textblock *caller, Allocation *allocation)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>sizeAllocateStart</b> (%p, (%d, %d, %d * (%d + %d)))",
-                 caller, allocation->x, allocation->y, allocation->width,
-                 allocation->ascent, allocation->descent);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateStart",
+                  "%p, (%d, %d, %d * (%d + %d))",
+                  caller, allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
 
    getTextblock(caller)->allocation = *allocation;
    getTextblock(caller)->wasAllocated = true;
@@ -566,13 +558,12 @@ void OutOfFlowMgr::sizeAllocateStart (Textblock *caller, Allocation *allocation)
       lastAllocatedLeftFloat = lastAllocatedRightFloat = -1;
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>sizeAllocateEnd</b> (%p)", caller);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateEnd", "%p", caller);
 
    // (Later, absolutely positioned blocks have to be allocated.)
 
@@ -638,7 +629,7 @@ void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
          containingBlock->oofSizeChanged (extremesChanged);
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void OutOfFlowMgr::containerSizeChangedForChildren ()
@@ -654,10 +645,8 @@ void OutOfFlowMgr::containerSizeChangedForChildren ()
 bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, int *minFloatPos,
                                        Widget **minFloat)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>hasRelationChanged</b> (<i>widget:</i> %p, ...)",
-                 tbInfo->getWidget ());
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "hasRelationChanged",
+                  "<i>widget:</i> %p, ...", tbInfo->getWidget ());
 
    int leftMinPos, rightMinPos;
    Widget *leftMinFloat, *rightMinFloat;
@@ -690,17 +679,16 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, int *minFloatPos,
    else
       DBG_OBJ_MSG ("resize.oofm", 1, "has not changed");
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
    return c1 || c2;
 }
 
 bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
                                        int *minFloatPos, Widget **minFloat)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>hasRelationChanged</b> (<i>widget:</i> %p, %s, ...)",
-                 tbInfo->getWidget (), side == LEFT ? "LEFT" : "RIGHT");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "hasRelationChanged",
+                  "<i>widget:</i> %p, %s, ...",
+                  tbInfo->getWidget (), side == LEFT ? "LEFT" : "RIGHT");
 
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    bool changed = false;
@@ -768,7 +756,7 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
    else
       DBG_OBJ_MSG ("resize.oofm", 1, "has not changed");
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
    return changed;
 }
 
@@ -788,10 +776,8 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
                                        int newFlw, int newFlh,
                                        Side side, int *floatPos)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>hasRelationChanged</b> (<i>see below</i>, %s, ...)",
-                 side == LEFT ? "LEFT" : "RIGHT");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "hasRelationChanged",
+                  "<i>see below</i>, %s, ...", side == LEFT ? "LEFT" : "RIGHT");
 
    if (oldTBAlloc)
       DBG_OBJ_MSGF ("resize.oofm", 1, "old TB: %d, %d; %d * %d",
@@ -894,16 +880,15 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
    else
       DBG_OBJ_MSG ("resize.oofm", 1, "has not changed");
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    return result;
 }
 
 bool OutOfFlowMgr::doFloatsExceedCB (Side side)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>doFloatsExceedCB</b> (%s)",
-                 side == LEFT ? "LEFT" : "RIGHT");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "doFloatsExceedCB", "%s",
+                  side == LEFT ? "LEFT" : "RIGHT");
    
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    bool exceeds = false;
@@ -937,16 +922,15 @@ bool OutOfFlowMgr::doFloatsExceedCB (Side side)
    DBG_OBJ_MSG_END ();
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", exceeds ? "true" : "false");
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    return exceeds;
 }
 
 bool OutOfFlowMgr::haveExtremesChanged (Side side)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>haveExtremesChanged</b> (%s)",
-                 side == LEFT ? "LEFT" : "RIGHT");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "haveExtremesChanged", "%s",
+                  side == LEFT ? "LEFT" : "RIGHT");
 
    // This is quite different from doFloatsExceedCB, since there is no
    // counterpart to getExtremes, as sizeAllocate is a counterpart to
@@ -996,7 +980,7 @@ bool OutOfFlowMgr::haveExtremesChanged (Side side)
    }
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", changed ? "true" : "false");
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    return changed;
 }
@@ -1039,11 +1023,10 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
    int *lastAllocatedFloat =
       side == LEFT ? &lastAllocatedLeftFloat : &lastAllocatedRightFloat;
 
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>sizeAllocateFloats</b> (%s, [%d ->] %d [size = %d])",
-                 side == LEFT ? "LEFT" : "RIGHT", *lastAllocatedFloat,
-                 newLastAllocatedFloat, list->size ());
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateFloats",
+                  "%s, [%d ->] %d [size = %d]",
+                  side == LEFT ? "LEFT" : "RIGHT", *lastAllocatedFloat,
+                  newLastAllocatedFloat, list->size ());
 
    Allocation *cba = &containingBlockAllocation;
 
@@ -1067,7 +1050,7 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
 
    *lastAllocatedFloat = newLastAllocatedFloat;
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 
@@ -1079,10 +1062,9 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
 int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
                               int gbLineBreakWidth)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>calcFloatX</b> (%p, %s, %d, %d, %d)",
-                 vloat->getWidget (), side == LEFT ? "LEFT" : "RIGHT", gbX,
-                 gbWidth, gbLineBreakWidth);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "calcFloatX", "%p, %s, %d, %d, %d",
+                  vloat->getWidget (), side == LEFT ? "LEFT" : "RIGHT", gbX,
+                  gbWidth, gbLineBreakWidth);
 
    int x;
 
@@ -1119,7 +1101,7 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
       break;
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
    return x;
 }
 
@@ -1198,8 +1180,8 @@ void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock,
 void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
                                  int externalIndex)
 {
-   DBG_OBJ_MSGF ("construct.oofm", 0, "<b>addWidgetOOF</b> (%p, %p, %d)",
-                 widget, generatingBlock, externalIndex);
+   DBG_OBJ_ENTER ("construct.oofm", 0, "addWidgetOOF", "%p, %p, %d",
+                  widget, generatingBlock, externalIndex);
 
    if (isWidgetFloat (widget)) {
       TBInfo *tbInfo = getTextblock (generatingBlock);
@@ -1289,6 +1271,8 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
    } else
       // May be extended.
       assertNotReached();
+
+   DBG_OBJ_LEAVE ();
 }
 
 void OutOfFlowMgr::moveExternalIndices (Textblock *generatingBlock,
@@ -1324,8 +1308,7 @@ OutOfFlowMgr::Float *OutOfFlowMgr::findFloatByWidget (Widget *widget)
 
 void OutOfFlowMgr::markSizeChange (int ref)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>markSizeChange</b> (%d)", ref);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "markSizeChange", "%d", ref);
 
    if (isRefFloat (ref)) {
       Float *vloat;
@@ -1355,7 +1338,7 @@ void OutOfFlowMgr::markSizeChange (int ref)
    } else
       assertNotReached();
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 
@@ -1418,9 +1401,8 @@ void OutOfFlowMgr::tellPosition (Widget *widget, int yReq)
 
 void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>tellFloatPosition</b> (%p, %d)",
-                 widget, yReq);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "tellFloatPosition", "%p, %d",
+                  widget, yReq);
 
    assert (yReq >= 0);
 
@@ -1497,7 +1479,7 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    DBG_OBJ_MSGF ("resize.oofm", 1, "vloat->yReq = %d, vloat->yReal = %d",
                  vloat->yReq, vloat->yReal);
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, SFVType type,
@@ -1507,11 +1489,9 @@ bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, SFVType type,
    // vloat->yReal; never to vloat->allocation->y, even when the GBs are
    // different. Used only in tellPosition.
 
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>collides</b> (#%d [%p], #%d [%p], ...)",
-                 vloat->getIndex (type), vloat->getWidget (),
-                 other->getIndex (type), other->getWidget ());
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "collides", "#%d [%p], #%d [%p], ...",
+                  vloat->getIndex (type), vloat->getWidget (),
+                  other->getIndex (type), other->getWidget ());
 
    bool result;
 
@@ -1565,7 +1545,7 @@ bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, SFVType type,
    else
       DBG_OBJ_MSG ("resize.oofm", 1, "does not collide");
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
    return result;
 }
 
@@ -1652,8 +1632,7 @@ void OutOfFlowMgr::getFloatsListsAndSide (Float *vloat,
 
 void OutOfFlowMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
 {
-   DBG_OBJ_MSG ("resize.oofm", 0, "<b>getSize</b> ()");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize.oofm", 0, "getSize");
 
    int oofWidthAbsPos, oofHeightAbsPos;
    getAbsolutelyPositionedSize (cbReq, &oofWidthAbsPos, &oofHeightAbsPos);
@@ -1669,17 +1648,15 @@ void OutOfFlowMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
                  "=> (a: %d, l: %d, r: %d => %d) * (a: %d, l: %d, r: %d => %d)",
                  oofWidthAbsPos, oofWidthtLeft, oofWidthRight, *oofWidth,
                  oofHeightAbsPos, oofHeightLeft, oofHeightRight, *oofHeight);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
                                   int *height)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>getFloatsSize</b> ((%d * (%d + %d), %s, ...)",
-                 cbReq->width, cbReq->ascent, cbReq->descent,
-                 side == LEFT ? "LEFT" : "RIGHT");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getFloatsSize", "(%d * (%d + %d), %s, ...",
+                  cbReq->width, cbReq->ascent, cbReq->descent,
+                  side == LEFT ? "LEFT" : "RIGHT");
 
    SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
 
@@ -1721,15 +1698,14 @@ void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
                        vloat->getWidget (), vloat->generatingBlock);
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void OutOfFlowMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
                                 int *oofMaxWidth)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>getExtremes</b> ((%d / %d), ...)",
-                 cbExtr->minWidth, cbExtr->maxWidth);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getExtremes", "(%d / %d), ...",
+                  cbExtr->minWidth, cbExtr->maxWidth);
 
    int oofMinWidthAbsPos, oofMaxWidthAbsPos;
    getAbsolutelyPositionedExtremes (cbExtr, &oofMinWidthAbsPos,
@@ -1747,17 +1723,15 @@ void OutOfFlowMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
                  oofMinWidthAbsPos, oofMinWidthtLeft, oofMinWidthRight,
                  *oofMinWidth, oofMaxWidthAbsPos, oofMaxWidthLeft,
                  oofMaxWidthRight, *oofMaxWidth);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
                                       int *minWidth, int *maxWidth)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>getFloatsExtremes</b> ((%d / %d), %s, ...)",
-                 cbExtr->minWidth, cbExtr->maxWidth,
-                 side == LEFT ? "LEFT" : "RIGHT");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getFloatsExtremes", "(%d / %d), %s, ...",
+                  cbExtr->minWidth, cbExtr->maxWidth,
+                  side == LEFT ? "LEFT" : "RIGHT");
 
    *minWidth = *maxWidth = 0;
 
@@ -1790,7 +1764,7 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
                        vloat->getWidget (), vloat->generatingBlock);
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 // Returns "false" when borders cannot yet determined; *leftDiff and
@@ -1798,10 +1772,9 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
 bool OutOfFlowMgr::getFloatDiffToCB (Float *vloat, int *leftDiff,
                                      int *rightDiff)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0,
-                 "<b>getDiffToCB</b> (float %p [generated by %p], ...)",
-                 vloat->getWidget (), vloat->generatingBlock);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getDiffToCB",
+                  "float %p [generated by %p], ...",
+                  vloat->getWidget (), vloat->generatingBlock);
 
    bool result;
 
@@ -1835,7 +1808,7 @@ bool OutOfFlowMgr::getFloatDiffToCB (Float *vloat, int *leftDiff,
       result = false;
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
    return result;
 }
 
@@ -1883,10 +1856,9 @@ int OutOfFlowMgr::getRightBorder (Textblock *textblock, int y, int h,
 int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                              Textblock *lastGB, int lastExtIndex)
 {
-   DBG_OBJ_MSGF ("border", 0, "<b>getBorder</b> (%p, %s, %d, %d, %p, %d)",
-                 textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
-                 lastGB, lastExtIndex);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("border", 0, "getBorder", "%p, %s, %d, %d, %p, %d",
+                  textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
+                  lastGB, lastExtIndex);
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
@@ -1895,7 +1867,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
 
    if (first == -1) {
       // No float.
-      DBG_OBJ_MSG_END ();
+      DBG_OBJ_LEAVE ();
       return 0;
    } else {
       // It is not sufficient to find the first float, since a line
@@ -1947,7 +1919,7 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
          }
       }
 
-      DBG_OBJ_MSG_END ();
+      DBG_OBJ_LEAVE ();
       return border;
    }
 }
@@ -1986,16 +1958,15 @@ bool OutOfFlowMgr::hasFloatRight (Textblock *textblock, int y, int h,
 bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
                              Textblock *lastGB, int lastExtIndex)
 {
-   DBG_OBJ_MSGF ("border", 0, "<b>hasFloat</b> (%p, %s, %d, %d, %p, %d)",
-                 textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
-                 lastGB, lastExtIndex);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("border", 0, "hasFloat", "%p, %s, %d, %d, %p, %d",
+                  textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
+                  lastGB, lastExtIndex);
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
 
    DBG_OBJ_MSGF ("border", 1, "first = %d", first);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
    return first != -1;
 }
 
@@ -2004,8 +1975,7 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
  */
 int OutOfFlowMgr::getClearPosition (Textblock *tb)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>getClearPosition</b> (%p)", tb);
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getClearPosition", "%p", tb);
 
    int pos;
 
@@ -2025,16 +1995,15 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb)
       pos = 0;
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", pos);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    return pos;
 }
 
 int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
 {
-   DBG_OBJ_MSGF ("resize.oofm", 0, "<b>getClearPosition</b> (%p, %s)",
-                 tb, side == LEFT ? "LEFT" : "RIGHT");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getClearPosition", "%p, %s",
+                  tb, side == LEFT ? "LEFT" : "RIGHT");
 
    int pos;
 
@@ -2064,7 +2033,7 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
    }
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", pos);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    return pos;
 }
@@ -2075,11 +2044,11 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
    // handled by (at this time) Layout::containerSizeChanged, so
    // Float::dirty will be set.
 
+   DBG_OBJ_ENTER ("resize.oofm", 0, "ensureFloatSize", "%p",
+                  vloat->getWidget ());
+
    if (vloat->dirty)  {
-      DBG_OBJ_MSGF ("resize.oofm", 0,
-                    "<b>ensureFloatSize</b> (%p): recalculation",
-                    vloat->getWidget ());
-      DBG_OBJ_MSG_START ();
+      DBG_OBJ_MSG ("resize.oofm", 1, "dirty: recalculation");
 
       vloat->getWidget()->sizeRequest (&vloat->size);
       vloat->cbLineBreakWidth = containingBlock->getLineBreakWidth ();
@@ -2096,9 +2065,9 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
                          vloat->size.descent);
 
       // "sizeChangedSinceLastAllocation" is reset in sizeAllocateEnd()
-
-      DBG_OBJ_MSG_END ();
    }
+   
+   DBG_OBJ_LEAVE ();
 }
 
 void OutOfFlowMgr::getAbsolutelyPositionedSize (Requisition *cbReq, int *width,

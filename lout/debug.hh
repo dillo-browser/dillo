@@ -115,6 +115,13 @@
       fflush (stdout); \
    } D_STMT_END
 
+#define DBG_OBJ_ENTER0_O(aspect, prio, obj, funname)     \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-enter:%p:%s:%d:%s:\n", \
+              RTFL_PREFIX_ARGS, obj, aspect, prio, funname); \
+      fflush (stdout); \
+   } D_STMT_END
+
 #define DBG_OBJ_ENTER(aspect, prio, funname, fmt, ...)  \
    D_STMT_START { \
       fflush (stdout); \
@@ -122,10 +129,24 @@
               RTFL_PREFIX_ARGS, this, aspect, prio, funname, __VA_ARGS__); \
    } D_STMT_END
 
+#define DBG_OBJ_ENTER_O(aspect, prio, obj, funname, fmt, ...)    \
+   D_STMT_START { \
+      fflush (stdout); \
+      printf (RTFL_PREFIX_FMT "obj-enter:%p:%s:%d:%s:" fmt "\n", \
+              RTFL_PREFIX_ARGS, obj, aspect, prio, funname, __VA_ARGS__); \
+   } D_STMT_END
+
 #define DBG_OBJ_LEAVE() \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-leave:%p\n", \
               RTFL_PREFIX_ARGS, this); \
+      fflush (stdout); \
+   } D_STMT_END
+
+#define DBG_OBJ_LEAVE_O(obj) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-leave:%p\n", \
+              RTFL_PREFIX_ARGS, obj); \
       fflush (stdout); \
    } D_STMT_END
 
@@ -291,39 +312,42 @@
 
 #define DBG_IF_RTFL if(0)
 
-#define DBG_OBJ_MSG(aspect, prio, msg)                  D_STMT_NOP
-#define DBG_OBJ_MSG_O(aspect, prio, obj, msg)           D_STMT_NOP
-#define DBG_OBJ_MSGF(aspect, prio, fmt, ...)            D_STMT_NOP
-#define DBG_OBJ_MSGF_O(aspect, prio, obj, fmt, ...)     D_STMT_NOP
-#define DBG_OBJ_MSG_START()                             D_STMT_NOP
-#define DBG_OBJ_MSG_START_O(obj)                        D_STMT_NOP
-#define DBG_OBJ_MSG_END()                               D_STMT_NOP
-#define DBG_OBJ_MSG_END_O(obj)                          D_STMT_NOP
-#define DBG_OBJ_ENTER0(aspect, prio, funname)           D_STMT_NOP
-#define DBG_OBJ_ENTER(aspect, prio, funname, fmt, ...)  D_STMT_NOP
-#define DBG_OBJ_LEAVE()                                 D_STMT_NOP
-#define DBG_OBJ_CREATE(klass)                           D_STMT_NOP
-#define DBG_OBJ_DELETE()                                D_STMT_NOP
-#define DBG_OBJ_BASECLASS(klass)                        D_STMT_NOP
-#define DBG_OBJ_ASSOC_PARENT(parent)                    D_STMT_NOP
-#define DBG_OBJ_ASSOC_CHILD(child)                      D_STMT_NOP
-#define DBG_OBJ_ASSOC(parent, child)                    D_STMT_NOP
-#define DBG_OBJ_SET_NUM(var, val)                       D_STMT_NOP
-#define DBG_OBJ_SET_NUM_O(obj, var, val)                D_STMT_NOP
-#define DBG_OBJ_SET_SYM(var, val)                       D_STMT_NOP
-#define DBG_OBJ_SET_STR(var, val)                       D_STMT_NOP
-#define DBG_OBJ_SET_PTR(var, val)                       D_STMT_NOP
-#define DBG_OBJ_SET_BOOL(var, val)                      D_STMT_NOP
-#define DBG_OBJ_SET_PTR_O(obj, var, val)                D_STMT_NOP
-#define DBG_OBJ_ARRSET_NUM(var, ind, val)               D_STMT_NOP
-#define DBG_OBJ_ARRSET_SYM(var, ind, val)               D_STMT_NOP
-#define DBG_OBJ_ARRSET_STR(var, ind, val)               D_STMT_NOP
-#define DBG_OBJ_ARRSET_PTR(var, ind, val)               D_STMT_NOP
-#define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val)     D_STMT_NOP
-#define DBG_OBJ_ARRATTRSET_SYM(var, ind, attr, val)     D_STMT_NOP
-#define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val)     D_STMT_NOP
-#define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val)     D_STMT_NOP
-#define DBG_OBJ_COLOR(klass, color)                     D_STMT_NOP
+#define DBG_OBJ_MSG(aspect, prio, msg)                         D_STMT_NOP
+#define DBG_OBJ_MSG_O(aspect, prio, obj, msg)                  D_STMT_NOP
+#define DBG_OBJ_MSGF(aspect, prio, fmt, ...)                   D_STMT_NOP
+#define DBG_OBJ_MSGF_O(aspect, prio, obj, fmt, ...)            D_STMT_NOP
+#define DBG_OBJ_MSG_START()                                    D_STMT_NOP
+#define DBG_OBJ_MSG_START_O(obj)                               D_STMT_NOP
+#define DBG_OBJ_MSG_END()                                      D_STMT_NOP
+#define DBG_OBJ_MSG_END_O(obj)                                 D_STMT_NOP
+#define DBG_OBJ_ENTER0(aspect, prio, funname)                  D_STMT_NOP
+#define DBG_OBJ_ENTER0_O(aspect, prio, obj, funname)           D_STMT_NOP
+#define DBG_OBJ_ENTER(aspect, prio, funname, fmt, ...)         D_STMT_NOP
+#define DBG_OBJ_ENTER_O(aspect, prio, obj, funname, fmt, ...)  D_STMT_NOP
+#define DBG_OBJ_LEAVE()                                        D_STMT_NOP
+#define DBG_OBJ_LEAVE_O(obj)                                   D_STMT_NOP
+#define DBG_OBJ_CREATE(klass)                                  D_STMT_NOP
+#define DBG_OBJ_DELETE()                                       D_STMT_NOP
+#define DBG_OBJ_BASECLASS(klass)                               D_STMT_NOP
+#define DBG_OBJ_ASSOC_PARENT(parent)                           D_STMT_NOP
+#define DBG_OBJ_ASSOC_CHILD(child)                             D_STMT_NOP
+#define DBG_OBJ_ASSOC(parent, child)                           D_STMT_NOP
+#define DBG_OBJ_SET_NUM(var, val)                              D_STMT_NOP
+#define DBG_OBJ_SET_NUM_O(obj, var, val)                       D_STMT_NOP
+#define DBG_OBJ_SET_SYM(var, val)                              D_STMT_NOP
+#define DBG_OBJ_SET_STR(var, val)                              D_STMT_NOP
+#define DBG_OBJ_SET_PTR(var, val)                              D_STMT_NOP
+#define DBG_OBJ_SET_BOOL(var, val)                             D_STMT_NOP
+#define DBG_OBJ_SET_PTR_O(obj, var, val)                       D_STMT_NOP
+#define DBG_OBJ_ARRSET_NUM(var, ind, val)                      D_STMT_NOP
+#define DBG_OBJ_ARRSET_SYM(var, ind, val)                      D_STMT_NOP
+#define DBG_OBJ_ARRSET_STR(var, ind, val)                      D_STMT_NOP
+#define DBG_OBJ_ARRSET_PTR(var, ind, val)                      D_STMT_NOP
+#define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val)            D_STMT_NOP
+#define DBG_OBJ_ARRATTRSET_SYM(var, ind, attr, val)            D_STMT_NOP
+#define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val)            D_STMT_NOP
+#define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val)            D_STMT_NOP
+#define DBG_OBJ_COLOR(klass, color)                            D_STMT_NOP
 
 #endif /* DBG_RTFL */
 
