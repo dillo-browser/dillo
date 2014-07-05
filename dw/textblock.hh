@@ -816,11 +816,11 @@ public:
 
    void borderChanged (int y, core::Widget *vloat);
    inline void oofSizeChanged (bool extremesChanged) {
-      DBG_OBJ_MSGF ("resize", 0, "<b>oofSizeChanged</b> (%s)",
-                    extremesChanged ? "true" : "false");
+      DBG_OBJ_ENTER ("resize", 0, "oofSizeChanged", "%s",
+                     extremesChanged ? "true" : "false");
       DBG_OBJ_MSG_START ();
       queueResize (-1, extremesChanged);
-      DBG_OBJ_MSG_END ();
+      DBG_OBJ_LEAVE ();
    }
    inline int getLineBreakWidth () { return lineBreakWidth; }
 };
