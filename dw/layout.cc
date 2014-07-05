@@ -848,8 +848,7 @@ void Layout::setBgImage (style::StyleImage *bgImage,
 
 void Layout::resizeIdle ()
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>resizeIdle</b>");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "resizeIdle");
    
    enterResizeIdle ();
 
@@ -941,7 +940,7 @@ void Layout::resizeIdle ()
 
    DBG_OBJ_MSGF ("resize", 1,
                  "after resizeIdle: resizeIdleId = %d", resizeIdleId);
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 
    leaveResizeIdle ();
 }
@@ -984,9 +983,8 @@ void Layout::queueDrawExcept (int x, int y, int width, int height,
 
 void Layout::queueResize (bool extremesChanged)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>queueResize</b> (%s)",
-                 extremesChanged ? "true" : "false");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER ("resize", 0, "queueResize", "%s",
+                  extremesChanged ? "true" : "false");
 
    if (resizeIdleId == -1) {
       view->cancelQueueDraw ();
@@ -997,7 +995,7 @@ void Layout::queueResize (bool extremesChanged)
 
    emitter.emitResizeQueued (extremesChanged);
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 
@@ -1268,9 +1266,8 @@ void Layout::scrollPosChanged (View *view, int x, int y)
  */
 void Layout::viewportSizeChanged (View *view, int width, int height)
 {
-   DBG_OBJ_MSGF ("resize", 0, "<b>viewportSizeChanged</b> (%p, %d, %d)",
+   DBG_OBJ_ENTER ("resize", 0, "viewportSizeChanged", "%p, %d, %d",
                  view, width, height);
-   DBG_OBJ_MSG_START ();
 
    /* If the width has become higher, we test again, whether the vertical
     * scrollbar (so to speak) can be hidden again. */
@@ -1298,20 +1295,19 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
 
    containerSizeChanged ();
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 void Layout::containerSizeChanged ()
 {
-   DBG_OBJ_MSG ("resize", 0, "<b>containerSizeChanged</b> ()");
-   DBG_OBJ_MSG_START ();
+   DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChanged");
 
    if (topLevel) {
       topLevel->containerSizeChanged ();
       queueResize (true);
    }
 
-   DBG_OBJ_MSG_END ();
+   DBG_OBJ_LEAVE ();
 }
 
 } // namespace core
