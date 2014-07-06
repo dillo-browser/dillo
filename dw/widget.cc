@@ -1292,7 +1292,21 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
    // TODO Correct by extremes?
 
    DBG_OBJ_ENTER ("resize", 0, "correctRequisitionOfChild",
-                  "%p, %d * (%d + %d), ...)",
+                  "%p, %d * (%d + %d), ...", child, requisition->width,
+                  requisition->ascent, requisition->descent);
+
+   correctReqWidthOfChild (child, requisition);
+   correctReqHeightOfChild (child, requisition, splitHeightFun);
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
+                 requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_LEAVE ();
+}
+
+void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition)
+{
+   DBG_OBJ_ENTER ("resize", 0, "correctReqWidthOfChild", "%p, %d * (%d + %d)",
                   child, requisition->width, requisition->ascent,
                   requisition->descent);
 
@@ -1307,6 +1321,19 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
                                                     child->getStyle()->width);
       }
    }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
+                 requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_LEAVE ();
+}
+
+void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
+                                      void (*splitHeightFun) (int, int*, int*))
+{
+   DBG_OBJ_ENTER ("resize", 0, "correctReqHeightOfChild",
+                  "%p, %d * (%d + %d), ...", child, requisition->width,
+                  requisition->ascent, requisition->descent);
 
    // TODO Perhaps split first, then add box ascent and descent.
    if (style::isAbsLength (child->getStyle()->height))

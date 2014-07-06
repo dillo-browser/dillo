@@ -320,6 +320,9 @@ protected:
                                            Requisition *requisition,
                                            void (*splitHeightFun) (int, int*,
                                                                    int*));
+   void correctReqWidthOfChild (Widget *child, Requisition *requisition);
+   void correctReqHeightOfChild (Widget *child, Requisition *requisition,
+                                 void (*splitHeightFun) (int, int*, int*));
    virtual void correctExtremesOfChild (Widget *child, Extremes *extremes);
 
    virtual void containerSizeChangedForChildren ();

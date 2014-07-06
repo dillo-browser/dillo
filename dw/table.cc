@@ -208,7 +208,7 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
    DBG_OBJ_ENTER ("resize", 0, "getAvailWidthOfChild", "%p, %s",
                   child, forceValue ? "true" : "false");
 
-   int width = -1;
+   int width;
 
    // Unlike other containers, the table widget sometimes narrows
    // columns to a width less than specified by CSS (see
@@ -216,33 +216,73 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
    // be calculated in all cases.
    if (forceValue) {
       calcCellSizes (false);
-      
-      // "child" is not a direct child, but a direct descendant.
-      // Search for the actual childs.
-      Widget *actualChild = child;
-      while (actualChild != NULL && actualChild->getParent () != this)
-         actualChild = actualChild->getParent ();
-      
-      assert (actualChild != NULL);
-      
-      // TODO This is inefficient. (Use parentRef?)
-      for (int row = numRows - 1; width == -1 && row >= 0; row--) {
-         for (int col = 0; width == -1 && col < numCols; col++) {
-            int n = row * numCols + col;
-            if (childDefined (n) &&
-                children->get(n)->cell.widget == actualChild) {
-               DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
-               width = (children->get(n)->cell.colspanEff - 1)
-                  * getStyle()->hBorderSpacing;
-               for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
-                  width += colWidths->get (col + i);
-               width = misc::max (width, 0);
-            }
+      width = calcAvailWidthForDescendant (child);
+   } else
+      width = -1;
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
+   DBG_OBJ_LEAVE ();
+   return width;
+}
+
+void Table::correctRequisitionOfChild (core::Widget *child,
+                                       core::Requisition *requisition,
+                                       void (*splitHeightFun) (int, int*, int*))
+{
+   // TODO Same comments as in Widget::correctRequisitionOfChild may
+   // apply here.
+
+   DBG_OBJ_ENTER ("resize", 0, "correctRequisitionOfChild",
+                  "%p, %d * (%d + %d), ...)",
+                  child, requisition->width, requisition->ascent,
+                  requisition->descent);
+
+   if (child->getStyle()->width != core::style::LENGTH_AUTO) {
+      calcCellSizes (false);
+      // The requisition is always the width of the column; the table
+      // widget is special in inforcing this, based on extremes, which
+      // may again be corrected again by CSS attributes.
+      requisition->width = calcAvailWidthForDescendant (child);
+   }
+
+   correctReqHeightOfChild (child, requisition, splitHeightFun);
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
+                 requisition->width, requisition->ascent,
+                 requisition->descent);
+   DBG_OBJ_LEAVE ();
+}
+
+int Table::calcAvailWidthForDescendant (Widget *child)
+{
+   DBG_OBJ_ENTER ("resize", 0, "calcAvailWidthForDescendant", "%p", child);
+
+   // "child" is not a direct child, but a direct descendant. Search
+   // for the actual childs.
+   Widget *actualChild = child;
+   while (actualChild != NULL && actualChild->getParent () != this)
+      actualChild = actualChild->getParent ();
+   
+   assert (actualChild != NULL);
+  
+   // TODO This is inefficient. (Use parentRef?)
+   int width = -1;
+   for (int row = numRows - 1; width == -1 && row >= 0; row--) {
+      for (int col = 0; width == -1 && col < numCols; col++) {
+         int n = row * numCols + col;
+         if (childDefined (n) &&
+             children->get(n)->cell.widget == actualChild) {
+            DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
+            width = (children->get(n)->cell.colspanEff - 1)
+               * getStyle()->hBorderSpacing;
+            for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
+               width += colWidths->get (col + i);
+            width = misc::max (width, 0);
          }
       }
-      
-      assert (width != -1);
    }
+   
+   assert (width != -1);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_LEAVE ();

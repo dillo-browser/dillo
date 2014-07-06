@@ -411,6 +411,8 @@ private:
          children->get(n)->type != Child::SPAN_SPACE;
    }
 
+   int calcAvailWidthForDescendant (Widget *child);
+
    void reallocChildren (int newNumCols, int newNumRows);
 
    void calcCellSizes (bool calcHeights);
@@ -442,6 +444,9 @@ protected:
    void resizeDrawImpl ();
 
    int getAvailWidthOfChild (Widget *child, bool forceValue);
+   void correctRequisitionOfChild (core::Widget *child,
+                                   core::Requisition *requisition,
+                                   void (*splitHeightFun) (int, int*, int*));
 
    void containerSizeChangedForChildren ();
    bool usesAvailWidth ();
