@@ -28,7 +28,6 @@ namespace dw {
 
 Ruler::Ruler ()
 {
-   unsetFlags (HAS_CONTENTS);
 }
 
 void Ruler::sizeRequestImpl (core::Requisition *requisition)

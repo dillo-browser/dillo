@@ -69,7 +69,7 @@ Widget::Widget ()
    DBG_OBJ_CREATE ("dw::core::Widget");
    registerName ("dw::core::Widget", &CLASS_ID);
 
-   flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED | HAS_CONTENTS);
+   flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED);
    parent = generator = container = NULL;
    DBG_OBJ_SET_PTR ("container", container);
 
