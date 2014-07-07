@@ -28,7 +28,6 @@ namespace dw {
 
 Ruler::Ruler ()
 {
-   setFlags (USES_HINTS);
    unsetFlags (HAS_CONTENTS);
 }
 

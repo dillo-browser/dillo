@@ -69,27 +69,19 @@ protected:
       EXTREMES_CHANGED = 1 << 5,
 
       /**
-       * \brief Set by the widget itself (in the constructor), when set...
-       *    methods are implemented.
-       *
-       * Will hopefully be removed, after redesigning the size model.
-       */
-      USES_HINTS       = 1 << 6,
-
-      /**
        * \brief Set by the widget itself (in the constructor), when it contains
        *    some contents, e.g. an image, as opposed to a horizontal ruler.
        *
        * Will hopefully be removed, after redesigning the size model.
        */
-      HAS_CONTENTS     = 1 << 7,
+      HAS_CONTENTS     = 1 << 6,
 
       /**
        * \brief Set, when a widget was already once allocated,
        *
        * The dw::Image widget uses this flag, see dw::Image::setBuffer.
        */
-      WAS_ALLOCATED    = 1 << 8,
+      WAS_ALLOCATED    = 1 << 7,
    };
 
    /**
@@ -205,14 +197,13 @@ protected:
    /*inline void printFlags () {
       DBG_IF_RTFL {
          char buf[10 * 3 - 1 + 1];
-         snprintf (buf, sizeof (buf), "%s:%s:%s:%s:%s:%s:%s:%s:%s:%s",
+         snprintf (buf, sizeof (buf), "%s:%s:%s:%s:%s:%s:%s:%s:%s",
                    (flags & RESIZE_QUEUED)    ? "Rq" : "--",
                    (flags & EXTREMES_QUEUED)  ? "Eq" : "--",
                    (flags & NEEDS_RESIZE)     ? "nR" : "--",
                    (flags & NEEDS_ALLOCATE)   ? "nA" : "--",
                    (flags & ALLOCATE_QUEUED)  ? "Aq" : "--",
                    (flags & EXTREMES_CHANGED) ? "Ec" : "--",
-                   (flags & USES_HINTS)       ? "uh" : "--",
                    (flags & HAS_CONTENTS)     ? "hc" : "--",
                    (flags & WAS_ALLOCATED)    ? "wA" : "--",
                    (flags & BLOCK_LEVEL)      ? "bl" : "--");
@@ -251,11 +242,6 @@ protected:
          case EXTREMES_CHANGED:
             DBG_OBJ_SET_SYM ("flags.EXTREMES_CHANGED",
                              (flags & EXTREMES_CHANGED) ? "true" : "false");
-            break;
-            
-         case USES_HINTS:
-            DBG_OBJ_SET_SYM ("flags.USES_HINTS",
-                             (flags & USES_HINTS) ? "true" : "false");
             break;
             
          case HAS_CONTENTS:
@@ -417,7 +403,6 @@ public:
    inline bool allocateQueued ()  { return flags & ALLOCATE_QUEUED; }
    inline bool extremesChanged () { return flags & EXTREMES_CHANGED; }
    inline bool wasAllocated ()    { return flags & WAS_ALLOCATED; }
-   inline bool usesHints ()       { return flags & USES_HINTS; }
    inline bool hasContents ()     { return flags & HAS_CONTENTS; }
 
    void setParent (Widget *parent);

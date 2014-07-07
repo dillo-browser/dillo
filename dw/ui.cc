@@ -283,9 +283,6 @@ void ComplexButtonResource::init (Widget *widget)
 void ComplexButtonResource::setEmbed (Embed *embed)
 {
    ButtonResource::setEmbed (embed);
-
-   if (childWidget->usesHints ())
-      embed->setUsesHints ();
 }
 
 ComplexButtonResource::~ComplexButtonResource ()

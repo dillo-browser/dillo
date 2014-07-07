@@ -225,7 +225,6 @@ Textblock::Textblock (bool limitTextWidth)
 {
    DBG_OBJ_CREATE ("dw::Textblock");
    registerName ("dw::Textblock", &CLASS_ID);
-   setFlags (USES_HINTS);
    setButtonSensitive(true);
 
    containingBlock = NULL;

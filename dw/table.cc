@@ -34,7 +34,6 @@ Table::Table(bool limitTextWidth)
 {
    DBG_OBJ_CREATE ("dw::Table");
    registerName ("dw::Table", &CLASS_ID);
-   setFlags (USES_HINTS);
    setButtonSensitive(false);
 
    this->limitTextWidth = limitTextWidth;

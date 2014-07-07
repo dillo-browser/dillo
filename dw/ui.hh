@@ -248,8 +248,6 @@ public:
    Iterator *iterator (Content::Type mask, bool atEnd);
    void setStyle (style::Style *style);
 
-   inline void setUsesHints () { setFlags (USES_HINTS); }
-
    inline Resource *getResource () { return resource; }
 };
 
