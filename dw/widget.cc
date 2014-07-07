@@ -1362,7 +1362,7 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
 
    // TODO Extremes only corrected?
 
-   DBG_OBJ_ENTER ("resize", 0, "correctExtremedOfChild", "%p, %d / %d",
+   DBG_OBJ_ENTER ("resize", 0, "correctExtremesOfChild", "%p, %d / %d",
                   child, extremes->minWidth, extremes->maxWidth);
 
    if (style::isAbsLength (child->getStyle()->width)) {

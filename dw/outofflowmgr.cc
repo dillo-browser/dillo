@@ -81,6 +81,9 @@ OutOfFlowMgr::Float::Float (OutOfFlowMgr *oofm, Widget *widget,
       DBG_OBJ_SET_NUM_O (widget, "<Float>.size.width", size.width);
       DBG_OBJ_SET_NUM_O (widget, "<Float>.size.ascent", size.ascent);
       DBG_OBJ_SET_NUM_O (widget, "<Float>.size.descent", size.descent);
+      DBG_OBJ_SET_BOOL_O (widget, "<Float>.dirty", dirty);
+      DBG_OBJ_SET_BOOL_O (widget, "<Float>.sizeChangedSinceLastAllocation",
+                         sizeChangedSinceLastAllocation);
    }
 }
 
@@ -1342,6 +1345,11 @@ void OutOfFlowMgr::markSizeChange (int ref)
 
       vloat->dirty = vloat->sizeChangedSinceLastAllocation = true;
 
+      DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
+      DBG_OBJ_SET_BOOL_O (vloat->getWidget (),
+                          "<Float>.sizeChangedSinceLastAllocation",
+                          vloat->sizeChangedSinceLastAllocation);
+
       // The generating block is told directly about this. (Others later, in
       // sizeAllocateEnd.) Could be faster (cf. hasRelationChanged, which
       // differentiates many special cases), but the size is not known yet,
@@ -2067,6 +2075,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
       vloat->getWidget()->sizeRequest (&vloat->size);
       vloat->cbLineBreakWidth = containingBlock->getLineBreakWidth ();
       vloat->dirty = false;
+      DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
 
       DBG_OBJ_MSGF ("resize.oofm", 1, "size: %d * (%d + %d)",
                     vloat->size.width, vloat->size.ascent, vloat->size.descent);
