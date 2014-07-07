@@ -301,6 +301,8 @@ int Table::applyPerHeight (int containerHeight, core::style::Length perHeight)
 
 void Table::containerSizeChangedForChildren ()
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
+
    for (int col = 0; col < numCols; col++) {
       for (int row = 0; row < numRows; row++) {
          int n = row * numCols + col;
@@ -308,6 +310,30 @@ void Table::containerSizeChangedForChildren ()
             children->get(n)->cell.widget->containerSizeChanged ();
       }
    }
+
+   DBG_OBJ_LEAVE ();
+}
+
+bool Table::affectsSizeChangeContainerChild (core::Widget *child)
+{
+   DBG_OBJ_ENTER ("resize", 0, "affectsSizeChangeContainerChild", "%p", child);
+
+   bool ret;
+
+   // This is a bit more complicated, as compared to the standard
+   // implementation (Widget::affectsSizeChangeContainerChild).
+   // Height would handled the same way, but width is more
+   // complicated: we would have to track numerous values here. Always
+   // returning true is correct in all cases, but generally
+   // inefficient.
+
+   // TODO Better solution?
+
+   ret = true;
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
+   DBG_OBJ_LEAVE ();
+   return ret;  
 }
 
 bool Table::usesAvailWidth ()

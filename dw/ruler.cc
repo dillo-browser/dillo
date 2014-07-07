@@ -55,7 +55,9 @@ bool Ruler::isBlockLevel ()
 
 void Ruler::containerSizeChangedForChildren ()
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
    // Nothing to do.
+   DBG_OBJ_LEAVE ();
 }
 
 bool Ruler::usesAvailWidth ()

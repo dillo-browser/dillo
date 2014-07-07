@@ -340,7 +340,7 @@ bool Widget::affectedByContainerSizeChange ()
             (getStyle()->height == style::LENGTH_AUTO ?
              usesAvailHeight () : false);
    } else
-      ret = this->affectsSizeChangeContainerChild (this);
+      ret = container->affectsSizeChangeContainerChild (this);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
    DBG_OBJ_LEAVE ();

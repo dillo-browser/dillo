@@ -449,6 +449,7 @@ protected:
                                    void (*splitHeightFun) (int, int*, int*));
 
    void containerSizeChangedForChildren ();
+   bool affectsSizeChangeContainerChild (Widget *child);
    bool usesAvailWidth ();
 
    bool isBlockLevel ();

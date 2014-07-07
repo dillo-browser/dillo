@@ -260,7 +260,9 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
 
 void Image::containerSizeChangedForChildren ()
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
    // Nothing to do.
+   DBG_OBJ_LEAVE ();
 }
 
 void Image::enterNotifyImpl (core::EventCrossing *event)

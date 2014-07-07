@@ -650,6 +650,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
 void Textblock::containerSizeChangedForChildren ()
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
+
    for (int i = 0; i < words->size (); i++) {
       Word *word = words->getRef (i);
       if (word->content.type == core::Content::WIDGET_IN_FLOW)
@@ -658,6 +660,8 @@ void Textblock::containerSizeChangedForChildren ()
 
    if (outOfFlowMgr)
       outOfFlowMgr->containerSizeChangedForChildren ();
+
+   DBG_OBJ_LEAVE ();
 }
 
 bool Textblock::usesAvailWidth ()

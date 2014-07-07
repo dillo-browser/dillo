@@ -66,7 +66,9 @@ void Embed::sizeAllocateImpl (Allocation *allocation)
 
 void Embed::containerSizeChangedForChildren ()
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
    // Nothing to do (as long as all resources return empty iterators).
+   DBG_OBJ_LEAVE ();
 }
 
 void Embed::enterNotifyImpl (core::EventCrossing *event)

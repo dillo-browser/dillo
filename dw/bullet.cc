@@ -50,7 +50,9 @@ void Bullet::getExtremesImpl (core::Extremes *extremes)
 
 void Bullet::containerSizeChangedForChildren ()
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
    // Nothing to do.
+   DBG_OBJ_LEAVE ();
 }
 
 void Bullet::draw (core::View *view, core::Rectangle *area)
