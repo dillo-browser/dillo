@@ -639,10 +639,15 @@ void OutOfFlowMgr::containerSizeChangedForChildren ()
 {
    DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
 
-   for (int i = 0; i < leftFloatsCB->size (); i++)
-      leftFloatsCB->get(i)->getWidget()->containerSizeChanged ();
-   for (int i = 0; i < rightFloatsCB->size (); i++)
-      rightFloatsCB->get(i)->getWidget()->containerSizeChanged ();
+   DBG_OBJ_MSGF ("resize", 0,
+                 "%d left floats, %d right floats %d abspos",
+                 leftFloatsAll->size (), rightFloatsAll->size (),
+                 absolutelyPositioned->size());
+
+   for (int i = 0; i < leftFloatsAll->size (); i++)
+      leftFloatsAll->get(i)->getWidget()->containerSizeChanged ();
+   for (int i = 0; i < rightFloatsAll->size (); i++)
+      rightFloatsAll->get(i)->getWidget()->containerSizeChanged ();
    for (int i = 0; i < absolutelyPositioned->size(); i++)
       absolutelyPositioned->get(i)->widget->containerSizeChanged ();
 
