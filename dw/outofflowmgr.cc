@@ -1065,16 +1065,26 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
    DBG_OBJ_ENTER ("resize.oofm", 0, "calcFloatX", "%p, %s, %d, %d, %d",
                   vloat->getWidget (), side == LEFT ? "LEFT" : "RIGHT", gbX,
                   gbWidth, gbLineBreakWidth);
-
    int x;
 
    switch (side) {
    case LEFT:
       // Left floats are always aligned on the left side of the
-      // generator (content, not allocation).
+      // generator (content, not allocation) ...
       x = gbX + vloat->generatingBlock->getStyle()->boxOffsetX();
       DBG_OBJ_MSGF ("resize.oofm", 1, "left: x = %d + %d = %d",
                     gbX, vloat->generatingBlock->getStyle()->boxOffsetX(), x);
+      // ... but when the float exceeds the line break width of the
+      // container, it is corrected (but not left of the container).
+      // This way, we save space and, especially within tables, avoid
+      // some problems.
+      if (wasAllocated (containingBlock) &&
+          x + vloat->size.width > containingBlock->getLineBreakWidth ()) {
+         x = max (0, containingBlock->getLineBreakWidth () - vloat->size.width);
+         DBG_OBJ_MSGF ("resize.oofm", 1, "corrected to: max (0, %d - %d) = %d",
+                       containingBlock->getLineBreakWidth (), vloat->size.width,
+                       x);  
+      }
       break;
 
    case RIGHT:
@@ -2109,7 +2119,7 @@ int OutOfFlowMgr::calcValueForAbsolutelyPositioned
 void OutOfFlowMgr::sizeAllocateAbsolutelyPositioned ()
 {
    for (int i = 0; i < absolutelyPositioned->size(); i++) {
-      Allocation *cbAllocation = getAllocation(containingBlock);
+      Allocation *cbAllocation = getAllocation (containingBlock);
       AbsolutelyPositioned *abspos = absolutelyPositioned->get (i);
       ensureAbsolutelyPositionedSizeAndPosition (abspos);
 
