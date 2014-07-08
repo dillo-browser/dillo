@@ -98,6 +98,7 @@ dillo_SOURCES = \
 	plain.cc \
 	html.cc \
 	html.hh \
+	html_charrefs.h \
 	html_common.hh \
 	form.cc \
 	form.hh \

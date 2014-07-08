@@ -26,6 +26,7 @@
 #include "msg.h"
 #include "binaryconst.h"
 #include "colors.h"
+#include "html_charrefs.h"
 #include "utf8.hh"
 
 #include "misc.h"
@@ -787,113 +788,16 @@ void a_Html_stash_init(DilloHtml *html)
    dStr_truncate(html->Stash, 0);
 }
 
-/* Entities list from the HTML 4.01 DTD */
-typedef struct {
-   const char *entity;
-   int isocode;
-} Ent_t;
-
-#define NumEnt 252
-static const Ent_t Entities[NumEnt] = {
-   {"AElig",0306}, {"Aacute",0301}, {"Acirc",0302},  {"Agrave",0300},
-   {"Alpha",01621},{"Aring",0305},  {"Atilde",0303}, {"Auml",0304},
-   {"Beta",01622}, {"Ccedil",0307}, {"Chi",01647},   {"Dagger",020041},
-   {"Delta",01624},{"ETH",0320},    {"Eacute",0311}, {"Ecirc",0312},
-   {"Egrave",0310},{"Epsilon",01625},{"Eta",01627},  {"Euml",0313},
-   {"Gamma",01623},{"Iacute",0315}, {"Icirc",0316},  {"Igrave",0314},
-   {"Iota",01631}, {"Iuml",0317},   {"Kappa",01632}, {"Lambda",01633},
-   {"Mu",01634},   {"Ntilde",0321}, {"Nu",01635},    {"OElig",0522},
-   {"Oacute",0323},{"Ocirc",0324},  {"Ograve",0322}, {"Omega",01651},
-   {"Omicron",01637},{"Oslash",0330},{"Otilde",0325},{"Ouml",0326},
-   {"Phi",01646},  {"Pi",01640},    {"Prime",020063},{"Psi",01650},
-   {"Rho",01641},  {"Scaron",0540}, {"Sigma",01643}, {"THORN",0336},
-   {"Tau",01644},  {"Theta",01630}, {"Uacute",0332}, {"Ucirc",0333},
-   {"Ugrave",0331},{"Upsilon",01645},{"Uuml",0334},  {"Xi",01636},
-   {"Yacute",0335},{"Yuml",0570},   {"Zeta",01626},  {"aacute",0341},
-   {"acirc",0342}, {"acute",0264},  {"aelig",0346},  {"agrave",0340},
-   {"alefsym",020465},{"alpha",01661},{"amp",38},    {"and",021047},
-   {"ang",021040}, {"aring",0345},  {"asymp",021110},{"atilde",0343},
-   {"auml",0344},  {"bdquo",020036},{"beta",01662},  {"brvbar",0246},
-   {"bull",020042},{"cap",021051},  {"ccedil",0347}, {"cedil",0270},
-   {"cent",0242},  {"chi",01707},   {"circ",01306},  {"clubs",023143},
-   {"cong",021105},{"copy",0251},   {"crarr",020665},{"cup",021052},
-   {"curren",0244},{"dArr",020723}, {"dagger",020040},{"darr",020623},
-   {"deg",0260},   {"delta",01664}, {"diams",023146},{"divide",0367},
-   {"eacute",0351},{"ecirc",0352},  {"egrave",0350}, {"empty",021005},
-   {"emsp",020003},{"ensp",020002}, {"epsilon",01665},{"equiv",021141},
-   {"eta",01667},  {"eth",0360},    {"euml",0353},   {"euro",020254},
-   {"exist",021003},{"fnof",0622},  {"forall",021000},{"frac12",0275},
-   {"frac14",0274},{"frac34",0276}, {"frasl",020104},{"gamma",01663},
-   {"ge",021145},  {"gt",62},       {"hArr",020724}, {"harr",020624},
-   {"hearts",023145},{"hellip",020046},{"iacute",0355},{"icirc",0356},
-   {"iexcl",0241}, {"igrave",0354}, {"image",020421},{"infin",021036},
-   {"int",021053}, {"iota",01671},  {"iquest",0277}, {"isin",021010},
-   {"iuml",0357},  {"kappa",01672}, {"lArr",020720}, {"lambda",01673},
-   {"lang",021451},{"laquo",0253},  {"larr",020620}, {"lceil",021410},
-   {"ldquo",020034},{"le",021144},  {"lfloor",021412},{"lowast",021027},
-   {"loz",022712}, {"lrm",020016},  {"lsaquo",020071},{"lsquo",020030},
-   {"lt",60},      {"macr",0257},   {"mdash",020024},{"micro",0265},
-   {"middot",0267},{"minus",021022},{"mu",01674},    {"nabla",021007},
-   {"nbsp",0240},  {"ndash",020023},{"ne",021140},   {"ni",021013},
-   {"not",0254},   {"notin",021011},{"nsub",021204}, {"ntilde",0361},
-   {"nu",01675},   {"oacute",0363}, {"ocirc",0364},  {"oelig",0523},
-   {"ograve",0362},{"oline",020076},{"omega",01711}, {"omicron",01677},
-   {"oplus",021225},{"or",021050},  {"ordf",0252},   {"ordm",0272},
-   {"oslash",0370},{"otilde",0365}, {"otimes",021227},{"ouml",0366},
-   {"para",0266},  {"part",021002}, {"permil",020060},{"perp",021245},
-   {"phi",01706},  {"pi",01700},    {"piv",01726},   {"plusmn",0261},
-   {"pound",0243}, {"prime",020062},{"prod",021017}, {"prop",021035},
-   {"psi",01710},  {"quot",34},     {"rArr",020722}, {"radic",021032},
-   {"rang",021452},{"raquo",0273},  {"rarr",020622}, {"rceil",021411},
-   {"rdquo",020035},{"real",020434},{"reg",0256},    {"rfloor",021413},
-   {"rho",01701},  {"rlm",020017},  {"rsaquo",020072},{"rsquo",020031},
-   {"sbquo",020032},{"scaron",0541},{"sdot",021305}, {"sect",0247},
-   {"shy",0255},   {"sigma",01703}, {"sigmaf",01702},{"sim",021074},
-   {"spades",023140},{"sub",021202},{"sube",021206}, {"sum",021021},
-   {"sup",021203}, {"sup1",0271},   {"sup2",0262},   {"sup3",0263},
-   {"supe",021207},{"szlig",0337},  {"tau",01704},   {"there4",021064},
-   {"theta",01670},{"thetasym",01721},{"thinsp",020011},{"thorn",0376},
-   {"tilde",01334},{"times",0327},  {"trade",020442},{"uArr",020721},
-   {"uacute",0372},{"uarr",020621}, {"ucirc",0373},  {"ugrave",0371},
-   {"uml",0250},   {"upsih",01722}, {"upsilon",01705},{"uuml",0374},
-   {"weierp",020430},{"xi",01676},  {"yacute",0375}, {"yen",0245},
-   {"yuml",0377},  {"zeta",01666},  {"zwj",020015},  {"zwnj",020014}
-};
-
-
-/*
- * Comparison function for binary search
- */
-static int Html_entity_comp(const void *a, const void *b)
-{
-   return strcmp(((Ent_t *)a)->entity, ((Ent_t *)b)->entity);
-}
-
-/*
- * Binary search of 'key' in entity list
- */
-static int Html_entity_search(char *key)
-{
-   Ent_t *res, EntKey;
-
-   EntKey.entity = key;
-   res = (Ent_t*) bsearch(&EntKey, Entities, NumEnt,
-                          sizeof(Ent_t), Html_entity_comp);
-   if (res)
-     return (res - Entities);
-   return -1;
-}
-
 /*
  * This is M$ non-standard "smart quotes" (w1252). Now even deprecated by them!
  *
  * SGML for HTML4.01 defines c >= 128 and c <= 159 as UNUSED.
- * TODO: Probably I should remove this hack, and add a HTML warning. --Jcid
+ * TODO: Probably I should remove this hack. --Jcid
  */
-static int Html_ms_stupid_quotes_2ucs(int isocode)
+static int Html_ms_stupid_quotes_2ucs(int codepoint)
 {
    int ret;
-   switch (isocode) {
+   switch (codepoint) {
    case 145:
    case 146: ret = '\''; break;
    case 147:
@@ -901,130 +805,233 @@ static int Html_ms_stupid_quotes_2ucs(int isocode)
    case 149: ret = 176; break;
    case 150:
    case 151: ret = '-'; break;
-   default:  ret = isocode; break;
+   default:  ret = codepoint; break;
    }
    return ret;
 }
 
 /*
- * Given an entity, return the UCS character code.
- * Returns a negative value (error code) if not a valid entity.
+ * Parse a numeric character reference (e.g., "&#47;" or "&#x2F;").
+ * The "&#" has already been consumed.
+ */
+static const char *Html_parse_numeric_charref(DilloHtml *html, char *tok,
+                                              bool_t is_attr, int *entsize)
+{
+   static char buf[5];
+   char *s = tok;
+   int n, codepoint = -1;
+
+   errno = 0;
+
+   if (*s == 'x' || *s == 'X') {
+      if (isxdigit(*++s)) {
+         /* strtol with base 16 accepts leading "0x" - we don't */
+         if (*s == '0' && s[1] == 'x') {
+            s++;
+            codepoint = 0;
+         } else {
+            codepoint = strtol(s, &s, 16);
+         }
+      }
+   } else if (isdigit(*s)) {
+      codepoint = strtol(s, &s, 10);
+   }
+   if (errno)
+      codepoint = -1;
+
+   if (*s == ';')
+      s++;
+   else {
+      if (prefs.show_extra_warnings && (html->DocType == DT_XHTML ||
+          (html->DocType == DT_HTML && html->DocTypeVersion <= 4.01f))) {
+         char c = *s;
+         *s = '\0';
+         BUG_MSG("character reference '&#%s' lacks ';'\n", tok);
+         *s = c;
+      }
+      /* Don't require ';' for old HTML, except that our current heuristic
+       * is to require it in attributes to avoid cases like "&copy=1" found
+       * in URLs.
+       */
+      if (is_attr || html->DocType == DT_XHTML ||
+          (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)) {
+         return NULL;
+      }
+
+   }
+   if ((codepoint < 0x20 && codepoint != '\t' && codepoint != '\n' &&
+        codepoint != '\f') ||
+       (codepoint >= 0x7f && codepoint <= 0x9f) ||
+       (codepoint >= 0xd800 && codepoint <= 0xdfff) || codepoint > 0x10ffff ||
+       ((codepoint & 0xfffe) == 0xfffe) ||
+       (!(html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f) &&
+        codepoint > 0xffff)) {
+      /* this catches null bytes, errors, codes out of range, disallowed
+       * control chars, permanently undefined chars, and surrogates.
+       */
+      char c = *s;
+      *s = '\0';
+      BUG_MSG("numeric character reference '&#%s' is not valid.\n", tok);
+      *s = c;
+
+      codepoint = (codepoint >= 145 && codepoint <= 151) ?
+                  Html_ms_stupid_quotes_2ucs(codepoint) : -1;
+   }
+   if (codepoint != -1) {
+      if (codepoint >= 128) {
+         n = a_Utf8_encode(codepoint, buf);
+      } else {
+         n = 1;
+         buf[0] = (char) codepoint;
+      }
+      assert(n < 5);
+      buf[n] = '\0';
+      *entsize = s-tok+2;
+      return buf;
+   } else {
+      return NULL;
+   }
+}
+
+/*
+ * Comparison function for binary search
+ */
+static int Html_charref_comp(const void *a, const void *b)
+{
+   return strcmp(((Charref_t *)a)->ref, ((Charref_t *)b)->ref);
+}
+
+/*
+ * Binary search of 'key' in charref list
+ */
+static Charref_t *Html_charref_search(char *key)
+{
+   Charref_t RefKey;
+
+   RefKey.ref = key;
+   return (Charref_t*) bsearch(&RefKey, Charrefs, NumRef,
+                       sizeof(Charref_t), Html_charref_comp);
+}
+
+/*
+ * Parse a named character reference (e.g., "&amp;" or "&hellip;").
+ * The "&" has already been consumed.
+ */
+static const char *Html_parse_named_charref(DilloHtml *html, char *tok,
+                                            bool_t is_attr, int *entsize)
+{
+   Charref_t *p;
+   char c;
+   char *s = tok;
+   const char *ret = NULL;
+
+   while (*++s && (isalnum(*s) || strchr(":_.-", *s))) ;
+   c = *s;
+   *s = '\0';
+   if (c != ';') {
+      if (prefs.show_extra_warnings && (html->DocType == DT_XHTML ||
+          (html->DocType == DT_HTML && html->DocTypeVersion <= 4.01f)))
+         BUG_MSG("character reference '&%s' lacks ';'\n", tok);
+
+      /* Don't require ';' for old HTML, except that our current heuristic
+       * is to require it in attributes to avoid cases like "&copy=1" found
+       * in URLs.
+       */
+      if (is_attr || html->DocType == DT_XHTML ||
+          (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)) {
+         return ret;
+      }
+   }
+
+   if ((p = Html_charref_search(tok))) {
+      ret = (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f) ?
+            p->html5_str : p->html4_str;
+   }
+
+   if (!ret && html->DocType == DT_XHTML && !strcmp(tok, "apos"))
+      ret = "'";
+
+   *s = c;
+   if (c == ';')
+      s++;
+
+   if (!ret) {
+      c = *s;
+      *s = '\0';
+      BUG_MSG("undefined character reference &%s\n", tok);
+      *s = c;
+   }
+   *entsize = s-tok+1;
+   return ret;
+}
+
+/*
+ * Given an entity, return the corresponding string.
+ * Returns NULL if not a valid entity.
  *
  * The first character *token is assumed to be == '&'
  *
  * For valid entities, *entsize is set to the length of the parsed entity.
  */
-static int Html_parse_entity(DilloHtml *html, const char *token,
-                             int toksize, int *entsize)
+static const char *Html_parse_entity(DilloHtml *html, const char *token,
+                                     int toksize, int *entsize, bool_t is_attr)
 {
-   int isocode, i;
-   char *tok, *s, c;
+   const char *ret = NULL;
+   char *tok;
 
    token++;
-   tok = s = toksize ? dStrndup(token, (uint_t)toksize) : dStrdup(token);
+   tok = dStrndup(token, (uint_t)toksize);
 
-   isocode = -1;
-
-   if (*s == '#') {
-      /* numeric character reference */
-      errno = 0;
-      if (*++s == 'x' || *s == 'X') {
-         if (isxdigit(*++s)) {
-            /* strtol with base 16 accepts leading "0x" - we don't */
-            if (*s == '0' && s[1] == 'x') {
-               s++;
-               isocode = 0;
-            } else {
-               isocode = strtol(s, &s, 16);
-            }
-         }
-      } else if (isdigit(*s)) {
-         isocode = strtol(s, &s, 10);
-      }
-
-      if (!isocode || errno || isocode > 0xffff) {
-         /* this catches null bytes, errors and codes >= 0xFFFF */
-         BUG_MSG("numeric character reference \"%s\" out of range\n", tok);
-         isocode = -2;
-      }
-
-      if (isocode != -1) {
-         if (*s == ';')
-            s++;
-         else if (prefs.show_extra_warnings)
-            BUG_MSG("numeric character reference without trailing ';'\n");
-      }
-
-   } else if (isalpha(*s)) {
-      /* character entity reference */
-      while (*++s && (isalnum(*s) || strchr(":_.-", *s))) ;
-      c = *s;
-      *s = 0;
-
-      if ((i = Html_entity_search(tok)) >= 0) {
-         isocode = Entities[i].isocode;
-      } else {
-         if (html->DocType == DT_XHTML && !strcmp(tok, "apos")) {
-            isocode = 0x27;
-         } else {
-            if ((html->DocType == DT_HTML && html->DocTypeVersion == 4.01f) ||
-                html->DocType == DT_XHTML)
-               BUG_MSG("undefined character entity '%s'\n", tok);
-            isocode = -3;
-         }
-      }
-      if (c == ';')
-         s++;
-      else if (prefs.show_extra_warnings)
-         BUG_MSG("character entity reference without trailing ';'\n");
+   if (*tok == '#') {
+      ret = Html_parse_numeric_charref(html, tok+1, is_attr, entsize);
+   } else if (isalpha(*tok)) {
+      ret = Html_parse_named_charref(html, tok, is_attr, entsize);
+   } else if (prefs.show_extra_warnings &&
+       (!(html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f))) {
+      // HTML5 doesn't mind literal '&'s.
+      BUG_MSG("literal '&'\n");
    }
-
-   *entsize = s-tok+1;
    dFree(tok);
 
-   if (isocode >= 145 && isocode <= 151) {
-      /* TODO: remove this hack. */
-      isocode = Html_ms_stupid_quotes_2ucs(isocode);
-   } else if (isocode == -1 && prefs.show_extra_warnings)
-      BUG_MSG("literal '&'\n");
-
-   return isocode;
+   return ret;
 }
 
 /*
- * Convert all the entities in a token to utf8 encoding. Takes
- * a token and its length, and returns a newly allocated string.
+ * Parse all the entities in a token. Takes the token and its length, and
+ * returns a newly allocated string.
  */
 char *a_Html_parse_entities(DilloHtml *html, const char *token, int toksize)
 {
    const char *esc_set = "&";
-   char *new_str, buf[4];
-   int i, j, k, n, s, isocode, entsize;
+   int i, s, entsize;
+   char *str;
 
-   new_str = dStrndup(token, toksize);
-   s = strcspn(new_str, esc_set);
-   if (new_str[s] == 0)
-      return new_str;
+   s = strcspn(token, esc_set);
+   if (s >= toksize) {
+      /* no ampersands */
+      str = dStrndup(token, toksize);
+   } else {
+      Dstr *ds = dStr_sized_new(toksize);
 
-   for (i = j = s; i < toksize; i++) {
-      if (token[i] == '&' &&
-          (isocode = Html_parse_entity(html, token+i,
-                                       toksize-i, &entsize)) >= 0) {
-         if (isocode >= 128) {
-            /* multibyte encoding */
-            n = a_Utf8_encode(isocode, buf);
-            for (k = 0; k < n; ++k)
-               new_str[j++] = buf[k];
+      dStr_append_l(ds, token, s);
+
+      for (i = s; i < toksize; i++) {
+         const char *entstr;
+         const bool_t is_attr = FALSE;
+
+         if (token[i] == '&' &&
+             (entstr = Html_parse_entity(html, token+i, toksize-i, &entsize,
+                                         is_attr))) {
+            dStr_append(ds, entstr);
+            i += entsize-1;
          } else {
-            new_str[j++] = (char) isocode;
+            dStr_append_c(ds, token[i]);
          }
-         i += entsize-1;
-      } else {
-         new_str[j++] = token[i];
       }
+      str = ds->str;
+      dStr_free(ds, 0);
    }
-   new_str[j] = '\0';
-   return new_str;
+   return str;
 }
 
 /*
@@ -4014,7 +4021,7 @@ static const char *Html_get_attr2(DilloHtml *html,
                                   const char *attrname,
                                   int tag_parsing_flags)
 {
-   int i, isocode, entsize, Found = 0, delimiter = 0, attr_pos = 0;
+   int i, entsize, Found = 0, delimiter = 0, attr_pos = 0;
    Dstr *Buf = html->attr_data;
    DilloHtmlTagParsingState state = SEEK_ATTR_START;
 
@@ -4073,16 +4080,12 @@ static const char *Html_get_attr2(DilloHtml *html,
             state = FINISHED;
          } else if (tag[i] == '&' &&
                     (tag_parsing_flags & HTML_ParseEntities)) {
-            if ((isocode = Html_parse_entity(html, tag+i,
-                                             tagsize-i, &entsize)) >= 0) {
-               if (isocode >= 128) {
-                  char buf[4];
-                  int k, n = a_Utf8_encode(isocode, buf);
-                  for (k = 0; k < n; ++k)
-                     dStr_append_c(Buf, buf[k]);
-               } else {
-                  dStr_append_c(Buf, (char) isocode);
-               }
+            const char *entstr;
+            const bool_t is_attr = TRUE;
+
+            if ((entstr = Html_parse_entity(html, tag+i, tagsize-i, &entsize,
+                                            is_attr))) {
+               dStr_append(Buf, entstr);
                i += entsize-1;
             } else {
                dStr_append_c(Buf, tag[i]);
