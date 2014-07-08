@@ -262,7 +262,20 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
       markExtremesChange (ref);
    }
 
-   if (!fast) {
+   if (fast) {
+      if (parent) {
+         // In this case, queueResize is called from top (may be a
+         // random entry point) to bottom, so markSizeChange and
+         // markExtremesChange have to be called explicitly for the
+         // parent. The tests (needsResize etc.) are uses to check
+         // whether queueResize has been called for the parent, or
+         // whether this widget is the enty point.
+         if (parent->needsResize () || parent->resizeQueued ())
+            parent->markSizeChange (parentRef);
+         if (parent->extremesChanged () || parent->extremesQueued ())
+            parent->markExtremesChange (parentRef);
+      }
+   } else {
       for (widget2 = parent, child = this; widget2;
            child = widget2, widget2 = widget2->parent) {      
          if (layout && !widget2->resizeQueued ())

@@ -2804,7 +2804,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
       DBG_OBJ_MSGF ("resize", 1, "Rewrapping from line %d (of %d).",
                     wrapLineIndex, lines->size ());
 
-      if (vloat->getGenerator() == this) {
+      if (vloat->getGenerator() == this && lines->size () > 0) {
          bool found = false;
          // Sometimes, the respective word is not yet part of a
          // line. Nothing to do, but because of the assertion below
@@ -2863,6 +2863,14 @@ void Textblock::borderChanged (int y, Widget *vloat)
                lineIndex2 = wrapLineIndex - (i + 1) / 2;
                exceeds = exceedsBeginning = lineIndex2 < 0;
             }
+
+            DBG_OBJ_MSGF ("resize", 2,
+                          "lineIndex2 = %d (of %d), exceeds = %s, "
+                          "exceedsBeginning = %s, exceedsEnd = %s",
+                          lineIndex2, lines->size (),
+                          exceeds ? "true" : "false",
+                          exceedsBeginning ? "true" : "false",
+                          exceedsEnd ? "true" : "false");
 
             if (exceedsBeginning && exceedsEnd)
                break;
