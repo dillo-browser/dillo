@@ -901,6 +901,14 @@ bool OutOfFlowMgr::doFloatsExceedCB (Side side)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "doFloatsExceedCB", "%s",
                   side == LEFT ? "LEFT" : "RIGHT");
+
+   // This method is called to determine whether the *requisition* of
+   // the CB must be recalculated. So, we check the float allocations
+   // against the *requisition* of the CB, which may (e. g. within
+   // tables) differ from the new allocation. (Generally, a widget may
+   // allocated at a different size.)
+   core::Requisition cbReq;
+   containingBlock->sizeRequest (&cbReq);
    
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    bool exceeds = false;
@@ -916,14 +924,10 @@ bool OutOfFlowMgr::doFloatsExceedCB (Side side)
                        "(%d, %d, %d * %d)?",
                        fla->x, fla->y, fla->width, fla->ascent + fla->descent,
                        containingBlockAllocation.x, containingBlockAllocation.y,
-                       containingBlockAllocation.width,
-                       containingBlockAllocation.ascent
-                       + containingBlockAllocation.descent);
-         if (fla->x + fla->width >
-             containingBlockAllocation.x + containingBlockAllocation.width ||
-             fla->y + fla->ascent + fla->descent >
-             containingBlockAllocation.y + containingBlockAllocation.ascent
-             + containingBlockAllocation.descent) {
+                       cbReq.width, cbReq.ascent + cbReq.descent);
+         if (fla->x + fla->width > containingBlockAllocation.x + cbReq.width ||
+             fla->y + fla->ascent + fla->descent
+             > containingBlockAllocation.y + cbReq.ascent + cbReq.descent) {
             exceeds = true;
             DBG_OBJ_MSG ("resize.oofm", 2, "Yes.");
          } else
