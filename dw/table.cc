@@ -1175,7 +1175,7 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
 
             dest->set (destOffset - firstCol + col, width);
          }
-      } else if (totalMin != 0) {
+      } else { // if (totalMin == 0)
          // Last special case. Ssame algorithm, with
          // 
          //    x[i] = 1 (so cumX = i = col - firstCol + 1)
