@@ -1030,7 +1030,7 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
    DBG_OBJ_ENTER ("resize", 0, "calcExtremesSpanMulteCols",
                   "%d, %d, ..., %s, %s",
                   col, cs, getExtrModName (minExtrMod),
-                  getExtrModName (minExtrMod));
+                  getExtrModName (maxExtrMod));
    
    int cellMin = getExtreme (cellExtremes, minExtrMod);
    int cellMax = getExtreme (cellExtremes, maxExtrMod);
