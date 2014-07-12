@@ -1354,6 +1354,10 @@ void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
                       + child->boxDiffHeight (),
                       &requisition->ascent, &requisition->descent);
    else if (style::isPerLength (child->getStyle()->height)) {
+#if 0
+      // TODO Percentage heights are somewhat more complicated. Has to
+      // be clarified. See also Widget::correctRequisition.
+
       int availHeight = getAvailHeight (false);
       if (availHeight != -1) {
          int containerHeight = availHeight - boxDiffHeight ();
@@ -1361,6 +1365,7 @@ void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
                                                 child->getStyle()->height),
                          &requisition->ascent, &requisition->descent);
       }
+#endif
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
