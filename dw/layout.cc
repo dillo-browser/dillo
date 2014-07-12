@@ -886,7 +886,10 @@ void Layout::resizeIdle ()
    // called again.
    resizeIdleId = -1;
 
-   if (topLevel) {
+   // If this method is triggered by a viewport change, we can save
+   // time when the toplevel widget is not affected (as for a toplevel
+   // image resource).
+   if (topLevel && topLevel->needsResize ()) {
       Requisition requisition;
       Allocation allocation;
 
@@ -895,9 +898,11 @@ void Layout::resizeIdle ()
                     requisition.width, requisition.ascent, requisition.descent);
 
       // This method is triggered by Widget::queueResize, which will,
-      // in any case, set NEEDS_ALLOCATE (indirectly, as
-      // ALLOCATE_QUEUED). This assertion helps to find
-      // inconsistences.
+      // in any case, set NEEDS_ALLOCATE (indirectly, as ALLOCATE_QUEUED).
+      // This assertion helps to find inconsistences. (Cases where
+      // this method is triggered by a viewport change, but the
+      // toplevel widget is not affected, are filtered out some lines
+      // above: "if (topLevel && topLevel->needsResize ())".)
       assert (topLevel->needsAllocate ());
       
       allocation.x = allocation.y = 0;
