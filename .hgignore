@@ -37,6 +37,7 @@
 ^test/dw-links2$
 ^test/dw-lists$
 ^test/dw-resource-test$
+^test/dw-simple-container-test$
 ^test/dw-table$
 ^test/dw-table-aligned$
 ^test/dw-ui-test$
