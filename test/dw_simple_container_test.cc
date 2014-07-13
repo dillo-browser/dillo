@@ -48,10 +48,6 @@ int main(int argc, char **argv)
    StyleAttrs styleAttrs;
    styleAttrs.initValues ();
    styleAttrs.margin.setVal (5);
-   styleAttrs.borderWidth.setVal (5);
-   styleAttrs.setBorderColor (Color::create (layout, 0x800080));
-   styleAttrs.setBorderStyle (BORDER_DASHED);
-   styleAttrs.padding.setVal (5);
 
    FontAttrs fontAttrs;
    fontAttrs.name = "Bitstream Charter";
@@ -65,40 +61,48 @@ int main(int argc, char **argv)
    styleAttrs.color = Color::create (layout, 0x000000);
    styleAttrs.backgroundColor = Color::create (layout, 0xffffff);
 
+   Style *textblockStyle1 = Style::create (&styleAttrs);
+
+   styleAttrs.backgroundColor = NULL;
+   styleAttrs.margin.setVal (0);
+
+   Style *textblockStyle2 = Style::create (&styleAttrs);
+   Style *wordStyle = Style::create (&styleAttrs);
+
+   styleAttrs.borderWidth.setVal (5);
+   styleAttrs.setBorderColor (Color::create (layout, 0x800080));
+   styleAttrs.setBorderStyle (BORDER_DASHED);
+   styleAttrs.padding.setVal (5);
+
    Style *containerStyle = Style::create (&styleAttrs);
+
+   Textblock *textblock1 = new Textblock (false);
+   textblock1->setStyle (textblockStyle1);
+   layout->setWidget (textblock1);
 
    SimpleContainer *simpleContainer = new SimpleContainer ();
    simpleContainer->setStyle (containerStyle);
-   layout->setWidget (simpleContainer);
+   textblock1->addWidget (simpleContainer, containerStyle);
 
-   styleAttrs.margin.setVal (0);
-   styleAttrs.borderWidth.setVal (0);
-   styleAttrs.padding.setVal (0);
-
-   Style *widgetStyle = Style::create (&styleAttrs);
-
-   Textblock *textblock = new Textblock (false);
-   textblock->setStyle (widgetStyle);
-   simpleContainer->setChild (textblock);
-
-   widgetStyle->unref();
-
-   styleAttrs.margin.setVal (0);
-   styleAttrs.backgroundColor = NULL;
-
-   Style *wordStyle = Style::create (&styleAttrs);
+   Textblock *textblock2 = new Textblock (false);
+   textblock2->setStyle (textblockStyle2);
+   simpleContainer->setChild (textblock2);
 
    const char *words[] = { "This", "is", "only", "a", "short", "paragraph.",
                            NULL };
    
    for(int j = 0; words[j]; j++) {
-      textblock->addText(words[j], wordStyle);
-      textblock->addSpace(wordStyle);
+      textblock2->addText(words[j], wordStyle);
+      textblock2->addSpace(wordStyle);
    }
 
-   wordStyle->unref();
+   textblockStyle1->unref();
+   textblockStyle2->unref();
+   containerStyle->unref();
+   wordStyle->unref();   
 
-   textblock->flush ();
+   textblock1->flush ();
+   textblock2->flush ();
 
    window->resizable(viewport);
    window->show();
