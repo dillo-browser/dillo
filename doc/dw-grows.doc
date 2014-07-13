@@ -127,4 +127,11 @@ dw::Textblock's (at the top and at the bottom) call queueResize with
 for the dw::SimpleContainer, *sizeRequest* is never called for the
 bottom dw::Textblock.
 
+There does not seem to be a real case for this problem in dillo, since
+all containers (except dw::SimpleContainer, which is not used outside
+tests) use the available width and height
+(dw::core::Widget::usesAvailWidth and
+dw::core::Widget::usesAvailHeight), and so are always affected by
+viewport size changes.
+
 */
