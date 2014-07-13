@@ -88,21 +88,12 @@ int main(int argc, char **argv)
 
    Style *wordStyle = Style::create (&styleAttrs);
 
-   for(int i = 1; i <= 10; i++) {
-      char buf[4];
-      sprintf(buf, "%d.", i);
-
-      const char *words[] = { "This", "is", "the", buf, "paragraph.",
-                              "Here", "comes", "some", "more", "text",
-                              "to", "demonstrate", "word", "wrapping.",
-                              NULL };
-
-      for(int j = 0; words[j]; j++) {
-         textblock->addText(words[j], wordStyle);
-         textblock->addSpace(wordStyle);
-      }
-
-      textblock->addParbreak(10, wordStyle);
+   const char *words[] = { "This", "is", "only", "a", "short", "paragraph.",
+                           NULL };
+   
+   for(int j = 0; words[j]; j++) {
+      textblock->addText(words[j], wordStyle);
+      textblock->addSpace(wordStyle);
    }
 
    wordStyle->unref();
