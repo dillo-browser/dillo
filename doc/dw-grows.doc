@@ -113,4 +113,18 @@ yet. For negative margins, a new attribute
 dw::core::Widget::extraSpace could solve the problem of widgets
 sticking out of the allocation of parent.
 
+**Clarify percentage heights.** Search in widget.cc, and compare
+section 10.5 ('height') of the CSS 2.1 specification to section 10.2
+('width').
+
+**Fast queue resize** does not work fully. Example: run
+*test/dw-simple-container-test* (dw_simple_container_test.cc), resize
+(best maximize) the window and follow (e.&nbsp;g. by using RTFL) what
+happens in consequence of dw::core::Layout::viewportSizeChanged. The
+dw::SimpleContainer in the middle is not affected, so only the two
+dw::Textblock's (at the top and at the bottom) call queueResize with
+*fast = true*, and so get *NEEDS_RESIZE* set; but since it is not set
+for the dw::SimpleContainer, *sizeRequest* is never called for the
+bottom dw::Textblock.
+
 */
