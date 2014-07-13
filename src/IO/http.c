@@ -491,7 +491,6 @@ static int Http_must_use_proxy(const DilloUrl *url)
 
 /*
  * Return a new string for the request used to tunnel HTTPS through a proxy.
- * As of 2009, the best reference appears to be section 5 of RFC 2817.
  */
 char *a_Http_make_connect_str(const DilloUrl *url)
 {
