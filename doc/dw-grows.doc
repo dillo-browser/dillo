@@ -117,7 +117,7 @@ sticking out of the allocation of parent.
 section 10.5 ('height') of the CSS 2.1 specification to section 10.2
 ('width').
 
-**Fast queue resize** does not work fully. Example: run
+**Fast queue resize does not work fully.** Example: run
 *test/dw-simple-container-test* (dw_simple_container_test.cc), resize
 (best maximize) the window and follow (e.&nbsp;g. by using RTFL) what
 happens in consequence of dw::core::Layout::viewportSizeChanged. The
@@ -128,9 +128,9 @@ for the dw::SimpleContainer, *sizeRequest* is never called for the
 bottom dw::Textblock.
 
 There does not seem to be a real case for this problem in dillo, since
-all containers (except dw::SimpleContainer, which is not used outside
-tests) use the available width and height
-(dw::core::Widget::usesAvailWidth and
+all widgets which may contain other widgets (except
+dw::SimpleContainer, which is not used outside tests) use the
+available width and height (dw::core::Widget::usesAvailWidth and
 dw::core::Widget::usesAvailHeight), and so are always affected by
 viewport size changes.
 
