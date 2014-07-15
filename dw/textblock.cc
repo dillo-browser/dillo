@@ -2665,7 +2665,7 @@ void Textblock::handOverBreak (core::style::Style *style)
  */
 void Textblock::flush ()
 {
-   DBG_OBJ_ENTER0 ("flush", 0, "flush");
+   DBG_OBJ_ENTER0 ("resize", 0, "flush");
       
    if (mustQueueResize) {
       DBG_OBJ_MSG ("resize", 0, "mustQueueResize set");
