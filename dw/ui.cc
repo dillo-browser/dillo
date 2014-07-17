@@ -271,18 +271,24 @@ ComplexButtonResource::ComplexButtonResource ()
 
 void ComplexButtonResource::init (Widget *widget)
 {
-   this->childWidget = widget;
+   childWidget = widget;
 
    layout = new Layout (createPlatform ());
    setLayout (layout);
    DBG_OBJ_ASSOC_CHILD (layout);
    layout->setWidget (widget);
    layout->connect (&layoutReceiver);
+
+   if (getEmbed ())
+      childWidget->setQuasiParent (getEmbed ());
 }
 
 void ComplexButtonResource::setEmbed (Embed *embed)
 {
    ButtonResource::setEmbed (embed);
+
+   if (childWidget)
+      childWidget->setQuasiParent (getEmbed ());
 }
 
 ComplexButtonResource::~ComplexButtonResource ()

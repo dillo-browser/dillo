@@ -105,6 +105,11 @@ private:
    Widget *parent;
 
    /**
+    * \brief ...
+    */
+   Widget *quasiParent;
+
+   /**
     * \brief The generating widget, NULL for top-level widgets, or if
     *    not set; in the latter case, the effective generator (see
     *    getGenerator) is the parent.
@@ -390,6 +395,7 @@ public:
    inline bool wasAllocated ()    { return flags & WAS_ALLOCATED; }
 
    void setParent (Widget *parent);
+   void setQuasiParent (Widget *quasiParent);
 
    void setGenerator (Widget *generator) { this->generator = generator; }
 

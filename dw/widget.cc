@@ -70,7 +70,7 @@ Widget::Widget ()
    registerName ("dw::core::Widget", &CLASS_ID);
 
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED);
-   parent = generator = container = NULL;
+   parent = quasiParent = generator = container = NULL;
    DBG_OBJ_SET_PTR ("container", container);
 
    layout = NULL;
@@ -172,6 +172,15 @@ void Widget::setParent (Widget *parent)
    DBG_OBJ_SET_PTR ("container", container);
 
    notifySetParent();
+}
+
+void Widget::setQuasiParent (Widget *quasiParent)
+{
+   this->quasiParent = quasiParent;
+   
+   // More to do? Compare with setParent().
+
+   DBG_OBJ_SET_PTR ("quasiParent", quasiParent);
 }
 
 void Widget::queueDrawArea (int x, int y, int width, int height)
@@ -514,7 +523,7 @@ int Widget::getAvailWidth (bool forceValue)
 
    int width;
 
-   if (parent == NULL) {
+   if (parent == NULL && quasiParent == NULL) {
       DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
 
@@ -539,10 +548,15 @@ int Widget::getAvailWidth (bool forceValue)
 
       }
       DBG_OBJ_MSG_END ();
-   } else {
+   } else if (parent) {
       DBG_OBJ_MSG ("resize", 1, "delegated to parent");
       DBG_OBJ_MSG_START ();
       width = parent->getAvailWidthOfChild (this, forceValue);
+      DBG_OBJ_MSG_END ();
+   } else /* if (quasiParent) */ {
+      DBG_OBJ_MSG ("resize", 1, "delegated to quasiParent");
+      DBG_OBJ_MSG_START ();
+      width = quasiParent->getAvailWidthOfChild (this, forceValue);
       DBG_OBJ_MSG_END ();
    }
 
@@ -565,7 +579,7 @@ int Widget::getAvailHeight (bool forceValue)
 
    int height;
 
-   if (parent == NULL) {
+   if (parent == NULL && quasiParent == NULL) {
       DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
 
@@ -590,10 +604,15 @@ int Widget::getAvailHeight (bool forceValue)
       }
 
       DBG_OBJ_MSG_END ();
-   } else {
+   } else if (parent) {
       DBG_OBJ_MSG ("resize", 1, "delegated to parent");
       DBG_OBJ_MSG_START ();
-      height = container->getAvailHeightOfChild (this, forceValue);
+      height = quasiParent->getAvailHeightOfChild (this, forceValue);
+      DBG_OBJ_MSG_END ();
+   } else /* if (quasiParent) */ {
+      DBG_OBJ_MSG ("resize", 1, "delegated to quasiParent");
+      DBG_OBJ_MSG_START ();
+      height = quasiParent->getAvailHeightOfChild (this, forceValue);
       DBG_OBJ_MSG_END ();
    }
 
@@ -612,7 +631,7 @@ void Widget::correctRequisition (Requisition *requisition,
                   requisition->width, requisition->ascent,
                   requisition->descent);
 
-   if (container == NULL) {
+   if (container == NULL && quasiParent == NULL) {
       if (style::isAbsLength (getStyle()->width)) {
          DBG_OBJ_MSGF ("resize", 1, "absolute width: %dpx",
                        style::absLengthVal (getStyle()->width));
@@ -649,8 +668,12 @@ void Widget::correctRequisition (Requisition *requisition,
                          &requisition->ascent, &requisition->descent);
 #endif
       }
-   } else
+   } else if (container)
       container->correctRequisitionOfChild (this, requisition, splitHeightFun);
+   else // if (quasiParent)
+      // Here, quasiParent plays the same role as the container.
+      quasiParent->correctRequisitionOfChild (this, requisition,
+                                              splitHeightFun);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent,
@@ -666,7 +689,7 @@ void Widget::correctExtremes (Extremes *extremes)
                   extremes->minWidth, extremes->minWidthIntrinsic,
                   extremes->maxWidth, extremes->maxWidthIntrinsic);
 
-   if (container == NULL) {
+   if (container == NULL && quasiParent == NULL) {
       if (style::isAbsLength (getStyle()->width))
          extremes->minWidth = extremes->maxWidth =
             style::absLengthVal (getStyle()->width) + boxDiffWidth ();
@@ -677,8 +700,11 @@ void Widget::correctExtremes (Extremes *extremes)
          extremes->minWidth = extremes->maxWidth =
             applyPerWidth (viewportWidth, getStyle()->width);
       }
-   } else
+   } else if (container)
       container->correctExtremesOfChild (this, extremes);
+   else // if (quasiParent)
+      // Here, quasiParent plays the same role as the container.
+      quasiParent->correctExtremesOfChild (this, extremes);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
                  extremes->minWidth, extremes->maxWidth);
