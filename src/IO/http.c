@@ -291,7 +291,8 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
       "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
 
    const char *connection_hdr_val =
-      dStrAsciiCasecmp(URL_SCHEME(url), "http") == 0 ? "keep-alive" : "close";
+      (prefs.http_persistent_conns == TRUE &&
+       !dStrAsciiCasecmp(URL_SCHEME(url), "http")) ? "keep-alive" : "close";
 
    if (use_proxy) {
       dStr_sprintfa(request_uri, "%s%s",
