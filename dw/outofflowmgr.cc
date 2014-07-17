@@ -485,6 +485,9 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    leftFloatsCB = new SortedFloatsVector (this, LEFT, CB);
    rightFloatsCB = new SortedFloatsVector (this, RIGHT, CB);
 
+   DBG_OBJ_SET_NUM ("leftFloatsCB.size", leftFloatsCB->size());
+   DBG_OBJ_SET_NUM ("rightFloatsCB.size", rightFloatsCB->size());
+
    leftFloatsAll = new Vector<Float> (1, true);
    rightFloatsAll = new Vector<Float> (1, true);
 
@@ -1003,6 +1006,9 @@ bool OutOfFlowMgr::haveExtremesChanged (Side side)
 
 void OutOfFlowMgr::moveFromGBToCB (Side side)
 {
+   DBG_OBJ_ENTER ("oofm.resize", 0, "moveFromGBToCB", "%s",
+                  side == LEFT ? "LEFT" : "RIGHT");
+
    SortedFloatsVector *dest = side == LEFT ? leftFloatsCB : rightFloatsCB;
    int *floatsMark = side == LEFT ? &leftFloatsMark : &rightFloatsMark;
 
@@ -1017,20 +1023,24 @@ void OutOfFlowMgr::moveFromGBToCB (Side side)
             // "vloat->indexCBList == -1": prevent copying the vloat twice.
             if (vloat->indexCBList == -1 && vloat->mark == mark) {
                dest->put (vloat);
-               //printf("[%p] moving %s float %p (%s %p, mark %d) to CB list\n",
-               //       containingBlock, side == LEFT ? "left" : "right",
-               //       vloat, vloat->widget->getClassName(), vloat->widget,
-               //       vloat->mark);
+               DBG_OBJ_MSGF ("oofm.resize", 1,
+                             "moving float %p (mark %d) to CB list\n",
+                             vloat->getWidget (), vloat->mark);
+               DBG_OBJ_SET_NUM (side == LEFT ?
+                                "leftFloatsCB.size" : "rightFloatsCB.size",
+                                dest->size());
+               DBG_OBJ_ARRATTRSET_PTR (side == LEFT ?
+                                       "leftFloatsCB" : "rightFloatsCB",
+                                       dest->size() - 1, "widget",
+                                       vloat->getWidget ());
+
             }
          }
       }
 
    *floatsMark = 0;
 
-   //printf ("[%p] new %s list:\n",
-   //        containingBlock, side == LEFT ? "left" : "right");
-   //for (int i = 0; i < dest->size(); i++)
-   //   printf ("   %d: %s\n", i, dest->get(i)->toString());
+   DBG_OBJ_LEAVE ();
 }
 
 void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
@@ -1078,7 +1088,7 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
 int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
                               int gbLineBreakWidth)
 {
-   DBG_OBJ_ENTER ("resize.oofm", 0, "calcFloatX", "%p, %s, %d, %d, %d",
+   DBG_OBJ_ENTER ("resize.common", 0, "calcFloatX", "%p, %s, %d, %d, %d",
                   vloat->getWidget (), side == LEFT ? "LEFT" : "RIGHT", gbX,
                   gbWidth, gbLineBreakWidth);
    int x;
@@ -1097,7 +1107,8 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
       if (wasAllocated (containingBlock) &&
           x + vloat->size.width > containingBlock->getLineBreakWidth ()) {
          x = max (0, containingBlock->getLineBreakWidth () - vloat->size.width);
-         DBG_OBJ_MSGF ("resize.oofm", 1, "corrected to: max (0, %d - %d) = %d",
+         DBG_OBJ_MSGF ("resize.common", 1,
+                       "corrected to: max (0, %d - %d) = %d",
                        containingBlock->getLineBreakWidth (), vloat->size.width,
                        x);  
       }
@@ -1116,7 +1127,7 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
                - vloat->generatingBlock->getStyle()->boxRestWidth(),
                // Do not exceed CB allocation:
                0);
-      DBG_OBJ_MSGF ("resize.oofm", 1, "x = max (%d + %d - %d - %d, 0) = %d",
+      DBG_OBJ_MSGF ("resize.common", 1, "x = max (%d + %d - %d - %d, 0) = %d",
                     gbX, gbLineBreakWidth, vloat->size.width,
                     vloat->generatingBlock->getStyle()->boxRestWidth(), x);
       break;
@@ -1230,8 +1241,9 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
 
          if (wasAllocated (generatingBlock)) {
             leftFloatsCB->put (vloat);
-            //printf ("[%p] adding left float %p (%s %p) to CB list\n",
-            //        containingBlock, vloat, widget->getClassName(), widget);
+            DBG_OBJ_SET_NUM ("leftFloatsCB.size", leftFloatsCB->size());
+            DBG_OBJ_ARRATTRSET_PTR ("leftFloatsCB", leftFloatsCB->size() - 1,
+                                    "widget", vloat->getWidget ());
          } else {
             if (tbInfo->index < lastLeftTBIndex)
                leftFloatsMark++;
@@ -1257,8 +1269,9 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
 
          if (wasAllocated (generatingBlock)) {
             rightFloatsCB->put (vloat);
-            //printf ("[%p] adding right float %p (%s %p) to CB list\n",
-            //        containingBlock, vloat, widget->getClassName(), widget);
+            DBG_OBJ_SET_NUM ("rightFloatsCB.size", rightFloatsCB->size());
+            DBG_OBJ_ARRATTRSET_PTR ("rightFloatsCB", rightFloatsCB->size() - 1,
+                                    "widget", vloat->getWidget ());
          } else {
             if (tbInfo->index < lastRightTBIndex)
                rightFloatsMark++;
@@ -1693,6 +1706,8 @@ void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
 
    *width = *height = 0;
 
+   DBG_OBJ_MSGF ("resize.oofm", 1, "%d floats on this side", list->size());
+
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
 
@@ -1959,12 +1974,22 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
 OutOfFlowMgr::SortedFloatsVector *OutOfFlowMgr::getFloatsListForTextblock
    (Textblock *textblock, Side side)
 {
-   if (wasAllocated (textblock))
-      return side == LEFT ? leftFloatsCB : rightFloatsCB;
-   else {
+   DBG_OBJ_ENTER ("oofm.common", 1, "getFloatsListForTextblock", "%p, %s",
+                  textblock, side == LEFT ? "LEFT" : "RIGHT");
+
+   OutOfFlowMgr::SortedFloatsVector *list;
+
+   if (wasAllocated (textblock)) {
+      DBG_OBJ_MSG ("oofm.common", 2, "returning <b>CB</b> list");
+      list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   } else {
+      DBG_OBJ_MSG ("oofm.common", 2, "returning <b>GB</b> list");
       TBInfo *tbInfo = getTextblock (textblock);
-      return side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
+      list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
    }
+
+   DBG_OBJ_LEAVE ();
+   return list;
 }
 
 

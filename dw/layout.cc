@@ -889,7 +889,7 @@ void Layout::resizeIdle ()
    // If this method is triggered by a viewport change, we can save
    // time when the toplevel widget is not affected (as for a toplevel
    // image resource).
-   if (topLevel && topLevel->needsResize ()) {
+   if (topLevel && (topLevel->needsResize () || topLevel->needsAllocate ())) {
       Requisition requisition;
       Allocation allocation;
 

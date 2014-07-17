@@ -213,11 +213,36 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
                                          (this, ref, extremesChanged, fast));
    } else {
       actualQueueResize (ref, extremesChanged, fast);
-      
+
+      DBG_IF_RTFL {
+         if (layout == NULL)
+            DBG_OBJ_MSG ("resize", 1, "layout is not set");
+         else if (layout->queueQueueResizeList->size () == 0)
+            DBG_OBJ_MSG ("resize", 1, "queue item list is empty");
+      }
+
       while (layout != NULL && layout->queueQueueResizeList->size () > 0) {
+         DBG_IF_RTFL {
+            DBG_OBJ_MSGF ("resize", 1, "queue item list has %d elements:",
+                          layout->queueQueueResizeList->size ());
+            DBG_OBJ_MSG_START ();
+            for (int i = 0; i < layout->queueQueueResizeList->size (); i++) {
+               DBG_OBJ_MSGF
+                  ("resize", 1,
+                   "#%d: widget = %p, ref = %d, extremesChanged = %s, "
+                   "fast = %s",
+                   i, layout->queueQueueResizeList->get(i)->widget,
+                   layout->queueQueueResizeList->get(i)->ref,
+                   layout->queueQueueResizeList->get(i)->extremesChanged ?
+                   "true" : "false",
+                   layout->queueQueueResizeList->get(i)->fast ?
+                   "true" : "false");
+            }
+            DBG_OBJ_MSG_END ();
+            DBG_OBJ_MSG ("resize", 1, "taking #0 out of list");
+         }
+
          Layout::QueueResizeItem *item = layout->queueQueueResizeList->get (0);
-         DBG_OBJ_MSGF ("resize", 1, "taken out of queue queue (size = %d)",
-                      layout->queueQueueResizeList->size ());
          item->widget->actualQueueResize (item->ref, item->extremesChanged,
                                           item->fast);
          layout->queueQueueResizeList->remove (0); // hopefully not too large
@@ -280,6 +305,11 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
            child = widget2, widget2 = widget2->parent) {      
          if (layout && !widget2->resizeQueued ())
             layout->queueResizeList->put (widget2);
+
+         DBG_OBJ_MSGF ("resize", 2, "setting %s and ALLOCATE_QUEUED for %p",
+                       resizeFlag == RESIZE_QUEUED ?
+                       "RESIZE_QUEUED" : "NEEDS_RESIZE",
+                       widget2);
          
          widget2->setFlags (resizeFlag);
          widget2->markSizeChange (child->parentRef);
