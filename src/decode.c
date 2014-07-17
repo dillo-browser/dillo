@@ -21,9 +21,10 @@
 static const int bufsize = 8*1024;
 
 /*
- * Decode chunked data
+ * Decode 'Transfer-Encoding: chunked' data
  */
-static Dstr *Decode_chunked(Decode *dc, const char *instr, int inlen)
+Dstr *a_Decode_transfer_process(DecodeTransfer *dc, const char *instr,
+                                int inlen)
 {
    char *inputPtr, *eol;
    int inputRemaining;
@@ -66,6 +67,7 @@ static Dstr *Decode_chunked(Decode *dc, const char *instr, int inlen)
       }
 
       if (!(chunkRemaining = strtol(inputPtr, NULL, 0x10))) {
+         dc->finished = TRUE;
          break;   /* A chunk length of 0 means we're done! */
       }
       inputRemaining -= (eol - inputPtr) + 1;
@@ -80,10 +82,16 @@ static Dstr *Decode_chunked(Decode *dc, const char *instr, int inlen)
    return output;
 }
 
-static void Decode_chunked_free(Decode *dc)
+bool_t a_Decode_transfer_finished(DecodeTransfer *dc)
+{
+   return dc->finished;
+}
+
+void a_Decode_transfer_free(DecodeTransfer *dc)
 {
    dFree(dc->state);
    dStr_free(dc->leftover, 1);
+   dFree(dc);
 }
 
 static void Decode_compression_free(Decode *dc)
@@ -280,19 +288,17 @@ static void Decode_charset_free(Decode *dc)
 /*
  * Initialize transfer decoder. Currently handles "chunked".
  */
-Decode *a_Decode_transfer_init(const char *format)
+DecodeTransfer *a_Decode_transfer_init(const char *format)
 {
-   Decode *dc = NULL;
+   DecodeTransfer *dc = NULL;
 
    if (format && !dStrAsciiCasecmp(format, "chunked")) {
       int *chunk_remaining = dNew(int, 1);
       *chunk_remaining = 0;
-      dc = dNew(Decode, 1);
+      dc = dNew(DecodeTransfer, 1);
       dc->leftover = dStr_new("");
       dc->state = chunk_remaining;
-      dc->decode = Decode_chunked;
-      dc->free = Decode_chunked_free;
-      dc->buffer = NULL; /* not used */
+      dc->finished = FALSE;
       _MSG("chunked!\n");
    }
    return dc;

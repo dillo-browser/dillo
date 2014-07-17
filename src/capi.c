@@ -714,7 +714,10 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             Capi_conn_ref(conn);
             Info->LocalKey = conn;
             conn->InfoRecv = Info;
-            a_Chain_link_new(Info, a_Capi_ccc, BCK, a_Dpi_ccc, 2, 2);
+            if (strcmp(conn->server, "http") == 0)
+               a_Chain_link_new(Info, a_Capi_ccc, BCK, a_Http_ccc, 2, 2);
+            else
+               a_Chain_link_new(Info, a_Capi_ccc, BCK, a_Dpi_ccc, 2, 2);
             a_Chain_bcb(OpStart, Info, NULL, Data2);
             break;
          case OpSend:
@@ -744,7 +747,10 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             if (strcmp(Data2, "send_page_2eof") == 0) {
                /* Data1 = dbuf */
                DataBuf *dbuf = Data1;
-               a_Cache_process_dbuf(IORead, dbuf->Buf, dbuf->Size, conn->url);
+               bool_t finished = a_Cache_process_dbuf(IORead, dbuf->Buf,
+                                                      dbuf->Size, conn->url);
+               if (finished)
+                  a_Chain_bcb(OpSend, Info, NULL, "reply_complete");
             } else if (strcmp(Data2, "send_status_message") == 0) {
                a_UIcmd_set_msg(conn->bw, "%s", Data1);
             } else if (strcmp(Data2, "chat") == 0) {
