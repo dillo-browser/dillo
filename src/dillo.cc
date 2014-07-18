@@ -56,6 +56,7 @@
 
 #include "lout/debug.hh"
 #include "dw/fltkcore.hh"
+#include "dw/widget.hh"
 #include "dw/textblock.hh"
 
 /*
@@ -483,6 +484,7 @@ int main(int argc, char **argv)
    a_UIcmd_init();
    StyleEngine::init();
 
+   dw::core::Widget::setAdjustMinWidth (prefs.adjust_min_width);
    dw::Textblock::setPenaltyHyphen (prefs.penalty_hyphen);
    dw::Textblock::setPenaltyHyphen2 (prefs.penalty_hyphen_2);
    dw::Textblock::setPenaltyEmDashLeft (prefs.penalty_em_dash_left);

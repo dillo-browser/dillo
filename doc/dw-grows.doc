@@ -107,6 +107,14 @@ dw::core::Widget::correctExtremes, respectively, is called).
 *Not* honouring the CSS size specification in all cases could improve
 readability in some cases, so this could depend on a user preference.
 
+**Update:** There is now a dillorc option <tt>adjust_min_width</tt>,
+which is implemented for widths, but not heights (since it is based on
+width extremes, but there are currently no height extremes).
+
+Another problem is that in most cases, there is no clippping, so that
+contents may exceed the allocation of the widget, but redrawing is not
+necessarily triggered.
+
 **Percentage values for margins and paddings, as well as negative
 margins** are interesting applications, but have not been considered
 yet. For negative margins, a new attribute

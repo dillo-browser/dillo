@@ -99,6 +99,8 @@ protected:
    WidgetImgRenderer *widgetImgRenderer;
 
 private:
+   static bool adjustMinWidth;
+
    /**
     * \brief The parent widget, NULL for top-level widgets.
     */
@@ -290,6 +292,8 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
+   int getMinWidth (Extremes *extremes);
+
    virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
    virtual int getAvailHeightOfChild (Widget *child, bool forceValue);
    virtual void correctRequisitionOfChild (Widget *child,
@@ -382,6 +386,10 @@ private:
 
 public:
    static int CLASS_ID;
+
+   inline static void setAdjustMinWidth (bool adjustMinWidth)
+   { Widget::adjustMinWidth = adjustMinWidth; }
+   inline static bool getAdjustMinWidth () { return Widget::adjustMinWidth; }
 
    Widget ();
    ~Widget ();

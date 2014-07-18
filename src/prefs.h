@@ -66,6 +66,7 @@ typedef struct {
    int panel_size;
    bool_t small_icons;
    bool_t limit_text_width;
+   bool_t adjust_min_width;
    bool_t w3c_plus_heuristics;
    bool_t focus_new_tab;
    double font_factor;

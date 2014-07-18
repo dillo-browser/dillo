@@ -1154,7 +1154,7 @@ void Textblock::handleWordExtremes (int wordIndex)
 
    core::Extremes wordExtremes;
    getWordExtremes (word, &wordExtremes);
-   DBG_OBJ_MSGF ("construct.paragraph", 1, "extremes: %d (%d) / %d (%d",
+   DBG_OBJ_MSGF ("construct.paragraph", 1, "extremes: %d (%d) / %d (%d)",
                  wordExtremes.minWidth, wordExtremes.minWidthIntrinsic,
                  wordExtremes.maxWidth, wordExtremes.maxWidthIntrinsic);
 
@@ -1262,7 +1262,8 @@ void Textblock::correctLastWordExtremes ()
       Word *word = words->getLastRef ();
       if (word->badnessAndPenalty.lineCanBeBroken (1) &&
           (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0) {
-         paragraphs->getLastRef()->parMin = 0;
+         paragraphs->getLastRef()->parMin =
+            paragraphs->getLastRef()->parMinIntrinsic = 0;
          PRINTF ("   => corrected; parMin = %d\n",
                  paragraphs->getLastRef()->parMin);
       }

@@ -79,6 +79,9 @@
 # Set this to YES to limit the word wrap width to the viewport width
 #limit_text_width=NO
 
+# If this is set to YES, all CSS size specifications are adjusted so that 
+# all contents can be displayed.
+#adjust_min_width=NO
 
 #-------------------------------------------------------------------------
 #                               PENALTIES
