@@ -269,8 +269,6 @@ private:
    void enterResizeIdle () { resizeIdleCounter++; }
    void leaveResizeIdle () { resizeIdleCounter--; }
 
-   void containerSizeChanged ();
-
 public:
    Layout (Platform *platform);
    ~Layout ();
@@ -331,6 +329,8 @@ public:
    {
       return buttonEvent (BUTTON_PRESS, view, numPressed, x, y, state, button);
    }
+
+   void containerSizeChanged ();
 
    /**
     * \brief This function is called by a view, to delegate a button press

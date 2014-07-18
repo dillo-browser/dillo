@@ -363,6 +363,7 @@ public:
                                            void (*splitHeightFun) (int, int*,
                                                                    int*));
    virtual void correctExtremesOfChild (Widget *child, Extremes *extremes);
+   virtual void containerSizeChangedForChildren ();
 
    virtual void setDisplayed (bool displayed);
    virtual void draw (View *view, Rectangle *area);
@@ -431,12 +432,15 @@ public:
    void sizeRequest (Requisition *requisition);
    void getExtremes (Extremes *extremes);
    void sizeAllocate (Allocation *allocation);
+
    int getAvailWidthOfChild (Widget *child, bool forceValue);
    int getAvailHeightOfChild (Widget *child, bool forceValue);
    void correctRequisitionOfChild (Widget *child,
                                    Requisition *requisition,
                                    void (*splitHeightFun) (int, int*, int*));
    void correctExtremesOfChild (Widget *child, Extremes *extremes);
+   void containerSizeChangedForChildren ();
+
    Iterator *iterator (Content::Type mask, bool atEnd);
    int getClickX () {return click_x;};
    int getClickY () {return click_y;};

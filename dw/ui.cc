@@ -89,7 +89,7 @@ void Embed::correctExtremesOfChild (Widget *child, Extremes *extremes)
 void Embed::containerSizeChangedForChildren ()
 {
    DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
-   // Nothing to do (as long as all resources return empty iterators).
+   resource->containerSizeChangedForChildren ();
    DBG_OBJ_LEAVE ();
 }
 
@@ -249,6 +249,11 @@ void Resource::correctExtremesOfChild (Widget *child, Extremes *extremes)
 {
    // Only used when the resource contains other dillo widgets.
    misc::assertNotReached ();
+}
+
+void Resource::containerSizeChangedForChildren ()
+{
+   // No children by default.
 }
 
 void Resource::setDisplayed (bool displayed)
@@ -445,6 +450,11 @@ void ComplexButtonResource::correctExtremesOfChild (Widget *child,
       }
    } else
       getEmbed()->correctExtremesOfChildNoRec (child, extremes);
+}
+
+void ComplexButtonResource::containerSizeChangedForChildren ()
+{
+   layout->containerSizeChanged ();
 }
 
 Iterator *ComplexButtonResource::iterator (Content::Type mask, bool atEnd)
