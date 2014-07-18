@@ -64,6 +64,28 @@ void Embed::sizeAllocateImpl (Allocation *allocation)
    resource->sizeAllocate (allocation);
 }
 
+int Embed::getAvailWidthOfChild (Widget *child, bool forceValue)
+{
+   return resource->getAvailWidthOfChild (child, forceValue);
+}
+
+int Embed::getAvailHeightOfChild (Widget *child, bool forceValue)
+{
+   return resource->getAvailHeightOfChild (child, forceValue);
+}
+
+void Embed::correctRequisitionOfChild (Widget *child,
+                                       Requisition *requisition,
+                                       void (*splitHeightFun) (int, int*, int*))
+{
+   resource->correctRequisitionOfChild (child, requisition, splitHeightFun);
+}
+
+void Embed::correctExtremesOfChild (Widget *child, Extremes *extremes)
+{
+   resource->correctExtremesOfChild (child, extremes);
+}
+
 void Embed::containerSizeChangedForChildren ()
 {
    DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
@@ -200,6 +222,35 @@ void Resource::sizeAllocate (Allocation *allocation)
 {
 }
 
+int Resource::getAvailWidthOfChild (Widget *child, bool forceValue)
+{
+   // Only used when the resource contains other dillo widgets.
+   misc::assertNotReached ();
+   return 0;
+}
+
+int Resource::getAvailHeightOfChild (Widget *child, bool forceValue)
+{
+   // Only used when the resource contains other dillo widgets.
+   misc::assertNotReached ();
+   return 0;
+}
+
+void Resource::correctRequisitionOfChild (Widget *child,
+                                          Requisition *requisition,
+                                          void (*splitHeightFun) (int, int*,
+                                                                  int*))
+{
+   // Only used when the resource contains other dillo widgets.
+   misc::assertNotReached ();
+}
+
+void Resource::correctExtremesOfChild (Widget *child, Extremes *extremes)
+{
+   // Only used when the resource contains other dillo widgets.
+   misc::assertNotReached ();
+}
+
 void Resource::setDisplayed (bool displayed)
 {
 }
@@ -328,6 +379,72 @@ void ComplexButtonResource::getExtremes (Extremes *extremes)
 
 void ComplexButtonResource::sizeAllocate (Allocation *allocation)
 {
+}
+
+int ComplexButtonResource::getAvailWidthOfChild (Widget *child, bool forceValue)
+{
+   int embedWidth = getEmbed()->getAvailWidth (forceValue);
+   if (embedWidth == -1)
+      return -1;
+   else
+      return misc::max (embedWidth - 2 * reliefXThickness (), 0);
+}
+
+int ComplexButtonResource::getAvailHeightOfChild (Widget *child,
+                                                  bool forceValue)
+{
+   int embedHeight = getEmbed()->getAvailHeight (forceValue);
+   if (embedHeight == -1)
+      return -1;
+   else
+      return misc::max (embedHeight - 2 * reliefYThickness (), 0);
+}
+
+void ComplexButtonResource::correctRequisitionOfChild (Widget *child,
+                                                       Requisition *requisition,
+                                                       void (*splitHeightFun)
+                                                       (int, int*, int*))
+{
+   // Similar to Widget::correctRequisitionOfChild, but for percentage
+   // the relief has to be considered.
+   
+   if (style::isPerLength (child->getStyle()->width)) {
+      int availWidth = getEmbed()->getAvailHeight (false);
+      if (availWidth != -1) {
+         int baseWidth = misc::max (availWidth
+                                    - getEmbed()->boxDiffWidth ()
+                                    - 2 * reliefXThickness (),
+                                    0);
+         requisition->width =
+            child->applyPerWidth (baseWidth, child->getStyle()->width);
+      }
+   } else
+      getEmbed()->correctReqWidthOfChildNoRec (child, requisition);
+
+   // TODO Percentage heights are ignored again.
+   getEmbed()->correctReqHeightOfChildNoRec (child, requisition,
+                                             splitHeightFun);
+
+}
+
+void ComplexButtonResource::correctExtremesOfChild (Widget *child,
+                                                    Extremes *extremes)
+{
+   // Similar to Widget::correctExtremesOfChild, but for percentage
+   // the relief has to be considered.
+   
+   if (style::isPerLength (child->getStyle()->width)) {
+      int availWidth = getEmbed()->getAvailHeight (false);
+      if (availWidth != -1) {
+         int baseWidth = misc::max (availWidth
+                                    - getEmbed()->boxDiffWidth ()
+                                    - 2 * reliefXThickness (),
+                                    0);
+         extremes->minWidth = extremes->maxWidth =
+            child->applyPerWidth (baseWidth, child->getStyle()->width);
+      }
+   } else
+      getEmbed()->correctExtremesOfChildNoRec (child, extremes);
 }
 
 Iterator *ComplexButtonResource::iterator (Content::Type mask, bool atEnd)
