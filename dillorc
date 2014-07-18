@@ -76,8 +76,7 @@
 # Show tooltip popups for HTML title attributes
 #show_tooltip=YES
 
-# Set this to YES if you want to limit the word wrap width to the viewport
-# width (may be useful for iPAQ)
+# Set this to YES to limit the word wrap width to the viewport width
 #limit_text_width=NO
 
 
@@ -175,6 +174,11 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
 # Maximum number of simultaneous TCP connections to a single server or proxy.
 # http_max_conns=6
+
+# Change this if you want Dillo to reuse HTTP connections to a server or proxy
+# when possible instead of making a new connection for every request for a new
+# page/image/stylesheet. Currently, HTTPS connections are never reused.
+#http_persistent_conns=NO
 
 # Set the proxy information for http.
 # Note that the http_proxy environment variable overrides this setting.

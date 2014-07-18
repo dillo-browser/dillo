@@ -35,6 +35,7 @@ class StyleEngine {
       CssContext *cssContext;
       Doctree *doctree;
       int importDepth;
+      float dpmm;
       DilloUrl *pageUrl, *baseUrl;
 
       void stackPush ();

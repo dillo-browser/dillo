@@ -73,6 +73,7 @@ int PrefsParser::parseOption(char *name, char *value)
       { "home", &prefs.home, PREFS_URL },
       { "http_language", &prefs.http_language, PREFS_STRING },
       { "http_max_conns", &prefs.http_max_conns, PREFS_INT32 },
+      { "http_persistent_conns", &prefs.http_persistent_conns, PREFS_BOOL },
       { "http_proxy", &prefs.http_proxy, PREFS_URL },
       { "http_proxyuser", &prefs.http_proxyuser, PREFS_STRING },
       { "http_referer", &prefs.http_referer, PREFS_STRING },

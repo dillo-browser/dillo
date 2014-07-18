@@ -79,16 +79,18 @@ typedef struct {
 
 typedef struct {
   char *host;
-  int active_connections;
-  SocketQueue_t queue;
+  Dlist *active_fds;
+  int avail_fd;
+  SocketQueue_t main_q, image_q; /* imgs have separate lower-priority queue */
 } HostConnection_t;
 
 static void Http_socket_queue_init(SocketQueue_t *sq);
-static void Http_socket_enqueue(SocketQueue_t *sq, SocketData_t* sock);
-static SocketData_t* Http_socket_dequeue(SocketQueue_t *sq);
+static void Http_socket_enqueue(HostConnection_t *hc, SocketData_t* sock);
+static SocketData_t* Http_socket_dequeue(HostConnection_t *hc);
 static HostConnection_t *Http_host_connection_get(const char *host);
 static void Http_host_connection_remove(HostConnection_t *hc);
 static int Http_connect_socket(ChainLink *Info);
+static void Http_send_query(ChainLink *Info, SocketData_t *S);
 static void Http_socket_free(int SKey);
 
 /*
@@ -160,9 +162,10 @@ static int Http_sock_new(void)
 
 static void Http_connect_queued_sockets(HostConnection_t *hc)
 {
+   bool_t all_is_well = TRUE;
    SocketData_t *sd;
-   while (hc->active_connections < prefs.http_max_conns &&
-          (sd = Http_socket_dequeue(&hc->queue))) {
+   while (dList_length(hc->active_fds) < prefs.http_max_conns &&
+          (sd = Http_socket_dequeue(hc))) {
 
       sd->flags &= ~HTTP_SOCKET_QUEUED;
 
@@ -170,17 +173,29 @@ static void Http_connect_queued_sockets(HostConnection_t *hc)
           dFree(sd);
       } else if (a_Web_valid(sd->web)) {
          /* start connecting the socket */
-         if (Http_connect_socket(sd->Info) < 0) {
+         if (hc->avail_fd != -1) {
+            sd->SockFD = hc->avail_fd;
+            hc->avail_fd = -1;
+         } else if (Http_connect_socket(sd->Info) < 0) {
             ChainLink *Info = sd->Info;
+            all_is_well = FALSE;
             MSG_BW(sd->web, 1, "ERROR: %s", dStrerror(sd->Err));
             a_Chain_bfcb(OpAbort, Info, NULL, "Both");
             Http_socket_free(VOIDP2INT(Info->LocalKey)); /* free sd */
             dFree(Info);
-         } else {
+         }
+         if (all_is_well) {
+            a_Chain_bcb(OpSend, sd->Info, &sd->SockFD, "FD");
+            a_Chain_fcb(OpSend, sd->Info, &sd->SockFD, "FD");
+            Http_send_query(sd->Info, sd);
             sd->connected_to = hc->host;
-            hc->active_connections++;
+            dList_append(hc->active_fds, (void *)sd->SockFD);
          }
       }
+   }
+   if (hc->avail_fd != -1) {
+      dClose(hc->avail_fd);
+      hc->avail_fd = -1;
    }
 }
 
@@ -199,9 +214,9 @@ static void Http_socket_free(int SKey)
       } else {
          if (S->connected_to) {
             HostConnection_t *hc = Http_host_connection_get(S->connected_to);
-            hc->active_connections--;
+            dList_remove_fast(hc->active_fds, (void *)S->SockFD);
             Http_connect_queued_sockets(hc);
-            if (hc->active_connections == 0)
+            if (dList_length(hc->active_fds) == 0)
                Http_host_connection_remove(hc);
          }
          dFree(S);
@@ -275,6 +290,10 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
       web_flags & WEB_Stylesheet ? "text/css,*/*;q=0.1" :
       "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
 
+   const char *connection_hdr_val =
+      (prefs.http_persistent_conns == TRUE &&
+       !dStrAsciiCasecmp(URL_SCHEME(url), "http")) ? "keep-alive" : "close";
+
    if (use_proxy) {
       dStr_sprintfa(request_uri, "%s%s",
                     URL_STR(url),
@@ -309,15 +328,15 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "DNT: 1\r\n"
          "%s" /* proxy auth */
          "%s" /* referer */
-         "Connection: close\r\n"
+         "Connection: %s\r\n"
          "Content-Type: %s\r\n"
          "Content-Length: %ld\r\n"
          "%s" /* cookies */
          "\r\n",
          request_uri->str, URL_AUTHORITY(url), prefs.http_user_agent,
          accept_hdr_value, HTTP_Language_hdr, auth ? auth : "",
-         proxy_auth->str, referer, content_type->str, (long)URL_DATA(url)->len,
-         cookies);
+         proxy_auth->str, referer, connection_hdr_val, content_type->str,
+         (long)URL_DATA(url)->len, cookies);
       dStr_append_l(query, URL_DATA(url)->str, URL_DATA(url)->len);
       dStr_free(content_type, TRUE);
    } else {
@@ -333,13 +352,13 @@ Dstr *a_Http_make_query_str(const DilloUrl *url, const DilloUrl *requester,
          "DNT: 1\r\n"
          "%s" /* proxy auth */
          "%s" /* referer */
-         "Connection: close\r\n"
+         "Connection: %s\r\n"
          "%s" /* cache control */
          "%s" /* cookies */
          "\r\n",
          request_uri->str, URL_AUTHORITY(url), prefs.http_user_agent,
          accept_hdr_value, HTTP_Language_hdr, auth ? auth : "",
-         proxy_auth->str, referer,
+         proxy_auth->str, referer, connection_hdr_val,
          (URL_FLAGS(url) & URL_E2EQuery) ?
             "Pragma: no-cache\r\nCache-Control: no-cache\r\n" : "",
          cookies);
@@ -447,9 +466,6 @@ static int Http_connect_socket(ChainLink *Info)
          dClose(S->SockFD);
          MSG("Http_connect_socket ERROR: %s\n", dStrerror(S->Err));
       } else {
-         a_Chain_bcb(OpSend, Info, &S->SockFD, "FD");
-         a_Chain_fcb(OpSend, Info, &S->SockFD, "FD");
-         Http_send_query(S->Info, S);
          return 0; /* Success */
       }
    }
@@ -491,7 +507,6 @@ static int Http_must_use_proxy(const DilloUrl *url)
 
 /*
  * Return a new string for the request used to tunnel HTTPS through a proxy.
- * As of 2009, the best reference appears to be section 5 of RFC 2817.
  */
 char *a_Http_make_connect_str(const DilloUrl *url)
 {
@@ -565,7 +580,7 @@ static void Http_dns_cb(int Status, Dlist *addr_list, void *data)
             hc = Http_host_connection_get(URL_HOST(HTTP_Proxy));
          else
             hc = Http_host_connection_get(URL_HOST(S->web->url));
-         Http_socket_enqueue(&hc->queue, S);
+         Http_socket_enqueue(hc, S);
          Http_connect_queued_sockets(hc);
       } else {
          /* DNS wasn't able to resolve the hostname */
@@ -619,6 +634,28 @@ static int Http_get(ChainLink *Info, void *Data1)
    return 0;
 }
 
+static void Http_make_fd_available(int fd)
+{
+   int i, j;
+
+   for (i = 0; i < dList_length(host_connections); i++) {
+      HostConnection_t *hc =
+         (HostConnection_t*) dList_nth_data(host_connections, i);
+
+      for (j = 0; j < dList_length(hc->active_fds); j++) {
+         void *data = dList_nth_data(hc->active_fds, j);
+
+         if (fd == VOIDP2INT(data)) {
+            _MSG("host %s ", hc->host);
+            _MSG("Shift fd %d from active to avail\n", fd);
+            dList_remove_fast (hc->active_fds, data);
+            hc->avail_fd = fd;
+            return;
+         }
+      }
+   }   
+}
+
 /*
  * CCC function for the HTTP module
  */
@@ -666,6 +703,51 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             break;
          }
       }
+   } else if (Branch == 2) {
+      if (Dir == FWD) {
+         /* Receiving from server */
+         switch (Op) {
+         case OpSend:
+            /* Data1 = dbuf */
+            a_Chain_fcb(OpSend, Info, Data1, "send_page_2eof");
+            break;
+         case OpEnd:
+            a_Chain_fcb(OpEnd, Info, NULL, NULL);
+            dFree(Info);
+            break;
+         default:
+            MSG_WARN("Unused CCC\n");
+            break;
+         }
+      } else {  /* 2 BCK */
+         switch (Op) {
+         case OpStart:
+            a_Chain_link_new(Info, a_Http_ccc, BCK, a_IO_ccc, 2, 2);
+            a_Chain_bcb(OpStart, Info, NULL, NULL); /* IORead */
+            break;
+         case OpSend:
+            if (Data2) {
+               if (!strcmp(Data2, "FD")) {
+                  Info->LocalKey = (void *)*(int*)Data1;
+                  a_Chain_bcb(OpSend, Info, Data1, Data2);
+               } else if (!strcmp(Data2, "reply_complete")) {
+                  int fd = VOIDP2INT(Info->LocalKey);
+
+                  Http_make_fd_available(fd);
+                  a_Chain_bfcb(OpEnd, Info, NULL, NULL);
+                  dFree(Info);
+               }
+            }
+            break;
+         case OpAbort:
+            a_Chain_bcb(OpAbort, Info, NULL, NULL);
+            dFree(Info);
+            break;
+          default:
+             MSG_WARN("Unused CCC\n");
+             break;
+         }
+      }
    }
 }
 
@@ -676,12 +758,15 @@ static void Http_socket_queue_init(SocketQueue_t *sq)
    sq->tail = NULL;
 }
 
-static void Http_socket_enqueue(SocketQueue_t *sq, SocketData_t* sock)
+static void Http_socket_enqueue(HostConnection_t *hc, SocketData_t* sock)
 {
+   SocketQueue_t *sq;
    SocketQueueEntry_t *se = dNew(SocketQueueEntry_t, 1);
 
    se->sock = sock;
    se->next = NULL;
+
+   sq = sock->web->flags & WEB_Image ? &hc->image_q : &hc->main_q;
 
    if (sq->tail)
       sq->tail->next = se;
@@ -691,8 +776,9 @@ static void Http_socket_enqueue(SocketQueue_t *sq, SocketData_t* sock)
       sq->head = se;
 }
 
-static SocketData_t* Http_socket_dequeue(SocketQueue_t *sq)
+static SocketData_t* Http_socket_dequeue(HostConnection_t *hc)
 {
+   SocketQueue_t *sq = hc->main_q.head ? &hc->main_q : &hc->image_q;
    SocketQueueEntry_t *se = sq->head;
    SocketData_t *sd = NULL;
 
@@ -720,8 +806,11 @@ static HostConnection_t *Http_host_connection_get(const char *host)
    }
 
    hc = dNew0(HostConnection_t, 1);
-   Http_socket_queue_init(&hc->queue);
+   Http_socket_queue_init(&hc->main_q);
+   Http_socket_queue_init(&hc->image_q);
    hc->host = dStrdup(host);
+   hc->active_fds = dList_new(prefs.http_max_conns);
+   hc->avail_fd = -1;
    dList_append(host_connections, hc);
 
    return hc;
@@ -729,9 +818,10 @@ static HostConnection_t *Http_host_connection_get(const char *host)
 
 static void Http_host_connection_remove(HostConnection_t *hc)
 {
-    assert(hc->queue.head == NULL);
+    assert(hc->main_q.head == NULL && hc->image_q.head == NULL);
     dList_remove_fast(host_connections, hc);
     dFree(hc->host);
+    dList_free(hc->active_fds);
     dFree(hc);
 }
 
@@ -741,7 +831,7 @@ static void Http_host_connection_remove_all()
 
    while (dList_length(host_connections) > 0) {
       hc = (HostConnection_t*) dList_nth_data(host_connections, 0);
-      while (Http_socket_dequeue(&hc->queue));
+      while (Http_socket_dequeue(hc));
       Http_host_connection_remove(hc);
    }
    dList_free(host_connections);

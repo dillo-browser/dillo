@@ -15,7 +15,21 @@ typedef struct Decode {
    void (*free) (struct Decode *dc);
 } Decode;
 
-Decode *a_Decode_transfer_init(const char *format);
+/* I'm not going to shoehorn the decoders into the same form anymore. They
+ * can evolve independently.
+ */
+typedef struct DecodeTransfer {
+   Dstr *leftover;
+   void *state;
+   bool_t finished;    /* has the terminating chunk been seen? */
+} DecodeTransfer;
+
+DecodeTransfer *a_Decode_transfer_init(const char *format);
+Dstr *a_Decode_transfer_process(DecodeTransfer *dc, const char *instr,
+                                int inlen);
+bool_t a_Decode_transfer_finished(DecodeTransfer *dc);
+void a_Decode_transfer_free(DecodeTransfer *dc);
+
 Decode *a_Decode_content_init(const char *format);
 Decode *a_Decode_charset_init(const char *format);
 Dstr *a_Decode_process(Decode *dc, const char *instr, int inlen);

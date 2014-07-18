@@ -350,6 +350,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          switch (Op) {
          case OpStart:
             io = IO_new(IOWrite);
+            io->Info = Info;
             Info->LocalKey = io;
             break;
          case OpSend:
@@ -406,9 +407,10 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                IO_submit(io);
             }
             break;
+         case OpEnd:
          case OpAbort:
             io = Info->LocalKey;
-            IO_close_fd(io, IO_StopRdWr);
+            IO_close_fd(io, Op == OpEnd ? IO_StopRd : IO_StopRdWr);
             IO_free(io);
             dFree(Info);
             break;
