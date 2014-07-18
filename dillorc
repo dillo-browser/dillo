@@ -21,7 +21,7 @@
 
 # Change this if you want background images to be loaded initially.
 # (While browsing, this can be changed from the tools/settings menu.)
-#load_background_images=FALSE
+#load_background_images=NO
 
 # Change this if you want to disable loading of CSS stylesheets initially.
 # (While browsing, this can be changed from the tools/settings menu.)
