@@ -1098,9 +1098,9 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
       // The actual calculation is rather simple, the ith value is:
       //
       //
-      //                       (max[i] - min[i]) * (totalMax - totalMin)
-      // width[i] = totalMin + -----------------------------------------
-      //                                (totalWidth - totalMin)
+      //                     (max[i] - min[i]) * (totalMax - totalMin)
+      // width[i] = min[i] + -----------------------------------------
+      //                              (totalWidth - totalMin)
       //
       // (Regard "total" as "sum".) With the following general
       // definitions (for both the list and sums):
