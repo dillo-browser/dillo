@@ -727,14 +727,23 @@ void Table::forceCalcCellSizes (bool calcHeights)
    misc::SimpleVector<int> *oldColWidths = colWidths;
    colWidths = new misc::SimpleVector <int> (8);
 
-   int minWidth = 0;
-   for (int col = 0; col < colExtremes->size(); col++)
+   int minWidth = 0, maxWidth = 0;
+   for (int col = 0; col < colExtremes->size(); col++) {
       minWidth += getColExtreme (col, MIN);
+      maxWidth += getColExtreme (col, MAX);
+   }
 
-   DBG_OBJ_MSGF ("resize", 1, "minWidth (= %d) > totalWidth (= %d)?",
-                 minWidth, totalWidth);
+   // CSS 'width' defined?
+   bool totalWidthSpecified = getStyle()->width != core::style::LENGTH_AUTO;
+
+   DBG_OBJ_MSGF ("resize", 1,
+                 "minWidth = %d, maxWidth %d, totalWidth = %d, %s",
+                 minWidth, maxWidth, totalWidth,
+                 totalWidthSpecified ? "specified" : "not specified");
       
-   if (minWidth > totalWidth)
+   if (minWidth > totalWidth) {
+      DBG_OBJ_MSG ("resize", 1, "case 1: minWidth > totalWidth");
+
       // The sum of all column minima is larger than the available
       // width, so we narrow the columns (see also CSS2 spec,
       // section 17.5, #6). We use a similar apportioning, but not
@@ -747,21 +756,24 @@ void Table::forceCalcCellSizes (bool calcHeights)
 
       apportion2 (totalWidth, 0, colExtremes->size() - 1, MIN_MIN, MAX_MIN,
                   colWidths, 0);
-   else {
-      // Normal apportioning.
-      int width;
-      if (getStyle()->width == core::style::LENGTH_AUTO) {
-         // Do not force width, when maximal width is smaller.
-         int maxWidth = 0;
-         for (int col = 0; col < colExtremes->size(); col++)
-            maxWidth += getColExtreme (col, MAX);
-         width = misc::min (totalWidth, maxWidth);
-         DBG_OBJ_MSGF ("resize", 1, "width = min (%d, %d) = %d",
-                       totalWidth, maxWidth, width);
-      } else
-         // CSS 'width' defined: force this width.
-         width = totalWidth;
+   } else if (totalWidthSpecified && totalWidth > maxWidth) {
+      DBG_OBJ_MSG ("resize", 1,
+                   "case 2: totalWidthSpecified && totalWidth < maxWidth");
 
+      // The width is specified (and so enforced), but all maxima sum
+      // up to less than this specified width. The columns will have
+      // there maximal width, and the extra space is apportioned
+      // according to the column widths, and so to the column
+      // maxima. This is done by simply passing MAX twice to the
+      // apportioning function.
+
+      apportion2 (totalWidth, 0, colExtremes->size() - 1, MAX, MAX, colWidths,
+                  0);
+   } else {
+      // Normal apportioning.
+      int width =
+         totalWidthSpecified ? totalWidth : misc::min (totalWidth, maxWidth);
+      DBG_OBJ_MSGF ("resize", 1, "case 3: else; width = %d", width);
       apportion2 (width, 0, colExtremes->size() - 1, MIN, MAX, colWidths, 0);
    }
 
