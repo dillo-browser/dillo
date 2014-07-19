@@ -189,7 +189,7 @@ static void Http_connect_queued_sockets(HostConnection_t *hc)
             a_Chain_fcb(OpSend, sd->Info, &sd->SockFD, "FD");
             Http_send_query(sd->Info, sd);
             sd->connected_to = hc->host;
-            dList_append(hc->active_fds, (void *)sd->SockFD);
+            dList_append(hc->active_fds, INT2VOIDP(sd->SockFD));
          }
       }
    }
@@ -214,7 +214,7 @@ static void Http_socket_free(int SKey)
       } else {
          if (S->connected_to) {
             HostConnection_t *hc = Http_host_connection_get(S->connected_to);
-            dList_remove_fast(hc->active_fds, (void *)S->SockFD);
+            dList_remove_fast(hc->active_fds, INT2VOIDP(S->SockFD));
             Http_connect_queued_sockets(hc);
             if (dList_length(hc->active_fds) == 0)
                Http_host_connection_remove(hc);
@@ -728,7 +728,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          case OpSend:
             if (Data2) {
                if (!strcmp(Data2, "FD")) {
-                  Info->LocalKey = (void *)*(int*)Data1;
+                  Info->LocalKey = INT2VOIDP(*(int*)Data1);
                   a_Chain_bcb(OpSend, Info, Data1, Data2);
                } else if (!strcmp(Data2, "reply_complete")) {
                   int fd = VOIDP2INT(Info->LocalKey);

@@ -2567,19 +2567,9 @@ void Textblock::breakAdded ()
    // actual width (Word::totalWidth) would include the space, so that
    // the width of the line is larger than the available width.
 
-   // Casting words->size() to long avoids the compiler warning
-   // 
-   //    "assuming signed overflow does not occur when assuming that
-   //     (X - c) > X is always false [-Wstrict-overflow]"
-   //
-   // With long, the assumtion (X - c) > X (with X = words->size() and
-   // c = 2) is indeed always false.
-   //
-   // Let me know if you know a better solution. --SG
-
    if (words->size () >= 2)
-      words->getRef((long)words->size () - 2)->origSpace =
-         words->getRef((long)words->size () - 2)->effSpace = 0;
+      words->getRef(words->size () - 2)->origSpace =
+         words->getRef(words->size () - 2)->effSpace = 0;
 }
 
 /**

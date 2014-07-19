@@ -437,7 +437,19 @@ public:
             assert (i >= 0);
             return this->arrayMain + i;
          } else if (i >= this->startExtra + this->numExtra) {
-            assert (i < this->numMain + this->numExtra);
+            // The original assertion
+            ///
+            //    "assert (i < this->numMain + this->numExtra)"
+            // 
+            // causes this warnung in dw::Textblock::breakAdded:
+            //
+            //    "assuming signed overflow does not occur when assuming that
+            //     (X - c) > X is always false [-Wstrict-overflow]"
+            //
+            // Subtracting numExtra from both sides solves this,
+            // interrestingly.
+
+            assert (i - this->numExtra < this->numMain);
             return this->arrayMain + i - this->numExtra;
          } else
             return this->arrayExtra1 + i - this->startExtra;
