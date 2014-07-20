@@ -292,7 +292,7 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
-   int getMinWidth (Extremes *extremes);
+   int getMinWidth (Extremes *extremes, bool forceValue);
 
    virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
    virtual int getAvailHeightOfChild (Widget *child, bool forceValue);
