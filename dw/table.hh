@@ -374,6 +374,17 @@ private:
    lout::misc::SimpleVector<core::Extremes> *colExtremes;
 
    /**
+    * \brief Wether the column itself (in the future?) or at least one
+    *    cell in this column or spanning over this column has CSS
+    *    'width' specified.
+    *
+    * Filled by forceCalcColumnExtremes(), since it is needed to
+    * calculate the column widths.
+    */
+   lout::misc::SimpleVector<bool> *colWidthSpecified;
+   int numColWidthSpecified;
+
+   /**
     * \brief The widths of all columns.
     */
    lout::misc::SimpleVector<int> *colWidths;
@@ -394,16 +405,13 @@ private:
 
    bool colWidthsUpToDateWidthColExtremes;
 
-   enum ExtrMod { MIN, MIN_INTR, MIN_MIN, MAX_MIN, MAX, MAX_INTR };
+   enum ExtrMod { MIN, MIN_INTR, MIN_MIN, MAX_MIN, MAX, MAX_INTR, DATA };
 
    const char *getExtrModName (ExtrMod mod);
    int getExtreme (core::Extremes *extremes, ExtrMod mod);
    void setExtreme (core::Extremes *extremes, ExtrMod mod, int value);
-
-   inline int getColExtreme (int col, ExtrMod mod) {
-      return getExtreme (colExtremes->getRef(col), mod); }
-   inline void setColExtreme (int col, ExtrMod mod, int value) {
-      setExtreme (colExtremes->getRef(col), mod, value); }
+   int getColExtreme (int col, ExtrMod mod, void *data);
+   inline void setColExtreme (int col, ExtrMod mod, void *data, int value);
 
    inline bool childDefined(int n)
    {
@@ -423,10 +431,11 @@ private:
    void forceCalcColumnExtremes ();
    void calcExtremesSpanMulteCols (int col, int cs,
                                    core::Extremes *cellExtremes,
-                                   ExtrMod minExtrMod, ExtrMod maxExtrMod);
+                                   ExtrMod minExtrMod, ExtrMod maxExtrMod,
+                                   void *extrData);
 
    void apportion2 (int totalWidth, int firstCol, int lastCol,
-                    ExtrMod minExtrMod, ExtrMod maxExtrMod,
+                    ExtrMod minExtrMod, ExtrMod maxExtrMod, void *extrData,
                     lout::misc::SimpleVector<int> *dest, int destOffset);
 
    void setCumHeight (int row, int value)
