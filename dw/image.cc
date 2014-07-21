@@ -217,8 +217,18 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
 
 void Image::getExtremesImpl (core::Extremes *extremes)
 {
-   extremes->minWidth = extremes->maxWidth = 
-      (buffer ? buffer->getRootWidth () : 0) + boxDiffWidth ();
+   int width = (buffer ? buffer->getRootWidth () : 0) + boxDiffWidth ();
+
+   // With percentage width, the image may be narrower than the buffer.
+   extremes->minWidth =
+      core::style::isPerLength (getStyle()->width) ? boxDiffWidth () : width;
+
+   // (We ignore the same effect for the maximal width.)
+   extremes->maxWidth = width;
+
+   extremes->minWidthIntrinsic = extremes->minWidth;
+   extremes->maxWidthIntrinsic = extremes->maxWidth;
+
    correctExtremes (extremes);
 }
 

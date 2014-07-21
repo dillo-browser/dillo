@@ -46,6 +46,8 @@ void Bullet::getExtremesImpl (core::Extremes *extremes)
 {
    extremes->minWidth = extremes->maxWidth = 
       lout::misc::max (getStyle()->font->xHeight * 4 / 5, 1);
+   extremes->minWidthIntrinsic = extremes->minWidth;
+   extremes->maxWidthIntrinsic = extremes->maxWidth;
 }
 
 void Bullet::containerSizeChangedForChildren ()

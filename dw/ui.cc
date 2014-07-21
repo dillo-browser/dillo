@@ -212,6 +212,8 @@ void Resource::getExtremes (Extremes *extremes)
    Requisition requisition;
    sizeRequest (&requisition);
    extremes->minWidth = extremes->maxWidth = requisition.width;
+   extremes->minWidthIntrinsic = extremes->minWidth;
+   extremes->maxWidthIntrinsic = extremes->maxWidth;
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d / %d",
                  extremes->minWidth, extremes->maxWidth);
@@ -376,6 +378,8 @@ void ComplexButtonResource::getExtremes (Extremes *extremes)
    childWidget->getExtremes (&widgetExtremes);
    extremes->minWidth = widgetExtremes.minWidth + 2 * reliefXThickness ();
    extremes->maxWidth = widgetExtremes.maxWidth + 2 * reliefXThickness ();
+   extremes->minWidthIntrinsic = extremes->minWidth;
+   extremes->maxWidthIntrinsic = extremes->maxWidth;
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d / %d",
                  extremes->minWidth, extremes->maxWidth);
