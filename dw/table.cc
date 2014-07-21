@@ -882,11 +882,14 @@ void Table::forceCalcCellSizes (bool calcHeights)
       // When column widths are specified (numColWidthSpecified > 0,
       // as calculated in forceCalcColumnExtremes()), they are treated
       // specially and excluded from the apportioning, so that the
-      // specified column widths are enforced.
+      // specified column widths are enforced. An exception is when
+      // all columns are specified: in this case they must be
+      // enlargened to fill the whole table width.
 
-      if (numColWidthSpecified == 0) {
+      if (numColWidthSpecified == 0 ||
+          numColWidthSpecified == colExtremes->size()) {
          DBG_OBJ_MSG ("resize", 1,
-                      "subcase 2a: no columns with specified width");
+                      "subcase 2a: no or all columns with specified width");
          apportion2 (totalWidth, 0, colExtremes->size() - 1, MAX, MAX, NULL,
                      colWidths, 0);
       } else {
