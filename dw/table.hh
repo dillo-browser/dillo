@@ -385,6 +385,17 @@ private:
    int numColWidthSpecified;
 
    /**
+    * \brief Wether the column itself (in the future?) or at least one
+    *    cell in this column or spanning over this column has CSS
+    *    'width' specified *as percentage value*.
+    *
+    * Filled by forceCalcColumnExtremes(), since it is needed to
+    * calculate the column widths.
+    */
+   lout::misc::SimpleVector<bool> *colWidthPercentage;
+   int numColWidthPercentage;
+
+   /**
     * \brief The widths of all columns.
     */
    lout::misc::SimpleVector<int> *colWidths;
