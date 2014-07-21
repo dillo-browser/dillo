@@ -870,7 +870,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
       }
    } else if (totalWidthSpecified && totalWidth > maxWidth) {
       DBG_OBJ_MSG ("resize", 1,
-                   "case 2: totalWidthSpecified && totalWidth < maxWidth");
+                   "case 2: totalWidthSpecified && totalWidth > maxWidth");
 
       // The width is specified (and so enforced), but all maxima sum
       // up to less than this specified width. The columns will have
