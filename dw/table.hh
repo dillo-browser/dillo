@@ -322,7 +322,6 @@ namespace dw {
 class Table: public core::Widget
 {
 private:
-
    struct Child
    {
       enum {
@@ -360,6 +359,8 @@ private:
    };
 
    friend class TableIterator;
+
+   static bool adjustTableMinWidth;
 
    bool limitTextWidth, rowClosed;
 
@@ -463,6 +464,8 @@ protected:
    void sizeAllocateImpl (core::Allocation *allocation);
    void resizeDrawImpl ();
 
+   bool getAdjustMinWidth () { return Table::adjustTableMinWidth; }
+
    int getAvailWidthOfChild (Widget *child, bool forceValue);
    void correctRequisitionOfChild (core::Widget *child,
                                    core::Requisition *requisition,
@@ -484,6 +487,9 @@ protected:
 
 public:
    static int CLASS_ID;
+
+   inline static void setAdjustTableMinWidth (bool adjustTableMinWidth)
+   { Table::adjustTableMinWidth = adjustTableMinWidth; }
 
    Table(bool limitTextWidth);
    ~Table();

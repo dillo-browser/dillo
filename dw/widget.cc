@@ -524,7 +524,7 @@ int Widget::getMinWidth (Extremes *extremes, bool forceValue)
                   forceValue ? "true" : "false");
    int minWidth;
 
-   if (adjustMinWidth) {
+   if (getAdjustMinWidth ()) {
       Extremes extremes2;
       if (extremes == NULL) {
          if (forceValue) {

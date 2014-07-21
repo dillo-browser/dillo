@@ -28,6 +28,7 @@ using namespace lout;
 
 namespace dw {
 
+bool Table::adjustTableMinWidth = true;
 int Table::CLASS_ID = -1;
 
 Table::Table(bool limitTextWidth)

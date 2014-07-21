@@ -58,6 +58,7 @@
 #include "dw/fltkcore.hh"
 #include "dw/widget.hh"
 #include "dw/textblock.hh"
+#include "dw/table.hh"
 
 /*
  * Command line options structure
@@ -485,6 +486,7 @@ int main(int argc, char **argv)
    StyleEngine::init();
 
    dw::core::Widget::setAdjustMinWidth (prefs.adjust_min_width);
+   dw::Table::setAdjustTableMinWidth (prefs.adjust_table_min_width);
    dw::Textblock::setPenaltyHyphen (prefs.penalty_hyphen);
    dw::Textblock::setPenaltyHyphen2 (prefs.penalty_hyphen_2);
    dw::Textblock::setPenaltyEmDashLeft (prefs.penalty_em_dash_left);

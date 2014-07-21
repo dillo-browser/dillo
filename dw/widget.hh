@@ -389,7 +389,6 @@ public:
 
    inline static void setAdjustMinWidth (bool adjustMinWidth)
    { Widget::adjustMinWidth = adjustMinWidth; }
-   inline static bool getAdjustMinWidth () { return Widget::adjustMinWidth; }
 
    Widget ();
    ~Widget ();
@@ -428,6 +427,7 @@ public:
 
    int getAvailWidth (bool forceValue);
    int getAvailHeight (bool forceValue);
+   virtual bool getAdjustMinWidth () { return Widget::adjustMinWidth; }
    void correctRequisition (Requisition *requisition,
                             void (*splitHeightFun) (int, int*, int*));
    void correctExtremes (Extremes *extremes);

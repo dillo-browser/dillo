@@ -14,7 +14,7 @@ dillo_grows [to be integrated after merge]
    supported.
  - Image aspect ratio is preserved when one dimension is specified by a
    percentage value.
- - New dillorc option 'adjust_min_width'.
+ - New dillorc options 'adjust_min_width' and 'adjust_table_min_width'.
    Patches: Sebastian Geerken
 
 
