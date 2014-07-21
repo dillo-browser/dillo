@@ -121,6 +121,7 @@ class Image: public core::Widget, public core::ImgRenderer
 private:
    char *altText;
    core::Imgbuf *buffer;
+   int bufWidth, bufHeight;
    int altTextWidth;
    bool clicking;
    int currLink;
