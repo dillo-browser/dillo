@@ -643,7 +643,7 @@ int Widget::getAvailHeight (bool forceValue)
    } else if (parent) {
       DBG_OBJ_MSG ("resize", 1, "delegated to parent");
       DBG_OBJ_MSG_START ();
-      height = quasiParent->getAvailHeightOfChild (this, forceValue);
+      height = parent->getAvailHeightOfChild (this, forceValue);
       DBG_OBJ_MSG_END ();
    } else /* if (quasiParent) */ {
       DBG_OBJ_MSG ("resize", 1, "delegated to quasiParent");
