@@ -20,6 +20,7 @@
 
 
 #include "alignedtablecell.hh"
+#include "table.hh"
 #include "../lout/debug.hh"
 #include <stdio.h>
 
@@ -60,6 +61,11 @@ int AlignedTableCell::applyPerHeight (int containerHeight,
                                       core::style::Length perHeight)
 {
    return core::style::multiplyWithPerLength (containerHeight, perHeight);
+}
+
+bool AlignedTableCell::getAdjustMinWidth ()
+{
+   return Table::getAdjustTableMinWidth ();
 }
 
 int AlignedTableCell::wordWrap(int wordIndex, bool wrapAll)

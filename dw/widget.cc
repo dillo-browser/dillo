@@ -760,7 +760,6 @@ void Widget::getExtremes (Extremes *extremes)
    assert (!queueResizeEntered ());
 
    DBG_OBJ_ENTER0 ("resize", 0, "getExtremes");
-   DBG_OBJ_MSG_START ();
 
    enterGetExtremes ();
 

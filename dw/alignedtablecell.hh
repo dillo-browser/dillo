@@ -12,6 +12,8 @@ private:
    int charWordIndex, charWordPos;
 
 protected:
+   bool getAdjustMinWidth ();
+
    int wordWrap (int wordIndex, bool wrapAll);
 
    int getValue ();

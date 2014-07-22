@@ -7,6 +7,9 @@ namespace dw {
 
 class SimpleTableCell: public Textblock
 {
+protected:
+   bool getAdjustMinWidth ();
+
 public:
    static int CLASS_ID;
 

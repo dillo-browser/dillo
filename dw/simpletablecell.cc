@@ -20,6 +20,7 @@
 
 
 #include "simpletablecell.hh"
+#include "table.hh"
 #include "../lout/debug.hh"
 
 namespace dw {
@@ -36,6 +37,11 @@ SimpleTableCell::SimpleTableCell (bool limitTextWidth):
 SimpleTableCell::~SimpleTableCell()
 {
    DBG_OBJ_DELETE ();
+}
+
+bool SimpleTableCell::getAdjustMinWidth ()
+{
+   return Table::getAdjustTableMinWidth ();
 }
 
 bool SimpleTableCell::isBlockLevel ()

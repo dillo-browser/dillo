@@ -894,7 +894,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
                      colWidths, 0);
       } else {
          DBG_OBJ_MSGF ("resize", 1,
-                       "subcase 2b: %d columns with specified width",
+                       "subcase 2b: %d column(s) with specified width",
                        numColWidthSpecified);
 
          // Seperate columns with specified and unspecified width, and
@@ -943,15 +943,26 @@ void Table::forceCalcCellSizes (bool calcHeights)
             DBG_OBJ_MSG_END ();
          }
 
+         DBG_OBJ_MSG ("resize", 1, "finally setting column widths:");
+         DBG_OBJ_MSG_START ();
+
          colWidths->setSize (colExtremes->size());
          indexNotSpecified = 0;
          for (int col = 0; col < colExtremes->size(); col++)
-            if (colWidthSpecified->get (col))
+            if (colWidthSpecified->get (col)) {
+               DBG_OBJ_MSGF ("resize", 1, "#%d: specified, gets maximum %d",
+                             col, colExtremes->getRef(col)->maxWidth);
                colWidths->set (col, colExtremes->getRef(col)->maxWidth);
-            else {
+            } else {
+               DBG_OBJ_MSGF ("resize", 1, "#%d: not specified, gets value %d "
+                             "at position %d from temporary list",
+                             col, apportionDest.get (indexNotSpecified),
+                             indexNotSpecified);
                colWidths->set (col, apportionDest.get (indexNotSpecified));
                indexNotSpecified++;
             }
+
+         DBG_OBJ_MSG_END ();
       }
    } else {
       // Normal apportioning.
