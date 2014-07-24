@@ -12,6 +12,9 @@ private:
    int charWordIndex, charWordPos;
 
 protected:
+   int getAvailWidthOfChild (Widget *child, bool forceValue);
+   int getAvailHeightOfChild (Widget *child, bool forceValue);
+
    bool getAdjustMinWidth ();
 
    int wordWrap (int wordIndex, bool wrapAll);

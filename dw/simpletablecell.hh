@@ -8,6 +8,9 @@ namespace dw {
 class SimpleTableCell: public Textblock
 {
 protected:
+   int getAvailWidthOfChild (Widget *child, bool forceValue);
+   int getAvailHeightOfChild (Widget *child, bool forceValue);
+
    bool getAdjustMinWidth ();
 
 public:

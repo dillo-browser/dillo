@@ -768,8 +768,16 @@ void Table::forceCalcCellSizes (bool calcHeights)
       maxWidth += colExtremes->getRef(col)->maxWidth;
    }
 
-   // CSS 'width' defined?
-   bool totalWidthSpecified = getStyle()->width != core::style::LENGTH_AUTO;
+   // CSS 'width' defined and effective?
+   bool totalWidthSpecified = false;
+   if (getStyle()->width != core::style::LENGTH_AUTO) {
+      // Even if 'width' is defined, it may not have a defined value. We try
+      // this trick (should perhaps be replaced by a cleaner solution):
+      core::Requisition testReq = { -1, -1, -1 };
+      correctRequisition (&testReq, core::splitHeightPreserveDescent);
+      if (testReq.width != -1)
+         totalWidthSpecified = true;
+   }
 
    DBG_OBJ_MSGF ("resize", 1,
                  "minWidth = %d, minWidthIntrinsic = %d, maxWidth %d, "

@@ -21,6 +21,7 @@
 
 #include "alignedtablecell.hh"
 #include "table.hh"
+#include "tablecell.hh"
 #include "../lout/debug.hh"
 #include <stdio.h>
 
@@ -46,26 +47,53 @@ AlignedTableCell::~AlignedTableCell()
    DBG_OBJ_DELETE ();
 }
 
+
+bool AlignedTableCell::getAdjustMinWidth ()
+{
+   return tablecell::getAdjustMinWidth ();
+}
+
 bool AlignedTableCell::isBlockLevel ()
 {
-   return false;
+   return tablecell::isBlockLevel ();
+}
+
+int AlignedTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
+{
+   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/getAvailWidthOfChild",
+                  "%p, %s", child, forceValue ? "true" : "false");
+
+   int width = tablecell::correctAvailWidthOfChild
+      (this, child, Textblock::getAvailWidthOfChild (child, forceValue),
+       forceValue);
+
+   DBG_OBJ_LEAVE ();
+   return width;
+}
+
+int AlignedTableCell::getAvailHeightOfChild (Widget *child, bool forceValue)
+{
+   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/getAvailHeightOfChild",
+                  "%p, %s", child, forceValue ? "true" : "false");
+
+   int height = tablecell::correctAvailHeightOfChild
+      (this, child, Textblock::getAvailHeightOfChild (child, forceValue),
+       forceValue);
+
+   DBG_OBJ_LEAVE ();
+   return height;
 }
 
 int AlignedTableCell::applyPerWidth (int containerWidth,
                                      core::style::Length perWidth)
 {
-   return core::style::multiplyWithPerLength (containerWidth, perWidth);
+   return tablecell::applyPerWidth (this, containerWidth, perWidth);
 }
 
 int AlignedTableCell::applyPerHeight (int containerHeight,
                                       core::style::Length perHeight)
 {
-   return core::style::multiplyWithPerLength (containerHeight, perHeight);
-}
-
-bool AlignedTableCell::getAdjustMinWidth ()
-{
-   return Table::getAdjustTableMinWidth ();
+   return tablecell::applyPerHeight (this, containerHeight, perHeight);
 }
 
 int AlignedTableCell::wordWrap(int wordIndex, bool wrapAll)

@@ -464,6 +464,7 @@ public:
    inline bool isButtonSensitive () { return buttonSensitive; }
 
    inline Widget *getParent () { return parent; }
+   inline Widget *getContainer () { return container; }
    Widget *getTopLevel ();
    int getLevel ();
    int getGeneratorLevel ();

@@ -20,7 +20,8 @@
 
 
 #include "simpletablecell.hh"
-#include "table.hh"
+#include "tablecell.hh"
+#include "../lout/misc.hh"
 #include "../lout/debug.hh"
 
 namespace dw {
@@ -41,24 +42,50 @@ SimpleTableCell::~SimpleTableCell()
 
 bool SimpleTableCell::getAdjustMinWidth ()
 {
-   return Table::getAdjustTableMinWidth ();
+   return tablecell::getAdjustMinWidth ();
 }
 
 bool SimpleTableCell::isBlockLevel ()
 {
-   return false;
+   return tablecell::isBlockLevel ();
+}
+
+int SimpleTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
+{
+   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell/getAvailWidthOfChild",
+                  "%p, %s", child, forceValue ? "true" : "false");
+
+   int width = tablecell::correctAvailWidthOfChild
+      (this, child, Textblock::getAvailWidthOfChild (child, forceValue),
+       forceValue);
+
+   DBG_OBJ_LEAVE ();
+   return width;
+}
+
+int SimpleTableCell::getAvailHeightOfChild (Widget *child, bool forceValue)
+{
+   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell/getAvailHeightOfChild",
+                  "%p, %s", child, forceValue ? "true" : "false");
+
+   int height = tablecell::correctAvailHeightOfChild
+      (this, child, Textblock::getAvailHeightOfChild (child, forceValue),
+       forceValue);
+
+   DBG_OBJ_LEAVE ();
+   return height;
 }
 
 int SimpleTableCell::applyPerWidth (int containerWidth,
-                                     core::style::Length perWidth)
+                                    core::style::Length perWidth)
 {
-   return core::style::multiplyWithPerLength (containerWidth, perWidth);
+   return tablecell::applyPerWidth (this, containerWidth, perWidth);
 }
 
 int SimpleTableCell::applyPerHeight (int containerHeight,
                                      core::style::Length perHeight)
 {
-   return core::style::multiplyWithPerLength (containerHeight, perHeight);
+   return tablecell::applyPerHeight (this, containerHeight, perHeight);
 }
 
 } // namespace dw

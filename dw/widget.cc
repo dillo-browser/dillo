@@ -1284,11 +1284,10 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
 
    if (child->getStyle()->width == style::LENGTH_AUTO) {
       DBG_OBJ_MSG ("resize", 1, "no specification");
-      int availWidth = getAvailWidth (forceValue);
-      if (availWidth == -1)
-         width = -1;
+      if (forceValue)
+         width = misc::max (getAvailWidth (true) - boxDiffWidth (), 0);
       else
-         width = misc::max (availWidth - boxDiffWidth (), 0);
+         width = -1;
    } else {
       // In most cases, the toplevel widget should be a container, so
       // the container is non-NULL when the parent is non-NULL. Just
@@ -1347,11 +1346,10 @@ int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
 
    if (child->getStyle()->height == style::LENGTH_AUTO) {
       DBG_OBJ_MSG ("resize", 1, "no specification");
-      int availHeight = getAvailHeight (forceValue);
-      if (availHeight == -1)
-         height = -1;
+      if (forceValue)
+         height = misc::max (getAvailHeight (true) - boxDiffHeight (), 0);
       else
-         height = misc::max (availHeight - boxDiffHeight (), 0);
+         height = -1;
    } else {
       // In most cases, the toplevel widget should be a container, so
       // the container is non-NULL when the parent is non-NULL. Just
