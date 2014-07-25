@@ -27,6 +27,7 @@ class StyleEngine {
          dw::core::style::Style *wordStyle;
          dw::core::style::Style *backgroundStyle;
          bool inheritBackgroundColor;
+         bool displayNone;
          DoctreeNode *doctreeNode;
       };
 

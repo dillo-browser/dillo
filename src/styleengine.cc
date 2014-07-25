@@ -112,7 +112,7 @@ StyleEngine::~StyleEngine () {
 
 void StyleEngine::stackPush () {
    static const Node emptyNode = {
-      NULL, NULL, NULL, NULL, NULL, NULL, false, NULL
+      NULL, NULL, NULL, NULL, NULL, NULL, false, false, NULL
    };
 
    stack->setSize (stack->size () + 1, emptyNode);
@@ -145,6 +145,8 @@ void StyleEngine::startElement (int element, BrowserWindow *bw) {
 
    dn->element = element;
    n->doctreeNode = dn;
+   if (stack->size () > 1)
+      n->displayNone = stack->getRef (stack->size () - 2)->displayNone;
 }
 
 void StyleEngine::startElement (const char *tagname, BrowserWindow *bw) {
@@ -364,8 +366,8 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
    DilloUrl *imgUrl = NULL;
 
    /* Determine font first so it can be used to resolve relative lengths. */
-   for (int i = 0; i < props->size (); i++) {
-      CssProperty *p = props->getRef (i);
+   for (int j = 0; j < props->size (); j++) {
+      CssProperty *p = props->getRef (j);
 
       switch (p->name) {
          case CSS_PROPERTY_FONT_FAMILY:
@@ -512,8 +514,8 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
 
    attrs->font = Font::create (layout, &fontAttrs);
 
-   for (int i = 0; i < props->size (); i++) {
-      CssProperty *p = props->getRef (i);
+   for (int j = 0; j < props->size (); j++) {
+      CssProperty *p = props->getRef (j);
 
       switch (p->name) {
          /* \todo missing cases */
@@ -596,6 +598,8 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             break;
          case CSS_PROPERTY_DISPLAY:
             attrs->display = (DisplayType) p->value.intVal;
+            if (attrs->display == DISPLAY_NONE)
+               stack->getRef (i)->displayNone = true;
             break;
          case CSS_PROPERTY_LINE_HEIGHT:
             if (p->type == CSS_TYPE_ENUM) { //only valid enum value is "normal"
@@ -709,7 +713,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
    }
 
    if (imgUrl && prefs.load_background_images &&
-       attrs->display != DISPLAY_NONE &&
+       !stack->getRef (i)->displayNone &&
        !(URL_FLAGS(pageUrl) & URL_SpamSafe))
    {
       attrs->backgroundImage = StyleImage::create();
