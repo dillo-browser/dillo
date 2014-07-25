@@ -15,6 +15,11 @@ protected:
    int getAvailWidthOfChild (Widget *child, bool forceValue);
    int getAvailHeightOfChild (Widget *child, bool forceValue);
 
+   void correctRequisitionOfChild (Widget *child,
+                                   core::Requisition *requisition,
+                                   void (*splitHeightFun) (int, int*, int*));
+   void correctExtremesOfChild (Widget *child, core::Extremes *extremes);
+
    bool getAdjustMinWidth ();
 
    int wordWrap (int wordIndex, bool wrapAll);

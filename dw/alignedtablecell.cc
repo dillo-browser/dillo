@@ -84,6 +84,39 @@ int AlignedTableCell::getAvailHeightOfChild (Widget *child, bool forceValue)
    return height;
 }
 
+void AlignedTableCell::correctRequisitionOfChild (Widget *child,
+                                                  core::Requisition
+                                                  *requisition,
+                                                  void (*splitHeightFun) (int,
+                                                                          int*,
+                                                                          int*))
+{
+   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/correctRequisitionOfChild",
+                  "%p, %d * (%d + %d), ...", child, requisition->width,
+                  requisition->ascent, requisition->descent);
+
+   AlignedTextblock::correctRequisitionOfChild (child, requisition,
+                                                splitHeightFun);
+   tablecell::correctCorrectedRequisitionOfChild (this, child, requisition,
+                                                  splitHeightFun);
+
+   DBG_OBJ_LEAVE ();
+}
+
+void AlignedTableCell::correctExtremesOfChild (Widget *child,
+                                              core::Extremes *extremes)
+{
+   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/correctExtremesOfChild",
+                  "%p, %d (%d) / %d (%d)",
+                  child, extremes->minWidth, extremes->minWidthIntrinsic,
+                  extremes->maxWidth, extremes->maxWidthIntrinsic);
+   
+   AlignedTextblock::correctExtremesOfChild (child, extremes);
+   tablecell::correctCorrectedExtremesOfChild (this, child, extremes);
+
+   DBG_OBJ_LEAVE ();
+}
+
 int AlignedTableCell::applyPerWidth (int containerWidth,
                                      core::style::Length perWidth)
 {

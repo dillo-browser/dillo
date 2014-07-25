@@ -15,6 +15,14 @@ int correctAvailWidthOfChild (core::Widget *widget, core::Widget *child,
 int correctAvailHeightOfChild (core::Widget *widget, core::Widget *child,
                                int height, bool forceValue);
 
+void correctCorrectedRequisitionOfChild (core::Widget *widget,
+                                         core::Widget *child,
+                                         core::Requisition *requisition,
+                                         void (*splitHeightFun) (int, int*,
+                                                                 int*));
+void correctCorrectedExtremesOfChild (core::Widget *widget, core::Widget *child,
+                                      core::Extremes *extremes);
+
 int applyPerWidth (core::Widget *widget, int containerWidth,
                    core::style::Length perWidth);
 int applyPerHeight (core::Widget *widget, int containerHeight,

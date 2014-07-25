@@ -74,6 +74,35 @@ int correctAvailHeightOfChild (core::Widget *widget, core::Widget *child,
    return height;
 }
 
+void correctCorrectedRequisitionOfChild (core::Widget *widget,
+                                         core::Widget *child,
+                                         core::Requisition *requisition,
+                                         void (*splitHeightFun) (int, int*,
+                                                                 int*))
+{
+   DBG_OBJ_ENTER_O ("resize", 0, widget, "tablecell/correctRequisitionOfChild",
+                    "%p, %d * (%d + %d), ...", child, requisition->width,
+                    requisition->ascent, requisition->descent);
+
+   // Make sure that this width does not exceed the width of the table
+   // cell (minus margin/border/padding).
+
+   int thisWidth = widget->getAvailWidth (true);
+   DBG_OBJ_MSGF_O ("resize", 1, widget, "thisWidth = %d", thisWidth);
+   requisition->width =
+      lout::misc::max (lout::misc::min (requisition->width,
+                                        thisWidth - widget->boxDiffWidth ()),
+                       0);
+
+   DBG_OBJ_LEAVE_O (widget);
+}
+
+void correctCorrectedExtremesOfChild (core::Widget *widget, core::Widget *child,
+                                      core::Extremes *extremes)
+{
+   // Something to do?
+}
+
 int applyPerWidth (core::Widget *widget, int containerWidth,
                    core::style::Length perWidth)
 {
