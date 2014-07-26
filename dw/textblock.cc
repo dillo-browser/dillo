@@ -376,6 +376,16 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    requisition->ascent += verticalOffset + getStyle()->boxOffsetY ();
    requisition->descent += getStyle()->boxRestHeight ();
 
+   if (mustBeWidenedToAvailWidth ()) {
+      DBG_OBJ_MSGF ("resize", 1,
+                    "before considering lineBreakWidth (= %d): %d * (%d + %d)",
+                    lineBreakWidth, requisition->width, requisition->ascent,
+                    requisition->descent);
+      if (requisition->width < lineBreakWidth)
+         requisition->width = lineBreakWidth;
+   } else
+      DBG_OBJ_MSG ("resize", 1, "lineBreakWidth needs no consideration");
+
    DBG_OBJ_MSGF ("resize", 1, "before correction: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
 
@@ -646,6 +656,28 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       changeAnchor (anchor->name, y);
    }
 }
+
+int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
+{
+   DBG_OBJ_ENTER ("resize", 0, "Textblock//getAvailWidthOfChild", "%p, %s",
+                  child, forceValue ? "true" : "false");
+
+   int width = Widget::getAvailWidthOfChild (child, forceValue);
+
+   if (forceValue && this == child->getContainer () &&
+       !mustBeWidenedToAvailWidth ()) {
+      core::Extremes extremes;
+      getExtremes (&extremes);
+      if (width > extremes.maxWidth)
+         width = extremes.maxWidth;
+   }
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
+   DBG_OBJ_LEAVE ();
+   return width;
+}
+
+
 
 void Textblock::containerSizeChangedForChildren ()
 {

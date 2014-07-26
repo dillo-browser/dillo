@@ -729,7 +729,6 @@ protected:
    bool isHyphenationCandidate (Word *word);
    int calcLinePartHeight (int firstWord, int lastWord);
    
-   
    void handleWordExtremes (int wordIndex);
    void correctLastWordExtremes ();
 
@@ -749,6 +748,7 @@ protected:
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
+   int getAvailWidthOfChild (Widget *child, bool forceValue);
    void containerSizeChangedForChildren ();
    bool usesAvailWidth ();
    void resizeDrawImpl ();
@@ -778,6 +778,16 @@ protected:
                        int numBreaks, int *breakPos,
                        core::Requisition *wordSize);
    static bool isContainingBlock (Widget *widget);
+
+   inline bool mustBeWidenedToAvailWidth () {
+      DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
+      // TODO Consider inline blocks etc. later.
+      bool b = /*getStyle()->display == core::style::DISPLAY_BLOCK &&*/
+         getStyle()->vloat == core::style::FLOAT_NONE;
+      DBG_OBJ_MSGF ("resize", 0, "=> %s", b ? "true" : "false");
+      DBG_OBJ_LEAVE ();
+      return b;
+   }
 
 public:
    static int CLASS_ID;
