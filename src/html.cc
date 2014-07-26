@@ -2880,7 +2880,16 @@ static void Html_tag_open_dir(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_menu(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_tag_open_dir(html, tag, tagsize);
+   /* In another bit of ridiculous mess from the HTML5 world, the menu
+    * element, which was deprecated in HTML4:
+    * - does not appear at all in W3C's HTML5 spec
+    * - appears in WHATWG's HTML5 doc and the W3C's 5.1 draft, where it
+    *   means something totally different than it did in the old days
+    *   (now it's for popup menus and toolbar menus rather than being a
+    *   sort of list).
+    */
+   if (!(html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f))
+      Html_tag_open_dir(html, tag, tagsize);
 }
 
 /*

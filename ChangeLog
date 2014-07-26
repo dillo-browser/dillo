@@ -29,6 +29,7 @@ dillo-3.1 [not released yet]
    Patch: Peter Seiderer
 +- HTML5 character references.
  - Give images lower priority when requesting resources (responsiveness).
+ - Reuse of connections for HTTP (enable w/ http_persistent_conns in dillorc).
    Patches: corvid
 
 -----------------------------------------------------------------------------
