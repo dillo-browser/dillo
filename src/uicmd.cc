@@ -433,7 +433,9 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
       // Update window title
       if ((bw = a_UIcmd_get_bw_by_widget(cbtn->ui()))) {
          const char *title = (cbtn->ui())->label();
-         cbtn->window()->copy_label(title ? title : "");
+         Fl_Window *win = cbtn->window();
+         win->copy_label(title ? title : "");
+         win->iconlabel(win->label());
       }
       // Update focus priority
       increase_focus_counter();
@@ -605,8 +607,11 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
    new_bw->render_layout = (void*)layout;
 
    // Clear the window title
-   if (focus)
-      new_ui->window()->copy_label(new_ui->label());
+   if (focus) {
+      Fl_Window *win = new_ui->window();
+      win->copy_label(new_ui->label());
+      win->iconlabel(win->label());
+   }
 
    // WORKAROUND: see findbar_toggle()
    new_ui->findbar_toggle(0);
@@ -1413,7 +1418,9 @@ void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
 
    if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->wizard()->value()) == bw) {
       // This is the focused bw, set window title
-      BW2UI(bw)->window()->copy_label(title);
+      Fl_Window *win = BW2UI(bw)->window();
+      win->copy_label(title);
+      win->iconlabel(win->label());
    }
 }
 
