@@ -346,10 +346,10 @@ static void File_info2html(ClientInfo *client, FileInfo *finfo, int n)
       sizeunits = "bytes";
    } else if (finfo->size / 1024 <= 9999) {
       size = finfo->size / 1024 + (finfo->size % 1024 >= 1024 / 2);
-      sizeunits = "Kb";
+      sizeunits = "KB";
    } else {
       size = finfo->size / 1048576 + (finfo->size % 1048576 >= 1048576 / 2);
-      sizeunits = "Mb";
+      sizeunits = "MB";
    }
 
    /* we could note if it's a symlink... */
