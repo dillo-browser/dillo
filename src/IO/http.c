@@ -584,7 +584,7 @@ static void Http_dns_cb(int Status, Dlist *addr_list, void *data)
          Http_connect_queued_sockets(hc);
       } else {
          /* DNS wasn't able to resolve the hostname */
-         MSG_BW(S->web, 0, "ERROR: Dns can't resolve %s",
+         MSG_BW(S->web, 0, "ERROR: DNS can't resolve %s",
             (S->flags & HTTP_SOCKET_USE_PROXY) ? URL_HOST_(HTTP_Proxy) :
                                                  URL_HOST_(S->web->url));
          a_Chain_bfcb(OpAbort, S->Info, NULL, "Both");
