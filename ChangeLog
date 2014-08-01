@@ -7,20 +7,15 @@ user. For a history of changes in full detail, see our Mercurial repository
 at http://hg.dillo.org/dillo
 
 
-dillo_grows [to be integrated after merge]
+dillo-3.1 [not released yet]
 
-+- Redesign of widget sizes ("GROWS").
++- Floating elements.
+ - Redesign of widget sizes ("GROWS").
  - Applied CSS attribute 'width' to all elements, 'height' is now also
    supported.
  - Image aspect ratio is preserved when one dimension is specified by a
    percentage value.
  - New dillorc options 'adjust_min_width' and 'adjust_table_min_width'.
-   Patches: Sebastian Geerken
-
-
-dillo-3.1 [not released yet]
-
-+- Floating elements.
  - Make building of test/ files more robust.
    Patches: Sebastian Geerken
 +- Image buffer/cache improvements.
