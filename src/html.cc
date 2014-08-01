@@ -357,16 +357,22 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag, int tagsize)
 /*
  * Create and add a new Textblock to the current Textblock
  */
-static void Html_add_textblock(DilloHtml *html, int space)
+static void Html_add_textblock(DilloHtml *html, bool addBreaks, int breakSpace)
 {
    Textblock *textblock = new Textblock (prefs.limit_text_width);
 
-   HT2TB(html)->addParbreak (space, html->wordStyle ());
+   if (addBreaks)
+      HT2TB(html)->addParbreak (breakSpace, html->wordStyle ());
+   
    HT2TB(html)->addWidget (textblock, html->style ()); /* Works also for floats
                                                           etc. */
-   HT2TB(html)->addParbreak (space, html->wordStyle ());
+
+   if (addBreaks)
+      HT2TB(html)->addParbreak (breakSpace, html->wordStyle ());
    S_TOP(html)->textblock = html->dw = textblock;
-   S_TOP(html)->hand_over_break = true;
+
+   if (addBreaks)
+      S_TOP(html)->hand_over_break = true;
 }
 
 /*
@@ -2019,7 +2025,7 @@ static void Html_tag_content_frameset (DilloHtml *html,
 {
    HT2TB(html)->addParbreak (9, html->wordStyle ());
    HT2TB(html)->addText("--FRAME--", html->wordStyle ());
-   Html_add_textblock(html, 5);
+   Html_add_textblock(html, true, 5);
 }
 
 /*
@@ -2797,7 +2803,7 @@ static void Html_tag_close_a(DilloHtml *html)
 static void Html_tag_open_blockquote(DilloHtml *html,
                                      const char *tag, int tagsize)
 {
-   Html_add_textblock(html, 9);
+   Html_add_textblock(html, true, 9);
 }
 
 /*
@@ -3061,7 +3067,7 @@ static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_add_textblock(html, 9);
+   Html_add_textblock(html, true, 9);
 }
 
 /*
@@ -3850,7 +3856,12 @@ static void Html_check_html5_obsolete(DilloHtml *html, int ni)
 static void Html_display_block(DilloHtml *html)
 {
    //HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
-   Html_add_textblock(html, 0);
+   Html_add_textblock(html, true, 0);
+}
+
+static void Html_display_inline_block(DilloHtml *html)
+{
+   Html_add_textblock(html, false, 0);
 }
 
 static void Html_display_listitem(DilloHtml *html)
@@ -3955,6 +3966,9 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
             case DISPLAY_BLOCK:
                Html_display_block(html);
                break;
+            case DISPLAY_INLINE_BLOCK:
+               Html_display_inline_block(html);
+               break;
             case DISPLAY_LIST_ITEM:
                Html_display_listitem(html);
                break;
@@ -3962,7 +3976,6 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
                S_TOP(html)->display_none = true;
                break;
             case DISPLAY_INLINE:
-            case DISPLAY_INLINE_BLOCK: // TODO: implement inline-block
             default:
                break;
          }

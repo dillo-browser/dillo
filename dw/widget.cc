@@ -993,6 +993,24 @@ void Widget::setStyle (style::Style *style)
 
    DBG_OBJ_SET_NUM ("style.border-spacing (h)", style->hBorderSpacing);
    DBG_OBJ_SET_NUM ("style.border-spacing (v)", style->vBorderSpacing);
+
+   DBG_OBJ_SET_SYM ("style.display",
+                    style->display == style::DISPLAY_BLOCK ? "block" :
+                    style->display == style::DISPLAY_INLINE ? "inline" :
+                    style->display == style::DISPLAY_INLINE_BLOCK ?
+                       "inline-block" :
+                    style->display == style::DISPLAY_LIST_ITEM ? "list-item" :
+                    style->display == style::DISPLAY_NONE ? "none" :
+                    style->display == style::DISPLAY_TABLE ? "table" :
+                    style->display == style::DISPLAY_TABLE_ROW_GROUP ?
+                       "table-row-group" :
+                    style->display == style::DISPLAY_TABLE_HEADER_GROUP ?
+                       "table-header-group" :
+                    style->display == style::DISPLAY_TABLE_FOOTER_GROUP ?
+                       "table-footer-group" :
+                    style->display == style::DISPLAY_TABLE_ROW ? "table-row" :
+                    style->display == style::DISPLAY_TABLE_CELL ? "table-cell" :
+                    "???");
 }
 
 /**
