@@ -2672,7 +2672,8 @@ void Textblock::handOverBreak (core::style::Style *style)
       Line *lastLine = lines->getRef (lines->size () - 1);
 
       if (lastLine->breakSpace != 0 && (parent = getParent()) &&
-          parent->instanceOf (Textblock::CLASS_ID)) {
+          parent->instanceOf (Textblock::CLASS_ID) &&
+          parent->getStyle()->display != core::style::DISPLAY_BLOCK) {
          Textblock *textblock2 = (Textblock*) parent;
          textblock2->addParbreak(lastLine->breakSpace, style);
       }

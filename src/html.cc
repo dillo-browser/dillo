@@ -363,14 +363,11 @@ static void Html_add_textblock(DilloHtml *html, bool addBreaks, int breakSpace)
 
    if (addBreaks)
       HT2TB(html)->addParbreak (breakSpace, html->wordStyle ());
-   
    HT2TB(html)->addWidget (textblock, html->style ()); /* Works also for floats
                                                           etc. */
-
    if (addBreaks)
       HT2TB(html)->addParbreak (breakSpace, html->wordStyle ());
    S_TOP(html)->textblock = html->dw = textblock;
-
    if (addBreaks)
       S_TOP(html)->hand_over_break = true;
 }

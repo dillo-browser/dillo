@@ -866,7 +866,7 @@ public:
                                  words->getRef(n)->content.widget); \
          break; \
       case ::dw::core::Content::BREAK: \
-         DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "TEXT"); \
+         DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "BREAK"); \
          DBG_OBJ_ARRATTRSET_NUM ("words", n, "text/widget/breakSpace", \
                                  words->getRef(n)->content.breakSpace); \
          break; \
