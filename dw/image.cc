@@ -199,14 +199,19 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
       // TODO Check again possible overflows. (Aren't buffer
       // dimensions limited to 2^15?)
 
-      if (getStyle()->width == core::style::LENGTH_AUTO &&
-          getStyle()->height != core::style::LENGTH_AUTO) {
+      bool widthSpecified = getStyle()->width != core::style::LENGTH_AUTO ||
+         getStyle()->minWidth != core::style::LENGTH_AUTO  ||
+         getStyle()->maxWidth != core::style::LENGTH_AUTO;
+      bool heightSpecified = getStyle()->height != core::style::LENGTH_AUTO ||
+         getStyle()->minHeight != core::style::LENGTH_AUTO  ||
+         getStyle()->maxHeight != core::style::LENGTH_AUTO;
+
+      if (!widthSpecified && heightSpecified)
          requisition->width =
             (requisition->ascent + requisition->descent - boxDiffHeight ())
             * buffer->getRootWidth () / buffer->getRootHeight ()
             + boxDiffWidth ();
-      } else if (getStyle()->width != core::style::LENGTH_AUTO &&
-                 getStyle()->height == core::style::LENGTH_AUTO) {
+      else if (widthSpecified && !heightSpecified) {
          requisition->ascent = (requisition->width + boxDiffWidth ())
             * buffer->getRootHeight () / buffer->getRootWidth ()
             + boxOffsetY ();
