@@ -13,6 +13,9 @@ dillo-3.1 [not released yet]
  - Redesign of widget sizes ("GROWS").
  - Applied CSS attribute 'width' to all elements, 'height' is now also
    supported.
+ - Suport for 'min-width', 'max-width', 'min-height' and 'max-height'.
+ - Suport for 'display: inline-block'.
+ - <BUTTON>'s are now inline.
  - Image aspect ratio is preserved when one dimension is specified by a
    percentage value.
  - New dillorc options 'adjust_min_width' and 'adjust_table_min_width'.
