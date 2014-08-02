@@ -713,6 +713,18 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             else if (attrs->wordSpacing < -1000)
                attrs->wordSpacing = -1000;
             break;
+         case CSS_PROPERTY_MIN_WIDTH:
+            computeLength (&attrs->minWidth, p->value.intVal, attrs->font);
+            break;
+         case CSS_PROPERTY_MAX_WIDTH:
+            computeLength (&attrs->maxWidth, p->value.intVal, attrs->font);
+            break;
+         case CSS_PROPERTY_MIN_HEIGHT:
+            computeLength (&attrs->minHeight, p->value.intVal, attrs->font);
+            break;
+         case CSS_PROPERTY_MAX_HEIGHT:
+            computeLength (&attrs->maxHeight, p->value.intVal, attrs->font);
+            break;
          case PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
             break;

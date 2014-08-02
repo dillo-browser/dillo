@@ -532,6 +532,7 @@ public:
 
    int hBorderSpacing, vBorderSpacing, wordSpacing;
    Length width, height, lineHeight, textIndent;
+   Length minWidth, maxWidth, minHeight, maxHeight;
 
    Box margin, borderWidth, padding;
    BorderCollapse borderCollapse;

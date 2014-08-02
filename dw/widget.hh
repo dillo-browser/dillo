@@ -431,6 +431,8 @@ public:
    void correctRequisition (Requisition *requisition,
                             void (*splitHeightFun) (int, int*, int*));
    void correctExtremes (Extremes *extremes);
+   int calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
+                  int minWidth);
 
    virtual int applyPerWidth (int containerWidth, style::Length perWidth);
    virtual int applyPerHeight (int containerHeight, style::Length perHeight);
