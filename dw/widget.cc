@@ -689,30 +689,28 @@ void Widget::correctRequisition (Requisition *requisition,
          requisition->width = width;
       if (minWidth != -1 && requisition->width < minWidth)
          requisition->width = minWidth;
-      if (maxWidth != -1 && requisition->width < maxWidth)
+      if (maxWidth != -1 && requisition->width > maxWidth)
          requisition->width = maxWidth;
 
-      // TODO Perhaps split first, then add box ascent and descent.
-      if (style::isAbsLength (getStyle()->height)) {
-         DBG_OBJ_MSGF ("resize", 1, "absolute height: %dpx",
-                       style::absLengthVal (getStyle()->height));
-         splitHeightFun (style::absLengthVal (getStyle()->height)
-                         + boxDiffHeight (),
-                         &requisition->ascent, &requisition->descent);
-      } else if (style::isPerLength (getStyle()->height)) {
-         DBG_OBJ_MSGF ("resize", 1, "percentage height: %g%%",
-                       100 * style::perLengthVal_useThisOnlyForDebugging
-                                (getStyle()->height));
-#if 0
-         // TODO Percentage heights are somewhat more complicated. Has
-         // to be clarified.
+      // For layout->viewportHeight, see comment in getAvailHeight().
+      int height = calcHeight (getStyle()->height, false,
+                               layout->viewportHeight, NULL);
+      int minHeight = calcHeight (getStyle()->minHeight, false,
+                                  layout->viewportHeight, NULL);
+      int maxHeight = calcHeight (getStyle()->maxHeight, false,
+                                  layout->viewportHeight, NULL);
 
-         // For layout->viewportHeight, see comment in getAvailHeight().
-         splitHeightFun (applyPerHeight (layout->viewportHeight,
-                                         getStyle()->height),
-                         &requisition->ascent, &requisition->descent);
-#endif
-      }
+      // TODO Perhaps split first, then add box ascent and descent.
+      if (height != -1)
+         splitHeightFun (height, &requisition->ascent, &requisition->descent);
+      if (minHeight != -1 &&
+          requisition->ascent + requisition->descent < minHeight)
+         splitHeightFun (minHeight, &requisition->ascent,
+                         &requisition->descent);
+      if (maxHeight != -1 &&
+          requisition->ascent + requisition->descent > maxHeight)
+         splitHeightFun (maxHeight, &requisition->ascent,
+                         &requisition->descent);
 
       DBG_OBJ_MSG_END ();
    } else if (parent) {
@@ -821,6 +819,53 @@ int Widget::calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_LEAVE ();
    return width;
+}
+
+int Widget::calcHeight (style::Length cssValue, bool usePercentage,
+                        int refHeight, Widget *refWidget)
+{
+   // TODO Search for usage of this method and check the value of
+   // "usePercentage"; this has to be clarified.
+
+   DBG_OBJ_ENTER ("resize", 0, "calcHeight", "0x%x, %s, %d, %p",
+                  cssValue, usePercentage ? "true" : "false", refHeight,
+                  refWidget);
+
+   assert (refHeight != -1 || refWidget != NULL);
+
+   int height = 0;
+
+   if (style::isAbsLength (cssValue)) {
+      DBG_OBJ_MSGF ("resize", 1, "absolute height: %dpx",
+                    style::absLengthVal (cssValue));
+      height =
+         misc::max (style::absLengthVal (cssValue) + boxDiffHeight (), 0);
+   } else if (style::isPerLength (cssValue)) {
+      DBG_OBJ_MSGF ("resize", 1, "percentage height: %g%%",
+                    100 *
+                    style::perLengthVal_useThisOnlyForDebugging (cssValue));
+      if (usePercentage) {
+         if (refHeight != -1)
+            height = misc::max (applyPerHeight (refHeight, cssValue), 0);
+         else {
+            int availHeight = refWidget->getAvailHeight (false);
+            if (availHeight != -1) {
+               int containerHeight = availHeight - refWidget->boxDiffHeight ();
+               height =
+                  misc::max (applyPerHeight (containerHeight, cssValue), 0);
+            } else
+               height = -1;
+         }
+      } else
+         height = -1;
+   } else {
+      DBG_OBJ_MSG ("resize", 1, "not specified");
+      height = -1;
+   }      
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
+   DBG_OBJ_LEAVE ();
+   return height;
 }
 
 /**
@@ -1560,25 +1605,23 @@ void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
                   "%p, %d * (%d + %d), ...", child, requisition->width,
                   requisition->ascent, requisition->descent);
 
-   // TODO Perhaps split first, then add box ascent and descent.
-   if (style::isAbsLength (child->getStyle()->height))
-      splitHeightFun (style::absLengthVal (child->getStyle()->height)
-                      + child->boxDiffHeight (),
-                      &requisition->ascent, &requisition->descent);
-   else if (style::isPerLength (child->getStyle()->height)) {
-#if 0
-      // TODO Percentage heights are somewhat more complicated. Has to
-      // be clarified. See also Widget::correctRequisition.
+   int height = child->calcHeight (child->getStyle()->height, false, -1, this);
+   int minHeight =
+      child->calcHeight (child->getStyle()->minHeight, false, -1, this);
+   int maxHeight =
+      child->calcHeight (child->getStyle()->maxHeight, false, -1, this);
 
-      int availHeight = getAvailHeight (false);
-      if (availHeight != -1) {
-         int containerHeight = availHeight - boxDiffHeight ();
-         splitHeightFun (child->applyPerHeight (containerHeight,
-                                                child->getStyle()->height),
-                         &requisition->ascent, &requisition->descent);
-      }
-#endif
-   }
+   // TODO Perhaps split first, then add box ascent and descent.
+   if (height != -1)
+      splitHeightFun (height, &requisition->ascent, &requisition->descent);
+   if (minHeight != -1 &&
+       requisition->ascent + requisition->descent < minHeight)
+      splitHeightFun (minHeight, &requisition->ascent,
+                      &requisition->descent);
+   if (maxHeight != -1 &&
+       requisition->ascent + requisition->descent > maxHeight)
+      splitHeightFun (maxHeight, &requisition->ascent,
+                      &requisition->descent);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent,
