@@ -71,6 +71,7 @@ static const char *save_dir = "";
 static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus);
 static void close_tab_btn_cb (Fl_Widget *w, void *cb_data);
 static char *UIcmd_make_search_str(const char *str);
+static void UIcmd_set_window_labels(Fl_Window *win, const char *str);
 
 //----------------------------------------------------------------------------
 
@@ -433,9 +434,7 @@ void CustTabs::switch_tab(CustTabButton *cbtn)
       // Update window title
       if ((bw = a_UIcmd_get_bw_by_widget(cbtn->ui()))) {
          const char *title = (cbtn->ui())->label();
-         Fl_Window *win = cbtn->window();
-         win->copy_label(title ? title : "");
-         win->iconlabel(win->label());
+         UIcmd_set_window_labels(cbtn->window(), title ? title : "");
       }
       // Update focus priority
       increase_focus_counter();
@@ -570,6 +569,18 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 }
 
 /*
+ * Set the window name and icon name.
+ */
+static void UIcmd_set_window_labels(Fl_Window *win, const char *str)
+{
+   const char *copy;
+
+   win->Fl_Widget::copy_label(str);
+   copy = win->label();
+   win->label(copy, copy);
+}
+
+/*
  * Create a new Tab button, UI and its associated BrowserWindow data
  * structure.
  */
@@ -607,11 +618,8 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
    new_bw->render_layout = (void*)layout;
 
    // Clear the window title
-   if (focus) {
-      Fl_Window *win = new_ui->window();
-      win->copy_label(new_ui->label());
-      win->iconlabel(win->label());
-   }
+   if (focus)
+      UIcmd_set_window_labels(new_ui->window(), new_ui->label());
 
    // WORKAROUND: see findbar_toggle()
    new_ui->findbar_toggle(0);
@@ -1418,9 +1426,7 @@ void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
 
    if (a_UIcmd_get_bw_by_widget(BW2UI(bw)->tabs()->wizard()->value()) == bw) {
       // This is the focused bw, set window title
-      Fl_Window *win = BW2UI(bw)->window();
-      win->copy_label(title);
-      win->iconlabel(win->label());
+      UIcmd_set_window_labels(BW2UI(bw)->window(), title);
    }
 }
 
