@@ -2777,7 +2777,8 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
          /* We compare the "id" value with the url-decoded "name" value */
          if (!id || strcmp(nameVal, id)) {
             if (id)
-               BUG_MSG("'id' and 'name' attribute of <a> tag differ\n");
+               BUG_MSG("id ('%s') and name ('%s') attributes of <a> tag "
+                       "differ\n", id, nameVal);
             Html_add_anchor(html, nameVal);
          }
 
