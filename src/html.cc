@@ -1528,8 +1528,8 @@ static int
       bool valid = *val && !strchr(val, ' ');
 
       if (!valid) {
-         BUG_MSG("'%s' value must not be empty and must not contain spaces.\n",
-                 attrname);
+         BUG_MSG("'%s' value \"%s\" must not be empty and must not contain "
+                 "spaces.\n", attrname, val);
       }
       return valid ? 1 : 0;
    } else {
