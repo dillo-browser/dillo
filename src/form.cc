@@ -343,7 +343,7 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    HT2TB(html)->addParbreak (9, html->wordStyle ());
 
    if (html->InFlags & IN_FORM) {
-      BUG_MSG("nested forms");
+      BUG_MSG("Nested <form>.");
       return;
    }
    html->InFlags |= IN_FORM;
@@ -356,14 +356,14 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
       if (!dStrAsciiCasecmp(attrbuf, "post")) {
          method = DILLO_HTML_METHOD_POST;
       } else if (dStrAsciiCasecmp(attrbuf, "get")) {
-         BUG_MSG("Unknown form submission method \"%s\"", attrbuf);
+         BUG_MSG("<form> submission method unknown: '%s'.", attrbuf);
       }
    }
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "action")))
       action = a_Html_url_new(html, attrbuf, NULL, 0);
    else {
       if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
-         BUG_MSG("action attribute is required for <form>");
+         BUG_MSG("<form> requires action attribute.");
       action = a_Url_dup(html->base_url);
    }
    content_type = DILLO_HTML_ENC_URLENCODED;
@@ -417,7 +417,7 @@ static int Html_input_get_size(DilloHtml *html, const char *attrbuf)
       if (size < 1 || size > MAX_SIZE) {
          int badSize = size;
          size = (size < 1 ? 20 : MAX_SIZE);
-         BUG_MSG("input size=%d, using size=%d instead", badSize, size);
+         BUG_MSG("<input> size=%d, using size=%d instead.", badSize, size);
       }
    }
    return size;
@@ -437,11 +437,11 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    ResourceFactory *factory;
 
    if (html->InFlags & IN_SELECT) {
-      BUG_MSG("<input> element inside <select>");
+      BUG_MSG("<input> inside <select>.");
       return;
    }
    if (html->InFlags & IN_BUTTON) {
-      BUG_MSG("<input> element inside <button>");
+      BUG_MSG("<input> inside <button>.");
       return;
    }
 
@@ -508,12 +508,12 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          DilloHtmlForm *form = html->getCurrentForm();
          if (form->method != DILLO_HTML_METHOD_POST) {
             valid = false;
-            BUG_MSG("Forms with file input MUST use HTTP POST method");
+            BUG_MSG("<form> with file input MUST use HTTP POST method.");
             MSG("File input ignored in form not using HTTP POST method\n");
          } else if (form->content_type != DILLO_HTML_ENC_MULTIPART) {
             valid = false;
-            BUG_MSG("Forms with file input MUST use multipart/form-data"
-                    " encoding");
+            BUG_MSG("<form> with file input MUST use multipart/form-data"
+                    " encoding.");
             MSG("File input ignored in form not using multipart/form-data"
                 " encoding\n");
          }
@@ -645,25 +645,25 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
       cols = strtol(attrbuf, NULL, 10);
    } else {
       if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
-         BUG_MSG("cols attribute is required for <textarea>");
+         BUG_MSG("<textarea> requires cols attribute.");
       cols = 20;
    }
    if (cols < 1 || cols > MAX_COLS) {
       int badCols = cols;
       cols = (cols < 1 ? 20 : MAX_COLS);
-      BUG_MSG("textarea cols=%d, using cols=%d instead", badCols, cols);
+      BUG_MSG("<textarea> cols=%d, using cols=%d instead.", badCols, cols);
    }
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "rows"))) {
       rows = strtol(attrbuf, NULL, 10);
    } else {
       if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
-         BUG_MSG("rows attribute is required for <textarea>");
+         BUG_MSG("<textarea> requires rows attribute.");
       rows = 10;
    }
    if (rows < 1 || rows > MAX_ROWS) {
       int badRows = rows;
       rows = (rows < 1 ? 2 : MAX_ROWS);
-      BUG_MSG("textarea rows=%d, using rows=%d instead", badRows, rows);
+      BUG_MSG("<textarea> rows=%d, using rows=%d instead.", badRows, rows);
    }
    name = NULL;
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name")))
@@ -805,11 +805,11 @@ void Html_tag_close_select(DilloHtml *html)
 void Html_tag_open_optgroup(DilloHtml *html, const char *tag, int tagsize)
 {
    if (!(html->InFlags & IN_SELECT)) {
-      BUG_MSG("<optgroup> element outside <select>");
+      BUG_MSG("<optgroup> outside <select>.");
       return;
    }
    if (html->InFlags & IN_OPTGROUP) {
-      BUG_MSG("nested <optgroup>");
+      BUG_MSG("Nested <optgroup>.");
       return;
    }
    if (html->InFlags & IN_OPTION) {
@@ -827,7 +827,7 @@ void Html_tag_open_optgroup(DilloHtml *html, const char *tag, int tagsize)
       bool enabled = (a_Html_get_attr(html, tag, tagsize, "disabled") == NULL);
 
       if (!label) {
-         BUG_MSG("label attribute is required for <optgroup>");
+         BUG_MSG("<optgroup> requires label attribute.");
          label = strdup("");
       }
 
@@ -865,7 +865,7 @@ void Html_tag_close_optgroup(DilloHtml *html)
 void Html_tag_open_option(DilloHtml *html, const char *tag, int tagsize)
 {
    if (!(html->InFlags & IN_SELECT)) {
-      BUG_MSG("<option> element outside <select>");
+      BUG_MSG("<option> outside <select>.");
       return;
    }
    if (html->InFlags & IN_OPTION)
@@ -924,7 +924,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_BUTTON_SUBMIT;
    } else {
       inp_type = DILLO_HTML_INPUT_UNKNOWN;
-      BUG_MSG("Unknown button type: \"%s\"", type);
+      BUG_MSG("<button> type unknown: '%s'.", type);
    }
 
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
