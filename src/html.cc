@@ -1519,7 +1519,7 @@ static int
       bool valid = *val && !strchr(val, ' ');
 
       if (!valid) {
-         BUG_MSG("'%s' value '%s' must not be empty and must not contain "
+         BUG_MSG("'%s' value \"%s\" must not be empty and must not contain "
                  "spaces.", attrname, val);
       }
       return valid ? 1 : 0;
@@ -1531,7 +1531,7 @@ static int
             break;
 
       if (val[i] || !(isascii(val[0]) && isalpha(val[0])))
-         BUG_MSG("%s attribute value '%s' is not of the form "
+         BUG_MSG("%s attribute value \"%s\" is not of the form "
                  "'[A-Za-z][A-Za-z0-9:_.-]*'.", attrname, val);
 
       return !(val[i]);
