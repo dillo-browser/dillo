@@ -1559,7 +1559,6 @@ static int
 static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
 {
    static const char HTML_SGML_sig [] = "<!DOCTYPE HTML PUBLIC ";
-   static const char HTML5_sig  [] = "<!DOCTYPE html>";
    static const char HTML20     [] = "-//IETF//DTD HTML";
    static const char HTML32     [] = "-//W3C//DTD HTML 3.2";
    static const char HTML40     [] = "-//W3C//DTD HTML 4.0";
@@ -1624,7 +1623,8 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
          html->DocType = DT_HTML;
          html->DocTypeVersion = 2.0f;
       }
-   } else if (!dStrAsciiCasecmp(ntag, HTML5_sig)) {
+   } else if (!dStrAsciiCasecmp(ntag, "<!DOCTYPE html>") ||
+              !dStrAsciiCasecmp(ntag, "<!DOCTYPE html >")) {
       html->DocType = DT_HTML;
       html->DocTypeVersion = 5.0f;
    }
