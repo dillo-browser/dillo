@@ -2825,6 +2825,8 @@ void Textblock::borderChanged (int y, Widget *vloat)
          wrapLineIndex = lineIndex;
       
       int realWrapLineIndex = wrapLineIndex;
+      // The following two variables are only used for debugging:
+      int minWrapLineIndex = wrapLineIndex, maxWrapLineIndex = wrapLineIndex;
 
       if (vloat->getGenerator() == this && lines->size () > 0) {
          bool found = false;
@@ -2910,15 +2912,21 @@ void Textblock::borderChanged (int y, Widget *vloat)
                         misc::min (realWrapLineIndex, lineIndex2);
                   }
                }
+
+               minWrapLineIndex = misc::min (minWrapLineIndex, lineIndex2);
+               maxWrapLineIndex = misc::max (minWrapLineIndex, lineIndex2);
             }
          }
 
          assert (found);
       }
 
-      DBG_OBJ_MSGF ("resize", 1, "wrapLineIndex: corrected from %d to %d "
-                    "(of %d)",
-                    wrapLineIndex, realWrapLineIndex, lines->size ());
+      DBG_OBJ_MSGF ("resize", 1,
+                    "wrapLineIndex: corrected from %d to %d (%d lines total); "
+                    "searched between %d and %d; this is the GB: %s",
+                    wrapLineIndex, realWrapLineIndex, lines->size (),
+                    minWrapLineIndex, maxWrapLineIndex,
+                    vloat->getGenerator() == this ? "yes" : "no");
             
       queueResize (OutOfFlowMgr::createRefNormalFlow (realWrapLineIndex), true);
 
