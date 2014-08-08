@@ -394,12 +394,16 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
    line->firstWord = firstWord;
    line->lastWord = lastWord;
+
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "firstWord", line->firstWord);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "lastWord", line->lastWord);
+
    line->boxAscent = line->contentAscent = 0;
    line->boxDescent = line->contentDescent = 0;
    line->marginDescent = 0;
    line->breakSpace = 0;
    line->finished = false;
-   
+
    bool regardBorder = mustBorderBeRegarded (line);
    line->leftOffset = misc::max (regardBorder ? newLineLeftBorder : 0,
                                  boxOffsetX () + leftInnerPadding
