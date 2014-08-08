@@ -2824,8 +2824,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
       else
          wrapLineIndex = lineIndex;
       
-      DBG_OBJ_MSGF ("resize", 1, "Rewrapping from line %d (of %d).",
-                    wrapLineIndex, lines->size ());
+      int realWrapLineIndex = wrapLineIndex;
 
       if (vloat->getGenerator() == this && lines->size () > 0) {
          bool found = false;
@@ -2876,14 +2875,14 @@ void Textblock::borderChanged (int y, Widget *vloat)
             int lineIndex2;
             if (i % 2 == 0) {
                // even: +0, +1, +2, ...
-               lineIndex2 = wrapLineIndex + i / 2;
+               lineIndex2 = realWrapLineIndex + i / 2;
                if (i > 0)
                   exceeds = exceedsEnd = lineIndex2 >= lines->size ();
                else
                   exceeds = exceedsEnd = false;
             } else {
                // odd: -1, -2, ...
-               lineIndex2 = wrapLineIndex - (i + 1) / 2;
+               lineIndex2 = realWrapLineIndex - (i + 1) / 2;
                exceeds = exceedsBeginning = lineIndex2 < 0;
             }
 
@@ -2907,7 +2906,8 @@ void Textblock::borderChanged (int y, Widget *vloat)
                       word->content.widget == vloat) {
                      found = true;
                      // Correct only by smaller values (case (1) above):
-                     wrapLineIndex = misc::min (wrapLineIndex, lineIndex2);
+                     realWrapLineIndex =
+                        misc::min (realWrapLineIndex, lineIndex2);
                   }
                }
             }
@@ -2916,21 +2916,25 @@ void Textblock::borderChanged (int y, Widget *vloat)
          assert (found);
       }
 
-      DBG_OBJ_MSGF ("resize", 1, "Corrected to line %d.", wrapLineIndex);
+      DBG_OBJ_MSGF ("resize", 1, "wrapLineIndex: corrected from %d to %d "
+                    "(of %d)",
+                    wrapLineIndex, realWrapLineIndex, lines->size ());
             
-      queueResize (OutOfFlowMgr::createRefNormalFlow (wrapLineIndex), true);
+      queueResize (OutOfFlowMgr::createRefNormalFlow (realWrapLineIndex), true);
 
-      // Notice that the line no. wrapLineIndex may not exist yet.
-      if (wrapLineIndex == 0)
+      // Notice that the line no. realWrapLineIndex may not exist yet.
+      if (realWrapLineIndex == 0)
          lastWordDrawn = misc::min (lastWordDrawn, -1);
       else
-         lastWordDrawn = misc::min (lastWordDrawn,
-                                    lines->getRef(wrapLineIndex - 1)->lastWord);
+         lastWordDrawn =
+            misc::min (lastWordDrawn,
+                       lines->getRef(realWrapLineIndex - 1)->lastWord);
       DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
 
       // TODO Is the following necessary? Or even useless?
       //redrawY =
-      // misc::min (redrawY, lineYOffsetWidget (lines->getRef (wrapLineIndex)));
+      // misc::min (redrawY,
+      //            lineYOffsetWidget (lines->getRef (realWrapLineIndex)));
       //DBG_OBJ_SET_NUM ("redrawY", redrawY);
    }
 
