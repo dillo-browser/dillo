@@ -974,8 +974,17 @@ bool_t a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
    } else if (Op == IOClose) {
       Cache_finish_msg(entry);
    } else if (Op == IOAbort) {
-      /* unused */
-      MSG("a_Cache_process_dbuf Op = IOAbort; not implemented!\n");
+      int i;
+      CacheClient_t *Client;
+
+      for (i = 0; (Client = dList_nth_data(ClientQueue, i)); ++i) {
+         if (Client->Url == entry->Url) {
+            DilloWeb *web = (DilloWeb *)Client->Web;
+
+            a_Bw_remove_client(web->bw, Client->Key);
+            Cache_client_dequeue(Client);
+         }
+      }
    }
    return done;
 }

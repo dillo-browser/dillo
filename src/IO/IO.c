@@ -298,6 +298,8 @@ static void IO_fd_write_cb(int fd, void *data)
    } else {
       if (IO_callback(io) == 0)
          a_IOwatch_remove_fd(fd, DIO_WRITE);
+      if (io->Status)
+         a_IO_ccc(OpAbort, 1, FWD, io->Info, NULL, NULL);
    }
 }
 
@@ -385,6 +387,13 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
       } else {  /* 1 FWD */
          /* Write-data status */
          switch (Op) {
+         case OpAbort:
+            io = Info->LocalKey;
+            IO_close_fd(io, IO_StopRdWr);
+            IO_free(io);
+            a_Chain_fcb(OpAbort, Info, NULL, NULL);
+            dFree(Info);
+            break;
          default:
             MSG_WARN("Unused CCC\n");
             break;

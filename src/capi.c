@@ -681,6 +681,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          case OpAbort:
             conn = Info->LocalKey;
             conn->InfoSend = NULL;
+            a_Cache_process_dbuf(IOAbort, NULL, 0, conn->url);
             if (Data2) {
                if (!strcmp(Data2, "DpidERROR")) {
                   a_UIcmd_set_msg(conn->bw,

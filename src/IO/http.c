@@ -696,8 +696,16 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             break;
          }
       } else {  /* 1 FWD */
+         SocketData_t *sd;
          /* HTTP send-query status branch */
          switch (Op) {
+         case OpAbort:
+            if ((sd = a_Klist_get_data(ValidSocks, SKey)))
+               MSG_BW(sd->web, 1, "Can't get %s", URL_STR(sd->web->url));
+            a_Chain_fcb(OpAbort, Info, NULL, "Both");
+            Http_socket_free(SKey);
+            dFree(Info);
+            break;
          default:
             MSG_WARN("Unused CCC\n");
             break;
