@@ -355,16 +355,16 @@ enum WhiteSpace {
 };
 
 enum FloatType {
-	FLOAT_NONE,
-	FLOAT_LEFT,
-	FLOAT_RIGHT
+   FLOAT_NONE,
+   FLOAT_LEFT,
+   FLOAT_RIGHT
 };
 
 enum ClearType {
-	CLEAR_LEFT,
-	CLEAR_RIGHT,
-	CLEAR_BOTH,
-	CLEAR_NONE
+   CLEAR_LEFT,
+   CLEAR_RIGHT,
+   CLEAR_BOTH,
+   CLEAR_NONE
 };
 
 /**

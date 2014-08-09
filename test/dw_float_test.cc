@@ -21,7 +21,7 @@ static void addTextToFloatTimeout (void *data)
    const char *fWords[] = { "This", "is", "a", "float,", "which", "is",
                             "set", "aside", "from", "the", "main",
                             "text.", NULL };
-	
+
    for(int k = 0; fWords[k]; k++) {
       firstFloat->addText(fWords[k], wordStyle);
       firstFloat->addSpace(wordStyle);
