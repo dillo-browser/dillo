@@ -346,10 +346,12 @@ void Textblock::justifyLine (Line *line, int diff)
 
 
 Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
-                                     int newLastOofPos, bool temporary)
+                                     int newLastOofPos, bool temporary,
+                                     int minHeight)
 {
-   DBG_OBJ_ENTER ("construct.line", 0, "addLine", "%d, %d",
-                  firstWord, lastWord);
+   DBG_OBJ_ENTER ("construct.line", 0, "addLine", "%d, %d, %d, %s, %d",
+                  firstWord, lastWord, newLastOofPos,
+                  temporary ? "true" : "false", minHeight);
    DBG_OBJ_MSGF ("construct.line", 0, "=> %d", lines->size ());
   
    int lineWidth;
@@ -383,7 +385,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    if(!temporary) {
       // If the last line was temporary, this will be temporary, too, even
       // if not requested.
-      if (lines->size () == 1 || nonTemporaryLines == lines->size () -1)
+      if (lines->size () == 1 || nonTemporaryLines == lines->size () - 1)
          nonTemporaryLines = lines->size ();
    }
 
@@ -441,8 +443,9 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
    // Especially empty lines (possible when there are floats) have
    // zero height, which may cause endless loops. For this reasons,
-   // the height should be positive.
-   line->boxAscent = misc::max (line->boxAscent, 1);
+   // the height should be positive (assuming the caller passed
+   // minHeight > 0).
+   line->boxAscent = misc::max (line->boxAscent, minHeight);
 
    DBG_OBJ_MSGF ("construct.line", 1, "top = %d\n", line->top);
    DBG_OBJ_MSGF ("construct.line", 1, "boxAscent = %d\n", line->boxAscent);
@@ -760,7 +763,27 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
             DBG_OBJ_MSG_END ();
          } while (floatHandled);
 
-         addLine (firstIndex, breakPos, lastFloatPos, tempNewLine);
+         int minHeight;
+         if (firstIndex <= breakPos)
+            // Not an empty line: calculate line height from contents.
+            minHeight = 1;
+         else {
+            // Empty line. Too avoid too many lines one pixel high, we
+            // use the float heights.
+            if (newLineHasFloatLeft && newLineHasFloatRight)
+               minHeight = misc::max (misc::min (newLineLeftFloatHeight,
+                                                 newLineRightFloatHeight),
+                                      1);
+            else if (newLineHasFloatLeft && !newLineHasFloatRight)
+               minHeight = misc::max (newLineLeftFloatHeight, 1);
+            else if (!newLineHasFloatLeft && newLineHasFloatRight)
+               minHeight = misc::max (newLineRightFloatHeight, 1);
+            else 
+               // May this happen?
+               minHeight = 1;
+         }
+
+         addLine (firstIndex, breakPos, lastFloatPos, tempNewLine, minHeight);
  
          DBG_OBJ_MSGF ("construct.word", 1,
                        "accumulating again from %d to %d\n",
@@ -1938,19 +1961,37 @@ void Textblock::calcBorders (int lastOofRef, int height)
       newLineRightBorder =
          containingBlock->outOfFlowMgr->getRightBorder (this, y, height, this,
                                                         effOofRef);
+      newLineLeftFloatHeight = newLineHasFloatLeft ?
+         containingBlock->outOfFlowMgr->getLeftFloatHeight (this, y, height,
+                                                            this, effOofRef) :
+         0;
+      newLineRightFloatHeight = newLineHasFloatRight ?
+         containingBlock->outOfFlowMgr->getRightFloatHeight (this, y, height,
+                                                             this, effOofRef) :
+         0;
       
       DBG_OBJ_MSGF ("construct.line", 1,
-                    "%d (%s) / %d (%s), at %d (%d), until %d = "
+                    "%d * %d (%s) / %d * %d (%s), at %d (%d), until %d = "
                     "max (%d, %d - 1)",
-                    newLineLeftBorder, newLineHasFloatLeft ? "true" : "false",
-                    newLineRightBorder, newLineHasFloatRight ? "true" : "false",
+                    newLineLeftBorder, newLineLeftFloatHeight,
+                    newLineHasFloatLeft ? "true" : "false",
+                    newLineRightBorder, newLineRightFloatHeight,
+                    newLineHasFloatRight ? "true" : "false",
                     y, height, effOofRef, lastOofRef, firstWordOfLine);
    } else {
       newLineHasFloatLeft = newLineHasFloatRight = false;
       newLineLeftBorder = newLineRightBorder = 0;
+      newLineLeftFloatHeight = newLineRightFloatHeight = 0;
       
       DBG_OBJ_MSG ("construct.line", 0, "<i>no CB of OOFM</i>");
    }
+
+   DBG_OBJ_SET_BOOL ("newLineHasFloatLeft", newLineHasFloatLeft);
+   DBG_OBJ_SET_BOOL ("newLineHasFloatRight", newLineHasFloatRight);
+   DBG_OBJ_SET_NUM ("newLineLeftBorder", newLineLeftBorder);
+   DBG_OBJ_SET_NUM ("newLineRightBorder", newLineRightBorder);
+   DBG_OBJ_SET_NUM ("newLineLeftFloatHeight", newLineLeftFloatHeight);
+   DBG_OBJ_SET_NUM ("newLineRightFloatHeight", newLineRightFloatHeight);
 
    DBG_OBJ_LEAVE ();
 }

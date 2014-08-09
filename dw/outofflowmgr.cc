@@ -2026,6 +2026,40 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
    return first != -1;
 }
 
+int OutOfFlowMgr::getLeftFloatHeight (Textblock *textblock, int y, int h,
+                                      Textblock *lastGB, int lastExtIndex)
+{
+   return getFloatHeight (textblock, LEFT, y, h, lastGB, lastExtIndex);
+}
+
+int OutOfFlowMgr::getRightFloatHeight (Textblock *textblock, int y, int h,
+                                       Textblock *lastGB, int lastExtIndex)
+{
+   return getFloatHeight (textblock, RIGHT, y, h, lastGB, lastExtIndex);
+}
+
+// Calculate height from the position *y*.
+int OutOfFlowMgr::getFloatHeight (Textblock *textblock, Side side, int y, int h,
+                                  Textblock *lastGB, int lastExtIndex)
+{
+   DBG_OBJ_ENTER ("border", 0, "getFloatHeight", "%p, %s, %d, %d, %p, %d",
+                  textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
+                  lastGB, lastExtIndex);
+
+   SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
+   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
+   assert (first != -1);   /* This method must not be called when there is no
+                              float on the respective side. */
+
+   Float *vloat = list->get(first);
+   ensureFloatSize (vloat);
+   int height = vloat->size.ascent + vloat->size.descent + vloat->yReal - y;
+   
+   DBG_OBJ_MSGF ("border", 1, "=> %d", height);
+   DBG_OBJ_LEAVE ();
+   return height;
+}
+
 /**
  * Returns position relative to the textblock "tb".
  */

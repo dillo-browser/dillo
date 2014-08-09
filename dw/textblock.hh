@@ -544,6 +544,7 @@ protected:
                                                  outOfFlowMgr->get...Border,
                                                  or 0, if outOfFlowMgr
                                                  is NULL */
+   int newLineLeftFloatHeight, newLineRightFloatHeight;
 
    // Ascent and descent of the newly constructed line, i. e. maximum
    // of all words ascent/descent since the end of the last line. Not
@@ -566,7 +567,7 @@ protected:
    void getWordExtremes (Word *word, core::Extremes *extremes);
    void justifyLine (Line *line, int diff);
    Line *addLine (int firstWord, int lastWord, int newLastOofPos,
-                  bool temporary);
+                  bool temporary, int minHeight);
    void calcWidgetSize (core::Widget *widget, core::Requisition *size);
    void rewrap ();
    void fillParagraphs ();

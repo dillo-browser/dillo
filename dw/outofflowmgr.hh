@@ -316,6 +316,9 @@ private:
    bool hasFloat (Textblock *textblock, Side side, int y, int h,
                   Textblock *lastGB, int lastExtIndex);
 
+   int getFloatHeight (Textblock *textblock, Side side, int y, int h,
+                       Textblock *lastGB, int lastExtIndex);
+
    int getClearPosition (Textblock *tb, Side side);
 
    void ensureFloatSize (Float *vloat);
@@ -425,6 +428,11 @@ public:
                       int lastExtIndex);
    bool hasFloatRight (Textblock *textblock, int y, int h, Textblock *lastGB,
                        int lastExtIndex);
+
+   int getLeftFloatHeight (Textblock *textblock, int y, int h,
+                           Textblock *lastGB, int lastExtIndex);
+   int getRightFloatHeight (Textblock *textblock, int y, int h,
+                            Textblock *lastGB, int lastExtIndex);
 
    int getClearPosition (Textblock *tb);
 
