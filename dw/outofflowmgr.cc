@@ -2052,9 +2052,30 @@ int OutOfFlowMgr::getFloatHeight (Textblock *textblock, Side side, int y, int h,
                               float on the respective side. */
 
    Float *vloat = list->get(first);
+   int yRelToFloat;
+
+   if (vloat->generatingBlock == textblock) {
+      yRelToFloat = y - vloat->yReal;
+      DBG_OBJ_MSGF ("border", 1, "caller is CB: yRelToFloat = %d - %d = %d",
+                    y, vloat->yReal, yRelToFloat);
+   } else {
+      // The respective widgets are allocated; otherwise, hasFloat() would have
+      // returned false.
+      assert (wasAllocated (textblock));
+      assert (vloat->getWidget()->wasAllocated ());
+
+      Allocation *tba = getAllocation(textblock),
+         *fla = vloat->getWidget()->getAllocation ();
+      yRelToFloat = y + fla->y - tba->y;
+
+      DBG_OBJ_MSGF ("border", 1,
+                    "caller is not CB: yRelToFloat = %d + %d - %d = %d",
+                    y, fla->y, tba->y, yRelToFloat);
+   }
+
    ensureFloatSize (vloat);
-   int height = vloat->size.ascent + vloat->size.descent + vloat->yReal - y;
-   
+   int height = vloat->size.ascent + vloat->size.descent + yRelToFloat;
+
    DBG_OBJ_MSGF ("border", 1, "=> %d", height);
    DBG_OBJ_LEAVE ();
    return height;
