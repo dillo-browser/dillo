@@ -348,7 +348,7 @@ Layout::~Layout ()
 }
 
 void Layout::detachWidget (Widget *widget)
-{  
+{
    // Called form ~Layout. Sometimes, the widgets (not only the toplevel widget)
    // do some stuff after the layout has been deleted, so *all* widgets have to
    // be detached, and check "layout != NULL" at relevant points.
@@ -849,7 +849,7 @@ void Layout::setBgImage (style::StyleImage *bgImage,
 void Layout::resizeIdle ()
 {
    DBG_OBJ_ENTER0 ("resize", 0, "resizeIdle");
-   
+
    enterResizeIdle ();
 
    //static int calls = 0;
@@ -904,7 +904,7 @@ void Layout::resizeIdle ()
       // toplevel widget is not affected, are filtered out some lines
       // above: "if (topLevel && topLevel->needsResize ())".)
       assert (topLevel->needsAllocate ());
-      
+
       allocation.x = allocation.y = 0;
       allocation.width = requisition.width;
       allocation.ascent = requisition.ascent;

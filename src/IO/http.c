@@ -653,7 +653,7 @@ static void Http_make_fd_available(int fd)
             return;
          }
       }
-   }   
+   }
 }
 
 /*

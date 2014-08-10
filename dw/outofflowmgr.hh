@@ -40,14 +40,14 @@ private:
 
    public:
       WidgetInfo (OutOfFlowMgr *oofm, core::Widget *widget);
-     
+
       inline bool wasThenAllocated () { return wasAllocated; }
       inline int getOldXCB () { return xCB; }
       inline int getOldYCB () { return yCB; }
       inline int getOldWidth () { return width; }
       inline int getOldHeight () { return height; }
 
-    
+
       void update (bool wasAllocated, int xCB, int yCB, int width, int height);
 
       inline core::Widget *getWidget () { return widget; }
@@ -146,7 +146,7 @@ private:
    private:
       OutOfFlowMgr *oofm;
       Side side;
-          
+
    public:
       inline SortedFloatsVector (OutOfFlowMgr *oofm, Side side, SFVType type) :
          lout::container::typed::Vector<Float> (1, false)
@@ -177,7 +177,7 @@ private:
 
       TBInfo *parent;
       int parentExtIndex;
-     
+
       // These two values are set by sizeAllocateStart(), and they are
       // accessable also within sizeAllocateEnd() for the same
       // textblock, for which allocation and WAS_ALLOCATED is set
@@ -244,7 +244,7 @@ private:
    lout::container::typed::Vector<TBInfo> *tbInfos;
    lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
                                      TBInfo> *tbInfosByTextblock;
-   
+
    lout::container::typed::Vector<AbsolutelyPositioned> *absolutelyPositioned;
 
    int lastLeftTBIndex, lastRightTBIndex, leftFloatsMark, rightFloatsMark;
@@ -264,7 +264,7 @@ private:
    inline core::Allocation *getAllocation (Textblock *textblock) {
       return &(getTextblock(textblock)->allocation);
    }
-   
+
    void moveExternalIndices (SortedFloatsVector *list, int oldStartIndex,
                              int diff);
    Float *findFloatByWidget (core::Widget *widget);
@@ -298,7 +298,7 @@ private:
 
    bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal);
    bool collidesH (Float *vloat, Float *other, SFVType type);
-   
+
    void getFloatsListsAndSide (Float *vloat, SortedFloatsVector **listSame,
                                SortedFloatsVector **listOpp, Side *side);
 
@@ -362,14 +362,14 @@ private:
     *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
     *    |         right float index         | 1 | 0 | 1 |
     *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-    * 
+    *
     * Absolutely positioned blocks:
     *
     *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
     *    |                 index                 | 1 | 1 |
     *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
     */
-   
+
    inline static bool isRefFloat (int ref)
    { return ref != -1 && (ref & 3) == 1; }
    inline static bool isRefLeftFloat (int ref)

@@ -158,7 +158,7 @@ private:
       Widget *widget;
       int ref;
       bool extremesChanged, fast;
-      
+
       inline QueueResizeItem (Widget *widget, int ref, bool extremesChanged,
                               bool fast)
       {

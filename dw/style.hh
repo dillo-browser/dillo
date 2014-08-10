@@ -523,7 +523,7 @@ public:
    VAlignType valign;
    char textAlignChar; /* In future, strings will be supported. */
    TextTransform textTransform;
-   
+
    FloatType vloat; /* "float" is a keyword. */
    ClearType clear;
 

@@ -293,7 +293,7 @@ typedef struct {
    } type;
    const CssPropertyName *properties; /* CSS_SHORTHAND_MULTIPLE:
                                        *   must be terminated by
-                                       *   CSS_PROPERTY_END 
+                                       *   CSS_PROPERTY_END
                                        * CSS_SHORTHAND_DIRECTIONS:
                                        *   must have length 4
                                        * CSS_SHORTHAND_BORDERS:

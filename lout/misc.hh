@@ -440,7 +440,7 @@ public:
             // The original assertion
             ///
             //    "assert (i < this->numMain + this->numExtra)"
-            // 
+            //
             // causes this warnung in dw::Textblock::breakAdded:
             //
             //    "assuming signed overflow does not occur when assuming that

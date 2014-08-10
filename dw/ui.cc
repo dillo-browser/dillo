@@ -416,7 +416,7 @@ void ComplexButtonResource::correctRequisitionOfChild (Widget *child,
 {
    // Similar to Widget::correctRequisitionOfChild, but for percentage
    // the relief has to be considered.
-   
+
    if (style::isPerLength (child->getStyle()->width)) {
       int availWidth = getEmbed()->getAvailHeight (false);
       if (availWidth != -1) {
@@ -441,7 +441,7 @@ void ComplexButtonResource::correctExtremesOfChild (Widget *child,
 {
    // Similar to Widget::correctExtremesOfChild, but for percentage
    // the relief has to be considered.
-   
+
    if (style::isPerLength (child->getStyle()->width)) {
       int availWidth = getEmbed()->getAvailHeight (false);
       if (availWidth != -1) {

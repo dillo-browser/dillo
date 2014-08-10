@@ -83,7 +83,7 @@ Widget::Widget ()
    allocation.descent = 0;
 
    extraSpace.top = extraSpace.right = extraSpace.bottom = extraSpace.left = 0;
-   
+
    style = NULL;
    bgColor = NULL;
    buttonSensitive = true;
@@ -178,7 +178,7 @@ void Widget::setParent (Widget *parent)
 void Widget::setQuasiParent (Widget *quasiParent)
 {
    this->quasiParent = quasiParent;
-   
+
    // More to do? Compare with setParent().
 
    DBG_OBJ_SET_PTR ("quasiParent", quasiParent);
@@ -265,7 +265,7 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
 void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
 {
    assert (!queueResizeEntered ());
-   
+
    DBG_OBJ_ENTER ("resize", 0, "actualQueueResize", "%d, %s, %s",
                   ref, extremesChanged ? "true" : "false",
                   fast ? "true" : "false");
@@ -291,7 +291,7 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
    setFlags (resizeFlag);
    setFlags (ALLOCATE_QUEUED);
    markSizeChange (ref);
-      
+
    if (extremesChanged) {
       setFlags (extremesFlag);
       markExtremesChange (ref);
@@ -312,7 +312,7 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
       }
    } else {
       for (widget2 = parent, child = this; widget2;
-           child = widget2, widget2 = widget2->parent) {      
+           child = widget2, widget2 = widget2->parent) {
          if (layout && !widget2->resizeQueued ())
             layout->queueResizeList->put (widget2);
 
@@ -320,11 +320,11 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
                        resizeFlag == RESIZE_QUEUED ?
                        "RESIZE_QUEUED" : "NEEDS_RESIZE",
                        widget2);
-         
+
          widget2->setFlags (resizeFlag);
          widget2->markSizeChange (child->parentRef);
          widget2->setFlags (ALLOCATE_QUEUED);
-         
+
          if (extremesChanged) {
             widget2->setFlags (extremesFlag);
             widget2->markExtremesChange (child->parentRef);
@@ -349,7 +349,7 @@ void Widget::containerSizeChanged ()
    // flags: this method is called recursively), this widget will
    // neither change its size. Also, the recursive iteration can be
    // stopped, since the children of this widget will
-   if (container == NULL || 
+   if (container == NULL ||
        container->needsResize () || container->resizeQueued () ||
        container->extremesChanged () || container->extremesQueued ()) {
       // Viewport (container == NULL) or container widget has changed
@@ -428,7 +428,7 @@ bool Widget::affectsSizeChangeContainerChild (Widget *child)
 
    DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
    DBG_OBJ_LEAVE ();
-   return ret;  
+   return ret;
 }
 
 void Widget::containerSizeChangedForChildren ()
@@ -532,7 +532,7 @@ int Widget::getMinWidth (Extremes *extremes, bool forceValue)
             extremes = &extremes2;
          }
       }
-      
+
       // TODO Not completely clear whether this is feasable: Within
       // the context of getAvailWidth(false) etc., getExtremes may not
       // be called. We ignore the minimal width then.
@@ -542,7 +542,7 @@ int Widget::getMinWidth (Extremes *extremes, bool forceValue)
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", minWidth);
    DBG_OBJ_LEAVE ();
-   
+
    return minWidth;
 }
 
@@ -729,7 +729,7 @@ void Widget::correctRequisition (Requisition *requisition,
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent,
                  requisition->descent);
-   DBG_OBJ_LEAVE ();  
+   DBG_OBJ_LEAVE ();
 }
 
 void Widget::correctExtremes (Extremes *extremes)
@@ -814,7 +814,7 @@ int Widget::calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
    } else {
       DBG_OBJ_MSG ("resize", 1, "not specified");
       width = -1;
-   }      
+   }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_LEAVE ();
@@ -861,7 +861,7 @@ int Widget::calcHeight (style::Length cssValue, bool usePercentage,
    } else {
       DBG_OBJ_MSG ("resize", 1, "not specified");
       height = -1;
-   }      
+   }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
    DBG_OBJ_LEAVE ();
@@ -1435,7 +1435,7 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
       // in case, regard also parent. And quasiParent.
       Widget *effContainer = child->quasiParent ? child->quasiParent :
          (child->container ? child->container : child->parent);
-      
+
       if (effContainer == this) {
          if (style::isAbsLength (child->getStyle()->width)) {
             DBG_OBJ_MSGF ("resize", 1, "absolute width: %dpx",
@@ -1447,7 +1447,7 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
             DBG_OBJ_MSGF ("resize", 1, "percentage width: %g%%",
                           100 * style::perLengthVal_useThisOnlyForDebugging
                           (child->getStyle()->width));
-                    
+
             int availWidth = getAvailWidth (forceValue);
             if (availWidth == -1)
                width = -1;
@@ -1495,7 +1495,7 @@ int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
       // See comment in Widget::getAvailWidthOfChild.
       Widget *effContainer = child->quasiParent ? child->quasiParent :
          (child->container ? child->container : child->parent);
-      
+
       if (effContainer == this) {
          if (style::isAbsLength (child->getStyle()->height)) {
             DBG_OBJ_MSGF ("resize", 1, "absolute height: %dpx",
@@ -1507,7 +1507,7 @@ int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
             DBG_OBJ_MSGF ("resize", 1, "percentage height: %g%%",
                           100 * style::perLengthVal_useThisOnlyForDebugging
                           (child->getStyle()->height));
-                    
+
             int availHeight = getAvailHeight (forceValue);
             if (availHeight == -1)
                height = -1;
@@ -1545,7 +1545,7 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
    // See comment in Widget::getAvailWidthOfChild.
    Widget *effContainer = child->quasiParent ? child->quasiParent :
       (child->container ? child->container : child->parent);
-   
+
    if (effContainer == this) {
       correctReqWidthOfChild (child, requisition);
       correctReqHeightOfChild (child, requisition, splitHeightFun);
@@ -1641,7 +1641,7 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
    // See comment in Widget::getAvailWidthOfChild.
    Widget *effContainer = child->quasiParent ? child->quasiParent :
       (child->container ? child->container : child->parent);
-   
+
    if (effContainer == this) {
       int limit = child->getMinWidth (extremes, false);
       int width = child->calcWidth (child->getStyle()->width, -1, this, limit);
@@ -1649,7 +1649,7 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
          child->calcWidth (child->getStyle()->minWidth, -1, this, limit);
       int maxWidth =
          child->calcWidth (child->getStyle()->maxWidth, -1, this, limit);
-      
+
       DBG_OBJ_MSGF ("resize", 1, "width = %d, minWidth = %d, maxWidth = %d",
                     width, minWidth, maxWidth);
 
@@ -1675,7 +1675,7 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
 /**
  * \brief This method is called after a widget has been set as the top of a
  *    widget tree.
- * 
+ *
  * A widget may override this method when it is necessary to be notified.
  */
 void Widget::notifySetAsTopLevel()
@@ -1683,8 +1683,8 @@ void Widget::notifySetAsTopLevel()
 }
 
 /**
- * \brief This method is called after a widget has been added to a parent. 
- * 
+ * \brief This method is called after a widget has been added to a parent.
+ *
  * A widget may override this method when it is necessary to be notified.
  */
 void Widget::notifySetParent()
@@ -1748,7 +1748,7 @@ void splitHeightPreserveAscent (int height, int *ascent, int *descent)
    if (*descent < 0) {
       *descent = 0;
       *ascent = height;
-   }      
+   }
 }
 
 void splitHeightPreserveDescent (int height, int *ascent, int *descent)
@@ -1757,7 +1757,7 @@ void splitHeightPreserveDescent (int height, int *ascent, int *descent)
    if (*ascent < 0) {
       *ascent = 0;
       *descent = height;
-   }      
+   }
 }
 
 } // namespace core

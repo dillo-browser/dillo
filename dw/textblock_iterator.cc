@@ -205,25 +205,25 @@ void Textblock::TextblockIterator::highlight (int start, int end,
       int oldStartChar = textblock->hlStart[layer].nChar;
       int oldEndIndex = textblock->hlEnd[layer].index;
       int oldEndChar = textblock->hlEnd[layer].nChar;
-      
+
       if (textblock->hlStart[layer].index > textblock->hlEnd[layer].index) {
          /* nothing is highlighted */
          textblock->hlStart[layer].index = index;
          textblock->hlEnd[layer].index = index;
       }
-      
+
       if (textblock->hlStart[layer].index >= index) {
          index2 = textblock->hlStart[layer].index;
          textblock->hlStart[layer].index = index;
          textblock->hlStart[layer].nChar = start;
       }
-      
+
       if (textblock->hlEnd[layer].index <= index) {
          index2 = textblock->hlEnd[layer].index;
          textblock->hlEnd[layer].index = index;
          textblock->hlEnd[layer].nChar = end;
       }
-      
+
       if (oldStartIndex != textblock->hlStart[layer].index ||
           oldStartChar != textblock->hlStart[layer].nChar ||
           oldEndIndex != textblock->hlEnd[layer].index ||
@@ -240,15 +240,15 @@ void Textblock::TextblockIterator::unhighlight (int direction,
    if (!oofm) {
       Textblock *textblock = (Textblock*)getWidget();
       int index1 = index, index2 = index;
-      
+
       if (textblock->hlStart[layer].index > textblock->hlEnd[layer].index)
          return;
-      
+
       int oldStartIndex = textblock->hlStart[layer].index;
       int oldStartChar = textblock->hlStart[layer].nChar;
       int oldEndIndex = textblock->hlEnd[layer].index;
       int oldEndChar = textblock->hlEnd[layer].nChar;
-      
+
       if (direction == 0) {
          index1 = textblock->hlStart[layer].index;
          index2 = textblock->hlEnd[layer].index;
@@ -263,7 +263,7 @@ void Textblock::TextblockIterator::unhighlight (int direction,
          textblock->hlEnd[layer].index = index - 1;
          textblock->hlEnd[layer].nChar = INT_MAX;
       }
-      
+
       if (oldStartIndex != textblock->hlStart[layer].index ||
           oldStartChar != textblock->hlStart[layer].nChar ||
           oldEndIndex != textblock->hlEnd[layer].index ||
@@ -287,10 +287,10 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
       int lineIndex = textblock->findLineOfWord (index);
       Line *line = textblock->lines->getRef (lineIndex);
       Word *word = textblock->words->getRef (index);
-      
+
       allocation->x =
          textblock->allocation.x + line->textOffset;
-      
+
       for (int i = line->firstWord; i < index; i++) {
          Word *w = textblock->words->getRef(i);
          allocation->x += w->size.width + w->effSpace;
@@ -305,11 +305,11 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
       }
       allocation->y = textblock->lineYOffsetCanvas (line) + line->boxAscent -
          word->size.ascent;
-      
+
       allocation->width = word->size.width;
       if (word->content.type == core::Content::TEXT) {
          int wordEnd = strlen(word->content.text);
-         
+
          if (start > 0 || end < wordEnd) {
             end = misc::min(end, wordEnd); /* end could be INT_MAX */
             allocation->width =

@@ -194,7 +194,7 @@ void Textblock::setPenaltyHyphen (int penaltyHyphen)
 {
    penalties[PENALTY_HYPHEN][0] = penaltyHyphen;
 }
-  
+
 void Textblock::setPenaltyHyphen2 (int penaltyHyphen2)
 {
    penalties[PENALTY_HYPHEN][1] = penaltyHyphen2;
@@ -258,8 +258,8 @@ Textblock::Textblock (bool limitTextWidth)
 
    DBG_OBJ_SET_NUM ("lines.size", lines->size ());
    DBG_OBJ_SET_NUM ("words.size", words->size ());
-   DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);     
-   DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);     
+   DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
+   DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);
 
    hoverLink = -1;
 
@@ -337,14 +337,14 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
       DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
    }
-   
+
    rewrap ();
    showMissingLines ();
 
    if (lines->size () > 0) {
       Line *lastLine = lines->getRef (lines->size () - 1);
       requisition->width = lastLine->maxLineWidth;
-      
+
       DBG_OBJ_MSGF ("resize", 1, "lines[%d]->maxLineWidth = %d",
                     lines->size () - 1, lastLine->maxLineWidth);
 
@@ -352,9 +352,9 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
                     lines->getRef(0)->boxAscent);
       DBG_OBJ_MSGF ("resize", 1, "lines[%d]->top = %d",
                     lines->size () - 1, lastLine->top);
-      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->boxAscent = %d", 
+      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->boxAscent = %d",
                     lines->size () - 1, lastLine->boxAscent);
-      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->boxDescent = %d", 
+      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->boxDescent = %d",
                     lines->size () - 1, lastLine->boxDescent);
 
       /* Note: the breakSpace of the last line is ignored, so breaks
@@ -415,7 +415,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
       requisition->width = misc::max (requisition->width, oofWidth);
       if (oofHeight > requisition->ascent + requisition->descent)
          requisition->descent = oofHeight - requisition->ascent;
-   }   
+   }
 
    DBG_OBJ_MSGF ("resize", 1, "final: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
@@ -499,17 +499,17 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    if (outOfFlowMgr) {
       int oofMinWidth, oofMaxWidth;
       outOfFlowMgr->getExtremes (extremes, &oofMinWidth, &oofMaxWidth);
-      
+
       DBG_OBJ_MSGF ("resize", 1, "OOFM correction: %d / %d",
                     oofMinWidth, oofMaxWidth);
 
       extremes->minWidth = misc::max (extremes->minWidth, oofMinWidth);
       extremes->minWidthIntrinsic =
          misc::max (extremes->minWidthIntrinsic, oofMinWidth);
-      extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);     
+      extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);
       extremes->maxWidthIntrinsic =
          misc::max (extremes->maxWidthIntrinsic, oofMinWidth);
-   }   
+   }
 
    DBG_OBJ_MSGF ("resize", 0,
                  "finally, after considering OOFM: %d (%d) / %d (%d)",
@@ -574,7 +574,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                lineYOffsetCanvasAllocation (line, allocation)
                + (line->boxAscent - word->size.ascent)
                - word->content.widget->getStyle()->margin.top;
-            
+
             childAllocation.width = word->size.width;
             childAllocation.ascent = word->size.ascent
                + word->content.widget->getStyle()->margin.top;
@@ -639,7 +639,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
    if (containingBlock->outOfFlowMgr)
       containingBlock->outOfFlowMgr->sizeAllocateEnd (this);
-      
+
    for (int i = 0; i < anchors->size(); i++) {
       Anchor *anchor = anchors->getRef(i);
       int y;
@@ -745,7 +745,7 @@ void Textblock::markSizeChange (int ref)
       }
 
       DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
-      
+
       // It seems that sometimes (even without floats) the lines
       // structure is changed, so that wrapRefLines may refers to a
       // line which does not exist anymore. Should be examined
@@ -834,7 +834,7 @@ void Textblock::notifySetParent ()
                     containingBlock, this);
          }
       }
-   
+
    assert (containingBlock != NULL);
 }
 
@@ -1151,13 +1151,13 @@ void Textblock::drawText(core::View *view, core::style::Style *style,
             if (isStart) {
                /* \bug No way to know about non-ASCII punctuation. */
                bool initial_seen = false;
-               
+
                for (int i = 0; i < start; i++)
                   if (!ispunct(text[i]))
                      initial_seen = true;
                if (initial_seen)
                   break;
-               
+
                int after = 0;
                text += start;
                while (ispunct(text[after]))
@@ -1166,7 +1166,7 @@ void Textblock::drawText(core::View *view, core::style::Style *style,
                   after = layout->nextGlyph(text, after);
                if (after > len)
                   after = len;
-               
+
                char *initial = layout->textToUpper(text, after);
                int newlen = strlen(initial) + len-after;
                str = (char *)malloc(newlen + 1);
@@ -1177,7 +1177,7 @@ void Textblock::drawText(core::View *view, core::style::Style *style,
             }
             break;
       }
-     
+
       view->drawText(style->font, style->color, shading, x, y,
                      str ? str : text + start, str ? strlen(str) : len);
       if (str)
@@ -1237,7 +1237,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
             text[p++] = hyphenDrawChar[i];
          text[p++] = 0;
       }
-      
+
       drawWord0 (wordIndex1, wordIndex2, text, totalWidth, drawHyphen,
                  style, view, area, xWidget, yWidgetBase);
    }
@@ -1404,7 +1404,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
 {
    DBG_OBJ_ENTER ("draw", 0, "drawLine", "..., %d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
-   
+
    int xWidget = line->textOffset;
    int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
 
@@ -1653,7 +1653,7 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
       DBG_OBJ_MSGF ("draw", 0, "line %d (of %d)", lineIndex, lines->size ());
       drawLine (line, view, area);
    }
-   
+
    if(outOfFlowMgr)
       outOfFlowMgr->draw(view, area);
 
@@ -1816,7 +1816,7 @@ int Textblock::textWidth(const char *text, int start, int len,
             if (isStart) {
                /* \bug No way to know about non-ASCII punctuation. */
                bool initial_seen = false;
-               
+
                for (int i = 0; i < start; i++)
                   if (!ispunct(text[i]))
                      initial_seen = true;
@@ -1824,7 +1824,7 @@ int Textblock::textWidth(const char *text, int start, int len,
                   ret = layout->textWidth(style->font, text+start, len);
                } else {
                   int after = 0;
-                  
+
                   text += start;
                   while (ispunct(text[after]))
                      after++;
@@ -1972,10 +1972,10 @@ void Textblock::addText (const char *text, size_t len,
                   foundDiv = j;
             }
          }
-         
+
          if (foundDiv != -1) {
             int lDiv = strlen (divChars[foundDiv].s);
-            
+
             if (divChars[foundDiv].charRemoved) {
                assert (divChars[foundDiv].penaltyIndexLeft != -1);
                assert (divChars[foundDiv].penaltyIndexRight == -1);
@@ -2060,7 +2060,7 @@ void Textblock::addText (const char *text, size_t len,
       // Finished!
       for (int i = 0; i < numParts; i++) {
          short flags = 0;
-         
+
          // If this parts adjoins at least one division characters,
          // for which canBeHyphenated is set to false (this is the
          // case for soft hyphens), do not hyphenate.
@@ -2083,14 +2083,14 @@ void Textblock::addText (const char *text, size_t len,
             flags |= Word::WORD_START;
          if (i == numParts - 1)
             flags |= Word::WORD_END;
-         
+
          addText0 (text + partStart[i], partEnd[i] - partStart[i],
                    flags, style, &wordSize[i]);
 
          //printf ("[%p] %d: added word part: ", this, words->size() - 1);
          //printWordWithFlags (words->getLastRef());
          //printf ("\n");
-         
+
          //PRINTF("H... [%d] '", i);
          //for (int j = partStart[i]; j < partEnd[i]; j++)
          //   PUTCHAR(text[j]);
@@ -2223,7 +2223,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       containingBlock->outOfFlowMgr = new OutOfFlowMgr (containingBlock);
       DBG_OBJ_ASSOC (containingBlock, containingBlock->outOfFlowMgr);
    }
-      
+
    if (OutOfFlowMgr::isWidgetHandledByOOFM (widget)) {
       PRINTF ("   -> out of flow.\n");
 
@@ -2372,12 +2372,12 @@ void Textblock::fillSpace (int wordNo, core::style::Style *style)
                  "pre-line" : "???");
 
    // Old comment:
-   // 
+   //
    //     According to
    //     http://www.w3.org/TR/CSS2/text.html#white-space-model: "line
    //     breaking opportunities are determined based on the text
    //     prior to the white space collapsing steps".
-   // 
+   //
    //     So we call addBreakOption () for each Textblock::addSpace ()
    //     call.  This is important e.g. to be able to break between
    //     foo and bar in: <span style="white-space:nowrap">foo </span>
@@ -2404,7 +2404,7 @@ void Textblock::fillSpace (int wordNo, core::style::Style *style)
       word->spaceStyle->unref ();
       word->spaceStyle = style;
       style->ref ();
-      
+
       setSpaceImgRenderer (wordNo);
    }
 
@@ -2451,7 +2451,7 @@ bool Textblock::isBreakAllowed (core::style::Style *style)
       // compiler happiness
       lout::misc::assertNotReached ();
       return false;
-   }  
+   }
 }
 
 
@@ -2689,14 +2689,14 @@ void Textblock::handOverBreak (core::style::Style *style)
 void Textblock::flush ()
 {
    DBG_OBJ_ENTER0 ("resize", 0, "flush");
-      
+
    if (mustQueueResize) {
       DBG_OBJ_MSG ("resize", 0, "mustQueueResize set");
 
       queueResize (-1, true);
       mustQueueResize = false;
    }
-   
+
    DBG_OBJ_LEAVE ();
 }
 
@@ -2823,7 +2823,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
          wrapLineIndex = 0;
       else
          wrapLineIndex = lineIndex;
-      
+
       int realWrapLineIndex = wrapLineIndex;
       // The following two variables are only used for debugging:
       int minWrapLineIndex = wrapLineIndex, maxWrapLineIndex = wrapLineIndex;
@@ -2842,7 +2842,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
                 word->content.widget == vloat)
                found = true;
          }
-         
+
          // We search for the line of the float reference. There are
          // two cases when this is not the line corresponsing to y:
          //
@@ -2860,7 +2860,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
          // why a correction is neccessary.)
          //
          // Searched is done in the following order:
-         // 
+         //
          // - wrapLineIndex,
          // - wrapLineIndex - 1,
          // - wrapLineIndex + 1,
@@ -2927,7 +2927,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
                     wrapLineIndex, realWrapLineIndex, lines->size (),
                     minWrapLineIndex, maxWrapLineIndex,
                     vloat->getGenerator() == this ? "yes" : "no");
-            
+
       queueResize (OutOfFlowMgr::createRefNormalFlow (realWrapLineIndex), true);
 
       // Notice that the line no. realWrapLineIndex may not exist yet.
@@ -2971,13 +2971,13 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
       // A textblock is always between two line breaks, and so the
       // first word of the line.
       Word *word = words->getRef (firstWord);
-         
+
       if (word->content.type == core::Content::WIDGET_IN_FLOW &&
           word->content.widget->instanceOf (Textblock::CLASS_ID)) {
          //printf ("   word %d: ", firstWord);
          //printWordShort (word);
          //printf ("\n");
-           
+
          return (Textblock*)word->content.widget;
       }
    }
@@ -3023,7 +3023,7 @@ int Textblock::heightOfPossiblyMissingLine (int lineNo)
                   "%d <i>of %d</i>", lineNo, lines->size());
 
    int result;
-   
+
    if (lineNo < lines->size()) {
       // An existing line.
 
@@ -3047,7 +3047,7 @@ int Textblock::heightOfPossiblyMissingLine (int lineNo)
    } else if (lineNo == lines->size()) {
       // The line to be constructed: some words exist, but not the
       // line. Accumulate the word heights.
-      
+
       // Old comment: Furthermore, this is in some cases incomplete:
       // see doc/dw-out-of-flow.doc. -- Still the case?
 

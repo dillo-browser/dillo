@@ -912,7 +912,7 @@ bool OutOfFlowMgr::doFloatsExceedCB (Side side)
    // allocated at a different size.)
    core::Requisition cbReq;
    containingBlock->sizeRequest (&cbReq);
-   
+
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    bool exceeds = false;
 
@@ -1110,7 +1110,7 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
          DBG_OBJ_MSGF ("resize.common", 1,
                        "corrected to: max (0, %d - %d) = %d",
                        containingBlock->getLineBreakWidth (), vloat->size.width,
-                       x);  
+                       x);
       }
       break;
 
@@ -1180,7 +1180,7 @@ void OutOfFlowMgr::drawAbsolutelyPositioned (View *view, Rectangle *area)
  * leads sometimes to a cleaner rendering.
  */
 bool OutOfFlowMgr::isWidgetOutOfFlow (Widget *widget)
-{  
+{
    // This is only half-baked, will perhaps be reactivated:
    //
    //return
@@ -1500,7 +1500,7 @@ void OutOfFlowMgr::tellFloatPosition (Widget *widget, int yReq)
    // horizontal dimensions (because #f2 and #f3 are too
    // narrow). However, a collision has to be tested with #f1;
    // otherwise #f3 and #f1 would overlap.
-   
+
    int oppFloatIndex =
       listOpp->findLastBeforeSideSpanningIndex (vloat->sideSpanningIndex);
    // Generally, the rules are simple: loop as long as the vertical
@@ -1607,7 +1607,7 @@ bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, SFVType type)
    else {
       assert (wasAllocated (vloat->generatingBlock));
       assert (wasAllocated (other->generatingBlock));
-      
+
       // Again, if the other float is not allocated, there is no
       // collision. Compare to collidesV. (But vloat->size is used
       // here.)
@@ -1621,7 +1621,7 @@ bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, SFVType type)
                         LEFT : RIGHT,
                         gba->x, gba->width,
                         vloat->generatingBlock->getLineBreakWidth ());
-         
+
          // Generally: right border of the left float > left border of
          // the right float (all in canvas coordinates).
          if (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT)
@@ -2178,7 +2178,7 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
 
       // "sizeChangedSinceLastAllocation" is reset in sizeAllocateEnd()
    }
-   
+
    DBG_OBJ_LEAVE ();
 }
 

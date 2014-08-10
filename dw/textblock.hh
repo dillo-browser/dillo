@@ -163,7 +163,7 @@ private:
     * badness is not well defined, so fiddling with the penalties is a
     * bit difficult.
     */
-   
+
    enum {
       PENALTY_FORCE_BREAK = INT_MIN,
       PENALTY_PROHIBIT_BREAK = INT_MAX
@@ -176,7 +176,7 @@ private:
          badnessState;
       int ratio; // ratio is only defined when badness is defined
       int badness, penalty[2];
-      
+
       // For debugging: define DEBUG for more informations in print().
 #ifdef DEBUG
       int totalWidth, idealWidth, totalStretchability, totalShrinkability;
@@ -210,7 +210,7 @@ private:
       void setSinglePenalty (int index, int penalty);
       int badnessValue (int infLevel);
       int penaltyValue (int index, int infLevel);
-      
+
    public:
       void calcBadness (int totalWidth, int idealWidth,
                         int totalStretchability, int totalShrinkability);
@@ -264,7 +264,7 @@ protected:
    public:
       WordImgRenderer (Textblock *textblock, int wordNo);
       ~WordImgRenderer ();
-      
+
       void setData (int xWordWidget, int lineNo);
 
       bool readyToDraw ();
@@ -605,7 +605,7 @@ protected:
                   core::style::Style *style);
    void breakAdded ();
    void initWord (int wordNo);
-   void cleanupWord (int wordNo);   
+   void cleanupWord (int wordNo);
    void removeWordImgRenderer (int wordNo);
    void setWordImgRenderer (int wordNo);
    void removeSpaceImgRenderer (int wordNo);
@@ -681,7 +681,7 @@ protected:
    {
       return lineYOffsetCanvas (lines->getRef (lineIndex));
    }
-   
+
    inline int calcPenaltyIndexForNewLine ()
    {
       if (lines->size() == 0)
@@ -729,7 +729,7 @@ protected:
    int considerHyphenation (int firstIndex, int breakPos);
    bool isHyphenationCandidate (Word *word);
    int calcLinePartHeight (int firstWord, int lastWord);
-   
+
    void handleWordExtremes (int wordIndex);
    void correctLastWordExtremes ();
 

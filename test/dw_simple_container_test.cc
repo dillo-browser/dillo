@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
    const char *words[] = { "This", "is", "only", "a", "short", "paragraph.",
                            NULL };
-   
+
    for(int j = 0; words[j]; j++) {
       textblock2->addText(words[j], wordStyle);
       textblock2->addSpace(wordStyle);
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
    textblockStyle1->unref();
    textblockStyle2->unref();
    containerStyle->unref();
-   wordStyle->unref();   
+   wordStyle->unref();
 
    textblock1->flush ();
    textblock2->flush ();

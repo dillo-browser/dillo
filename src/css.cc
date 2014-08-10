@@ -544,7 +544,7 @@ void CssContext::addRule (CssSelector *sel, CssPropertyList *props,
 
          if (order == CSS_PRIMARY_USER_AGENT) {
             userAgentSheet.addRule (rule);
-         } else { 
+         } else {
             sheet[order].addRule (rule);
          }
       }

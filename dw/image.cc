@@ -217,7 +217,7 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
             + boxOffsetY ();
          requisition->descent = boxRestHeight ();
       }
-   }         
+   }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
@@ -247,7 +247,7 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
                   allocation->x, allocation->y, allocation->width,
                   allocation->ascent, allocation->descent);
 
-   
+
    int newBufWidth = allocation->width - boxDiffWidth ();
    int newBufHeight =
       allocation->ascent + allocation->descent - boxDiffHeight ();
@@ -256,19 +256,19 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
        // Save some time when size did not change:
        (newBufWidth != bufWidth || newBufHeight != bufHeight)) {
       DBG_OBJ_MSG ("resize", 1, "replacing buffer");
-      
+
       core::Imgbuf *oldBuffer = buffer;
       buffer = oldBuffer->getScaledBuf (newBufWidth, newBufHeight);
       oldBuffer->unref ();
-      
+
       bufWidth = newBufWidth;
       bufHeight = newBufHeight;
-      
+
       DBG_OBJ_ASSOC_CHILD (this->buffer);
       DBG_OBJ_SET_NUM ("bufWidth", bufWidth);
       DBG_OBJ_SET_NUM ("bufHeight", bufHeight);
    }
-   
+
    DBG_OBJ_LEAVE ();
 }
 

@@ -26,7 +26,7 @@ static void addTextToFloatTimeout (void *data)
       firstFloat->addText(fWords[k], wordStyle);
       firstFloat->addSpace(wordStyle);
    }
-   
+
    firstFloat->flush();
 
    Fl::repeat_timeout (2, addTextToFloatTimeout, NULL);
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
    styleAttrs.width = createAbsLength(100);
    styleAttrs.vloat = FLOAT_LEFT;
    Style *leftFloatStyle = Style::create (&styleAttrs);
-   
+
    styleAttrs.width = createAbsLength(80);
    styleAttrs.vloat = FLOAT_RIGHT;
    Style *rightFloatStyle = Style::create (&styleAttrs);
@@ -98,14 +98,14 @@ int main(int argc, char **argv)
       for(int j = 0; words[j]; j++) {
          textblock->addText(words[j], wordStyle);
          textblock->addSpace(wordStyle);
-         
+
          if ((i == 3 || i == 5) && j == 8) {
             textblock->addText("[float]", wordStyle);
             textblock->addSpace(wordStyle);
-         
+
             Textblock *vloat = new Textblock (false);
             textblock->addWidget(vloat, i == 3 ? leftFloatStyle : rightFloatStyle);
-            
+
             const char *fWords[] = { "This", "is", "a", "float,", "which", "is",
                                      "set", "aside", "from", "the", "main",
                                      "text.", NULL };
@@ -117,9 +117,9 @@ int main(int argc, char **argv)
                vloat->addText(fWords[k], wordStyle);
                vloat->addSpace(wordStyle);
             }
-            
+
             vloat->flush ();
-            
+
             if(i == 3)
                firstFloat = vloat;
          }

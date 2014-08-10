@@ -727,7 +727,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
          entry->Flags |= CA_KeepAlive;
       dFree(connection);
    }
-   
+
    /*
     * Get Transfer-Encoding and initialize decoder
     */

@@ -215,36 +215,36 @@ protected:
                DBG_OBJ_SET_SYM ("flags.RESIZE_QUEUED",
                                 (flags & RESIZE_QUEUED) ? "true" : "false");
                break;
-               
+
          case EXTREMES_QUEUED:
             DBG_OBJ_SET_SYM ("flags.EXTREMES_QUEUED",
                              (flags & EXTREMES_QUEUED) ? "true" : "false");
             break;
-            
+
          case NEEDS_RESIZE:
             DBG_OBJ_SET_SYM ("flags.NEEDS_RESIZE",
                              (flags & NEEDS_RESIZE) ? "true" : "false");
             break;
-            
+
          case NEEDS_ALLOCATE:
             DBG_OBJ_SET_SYM ("flags.NEEDS_ALLOCATE",
                              (flags & NEEDS_ALLOCATE) ? "true" : "false");
             break;
-            
+
          case ALLOCATE_QUEUED:
             DBG_OBJ_SET_SYM ("flags.ALLOCATE_QUEUED",
                              (flags & ALLOCATE_QUEUED) ? "true" : "false");
             break;
-            
+
          case EXTREMES_CHANGED:
             DBG_OBJ_SET_SYM ("flags.EXTREMES_CHANGED",
                              (flags & EXTREMES_CHANGED) ? "true" : "false");
             break;
-                       
+
          case WAS_ALLOCATED:
             DBG_OBJ_SET_SYM ("flags.WAS_ALLOCATED",
                              (flags & WAS_ALLOCATED) ? "true" : "false");
-            break;           
+            break;
          }
       }
    }
@@ -374,7 +374,7 @@ private:
    void enterSizeAllocate () { if (layout) layout->sizeAllocateCounter++; }
    void leaveSizeAllocate () { if (layout) layout->sizeAllocateCounter--; }
    bool sizeAllocateEntered () { return layout && layout->sizeAllocateCounter; }
-   
+
    void enterSizeRequest () { if (layout) layout->sizeRequestCounter++; }
    void leaveSizeRequest () { if (layout) layout->sizeRequestCounter--; }
    bool sizeRequestEntered () { return layout && layout->sizeRequestCounter; }
@@ -438,7 +438,7 @@ public:
 
    virtual int applyPerWidth (int containerWidth, style::Length perWidth);
    virtual int applyPerHeight (int containerHeight, style::Length perHeight);
-   
+
    virtual bool isBlockLevel ();
    virtual bool isPossibleContainer ();
 

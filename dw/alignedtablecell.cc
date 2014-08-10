@@ -110,7 +110,7 @@ void AlignedTableCell::correctExtremesOfChild (Widget *child,
                   "%p, %d (%d) / %d (%d)",
                   child, extremes->minWidth, extremes->minWidthIntrinsic,
                   extremes->maxWidth, extremes->maxWidthIntrinsic);
-   
+
    AlignedTextblock::correctExtremesOfChild (child, extremes);
    tablecell::correctCorrectedExtremesOfChild (this, child, extremes);
 

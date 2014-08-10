@@ -65,7 +65,7 @@ int SimpleContainer::SimpleContainerIterator::index ()
 int SimpleContainer::SimpleContainerIterator::compareTo
    (lout::object::Comparable *other)
 {
-   return index () - ((SimpleContainerIterator*)other)->index ();     
+   return index () - ((SimpleContainerIterator*)other)->index ();
 }
 
 bool SimpleContainer::SimpleContainerIterator::next ()
@@ -167,7 +167,7 @@ void SimpleContainer::sizeRequestImpl (Requisition *requisition)
       child->sizeRequest (&childReq);
    else
       childReq.width = childReq.ascent = childReq.descent = 0;
-   
+
    requisition->width = childReq.width + boxDiffWidth ();
    requisition->ascent = childReq.ascent + boxOffsetY ();
    requisition->descent = childReq.descent + boxRestHeight ();

@@ -558,7 +558,7 @@ DeepIterator::DeepIterator (Iterator *it)
       //printf ("Starting with: ");
       //it->print ();
       //printf ("\n");
-   
+
       // Construct the iterators.
       int thisLevel = getRespectiveLevel (it->getWidget()), level;
       Widget *w;
@@ -632,7 +632,7 @@ int DeepIterator::compareTo (object::Comparable *other)
 
    assert (stack.size() > 0);
    assert (otherDeepIterator->stack.size() > 0);
-   
+
    //printf ("Equal? The %s %p (of %p) and the %s %p (of %p)?\n",
    //        stack.get(0)->getWidget()->getClassName(),
    //        stack.get(0)->getWidget(), this,

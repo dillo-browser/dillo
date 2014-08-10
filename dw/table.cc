@@ -136,9 +136,9 @@ void Table::getExtremesImpl (core::Extremes *extremes)
          extremes->maxWidthIntrinsic = boxDiffWidth ();
    else {
       forceCalcColumnExtremes ();
-      
+
       extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
-         extremes->maxWidthIntrinsic = 
+         extremes->maxWidthIntrinsic =
          (numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ();
       for (int col = 0; col < numCols; col++) {
          extremes->minWidth += colExtremes->getRef(col)->minWidth;
@@ -147,7 +147,7 @@ void Table::getExtremesImpl (core::Extremes *extremes)
          extremes->maxWidth += colExtremes->getRef(col)->maxWidth;
          extremes->maxWidthIntrinsic +=
             colExtremes->getRef(col)->maxWidthIntrinsic;
-      }     
+      }
    }
 
    correctExtremes (extremes);
@@ -269,9 +269,9 @@ int Table::calcAvailWidthForDescendant (Widget *child)
    Widget *actualChild = child;
    while (actualChild != NULL && actualChild->getParent () != this)
       actualChild = actualChild->getParent ();
-   
+
    assert (actualChild != NULL);
-  
+
    // TODO This is inefficient. (Use parentRef?)
    int width = -1;
    for (int row = numRows - 1; width == -1 && row >= 0; row--) {
@@ -288,7 +288,7 @@ int Table::calcAvailWidthForDescendant (Widget *child)
          }
       }
    }
-   
+
    assert (width != -1);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
@@ -340,7 +340,7 @@ bool Table::affectsSizeChangeContainerChild (core::Widget *child)
 
    DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
    DBG_OBJ_LEAVE ();
-   return ret;  
+   return ret;
 }
 
 bool Table::usesAvailWidth ()
@@ -627,7 +627,7 @@ int Table::getColExtreme (int col, ExtrMod mod, void *data)
    switch (mod) {
    case DATA:
       return ((misc::SimpleVector<int>*)data)->get (col);
-      
+
    default:
       return getExtreme (colExtremes->getRef(col), mod);
    }
@@ -638,7 +638,7 @@ void Table::setColExtreme (int col, ExtrMod mod, void *data, int value)
    switch (mod) {
    case DATA:
       ((misc::SimpleVector<int>*)data)->set (col, value);
-      
+
    default:
       setExtreme (colExtremes->getRef(col), mod, value);
    }
@@ -784,7 +784,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
                  "totalWidth = %d, %s",
                  minWidth, minWidthIntrinsic, maxWidth, totalWidth,
                  totalWidthSpecified ? "specified" : "not specified");
-      
+
    if (minWidth > totalWidth) {
       DBG_OBJ_MSG ("resize", 1, "case 1: minWidth > totalWidth");
 
@@ -844,15 +844,15 @@ void Table::forceCalcCellSizes (bool calcHeights)
                   colExtremes->getRef(col)->minWidthIntrinsic;
             else
                // Columns without percentage width get only the
-               // intrinsic mininal, so subtract this from the width for the 
+               // intrinsic mininal, so subtract this from the width for the
                // columns *with* percentage
-               widthPartPer -= 
+               widthPartPer -=
                   colExtremes->getRef(col)->minWidthIntrinsic;
 
          DBG_OBJ_MSGF ("resize", 1,
                        "widthPartPer = %d, minWidthIntrinsicPer = %d",
                        widthPartPer, minWidthIntrinsicPer);
-         
+
          for (int col = 0; col < colExtremes->size(); col++)
             if (colWidthPercentage->get (col)) {
                int colWidth = colExtremes->getRef(col)->minWidth;
@@ -862,7 +862,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
 
                if (colWidth > widthPartPer - minWidthIntrinsicPer)
                   colWidth = widthPartPer - minWidthIntrinsicPer;
-              
+
                colWidths->set (col, colWidth);
                widthPartPer -= colWidth;
 
@@ -874,7 +874,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
             } else
                colWidths->set (col,
                                colExtremes->getRef(col)->minWidthIntrinsic);
-            
+
       }
    } else if (totalWidthSpecified && totalWidth > maxWidth) {
       DBG_OBJ_MSG ("resize", 1,
@@ -930,14 +930,14 @@ void Table::forceCalcCellSizes (bool calcHeights)
 
             DBG_OBJ_MSG ("resize", 1, "widthsNotSpecified:");
             DBG_OBJ_MSG_START ();
-            
+
             for (int i = 0; i < widthsNotSpecified.size (); i++)
                DBG_OBJ_MSGF ("resize", 1, "#%d: %d",
                              i, widthsNotSpecified.get (i));
-               
+
             DBG_OBJ_MSG_END ();
          }
-         
+
          apportion2 (totalWidthNotSpecified, 0, numNotSpecified - 1, DATA, DATA,
                      (void*)&widthsNotSpecified, &apportionDest, 0);
 
@@ -947,7 +947,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
 
             for (int i = 0; i < apportionDest.size (); i++)
                DBG_OBJ_MSGF ("resize", 1, "#%d: %d", i, apportionDest.get (i));
-                            
+
             DBG_OBJ_MSG_END ();
          }
 
@@ -988,7 +988,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
       if (colWidths->get (col) != oldColWidths->get (col))
          redrawX = lout::misc::min (redrawX, colWidths->get (col));
    }
-   
+
    DBG_IF_RTFL {
       DBG_OBJ_SET_NUM ("colWidths.size", colWidths->size ());
       for (int i = 0; i < colWidths->size (); i++)
@@ -1022,7 +1022,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
           * \bug dw::Table::baseline is not filled.
           */
          int rowHeight = 0;
-         
+
          for (int col = 0; col < numCols; col++) {
             int n = row * numCols + col;
             if (childDefined (n)) {
@@ -1030,7 +1030,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
                   * getStyle()->hBorderSpacing;
                for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
                   width += colWidths->get (col + i);
-               
+
                core::Requisition childRequisition;
                //children->get(n)->cell.widget->setWidth (width);
                children->get(n)->cell.widget->sizeRequest (&childRequisition);
@@ -1043,7 +1043,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
                }
             }
          } // for col
-         
+
          setCumHeight (row + 1,
             cumHeight->get (row) + rowHeight + getStyle()->vBorderSpacing);
       } // for row
@@ -1157,7 +1157,7 @@ void Table::forceCalcColumnExtremes ()
          colExtremes->getRef(col)->minWidthIntrinsic = 0;
          colExtremes->getRef(col)->maxWidth = 0;
          colExtremes->getRef(col)->maxWidthIntrinsic = 0;
-         
+
          for (int row = 0; row < numRows; row++) {
             DBG_OBJ_MSGF ("resize", 1, "row %d", row);
             DBG_OBJ_MSG_START ();
@@ -1179,7 +1179,7 @@ void Table::forceCalcColumnExtremes ()
                      misc::max (colExtremes->getRef(col)->minWidthIntrinsic,
                                 colExtremes->getRef(col)->maxWidthIntrinsic,
                                 cellExtremes.maxWidthIntrinsic);
-                  
+
                   colExtremes->getRef(col)->minWidth =
                      misc::max (colExtremes->getRef(col)->minWidth,
                                 cellExtremes.minWidth);
@@ -1293,7 +1293,7 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
                   "%d, %d, ..., %s, %s, ...",
                   col, cs, getExtrModName (minExtrMod),
                   getExtrModName (maxExtrMod));
-   
+
    int cellMin = getExtreme (cellExtremes, minExtrMod);
    int cellMax = getExtreme (cellExtremes, maxExtrMod);
 
@@ -1308,7 +1308,7 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
                  cs, cellMin, cellMax, minSumCols, maxSumCols);
 
    bool changeMin = cellMin > minSumCols;
-   bool changeMax = cellMax > maxSumCols; 
+   bool changeMax = cellMax > maxSumCols;
    if (changeMin || changeMax) {
       // TODO This differs from the documentation? Should work, anyway.
       misc::SimpleVector<int> newMin, newMax;
@@ -1316,13 +1316,13 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
          apportion2 (cellMin, col, col + cs - 1, MIN, MAX, NULL, &newMin, 0);
       if (changeMax)
          apportion2 (cellMax, col, col + cs - 1, MIN, MAX, NULL, &newMax, 0);
-      
+
       for (int j = 0; j < cs; j++) {
          if (changeMin)
             setColExtreme (col + j, minExtrMod, extrData, newMin.get (j));
          if (changeMax)
             setColExtreme (col + j, maxExtrMod, extrData, newMax.get (j));
-         
+
          // For cases where min and max are somewhat confused:
          setColExtreme (col + j, maxExtrMod, extrData,
                         misc::max (getColExtreme (col + j, minExtrMod,
@@ -1354,7 +1354,7 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
          totalMin += getColExtreme (col, minExtrMod, extrData);
          totalMax += getColExtreme (col, maxExtrMod, extrData);
       }
-   
+
       DBG_OBJ_MSGF ("resize", 1,
                     "totalWidth = %d, totalMin = %d, totalMax = %d",
                     totalWidth, totalMin, totalMax);
@@ -1392,12 +1392,12 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
       // the result is
       //
       //    width[i] = totalWidth / n
-      
+
       int totalDiffExtr = totalMax - totalMin;
       if (totalDiffExtr != 0) {
          // Normal case. The algorithm described in
          // "rounding-errors.doc" is used, with:
-         // 
+         //
          //    x[i] = diffExtr[i]
          //    y[i] = diffWidth[i]
          //    a = totalDiffWidth
@@ -1407,7 +1407,7 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
 
          int totalDiffWidth = totalWidth - totalMin;
          int cumDiffExtr = 0, cumDiffWidth = 0;
-         
+
          for (int col = firstCol; col <= lastCol; col++) {
             int min = getColExtreme (col, minExtrMod, extrData);
             int max = getColExtreme (col, maxExtrMod, extrData);
@@ -1417,12 +1417,12 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
             int diffWidth =
                (cumDiffExtr * totalDiffWidth) / totalDiffExtr - cumDiffWidth;
             cumDiffWidth += diffWidth;
-            
+
             dest->set (destOffset - firstCol + col, diffWidth + min);
          }
       } else if (totalMin != 0) {
          // Special case. Again, same algorithm, with
-         // 
+         //
          //    x[i] = min[i]
          //    y[i] = width[i]
          //    a = totalWidth
@@ -1441,7 +1441,7 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
          }
       } else { // if (totalMin == 0)
          // Last special case. Ssame algorithm, with
-         // 
+         //
          //    x[i] = 1 (so cumX = i = col - firstCol + 1)
          //    y[i] = width[i]
          //    a = totalWidth
@@ -1459,7 +1459,7 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
          }
       }
    }
-   
+
    DBG_OBJ_LEAVE ();
 }
 

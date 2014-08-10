@@ -30,7 +30,7 @@ private:
       void unhighlight (int direction, core::HighlightLayer layer);
       void getAllocation (int start, int end, core::Allocation *allocation);
    };
-    
+
    Widget *child;
 
 protected:

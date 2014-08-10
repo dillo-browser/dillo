@@ -229,7 +229,7 @@ int Vector::bsearch(Object *key, bool mustExist, int start, int end,
       int low = start, high = end;
       bool found = false;
 
-      while (!found) {       
+      while (!found) {
          int index = (low + high) / 2;
          int c = comparator->compare (key, array[index]);
          DBG_OBJ_MSGF ("container", 1,
@@ -248,14 +248,14 @@ int Vector::bsearch(Object *key, bool mustExist, int start, int end,
                   result = c > 0 ? index + 1 : index;
                }
             }
-            
+
             if (c < 0)
                high = index - 1;
             else
                low = index + 1;
          }
       }
-   }  
+   }
 
    DBG_OBJ_MSGF ("container", 1, "result = %d", result);
    DBG_OBJ_MSG_END ();
