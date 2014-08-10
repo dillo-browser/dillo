@@ -34,7 +34,7 @@ is (not solely) used for percentage sizes.
 these may be consolidated some day.)
 
 **The process of size calculation is split between the widget itself
-and its container:** 
+and its container:**
 
 - The container provides some abstract methods:
   dw::core::Widget::getAvailWidthOfChild,
