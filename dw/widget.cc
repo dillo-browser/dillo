@@ -219,8 +219,9 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
 
    if (queueResizeEntered ()) {
       DBG_OBJ_MSG ("resize", 1, "put into queue");
-      layout->queueQueueResizeList->put (new Layout::QueueResizeItem
-                                         (this, ref, extremesChanged, fast));
+      layout->queueQueueResizeList->pushUnder (new Layout::QueueResizeItem
+                                               (this, ref, extremesChanged,
+                                                fast));
    } else {
       actualQueueResize (ref, extremesChanged, fast);
 
@@ -235,6 +236,9 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
          DBG_IF_RTFL {
             DBG_OBJ_MSGF ("resize", 1, "queue item list has %d elements:",
                           layout->queueQueueResizeList->size ());
+#if 0
+            // TODO This worked when queueQueueResizeList was a Vector; now,
+            // iterators should be used.
             DBG_OBJ_MSG_START ();
             for (int i = 0; i < layout->queueQueueResizeList->size (); i++) {
                DBG_OBJ_MSGF
@@ -250,12 +254,14 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
             }
             DBG_OBJ_MSG_END ();
             DBG_OBJ_MSG ("resize", 1, "taking #0 out of list");
+#endif
          }
 
-         Layout::QueueResizeItem *item = layout->queueQueueResizeList->get (0);
+         Layout::QueueResizeItem *item =
+            layout->queueQueueResizeList->getTop ();
          item->widget->actualQueueResize (item->ref, item->extremesChanged,
                                           item->fast);
-         layout->queueQueueResizeList->remove (0); // hopefully not too large
+         layout->queueQueueResizeList->pop ();
       }
    }
 

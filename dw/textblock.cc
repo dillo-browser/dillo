@@ -2914,7 +2914,7 @@ void Textblock::borderChanged (int y, Widget *vloat)
                }
 
                minWrapLineIndex = misc::min (minWrapLineIndex, lineIndex2);
-               maxWrapLineIndex = misc::max (minWrapLineIndex, lineIndex2);
+               maxWrapLineIndex = misc::max (maxWrapLineIndex, lineIndex2);
             }
          }
 

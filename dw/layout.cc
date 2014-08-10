@@ -260,7 +260,7 @@ Layout::Layout (Platform *platform)
    topLevel = NULL;
    widgetAtPoint = NULL;
 
-   queueQueueResizeList = new typed::Vector<QueueResizeItem> (4, true);
+   queueQueueResizeList = new typed::Stack<QueueResizeItem> (true);
    queueResizeList = new typed::Vector<Widget> (4, false);
 
    DBG_OBJ_CREATE ("dw::core::Layout");

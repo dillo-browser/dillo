@@ -172,7 +172,7 @@ private:
    Platform *platform;
    View *view;
    Widget *topLevel, *widgetAtPoint;
-   lout::container::typed::Vector<QueueResizeItem> *queueQueueResizeList;
+   lout::container::typed::Stack<QueueResizeItem> *queueQueueResizeList;
    lout::container::typed::Vector<Widget> *queueResizeList;
 
    /* The state, which must be projected into the view. */

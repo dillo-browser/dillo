@@ -295,7 +295,8 @@ public:
 };
 
 /**
- * \brief A stack (LIFO).
+ * \brief A stack (LIFO). Can be used as Queue (FIFO) when pushUnder()
+ *     is used instead of push().
  *
  * Note that the iterator returns all elements in the reversed order they have
  * been put on the stack.

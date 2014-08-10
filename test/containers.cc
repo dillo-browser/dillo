@@ -128,6 +128,22 @@ void testVector3 ()
    printf ("   -> %d\n", v.bsearch (&k, false));
 }
 
+void testStackAsQueue ()
+{
+   puts ("--- testStackAsQueue ---");
+
+   Stack<Integer> s (true);
+
+   for (int i = 1; i <= 10; i++)
+      s.pushUnder (new Integer (i));
+
+   while (s.size () > 0) {
+      Integer *i = s.getTop ();
+      printf ("%d\n", i->getValue ());
+      s.pop ();
+   }
+}
+
 int main (int argc, char *argv[])
 {
    testHashSet ();
@@ -135,6 +151,7 @@ int main (int argc, char *argv[])
    testVector1 ();
    testVector2 ();
    testVector3 ();
+   testStackAsQueue ();
 
    return 0;
 }
