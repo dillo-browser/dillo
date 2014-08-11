@@ -521,9 +521,9 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 
 void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 {
-   PRINTF ("[%p] SIZE_ALLOCATE: %d, %d, %d x %d + %d\n",
-           this, allocation->x, allocation->y, allocation->width,
-           allocation->ascent, allocation->descent);
+   DBG_OBJ_ENTER ("resize", 0, "sizeAllocateImpl", "%d, %d; %d * (%d + %d)",
+                  allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
 
    showMissingLines ();
 
@@ -541,6 +541,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       redrawY = 0;
       DBG_OBJ_SET_NUM ("redrawY", redrawY);
    }
+
+   DBG_OBJ_MSG_START ();
 
    for (lineIndex = 0; lineIndex < lines->size (); lineIndex++) {
       // Especially for floats, allocation->width may be different
@@ -561,8 +563,17 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
          }
 
          if (word->content.type == core::Content::WIDGET_IN_FLOW) {
-            /** \todo Justification within the line is done here. */
+            DBG_OBJ_MSGF ("resize", 1,
+                          "allocating widget in flow: line %d, word %d",
+                          lineIndex, wordIndex);
+
             childAllocation.x = xCursor + allocation->x;
+
+            DBG_OBJ_MSGF ("resize", 1, "childAllocation.x = %d + %d = %d",
+                          xCursor, allocation->x, childAllocation.x);
+
+            /** \todo Justification within the line is done here. */
+
             /* align=top:
                childAllocation.y = line->top + allocation->y;
             */
@@ -574,6 +585,26 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                lineYOffsetCanvasAllocation (line, allocation)
                + (line->boxAscent - word->size.ascent)
                - word->content.widget->getStyle()->margin.top;
+
+            DBG_OBJ_MSG_START ();
+            DBG_OBJ_MSGF ("resize", 1,
+                          "lineYOffsetWidgetAllocation (...) = %d + (%d - %d) "
+                          "= %d",
+                          line->top, allocation->ascent,
+                          lines->getRef(0)->boxAscent,
+                          lineYOffsetWidgetAllocation  (line, allocation));
+            DBG_OBJ_MSGF ("resize", 1,
+                          "lineYOffsetCanvasAllocation (...) = %d + %d = %d",
+                          allocation->y,
+                          lineYOffsetWidgetAllocation (line, allocation),
+                          lineYOffsetCanvasAllocation (line, allocation));
+            DBG_OBJ_MSG_END ();
+            DBG_OBJ_MSGF ("resize", 1,
+                          "childAllocation.y = %d + (%d - %d) - %d = %d",
+                          lineYOffsetCanvasAllocation (line, allocation),
+                          line->boxAscent, word->size.ascent,
+                          word->content.widget->getStyle()->margin.top,
+                          childAllocation.y);
 
             childAllocation.width = word->size.width;
             childAllocation.ascent = word->size.ascent
@@ -637,6 +668,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       }
    }
 
+   DBG_OBJ_MSG_END ();
+
    if (containingBlock->outOfFlowMgr)
       containingBlock->outOfFlowMgr->sizeAllocateEnd (this);
 
@@ -655,6 +688,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       }
       changeAnchor (anchor->name, y);
    }
+
+   DBG_OBJ_LEAVE ();
 }
 
 int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
@@ -810,6 +845,8 @@ bool Textblock::isContainingBlock (Widget *widget)
        // than a textblock (typical example: a table cell (this is
        // also a text block) within a table widget).
        !widget->getParent()->instanceOf (Textblock::CLASS_ID) ||
+       // Inline blocks are containing blocks, too.
+       widget->getStyle()->display == core::style::DISPLAY_INLINE_BLOCK ||
        // Finally, "out of flow" in a narrower sense: floats and
        // absolute positions.
        OutOfFlowMgr::isWidgetOutOfFlow (widget));
@@ -2973,7 +3010,10 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
       Word *word = words->getRef (firstWord);
 
       if (word->content.type == core::Content::WIDGET_IN_FLOW &&
-          word->content.widget->instanceOf (Textblock::CLASS_ID)) {
+          word->content.widget->instanceOf (Textblock::CLASS_ID) &&
+          // Exclude inline blocks (see definition of float container).
+          word->content.widget->getStyle()->display
+          == core::style::DISPLAY_BLOCK) {
          //printf ("   word %d: ", firstWord);
          //printWordShort (word);
          //printf ("\n");

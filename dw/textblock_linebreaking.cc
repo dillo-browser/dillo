@@ -413,6 +413,10 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    line->rightOffset = misc::max (regardBorder ? newLineRightBorder : 0,
                                   boxRestWidth ());
 
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "leftOffset", line->leftOffset);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "rightOffset",
+                           line->rightOffset);
+
    alignLine (lineIndex);
    calcTextOffset (lineIndex, lineBreakWidth);
 
@@ -1731,9 +1735,15 @@ void Textblock::alignLine (int lineIndex)
 
 void Textblock::calcTextOffset (int lineIndex, int totalWidth)
 {
+   DBG_OBJ_ENTER ("construct.line", 0, "calcTextOffset", "%d, %d",
+                  lineIndex, totalWidth);
+
    Line *line = lines->getRef (lineIndex);
    int lineWidth = line->firstWord <= line->lastWord ?
       words->getRef(line->lastWord)->totalWidth : 0;
+
+   DBG_OBJ_MSGF ("construct.line", 1, "leftOffset = %d, lineWidth = %d",
+                 line->leftOffset, lineWidth);
 
    switch (line->alignment) {
    case Line::LEFT:
@@ -1757,6 +1767,9 @@ void Textblock::calcTextOffset (int lineIndex, int totalWidth)
    // For large lines (images etc), which do not fit into the viewport:
    if (line->textOffset < line->leftOffset)
       line->textOffset = line->leftOffset;
+
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "textOffset", line->textOffset);
+   DBG_OBJ_LEAVE ();
 }
 
 /**
