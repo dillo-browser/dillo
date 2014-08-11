@@ -179,8 +179,21 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
    if (buffer) {
       requisition->width = buffer->getRootWidth ();
       requisition->ascent = buffer->getRootHeight ();
-   } else
-      requisition->width = requisition->ascent = 0;
+   } else {
+      if (altText && altText[0]) {
+         if (altTextWidth == -1)
+            altTextWidth =
+               layout->textWidth (getStyle()->font, altText, strlen (altText));
+
+         requisition->width = altTextWidth;
+         requisition->ascent = getStyle()->font->ascent;
+         requisition->descent = getStyle()->font->descent;
+      } else {
+         requisition->width = 0;
+         requisition->ascent = 0;
+         requisition->descent = 0;
+      }
+   }
 
    requisition->width += boxDiffWidth ();
    requisition->ascent += boxOffsetY ();
