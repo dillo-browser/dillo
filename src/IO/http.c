@@ -95,6 +95,10 @@ static DilloUrl *HTTP_Proxy = NULL;
 static char *HTTP_Proxy_Auth_base64 = NULL;
 static char *HTTP_Language_hdr = NULL;
 static Dlist *host_connections;
+
+/* TODO: If fd_map will stick around in its present form (FDs and SocketData_t)
+ * then consider whether having both this and ValidSocks is necessary.
+ */
 static Dlist *fd_map;
 
 /*
@@ -155,6 +159,9 @@ static int Http_sock_new(void)
    return a_Klist_insert(&ValidSocks, S);
 }
 
+/*
+ * Compare by FD.
+ */
 static int Http_fd_map_cmp(const void *v1, const void *v2)
 {
    int fd = VOIDP2INT(v2);
@@ -163,6 +170,9 @@ static int Http_fd_map_cmp(const void *v1, const void *v2)
    return (fd == e->fd) ? 0 : 1;
 }
 
+/*
+ * Remove and free entry from fd_map.
+ */
 static void Http_fd_map_remove_entry(int fd)
 {
    void *data = dList_find_custom(fd_map, INT2VOIDP(fd), Http_fd_map_cmp);
@@ -644,6 +654,10 @@ static int Http_get(ChainLink *Info, void *Data1)
    return 0;
 }
 
+/*
+ * If any entry in the socket data queue can reuse our connection, set it up
+ * and send off a new query.
+ */
 static void Http_socket_reuse(int SKey)
 {
    SocketData_t *new_sd, *old_sd = a_Klist_get_data(ValidSocks, SKey);
@@ -784,6 +798,10 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
    }
 }
 
+/*
+ * Add socket data to the queue. Pages/stylesheets/etc. have higher priority
+ * than images.
+ */
 static void Http_socket_enqueue(HostConnection_t *hc, SocketData_t* sock)
 {
    if ((sock->web->flags & WEB_Image) == 0) {
