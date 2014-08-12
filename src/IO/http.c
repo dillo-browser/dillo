@@ -67,24 +67,13 @@ typedef struct {
 /* Data structures and functions to queue sockets that need to be
  * delayed due to the per host connection limit.
  */
-typedef struct SocketQueueEntry {
-   SocketData_t* sock;
-   struct SocketQueueEntry *next ;
-} SocketQueueEntry_t;
-
-typedef struct {
-   SocketQueueEntry_t *head;
-   SocketQueueEntry_t *tail;
-} SocketQueue_t;
-
 typedef struct {
   char *host;
   Dlist *active_fds;
   int avail_fd;
-  SocketQueue_t main_q, image_q; /* imgs have separate lower-priority queue */
+  Dlist *queue;
 } HostConnection_t;
 
-static void Http_socket_queue_init(SocketQueue_t *sq);
 static void Http_socket_enqueue(HostConnection_t *hc, SocketData_t* sock);
 static SocketData_t* Http_socket_dequeue(HostConnection_t *hc);
 static HostConnection_t *Http_host_connection_get(const char *host);
@@ -759,45 +748,28 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
    }
 }
 
-
-static void Http_socket_queue_init(SocketQueue_t *sq)
-{
-   sq->head = NULL;
-   sq->tail = NULL;
-}
-
 static void Http_socket_enqueue(HostConnection_t *hc, SocketData_t* sock)
 {
-   SocketQueue_t *sq;
-   SocketQueueEntry_t *se = dNew(SocketQueueEntry_t, 1);
+   if ((sock->web->flags & WEB_Image) == 0) {
+      int i, n = dList_length(hc->queue);
 
-   se->sock = sock;
-   se->next = NULL;
+      for (i = 0; i < n; i++) {
+         SocketData_t *curr = dList_nth_data(hc->queue, i);
 
-   sq = sock->web->flags & WEB_Image ? &hc->image_q : &hc->main_q;
-
-   if (sq->tail)
-      sq->tail->next = se;
-   sq->tail = se;
-
-   if (! sq->head)
-      sq->head = se;
+         if (a_Web_valid(curr->web) && (curr->web->flags & WEB_Image)) {
+            dList_insert_pos(hc->queue, sock, i);
+            return;
+         }
+      }
+   }
+   dList_append(hc->queue, sock);
 }
 
 static SocketData_t* Http_socket_dequeue(HostConnection_t *hc)
 {
-   SocketQueue_t *sq = hc->main_q.head ? &hc->main_q : &hc->image_q;
-   SocketQueueEntry_t *se = sq->head;
-   SocketData_t *sd = NULL;
+   SocketData_t *sd = dList_nth_data(hc->queue, 0);
 
-   if (se) {
-      sq->head = se->next;
-      if (sq->tail == se)
-         sq->tail = NULL;
-      sd = se->sock;
-      dFree(se);
-   }
-
+   dList_remove(hc->queue, sd);
    return sd;
 }
 
@@ -814,8 +786,7 @@ static HostConnection_t *Http_host_connection_get(const char *host)
    }
 
    hc = dNew0(HostConnection_t, 1);
-   Http_socket_queue_init(&hc->main_q);
-   Http_socket_queue_init(&hc->image_q);
+   hc->queue = dList_new(10);
    hc->host = dStrdup(host);
    hc->active_fds = dList_new(prefs.http_max_conns);
    hc->avail_fd = -1;
@@ -826,7 +797,7 @@ static HostConnection_t *Http_host_connection_get(const char *host)
 
 static void Http_host_connection_remove(HostConnection_t *hc)
 {
-    assert(hc->main_q.head == NULL && hc->image_q.head == NULL);
+    assert(dList_length(hc->queue) == 0);
     dList_remove_fast(host_connections, hc);
     dFree(hc->host);
     dList_free(hc->active_fds);
