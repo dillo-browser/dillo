@@ -70,7 +70,6 @@ typedef struct {
 typedef struct {
   char *host;
   int active_conns;
-  int avail_skey;
   Dlist *queue;
 } HostConnection_t;
 
@@ -176,9 +175,8 @@ static void Http_fd_map_remove_entry(int fd)
 
 static void Http_connect_queued_sockets(HostConnection_t *hc)
 {
-   bool_t all_is_well = TRUE;
    SocketData_t *sd;
-   while ((hc->avail_skey != -1 || hc->active_conns < prefs.http_max_conns) &&
+   while (hc->active_conns < prefs.http_max_conns &&
           (sd = Http_socket_dequeue(hc))) {
 
       sd->flags &= ~HTTP_SOCKET_QUEUED;
@@ -187,46 +185,26 @@ static void Http_connect_queued_sockets(HostConnection_t *hc)
           dFree(sd);
       } else if (a_Web_valid(sd->web)) {
          /* start connecting the socket */
-         hc->active_conns++;
-         if (hc->avail_skey != -1) {
-            SocketData_t *avail = a_Klist_get_data(ValidSocks, hc->avail_skey);
-            sd->SockFD = avail->SockFD;
-            Http_fd_map_remove_entry(avail->SockFD);
-            a_Klist_remove(ValidSocks, hc->avail_skey);
-            hc->active_conns--;
-            dFree(avail);
-            hc->avail_skey = -1;
-         } else if (Http_connect_socket(sd->Info) < 0) {
+         if (Http_connect_socket(sd->Info) < 0) {
             ChainLink *Info = sd->Info;
-            all_is_well = FALSE;
-            hc->active_conns--;
             MSG_BW(sd->web, 1, "ERROR: %s", dStrerror(sd->Err));
             a_Chain_bfcb(OpAbort, Info, NULL, "Both");
             Http_socket_free(VOIDP2INT(Info->LocalKey)); /* free sd */
             dFree(Info);
-         }
-         if (all_is_well) {
+         } else {
             FdMapEntry_t *e = dNew0(FdMapEntry_t, 1);
 
             e->fd = sd->SockFD;
             e->skey = VOIDP2INT(sd->Info->LocalKey);
             dList_append(fd_map, e);
 
+            hc->active_conns++;
             a_Chain_bcb(OpSend, sd->Info, &sd->SockFD, "FD");
             a_Chain_fcb(OpSend, sd->Info, &sd->SockFD, "FD");
             Http_send_query(sd->Info, sd);
             sd->connected_to = hc->host;
          }
       }
-   }
-   if (hc->avail_skey != -1) {
-      SocketData_t *avail = a_Klist_get_data(ValidSocks, hc->avail_skey);
-      dClose(avail->SockFD);
-      Http_fd_map_remove_entry(avail->SockFD);
-      a_Klist_remove(ValidSocks, hc->avail_skey);
-      hc->active_conns--;
-      dFree(avail);
-      hc->avail_skey = -1;
    }
 }
 
@@ -666,15 +644,40 @@ static int Http_get(ChainLink *Info, void *Data1)
    return 0;
 }
 
-static void Http_socket_available(int SKey)
+static void Http_socket_reuse(int SKey)
 {
-   SocketData_t *sd;
+   SocketData_t *new_sd, *old_sd = a_Klist_get_data(ValidSocks, SKey);
+   HostConnection_t *hc = Http_host_connection_get(old_sd->connected_to);
+   int i, n = dList_length(hc->queue);
 
-   if ((sd = a_Klist_get_data(ValidSocks, SKey))) {
-      HostConnection_t *hc = Http_host_connection_get(sd->connected_to);
-      hc->avail_skey = SKey;
-      Http_connect_queued_sockets(hc);
+   for (i = 0; i < n; i++) {
+      new_sd = dList_nth_data(hc->queue, i);
+
+      if (a_Web_valid(new_sd->web) && old_sd->port == new_sd->port) {
+         new_sd->SockFD = old_sd->SockFD;
+         Http_fd_map_remove_entry(old_sd->SockFD);
+         a_Klist_remove(ValidSocks, SKey);
+         dFree(old_sd);
+
+         dList_remove(hc->queue, new_sd);
+         new_sd->flags &= ~HTTP_SOCKET_QUEUED;
+         FdMapEntry_t *e = dNew0(FdMapEntry_t, 1);
+         e->fd = new_sd->SockFD;
+         e->skey = VOIDP2INT(new_sd->Info->LocalKey);
+         dList_append(fd_map, e);
+
+         a_Chain_bcb(OpSend, new_sd->Info, &new_sd->SockFD, "FD");
+         a_Chain_fcb(OpSend, new_sd->Info, &new_sd->SockFD, "FD");
+         Http_send_query(new_sd->Info, new_sd);
+         new_sd->connected_to = hc->host;
+         return;
+      }
    }
+   dClose(old_sd->SockFD);
+   Http_fd_map_remove_entry(old_sd->SockFD);
+   a_Klist_remove(ValidSocks, SKey);
+   hc->active_conns--;
+   dFree(old_sd);
 }
 
 /*
@@ -764,7 +767,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                   a_Chain_bcb(OpSend, Info, Data1, Data2);
                } else if (!strcmp(Data2, "reply_complete")) {
                   a_Chain_bfcb(OpEnd, Info, NULL, NULL);
-                  Http_socket_available(SKey);
+                  Http_socket_reuse(SKey);
                   dFree(Info);
                }
             }
@@ -821,7 +824,6 @@ static HostConnection_t *Http_host_connection_get(const char *host)
    hc = dNew0(HostConnection_t, 1);
    hc->queue = dList_new(10);
    hc->host = dStrdup(host);
-   hc->avail_skey = -1;
    dList_append(host_connections, hc);
 
    return hc;
