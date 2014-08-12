@@ -369,7 +369,8 @@ int OutOfFlowMgr::SortedFloatsVector::find (Textblock *textblock, int y,
 int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
                                                  int y, int h,
                                                  Textblock *lastGB,
-                                                 int lastExtIndex)
+                                                 int lastExtIndex,
+                                                 int *lastReturn)
 {
    DBG_OBJ_ENTER_O ("border", 0, oofm, "findFirst", "%p, %d, %d, %p, %d",
                     textblock, y, h, lastGB, lastExtIndex);
@@ -400,6 +401,11 @@ int OutOfFlowMgr::SortedFloatsVector::findFirst (Textblock *textblock,
    int last = findFloatIndex (lastGB, lastExtIndex);
    DBG_OBJ_MSGF_O ("border", 1, oofm, "last = %d", last);
    assert (last < size());
+
+   // If the caller wants to reuse this value:
+   if (lastReturn)
+      *lastReturn = last;
+
    int i = find (textblock, y, 0, last), result;
    DBG_OBJ_MSGF_O ("border", 1, oofm, "i = %d", i);
 
@@ -1907,7 +1913,8 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
                   lastGB, lastExtIndex);
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
-   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
+   int last;   
+   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, &last);
 
    DBG_OBJ_MSGF ("border", 1, "first = %d", first);
 
@@ -1921,8 +1928,10 @@ int OutOfFlowMgr::getBorder (Textblock *textblock, Side side, int y, int h,
       // which the widest has to be choosen.
       int border = 0;
       bool covers = true;
-      // TODO Also check against lastGB and lastExtIndex
-      for (int i = first; covers && i < list->size(); i++) {
+
+      // We are not searching until the end of the list, but until the
+      // float defined by lastGB and lastExtIndex.
+      for (int i = first; covers && i <= last; i++) {
          Float *vloat = list->get(i);
          covers = vloat->covers (textblock, y, h);
          DBG_OBJ_MSGF ("border", 1, "float %d (%p) covers? %s.",
@@ -2019,7 +2028,7 @@ bool OutOfFlowMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
                   lastGB, lastExtIndex);
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
-   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
+   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, NULL);
 
    DBG_OBJ_MSGF ("border", 1, "first = %d", first);
    DBG_OBJ_LEAVE ();
@@ -2047,7 +2056,7 @@ int OutOfFlowMgr::getFloatHeight (Textblock *textblock, Side side, int y, int h,
                   lastGB, lastExtIndex);
 
    SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
-   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex);
+   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, NULL);
    assert (first != -1);   /* This method must not be called when there is no
                               float on the respective side. */
 
