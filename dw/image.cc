@@ -179,6 +179,7 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
    if (buffer) {
       requisition->width = buffer->getRootWidth ();
       requisition->ascent = buffer->getRootHeight ();
+      requisition->descent = 0;
    } else {
       if (altText && altText[0]) {
          if (altTextWidth == -1)
@@ -197,8 +198,7 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
 
    requisition->width += boxDiffWidth ();
    requisition->ascent += boxOffsetY ();
-
-   requisition->descent = boxRestHeight ();
+   requisition->descent += boxRestHeight ();
 
    correctRequisition (requisition, core::splitHeightPreserveDescent);
 
