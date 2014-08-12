@@ -412,9 +412,18 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    if (outOfFlowMgr) {
       int oofWidth, oofHeight;
       outOfFlowMgr->getSize (requisition, &oofWidth, &oofHeight);
-      requisition->width = misc::max (requisition->width, oofWidth);
-      if (oofHeight > requisition->ascent + requisition->descent)
-         requisition->descent = oofHeight - requisition->ascent;
+
+      // Floats must be within the *content* area, not the *margin*
+      // area (which is equivalent to the requisition /
+      // allocation). For this reason, boxRestWidth() and
+      // boxRestHeight() must be considered.
+
+      if (oofWidth + boxRestWidth () > requisition->width)
+         requisition->width = oofWidth + boxRestWidth ();
+      if (oofHeight + boxRestHeight ()
+          > requisition->ascent + requisition->descent)
+         requisition->descent =
+            oofHeight + boxRestHeight () - requisition->ascent;
    }
 
    DBG_OBJ_MSGF ("resize", 1, "final: %d * (%d + %d)",
