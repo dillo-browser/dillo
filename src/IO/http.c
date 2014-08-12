@@ -69,10 +69,15 @@ typedef struct {
  */
 typedef struct {
   char *host;
-  Dlist *active_fds;
-  int avail_fd;
+  int active_conns;
+  int avail_skey;
   Dlist *queue;
 } HostConnection_t;
+
+typedef struct {
+   int fd;
+   int skey;
+} FdMapEntry_t;
 
 static void Http_socket_enqueue(HostConnection_t *hc, SocketData_t* sock);
 static SocketData_t* Http_socket_dequeue(HostConnection_t *hc);
@@ -91,6 +96,7 @@ static DilloUrl *HTTP_Proxy = NULL;
 static char *HTTP_Proxy_Auth_base64 = NULL;
 static char *HTTP_Language_hdr = NULL;
 static Dlist *host_connections;
+static Dlist *fd_map;
 
 /*
  * Initialize proxy vars and Accept-Language header
@@ -116,6 +122,7 @@ int a_Http_init(void)
  */
 
    host_connections = dList_new(5);
+   fd_map = dList_new(20);
 
    return 0;
 }
@@ -149,11 +156,29 @@ static int Http_sock_new(void)
    return a_Klist_insert(&ValidSocks, S);
 }
 
+static int Http_fd_map_cmp(const void *v1, const void *v2)
+{
+   int fd = VOIDP2INT(v2);
+   const FdMapEntry_t *e = v1;
+
+   return (fd == e->fd) ? 0 : 1;
+}
+
+static void Http_fd_map_remove_entry(int fd)
+{
+   void *data = dList_find_custom(fd_map, INT2VOIDP(fd), Http_fd_map_cmp);
+
+   if (data) {
+      dList_remove_fast(fd_map, data);
+      dFree(data);
+   }
+}
+
 static void Http_connect_queued_sockets(HostConnection_t *hc)
 {
    bool_t all_is_well = TRUE;
    SocketData_t *sd;
-   while (dList_length(hc->active_fds) < prefs.http_max_conns &&
+   while ((hc->avail_skey != -1 || hc->active_conns < prefs.http_max_conns) &&
           (sd = Http_socket_dequeue(hc))) {
 
       sd->flags &= ~HTTP_SOCKET_QUEUED;
@@ -162,29 +187,46 @@ static void Http_connect_queued_sockets(HostConnection_t *hc)
           dFree(sd);
       } else if (a_Web_valid(sd->web)) {
          /* start connecting the socket */
-         if (hc->avail_fd != -1) {
-            sd->SockFD = hc->avail_fd;
-            hc->avail_fd = -1;
+         hc->active_conns++;
+         if (hc->avail_skey != -1) {
+            SocketData_t *avail = a_Klist_get_data(ValidSocks, hc->avail_skey);
+            sd->SockFD = avail->SockFD;
+            Http_fd_map_remove_entry(avail->SockFD);
+            a_Klist_remove(ValidSocks, hc->avail_skey);
+            hc->active_conns--;
+            dFree(avail);
+            hc->avail_skey = -1;
          } else if (Http_connect_socket(sd->Info) < 0) {
             ChainLink *Info = sd->Info;
             all_is_well = FALSE;
+            hc->active_conns--;
             MSG_BW(sd->web, 1, "ERROR: %s", dStrerror(sd->Err));
             a_Chain_bfcb(OpAbort, Info, NULL, "Both");
             Http_socket_free(VOIDP2INT(Info->LocalKey)); /* free sd */
             dFree(Info);
          }
          if (all_is_well) {
+            FdMapEntry_t *e = dNew0(FdMapEntry_t, 1);
+
+            e->fd = sd->SockFD;
+            e->skey = VOIDP2INT(sd->Info->LocalKey);
+            dList_append(fd_map, e);
+
             a_Chain_bcb(OpSend, sd->Info, &sd->SockFD, "FD");
             a_Chain_fcb(OpSend, sd->Info, &sd->SockFD, "FD");
             Http_send_query(sd->Info, sd);
             sd->connected_to = hc->host;
-            dList_append(hc->active_fds, INT2VOIDP(sd->SockFD));
          }
       }
    }
-   if (hc->avail_fd != -1) {
-      dClose(hc->avail_fd);
-      hc->avail_fd = -1;
+   if (hc->avail_skey != -1) {
+      SocketData_t *avail = a_Klist_get_data(ValidSocks, hc->avail_skey);
+      dClose(avail->SockFD);
+      Http_fd_map_remove_entry(avail->SockFD);
+      a_Klist_remove(ValidSocks, hc->avail_skey);
+      hc->active_conns--;
+      dFree(avail);
+      hc->avail_skey = -1;
    }
 }
 
@@ -203,11 +245,12 @@ static void Http_socket_free(int SKey)
       } else {
          if (S->connected_to) {
             HostConnection_t *hc = Http_host_connection_get(S->connected_to);
-            dList_remove_fast(hc->active_fds, INT2VOIDP(S->SockFD));
+            hc->active_conns--;
             Http_connect_queued_sockets(hc);
-            if (dList_length(hc->active_fds) == 0)
+            if (hc->active_conns == 0)
                Http_host_connection_remove(hc);
          }
+         Http_fd_map_remove_entry(S->SockFD);
          dFree(S);
       }
    }
@@ -623,25 +666,14 @@ static int Http_get(ChainLink *Info, void *Data1)
    return 0;
 }
 
-static void Http_make_fd_available(int fd)
+static void Http_socket_available(int SKey)
 {
-   int i, j;
+   SocketData_t *sd;
 
-   for (i = 0; i < dList_length(host_connections); i++) {
-      HostConnection_t *hc =
-         (HostConnection_t*) dList_nth_data(host_connections, i);
-
-      for (j = 0; j < dList_length(hc->active_fds); j++) {
-         void *data = dList_nth_data(hc->active_fds, j);
-
-         if (fd == VOIDP2INT(data)) {
-            _MSG("host %s ", hc->host);
-            _MSG("Shift fd %d from active to avail\n", fd);
-            dList_remove_fast (hc->active_fds, data);
-            hc->avail_fd = fd;
-            return;
-         }
-      }
+   if ((sd = a_Klist_get_data(ValidSocks, SKey))) {
+      HostConnection_t *hc = Http_host_connection_get(sd->connected_to);
+      hc->avail_skey = SKey;
+      Http_connect_queued_sockets(hc);
    }
 }
 
@@ -674,7 +706,6 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          case OpEnd:
             /* finished the HTTP query branch */
             a_Chain_bcb(OpEnd, Info, NULL, NULL);
-            Http_socket_free(SKey);
             dFree(Info);
             break;
          case OpAbort:
@@ -710,6 +741,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             break;
          case OpEnd:
             a_Chain_fcb(OpEnd, Info, NULL, NULL);
+            Http_socket_free(SKey);
             dFree(Info);
             break;
          default:
@@ -725,13 +757,14 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          case OpSend:
             if (Data2) {
                if (!strcmp(Data2, "FD")) {
-                  Info->LocalKey = INT2VOIDP(*(int*)Data1);
+                  int fd = *(int*)Data1;
+                  FdMapEntry_t *fme = dList_find_custom(fd_map, INT2VOIDP(fd),
+                                                        Http_fd_map_cmp);
+                  Info->LocalKey = INT2VOIDP(fme->skey);
                   a_Chain_bcb(OpSend, Info, Data1, Data2);
                } else if (!strcmp(Data2, "reply_complete")) {
-                  int fd = VOIDP2INT(Info->LocalKey);
-
-                  Http_make_fd_available(fd);
                   a_Chain_bfcb(OpEnd, Info, NULL, NULL);
+                  Http_socket_available(SKey);
                   dFree(Info);
                }
             }
@@ -788,8 +821,7 @@ static HostConnection_t *Http_host_connection_get(const char *host)
    hc = dNew0(HostConnection_t, 1);
    hc->queue = dList_new(10);
    hc->host = dStrdup(host);
-   hc->active_fds = dList_new(prefs.http_max_conns);
-   hc->avail_fd = -1;
+   hc->avail_skey = -1;
    dList_append(host_connections, hc);
 
    return hc;
@@ -798,9 +830,9 @@ static HostConnection_t *Http_host_connection_get(const char *host)
 static void Http_host_connection_remove(HostConnection_t *hc)
 {
     assert(dList_length(hc->queue) == 0);
+    dList_free(hc->queue);
     dList_remove_fast(host_connections, hc);
     dFree(hc->host);
-    dList_free(hc->active_fds);
     dFree(hc);
 }
 
@@ -816,6 +848,18 @@ static void Http_host_connection_remove_all()
    dList_free(host_connections);
 }
 
+static void Http_fd_map_remove_all()
+{
+   FdMapEntry_t *fme;
+   int i, n = dList_length(fd_map);
+
+   for (i = 0; i < n; i++) {
+      fme = (FdMapEntry_t *) dList_nth_data(fd_map, i);
+      dFree(fme);
+   }
+   dList_free(fd_map);
+}
+
 /*
  * Deallocate memory used by http module
  * (Call this one at exit time)
@@ -823,6 +867,7 @@ static void Http_host_connection_remove_all()
 void a_Http_freeall(void)
 {
    Http_host_connection_remove_all();
+   Http_fd_map_remove_all();
    a_Klist_free(&ValidSocks);
    a_Url_free(HTTP_Proxy);
    dFree(HTTP_Proxy_Auth_base64);
