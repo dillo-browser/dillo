@@ -155,7 +155,7 @@ private:
       int findFloatIndex (Textblock *lastGB, int lastExtIndex);
       int find (Textblock *textblock, int y, int start, int end);
       int findFirst (Textblock *textblock, int y, int h, Textblock *lastGB,
-                     int lastExtIndex);
+                     int lastExtIndex, int *lastReturn);
       int findLastBeforeSideSpanningIndex (int sideSpanningIndex);
       void put (Float *vloat);
 
