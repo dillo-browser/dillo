@@ -467,9 +467,6 @@ protected:
    bool getAdjustMinWidth () { return Table::adjustTableMinWidth; }
 
    int getAvailWidthOfChild (Widget *child, bool forceValue);
-   void correctRequisitionOfChild (core::Widget *child,
-                                   core::Requisition *requisition,
-                                   void (*splitHeightFun) (int, int*, int*));
 
    void containerSizeChangedForChildren ();
    bool affectsSizeChangeContainerChild (Widget *child);

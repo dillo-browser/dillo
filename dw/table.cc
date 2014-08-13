@@ -232,34 +232,6 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
    return width;
 }
 
-void Table::correctRequisitionOfChild (core::Widget *child,
-                                       core::Requisition *requisition,
-                                       void (*splitHeightFun) (int, int*, int*))
-{
-   // TODO Same comments as in Widget::correctRequisitionOfChild may
-   // apply here.
-
-   DBG_OBJ_ENTER ("resize", 0, "correctRequisitionOfChild",
-                  "%p, %d * (%d + %d), ...)",
-                  child, requisition->width, requisition->ascent,
-                  requisition->descent);
-
-   if (child->getStyle()->width != core::style::LENGTH_AUTO) {
-      calcCellSizes (false);
-      // The requisition is always the width of the column; the table
-      // widget is special in inforcing this, based on extremes, which
-      // may again be corrected again by CSS attributes.
-      requisition->width = calcAvailWidthForDescendant (child);
-   }
-
-   correctReqHeightOfChild (child, requisition, splitHeightFun);
-
-   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
-                 requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_LEAVE ();
-}
-
 int Table::calcAvailWidthForDescendant (Widget *child)
 {
    DBG_OBJ_ENTER ("resize", 0, "calcAvailWidthForDescendant", "%p", child);
