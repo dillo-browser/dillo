@@ -157,7 +157,9 @@ void Table::getExtremesImpl (core::Extremes *extremes)
 
 void Table::sizeAllocateImpl (core::Allocation *allocation)
 {
-   DBG_OBJ_ENTER0 ("resize", 0, "sizeAllocateImpl");
+   DBG_OBJ_ENTER ("resize", 0, "sizeAllocateImpl", "%d, %d; %d * (%d + %d)",
+                  allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
 
    calcCellSizes (true);
 

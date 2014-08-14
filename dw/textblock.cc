@@ -703,7 +703,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
 int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
-   DBG_OBJ_ENTER ("resize", 0, "Textblock//getAvailWidthOfChild", "%p, %s",
+   DBG_OBJ_ENTER ("resize", 0, "Textblock/getAvailWidthOfChild", "%p, %s",
                   child, forceValue ? "true" : "false");
 
    int width = Widget::getAvailWidthOfChild (child, forceValue);

@@ -1788,7 +1788,7 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
    *minWidth = *maxWidth = 0;
 
    SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
-
+   DBG_OBJ_MSGF ("resize.oofm", 1, "%d floats to be examined", list->size());
 
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
