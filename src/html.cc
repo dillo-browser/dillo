@@ -3763,6 +3763,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
 static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
 {
    const char *attrbuf;
+   char lang[3];
 
    if (tagsize >= 8 &&        /* length of "<t id=i>" */
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "id"))) {
@@ -3788,24 +3789,25 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
          html->styleEngine->setStyle (attrbuf);
    }
 
-   /* handle "xml:lang" and "lang" attributes */
-   int hasXmlLang = 0;
+   /* handle "xml:lang" and "lang" attributes
+    * We use only the first two chars of the value to deal with
+    * extended language tags (see http://www.rfc-editor.org/rfc/bcp/bcp47.txt)
+    */
+   memset(lang, 0, sizeof(lang));
    if (tagsize >= 14) {
       /* length of "<t xml:lang=i>" */
       attrbuf = a_Html_get_attr(html, tag, tagsize, "xml:lang");
-      if (attrbuf) {
-         html->styleEngine->setNonCssHint(PROPERTY_X_LANG, CSS_TYPE_STRING,
-                                          attrbuf);
-         hasXmlLang = 1;
-      }
+      if (attrbuf)
+         strncpy(lang, attrbuf, 2);
    }
-   if (!hasXmlLang && tagsize >= 10) { /* 'xml:lang' prevails over 'lang' */
+   if (!lang[0] && tagsize >= 10) { /* 'xml:lang' prevails over 'lang' */
       /* length of "<t lang=i>" */
       attrbuf = a_Html_get_attr(html, tag, tagsize, "lang");
       if (attrbuf)
-         html->styleEngine->setNonCssHint(PROPERTY_X_LANG, CSS_TYPE_STRING,
-                                          attrbuf);
+         strncpy(lang, attrbuf, 2);
    }
+   if (lang[0])
+      html->styleEngine->setNonCssHint(PROPERTY_X_LANG, CSS_TYPE_STRING, lang);
 }
 
 /*
