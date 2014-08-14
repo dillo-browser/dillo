@@ -829,7 +829,6 @@ public:
    inline void oofSizeChanged (bool extremesChanged) {
       DBG_OBJ_ENTER ("resize", 0, "oofSizeChanged", "%s",
                      extremesChanged ? "true" : "false");
-      DBG_OBJ_MSG_START ();
       queueResize (-1, extremesChanged);
       DBG_OBJ_LEAVE ();
    }
