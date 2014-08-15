@@ -3054,8 +3054,10 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
       if (word->content.type == core::Content::WIDGET_IN_FLOW &&
           word->content.widget->instanceOf (Textblock::CLASS_ID) &&
           // Exclude inline blocks (see definition of float container).
-          word->content.widget->getStyle()->display
-          == core::style::DISPLAY_BLOCK) {
+          (word->content.widget->getStyle()->display
+              == core::style::DISPLAY_BLOCK ||
+           word->content.widget->getStyle()->display
+           == core::style::DISPLAY_LIST_ITEM)) {
          //printf ("   word %d: ", firstWord);
          //printWordShort (word);
          //printf ("\n");
