@@ -739,6 +739,25 @@ void Textblock::containerSizeChangedForChildren ()
    DBG_OBJ_LEAVE ();
 }
 
+bool Textblock::affectsSizeChangeContainerChild (Widget *child)
+{
+   DBG_OBJ_ENTER ("resize", 0,
+                  "Textblock/affectsSizeChangeContainerChild", "%p", child);
+
+   // See Textblock::getAvailWidthForChild() and Textblock::oofSizeChanged():
+   // Extremes changes affect the size of the child, too:
+   bool ret;
+   if (!mustBeWidenedToAvailWidth () &&
+       (extremesQueued () || extremesChanged ()))
+      ret = true;
+   else
+      ret = Widget::affectsSizeChangeContainerChild (child);
+
+   DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
+   DBG_OBJ_LEAVE ();
+   return ret;
+}
+
 bool Textblock::usesAvailWidth ()
 {
    return true;
@@ -2991,6 +3010,20 @@ void Textblock::borderChanged (int y, Widget *vloat)
       //            lineYOffsetWidget (lines->getRef (realWrapLineIndex)));
       //DBG_OBJ_SET_NUM ("redrawY", redrawY);
    }
+
+   DBG_OBJ_LEAVE ();
+}
+
+void Textblock::oofSizeChanged (bool extremesChanged)
+{
+   DBG_OBJ_ENTER ("resize", 0, "oofSizeChanged", "%s",
+                  extremesChanged ? "true" : "false");
+   queueResize (-1, extremesChanged);
+
+   // See Textblock::getAvailWidthForChild(): Extremes changes may become also
+   // relevant for the children, under certain conditions:
+   if (extremesChanged && !mustBeWidenedToAvailWidth ())
+      containerSizeChanged ();
 
    DBG_OBJ_LEAVE ();
 }

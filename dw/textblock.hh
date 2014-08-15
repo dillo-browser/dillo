@@ -751,6 +751,7 @@ protected:
    void sizeAllocateImpl (core::Allocation *allocation);
    int getAvailWidthOfChild (Widget *child, bool forceValue);
    void containerSizeChangedForChildren ();
+   bool affectsSizeChangeContainerChild (Widget *child);
    bool usesAvailWidth ();
    void resizeDrawImpl ();
 
@@ -826,12 +827,7 @@ public:
                          bool includeFirstSpace, bool includeLastSpace);
 
    void borderChanged (int y, core::Widget *vloat);
-   inline void oofSizeChanged (bool extremesChanged) {
-      DBG_OBJ_ENTER ("resize", 0, "oofSizeChanged", "%s",
-                     extremesChanged ? "true" : "false");
-      queueResize (-1, extremesChanged);
-      DBG_OBJ_LEAVE ();
-   }
+   void oofSizeChanged (bool extremesChanged);
    inline int getLineBreakWidth () { return lineBreakWidth; }
 };
 
