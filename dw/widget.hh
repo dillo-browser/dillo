@@ -432,7 +432,9 @@ public:
                             void (*splitHeightFun) (int, int*, int*));
    void correctExtremes (Extremes *extremes);
    int calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
-                  int minWidth);
+                  int limitMinWidth);
+   void calcFinalWidth (style::Style *style, int refWidth, Widget *refWidget,
+                        int limitMinWidth, int *finalWidth);
    int calcHeight (style::Length cssValue, bool usePercentage, int refHeight,
                    Widget *refWidget);
 
