@@ -432,11 +432,11 @@ public:
                             void (*splitHeightFun) (int, int*, int*));
    void correctExtremes (Extremes *extremes);
    int calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
-                  int limitMinWidth);
+                  int limitMinWidth, bool forceValue);
    void calcFinalWidth (style::Style *style, int refWidth, Widget *refWidget,
-                        int limitMinWidth, int *finalWidth);
+                        int limitMinWidth, bool forceValue, int *finalWidth);
    int calcHeight (style::Length cssValue, bool usePercentage, int refHeight,
-                   Widget *refWidget);
+                   Widget *refWidget, bool forceValue);
 
    virtual int applyPerWidth (int containerWidth, style::Length perWidth);
    virtual int applyPerHeight (int containerHeight, style::Length perHeight);

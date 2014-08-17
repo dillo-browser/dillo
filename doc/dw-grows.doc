@@ -89,6 +89,45 @@ The rules for the calculation:
    <b>Notice:</b> Currently, dw::core::Widget::getExtremesImpl must
    set all four members in dw::core::Extremes; this may change.</div>
 
+
+Rules for *new* methods related to resizing
+===========================================
+
+- Of course, *sizeRequestImpl* may (should) call *correctRequisition*,
+  and *getExtremesImpl* may (should) call *correctExtremes*.
+
+- *sizeRequestImpl* (and *correctRequisition*) is allowed to call
+  *getAvailWidth* and *getAvailHeight* with *forceValue* set, but
+  *getExtremesImpl* (and *correctExtremes*) is allowed to call these
+  only with *forceValue* unset.
+
+- For this reason, *sizeRequestImpl* is indeed allowed to call
+  *getExtremes* (dw::Table does so), but the opposite
+  (*getExtremesImpl* calling *sizeRequest*) is not allowed
+  anymore. (Before GROWS, the standard implementation
+  dw::core::Widget::getExtremesImpl did so.)
+
+- Finally, *getAvailWidth* and *getAvailHeight* may call
+  *getExtremes*, if and only if *forceValue* is set.
+
+Here is a diagram showing all permitted dependencies:
+
+\dot
+digraph G {
+   node [shape=record, fontname=Helvetica, fontsize=10, color="#c0c0c0"];
+   edge [arrowhead="open", arrowtail="none", color="#404040"];
+
+   "sizeRequest[Impl]" -> "getExtremes[Impl]";
+   "sizeRequest[Impl]" -> correctRequisition;
+   "getExtremes[Impl]" -> correctExtremes;
+   "sizeRequest[Impl]" -> "getAvail[Width|Height] (true)";
+   "getExtremes[Impl]" -> "getAvail[Width|Height] (false)";
+   correctRequisition -> "getAvail[Width|Height] (true)";
+   correctExtremes -> "getAvail[Width|Height] (false)";
+   "getAvail[Width|Height] (true)" -> "getExtremes[Impl]";   
+}
+\enddot
+
 Open issues
 ===========
 
