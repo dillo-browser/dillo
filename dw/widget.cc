@@ -1570,8 +1570,8 @@ void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition)
    assert (this == child->quasiParent || this == child->container);
 
    int limitMinWidth = child->getMinWidth (NULL, true);
-   calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, false,
-                   &requisition->width);
+   child->calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, false,
+                          &requisition->width);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent,
