@@ -610,6 +610,9 @@ void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
             tb->borderChanged (minFloatPos, minFloat);
       }
 
+      checkAllocatedFloatCollisions (LEFT);
+      checkAllocatedFloatCollisions (RIGHT);
+
       // Store some information for later use.
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
               tbInfosByTextblock->iterator ();
@@ -904,6 +907,82 @@ bool OutOfFlowMgr::hasRelationChanged (bool oldTBAlloc,
    DBG_OBJ_LEAVE ();
 
    return result;
+}
+
+void OutOfFlowMgr::checkAllocatedFloatCollisions (Side side)
+{
+   // In some cases, the collision detection in tellPosition() is
+   // based on the wrong allocations. Here (just after all Floats have
+   // been allocated), we correct this.
+
+   // TODO In some cases this approach is rather slow, causing a too
+   // long queueResize() cascade.
+
+   DBG_OBJ_ENTER ("resize.oofm", 0, "checkAllocatedFloatCollisions", "%s",
+                  side == LEFT ? "LEFT" : "RIGHT");
+
+   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   SortedFloatsVector *oppList = side == LEFT ? rightFloatsCB : leftFloatsCB;
+
+   // While iterating through the list of floats to be checked, we
+   // iterate equally through the list of the opposite floats, using
+   // this index:
+   int oppIndex = 0;
+
+   for (int index = 0; index < list->size (); index++) {
+      Float *vloat = list->get(index);
+      bool needsChange = false;
+      int yRealNew = INT_MAX;
+      
+      // Same side.
+      if (index >= 1) {
+         Float *other = list->get(index - 1);
+         if (vloat->generatingBlock != other->generatingBlock) {
+            int yRealNewSame;
+            if (collidesV (vloat, other, CB, &yRealNewSame)
+                && vloat->yReal != yRealNewSame) {
+               needsChange = true;
+               yRealNew = min (yRealNew, yRealNewSame);
+            }
+         }
+      }
+
+      if (oppList->size () > 0) {     
+         // Other side. Iterate to next float on the other side,
+         // before this float.
+         while (oppIndex + 1 < oppList->size () &&
+                oppList->get(oppIndex + 1)->sideSpanningIndex
+                < vloat->sideSpanningIndex)
+            oppIndex++;
+      
+         int oppIndexTmp = oppIndex, yRealNewOpp;
+      
+         // Aproach is similar to tellPosition(); see comments
+         // there. Again, loop as long as the vertical dimensions test
+         // is positive (and, of course, there are floats), ...
+         for (bool foundColl = false;
+              !foundColl && oppIndexTmp >= 0 &&
+                 collidesV (vloat, oppList->get (oppIndexTmp), CB,
+                            &yRealNewOpp);
+              oppIndexTmp--) {
+            // ... but stop the loop as soon as the horizontal dimensions
+            // test is positive.
+            if (collidesH (vloat, oppList->get (oppIndexTmp), CB)) {
+               foundColl = true;
+               if (vloat->yReal != yRealNewOpp) {
+                  needsChange = true;
+                  yRealNew = min (yRealNew, yRealNewOpp);
+               }
+            }
+         }
+      }
+
+      if (needsChange)
+         vloat->generatingBlock->borderChanged (min (vloat->yReal, yRealNew),
+                                                vloat->getWidget ());
+   }
+   
+   DBG_OBJ_LEAVE ();
 }
 
 bool OutOfFlowMgr::doFloatsExceedCB (Side side)

@@ -286,6 +286,8 @@ private:
                             int newFlx, int newFly, int newFlw, int newFlh,
                             Side side, int *floatPos);
 
+   void checkAllocatedFloatCollisions (Side side);
+
    bool doFloatsExceedCB (Side side);
    bool haveExtremesChanged (Side side);
 
