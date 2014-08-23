@@ -937,13 +937,24 @@ void OutOfFlowMgr::checkAllocatedFloatCollisions (Side side)
       // Same side.
       if (index >= 1) {
          Float *other = list->get(index - 1);
+         DBG_OBJ_MSGF ("resize.oofm", 1,
+                       "same side: checking %p (#%d, GB: %p) against "
+                       "%p (#%d, GB: %p)",
+                       vloat->getWidget (), index, vloat->generatingBlock,
+                       other->getWidget (), index - 1, other->generatingBlock);
+
          if (vloat->generatingBlock != other->generatingBlock) {
             int yRealNewSame;
-            if (collidesV (vloat, other, CB, &yRealNewSame)
-                && vloat->yReal != yRealNewSame) {
-               needsChange = true;
-               yRealNew = min (yRealNew, yRealNewSame);
-            }
+            if (collidesV (vloat, other, CB, &yRealNewSame)) {
+               DBG_OBJ_MSGF ("resize.oofm", 1,
+                             "=> collides, new yReal = %d (old: %d)",
+                             yRealNewSame, vloat->yReal);
+               if (vloat->yReal != yRealNewSame) {
+                  needsChange = true;
+                  yRealNew = min (yRealNew, yRealNewSame);
+               }
+            } else
+               DBG_OBJ_MSG ("resize.oofm", 1, "=> no collision");
          }
       }
 
@@ -955,24 +966,43 @@ void OutOfFlowMgr::checkAllocatedFloatCollisions (Side side)
                 < vloat->sideSpanningIndex)
             oppIndex++;
       
-         int oppIndexTmp = oppIndex, yRealNewOpp;
-      
-         // Aproach is similar to tellPosition(); see comments
-         // there. Again, loop as long as the vertical dimensions test
-         // is positive (and, of course, there are floats), ...
-         for (bool foundColl = false;
-              !foundColl && oppIndexTmp >= 0 &&
-                 collidesV (vloat, oppList->get (oppIndexTmp), CB,
-                            &yRealNewOpp);
-              oppIndexTmp--) {
-            // ... but stop the loop as soon as the horizontal dimensions
-            // test is positive.
-            if (collidesH (vloat, oppList->get (oppIndexTmp), CB)) {
-               foundColl = true;
-               if (vloat->yReal != yRealNewOpp) {
-                  needsChange = true;
-                  yRealNew = min (yRealNew, yRealNewOpp);
-               }
+         if (oppList->get(oppIndex)->sideSpanningIndex
+             < vloat->sideSpanningIndex) {
+            int oppIndexTmp = oppIndex, yRealNewOpp;
+            
+            // Aproach is similar to tellPosition(); see comments
+            // there. Again, loop as long as the vertical dimensions test
+            // is positive (and, of course, there are floats), ...
+            for (bool foundColl = false;
+                 !foundColl && oppIndexTmp >= 0 &&
+                    collidesV (vloat, oppList->get (oppIndexTmp), CB,
+                               &yRealNewOpp);
+                 oppIndexTmp--) {
+               DBG_OBJ_MSGF ("resize.oofm", 1,
+                             "opposite side (after collision (v) test): "
+                             "checking %p (#%d/%d, GB: %p) against "
+                             "%p (#%d/%d, GB: %p)",
+                             vloat->getWidget (), index,
+                             vloat->sideSpanningIndex,
+                             vloat->generatingBlock,
+                             oppList->get(oppIndexTmp)->getWidget (),
+                             oppList->get(oppIndexTmp)->getIndex (CB),
+                             oppList->get(oppIndexTmp)->sideSpanningIndex,
+                             oppList->get(oppIndexTmp)->generatingBlock);
+               
+               // ... but stop the loop as soon as the horizontal dimensions
+               // test is positive.
+               if (collidesH (vloat, oppList->get (oppIndexTmp), CB)) {
+                  DBG_OBJ_MSGF ("resize.oofm", 1,
+                                "=> collides (h), new yReal = %d (old: %d)",
+                                yRealNewOpp, vloat->yReal);
+                  foundColl = true;
+                  if (vloat->yReal != yRealNewOpp) {
+                     needsChange = true;
+                     yRealNew = min (yRealNew, yRealNewOpp);
+                  }
+               } else
+                  DBG_OBJ_MSG ("resize.oofm", 1, "=> no collision (h)");
             }
          }
       }
@@ -1618,7 +1648,7 @@ bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, SFVType type,
    // vloat->yReal; never to vloat->allocation->y, even when the GBs are
    // different. Used only in tellPosition.
 
-   DBG_OBJ_ENTER ("resize.oofm", 0, "collides", "#%d [%p], #%d [%p], ...",
+   DBG_OBJ_ENTER ("resize.oofm", 0, "collidesV", "#%d [%p], #%d [%p], ...",
                   vloat->getIndex (type), vloat->getWidget (),
                   other->getIndex (type), other->getWidget ());
 
