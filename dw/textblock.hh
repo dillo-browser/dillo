@@ -749,7 +749,10 @@ protected:
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
-   int getAvailWidthOfChild (Widget *child, bool forceValue);
+
+   int getAvailWidthOfChild (core::Widget *child, bool forceValue);
+   int getAvailHeightOfChild (core::Widget *child, bool forceValue);
+
    void containerSizeChangedForChildren ();
    bool affectsSizeChangeContainerChild (Widget *child);
    bool usesAvailWidth ();

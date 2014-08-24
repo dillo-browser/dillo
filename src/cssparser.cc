@@ -218,7 +218,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"font-weight", {CSS_TYPE_ENUM, CSS_TYPE_FONT_WEIGHT, CSS_TYPE_UNUSED},
     Css_font_weight_enum_vals},
    {"height", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_AUTO, CSS_TYPE_UNUSED}, NULL},
-   {"left", {CSS_TYPE_UNUSED}, NULL},
+   {"left", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_UNUSED}, NULL},
    {"letter-spacing", {CSS_TYPE_ENUM, CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED},
     Css_letter_spacing_enum_vals},
    {"line-height",

@@ -708,12 +708,16 @@ int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
 
    int width = Widget::getAvailWidthOfChild (child, forceValue);
 
-   if (forceValue && this == child->getContainer () &&
-       !mustBeWidenedToAvailWidth ()) {
-      core::Extremes extremes;
-      getExtremes (&extremes);
-      if (width > extremes.maxWidth)
-         width = extremes.maxWidth;
+   if (outOfFlowMgr && outOfFlowMgr->dealingWithSizeOfChild (child))
+      width = outOfFlowMgr->getAvailWidthOfChild (child, forceValue);
+   else {
+      if (forceValue && this == child->getContainer () &&
+          !mustBeWidenedToAvailWidth ()) {
+         core::Extremes extremes;
+         getExtremes (&extremes);
+         if (width > extremes.maxWidth)
+            width = extremes.maxWidth;
+      }
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
@@ -721,7 +725,13 @@ int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
    return width;
 }
 
-
+int Textblock::getAvailHeightOfChild (core::Widget *child, bool forceValue)
+{
+   if (outOfFlowMgr && outOfFlowMgr->dealingWithSizeOfChild (child))
+      return outOfFlowMgr->getAvailHeightOfChild (child, forceValue);
+   else
+      return Widget::getAvailHeightOfChild (child, forceValue);
+}
 
 void Textblock::containerSizeChangedForChildren ()
 {

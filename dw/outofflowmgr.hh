@@ -214,18 +214,6 @@ private:
       inline Textblock *getTextblock () { return (Textblock*)getWidget (); }
    };
 
-   class AbsolutelyPositioned: public lout::object::Object
-   {
-   public:
-      core::Widget *widget;
-      int xCB, yCB; // relative to the containing block
-      int width, height;
-      bool dirty;
-
-      AbsolutelyPositioned (OutOfFlowMgr *oofm, core::Widget *widget,
-                            Textblock *generatingBlock, int externalIndex);
-   };
-
    // These two lists store all floats, in the order in which they are
    // defined. Only used for iterators.
    lout::container::typed::Vector<Float> *leftFloatsAll, *rightFloatsAll;
@@ -245,7 +233,7 @@ private:
    lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
                                      TBInfo> *tbInfosByTextblock;
 
-   lout::container::typed::Vector<AbsolutelyPositioned> *absolutelyPositioned;
+   lout::container::typed::Vector<core::Widget> *absolutelyPositioned;
 
    int lastLeftTBIndex, lastRightTBIndex, leftFloatsMark, rightFloatsMark;
 
@@ -331,12 +319,18 @@ private:
                                      int *height);
    void getAbsolutelyPositionedExtremes (core::Extremes *cbExtr, int *minWidth,
                                          int *maxWidth);
-   void ensureAbsolutelyPositionedSizeAndPosition (AbsolutelyPositioned
-                                                   *abspos);
-   int calcValueForAbsolutelyPositioned (AbsolutelyPositioned *abspos,
-                                         core::style::Length styleLen,
-                                         int refLen);
    void sizeAllocateAbsolutelyPositioned ();
+
+   inline int getAbsPosLeft (core::Widget *child, int availWidth)
+   { return getAbsPosBorder (child->getStyle()->left, availWidth); }
+   inline int getAbsPosRight (core::Widget *child, int availWidth)
+   { return getAbsPosBorder (child->getStyle()->right, availWidth); }
+   inline int getAbsPosTop (core::Widget *child, int availHeight)
+   { return getAbsPosBorder (child->getStyle()->top, availHeight); }
+   inline int getAbsPosBottom (core::Widget *child, int availHeight)
+   { return getAbsPosBorder (child->getStyle()->bottom, availHeight); }
+
+   int getAbsPosBorder (core::style::Length cssValue, int refLength);
 
    static inline bool isWidgetFloat (core::Widget *widget)
    { return widget->getStyle()->vloat != core::style::FLOAT_NONE; }
@@ -438,6 +432,12 @@ public:
 
    int getClearPosition (Textblock *tb);
 
+   inline bool dealingWithSizeOfChild (core::Widget *child)
+   { return isWidgetAbsolutelyPositioned (child); }
+
+   int getAvailWidthOfChild (core::Widget *child, bool forceValue);
+   int getAvailHeightOfChild (core::Widget *child, bool forceValue);
+
    inline static bool isRefOutOfFlow (int ref)
    { return ref != -1 && (ref & 1) != 0; }
    inline static int createRefNormalFlow (int lineNo) { return lineNo << 1; }
@@ -456,7 +456,7 @@ public:
          return rightFloatsAll->get(i - leftFloatsAll->size())->getWidget ();
       else
          return absolutelyPositioned->get(i - (leftFloatsAll->size() +
-                                               rightFloatsAll->size()))->widget;
+                                               rightFloatsAll->size()));
    }
 
    inline bool affectsLeftBorder (core::Widget *widget) {

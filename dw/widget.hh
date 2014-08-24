@@ -292,8 +292,6 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
-   int getMinWidth (Extremes *extremes, bool forceValue);
-
    virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
    virtual int getAvailHeightOfChild (Widget *child, bool forceValue);
    virtual void correctRequisitionOfChild (Widget *child,
@@ -440,6 +438,8 @@ public:
 
    virtual int applyPerWidth (int containerWidth, style::Length perWidth);
    virtual int applyPerHeight (int containerHeight, style::Length perHeight);
+
+   int getMinWidth (Extremes *extremes, bool forceValue);
 
    virtual bool isBlockLevel ();
    virtual bool isPossibleContainer ();

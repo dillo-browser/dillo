@@ -472,16 +472,6 @@ void OutOfFlowMgr::TBInfo::updateAllocation ()
    DBG_OBJ_LEAVE_O (getWidget ());
 }
 
-OutOfFlowMgr::AbsolutelyPositioned::AbsolutelyPositioned (OutOfFlowMgr *oofm,
-                                                          Widget *widget,
-                                                          Textblock
-                                                          *generatingBlock,
-                                                          int externalIndex)
-{
-   this->widget = widget;
-   dirty = true;
-}
-
 OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 {
    DBG_OBJ_CREATE ("dw::OutOfFlowMgr");
@@ -509,7 +499,9 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    leftFloatsMark = rightFloatsMark = 0;
    lastLeftTBIndex = lastRightTBIndex = 0;
 
-   absolutelyPositioned = new Vector<AbsolutelyPositioned> (1, true);
+   absolutelyPositioned = new Vector<Widget> (1, false);
+
+   DBG_OBJ_SET_NUM ("absolutelyPositioned.size", absolutelyPositioned->size());
 
    containingBlockWasAllocated = containingBlock->wasAllocated ();
    containingBlockAllocation = *(containingBlock->getAllocation());
@@ -595,6 +587,8 @@ void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
       sizeAllocateFloats (LEFT, leftFloatsCB->size () - 1);
       sizeAllocateFloats (RIGHT, rightFloatsCB->size () - 1);
 
+      sizeAllocateAbsolutelyPositioned ();
+
       // Check changes of both textblocks and floats allocation. (All
       // is checked by hasRelationChanged (...).)
       for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
@@ -661,7 +655,7 @@ void OutOfFlowMgr::containerSizeChangedForChildren ()
    for (int i = 0; i < rightFloatsAll->size (); i++)
       rightFloatsAll->get(i)->getWidget()->containerSizeChanged ();
    for (int i = 0; i < absolutelyPositioned->size(); i++)
-      absolutelyPositioned->get(i)->widget->containerSizeChanged ();
+      absolutelyPositioned->get(i)->containerSizeChanged ();
 
    DBG_OBJ_LEAVE ();
 }
@@ -1260,9 +1254,14 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
 
 void OutOfFlowMgr::draw (View *view, Rectangle *area)
 {
+   DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
+                  area->x, area->y, area->width, area->height);
+
    drawFloats (leftFloatsCB, view, area);
    drawFloats (rightFloatsCB, view, area);
    drawAbsolutelyPositioned (view, area);
+
+   DBG_OBJ_LEAVE ();
 }
 
 void OutOfFlowMgr::drawFloats (SortedFloatsVector *list, View *view,
@@ -1282,10 +1281,10 @@ void OutOfFlowMgr::drawFloats (SortedFloatsVector *list, View *view,
 void OutOfFlowMgr::drawAbsolutelyPositioned (View *view, Rectangle *area)
 {
    for (int i = 0; i < absolutelyPositioned->size(); i++) {
-      AbsolutelyPositioned *abspos = absolutelyPositioned->get(i);
+      Widget *child = absolutelyPositioned->get(i);
       Rectangle childArea;
-      if (abspos->widget->intersects (area, &childArea))
-         abspos->widget->draw (view, &childArea);
+      if (child->intersects (area, &childArea))
+         child->draw (view, &childArea);
    }
 }
 
@@ -1309,8 +1308,7 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (Widget *widget)
 bool OutOfFlowMgr::isWidgetHandledByOOFM (Widget *widget)
 {
    // May be extended for fixed (and relative?) positions.
-   return isWidgetFloat (widget);
-   // TODO temporary disabled: || isWidgetAbsolutelyPositioned (widget);
+   return isWidgetFloat (widget) || isWidgetAbsolutelyPositioned (widget);
 }
 
 void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock,
@@ -1416,12 +1414,13 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
 
       floatsByWidget->put (new TypedPointer<Widget> (widget), vloat);
    } else if (isWidgetAbsolutelyPositioned (widget)) {
-      AbsolutelyPositioned *abspos =
-         new AbsolutelyPositioned (this, widget, generatingBlock,
-                                   externalIndex);
-      absolutelyPositioned->put (abspos);
+      absolutelyPositioned->put (widget);
       widget->parentRef =
          createRefAbsolutelyPositioned (absolutelyPositioned->size() - 1);
+      DBG_OBJ_SET_NUM ("absolutelyPositioned.size",
+                       absolutelyPositioned->size());
+      DBG_OBJ_ARRSET_NUM ("absolutelyPositioned",
+                          absolutelyPositioned->size() - 1, widget);
    } else
       // May be extended.
       assertNotReached();
@@ -1492,8 +1491,7 @@ void OutOfFlowMgr::markSizeChange (int ref)
       // differentiates many special cases), but the size is not known yet,
       vloat->generatingBlock->borderChanged (vloat->yReal, vloat->getWidget ());
    } else if (isRefAbsolutelyPositioned (ref)) {
-      int i = getAbsolutelyPositionedIndexFromRef (ref);
-      absolutelyPositioned->get(i)->dirty = true;
+      // Nothing to do.
    } else
       assertNotReached();
 
@@ -1537,10 +1535,9 @@ Widget *OutOfFlowMgr::getAbsolutelyPositionedWidgetAtPoint (int x, int y,
                                                             int level)
 {
    for (int i = 0; i < absolutelyPositioned->size(); i++) {
-      AbsolutelyPositioned *abspos = absolutelyPositioned->get(i);
-      if (abspos->widget->wasAllocated ()) {
-         Widget *childAtPoint =
-            abspos->widget->getWidgetAtPoint (x, y, level + 1);
+      Widget *child = absolutelyPositioned->get(i);
+      if (child->wasAllocated ()) {
+         Widget *childAtPoint = child->getWidgetAtPoint (x, y, level + 1);
          if (childAtPoint)
             return childAtPoint;
       }
@@ -2300,11 +2297,64 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
    DBG_OBJ_LEAVE ();
 }
 
+int OutOfFlowMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
+{
+   DBG_OBJ_ENTER ("resize.oofm", 0,
+                  "OutOfFlowMgr/getAvailWidthOfChild", "%p, %s",
+                  child, forceValue ? "true" : "false");
+
+   int width;
+
+   if (child->getStyle()->width == style::LENGTH_AUTO &&
+       child->getStyle()->minWidth == style::LENGTH_AUTO &&
+       child->getStyle()->maxWidth == style::LENGTH_AUTO) {
+      // TODO This should (perhaps?) only used when 'width' is undefined.
+      // TODO Is "boxDiffWidth()" correct here?
+      DBG_OBJ_MSG ("resize.oofm", 1, "no specification");
+      if (forceValue) {
+         int availWidth = containingBlock->getAvailWidth (true);
+         width = max (availWidth - containingBlock->boxDiffWidth ()
+                      - getAbsPosLeft (child, availWidth)
+                      - getAbsPosRight (child, availWidth),
+                      0);
+      } else
+         width = -1;
+   } else
+      // TODO Percentage widths must refer to padding area.
+      child->calcFinalWidth (child->getStyle(), -1, containingBlock, 0,
+                             forceValue, &width);
+
+   if (width != -1)
+      width = max (width, child->getMinWidth (NULL, forceValue));
+
+   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", width);
+   DBG_OBJ_LEAVE ();
+
+   return width;  
+}
+
+int OutOfFlowMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
+{
+   // TODO
+   return -1;
+}
+
 void OutOfFlowMgr::getAbsolutelyPositionedSize (Requisition *cbReq, int *width,
                                                 int *height)
 {
    // TODO
    *width = *height = 0;
+}
+
+int OutOfFlowMgr::getAbsPosBorder (style::Length cssValue, int refLength)
+{
+   if (style::isAbsLength (cssValue))
+      return style::absLengthVal (cssValue);
+   else if (style::isPerLength (cssValue))
+      return style::multiplyWithPerLength (refLength, cssValue);
+   else
+      // standard value for 'left', 'right', 'top', 'bottom':
+      return 0;
 }
 
 void OutOfFlowMgr::getAbsolutelyPositionedExtremes (Extremes *cbExtr,
@@ -2315,48 +2365,56 @@ void OutOfFlowMgr::getAbsolutelyPositionedExtremes (Extremes *cbExtr,
    *minWidth = *maxWidth = 0;
 }
 
-void OutOfFlowMgr::ensureAbsolutelyPositionedSizeAndPosition
-   (AbsolutelyPositioned *abspos)
-{
-   // TODO
-   assertNotReached ();
-}
-
-int OutOfFlowMgr::calcValueForAbsolutelyPositioned
-   (AbsolutelyPositioned *abspos, Length styleLen, int refLen)
-{
-   assert (styleLen != LENGTH_AUTO);
-   if (isAbsLength (styleLen))
-      return absLengthVal (styleLen);
-   else if (isPerLength (styleLen))
-      return multiplyWithPerLength (refLen, styleLen);
-   else {
-      assertNotReached ();
-      return 0; // compiler happiness
-   }
-}
-
 void OutOfFlowMgr::sizeAllocateAbsolutelyPositioned ()
 {
+   DBG_OBJ_ENTER0 ("resize.oofm", 0, "sizeAllocateAbsolutelyPositioned");
+
    for (int i = 0; i < absolutelyPositioned->size(); i++) {
       Allocation *cbAllocation = getAllocation (containingBlock);
-      AbsolutelyPositioned *abspos = absolutelyPositioned->get (i);
-      ensureAbsolutelyPositionedSizeAndPosition (abspos);
+      Widget *child = absolutelyPositioned->get (i);
+
+      Requisition childRequisition;
+      child->sizeRequest (&childRequisition);
 
       Allocation childAllocation;
-      childAllocation.x = cbAllocation->x + abspos->xCB;
-      childAllocation.y = cbAllocation->y + abspos->yCB;
-      childAllocation.width = abspos->width;
-      childAllocation.ascent = abspos->height;
-      childAllocation.descent = 0; // TODO
 
-      abspos->widget->sizeAllocate (&childAllocation);
+      childAllocation.x =
+         cbAllocation->x + getAbsPosLeft (child, cbAllocation->width);
+      childAllocation.y =
+         cbAllocation->y + getAbsPosTop (child, cbAllocation->ascent
+                                         + cbAllocation->descent);
+      // TODO (i) Consider {min|max}-{width|heigt}. (ii) Clarify where
+      // sizes refer to. (iii) Height is always apportioned to descent
+      // (ascent is preserved), which makes sense when the children
+      // are textblocks. (iv) Consider minimal length?
 
-      printf ("[%p] allocating child %p at: (%d, %d), %d x (%d + %d)\n",
-              containingBlock, abspos->widget, childAllocation.x,
-              childAllocation.y, childAllocation.width, childAllocation.ascent,
-              childAllocation.descent);
+      if (style::isAbsLength (child->getStyle()->width))
+         childAllocation.width = style::absLengthVal (child->getStyle()->width);
+      else if (style::isPerLength (child->getStyle()->width))
+         childAllocation.width =
+            style::multiplyWithPerLength (cbAllocation->width,
+                                          child->getStyle()->width);
+      else
+          childAllocation.width = childRequisition.width;
+
+      childAllocation.ascent = childRequisition.ascent;
+      childAllocation.descent = childRequisition.descent;
+      if (style::isAbsLength (child->getStyle()->height)) {
+         int height = style::absLengthVal (child->getStyle()->height);
+         splitHeightPreserveAscent (height, &childAllocation.ascent,
+                                    &childAllocation.descent);
+      } else if (style::isPerLength (child->getStyle()->height)) {
+         int height = style::multiplyWithPerLength (cbAllocation->ascent
+                                                    + cbAllocation->descent,
+                                                    child->getStyle()->height);
+         splitHeightPreserveAscent (height, &childAllocation.ascent,
+                                    &childAllocation.descent);
+      }
+
+      child->sizeAllocate (&childAllocation);
    }
+   
+   DBG_OBJ_LEAVE ();
 }
 
 } // namespace dw
