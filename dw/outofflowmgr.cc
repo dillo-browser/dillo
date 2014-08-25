@@ -2335,8 +2335,38 @@ int OutOfFlowMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
 
 int OutOfFlowMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
 {
-   // TODO
-   return -1;
+   // TODO FF shows a bit different priority for heights than for
+   // widths, in case of over-determined values.
+   
+   DBG_OBJ_ENTER ("resize.oofm", 0,
+                  "OutOfFlowMgr/getAvailHeightOfChild", "%p, %s",
+                  child, forceValue ? "true" : "false");
+
+   int height;
+
+   if (child->getStyle()->height == style::LENGTH_AUTO &&
+       child->getStyle()->minHeight == style::LENGTH_AUTO &&
+       child->getStyle()->maxHeight == style::LENGTH_AUTO) {
+      // TODO This should (perhaps?) only used when 'height' is undefined.
+      // TODO Is "boxDiffHeight()" correct here?
+      DBG_OBJ_MSG ("resize.oofm", 1, "no specification");
+      if (forceValue) {
+         int availHeight = containingBlock->getAvailHeight (true);
+         height = max (availHeight - containingBlock->boxDiffHeight ()
+                      - getAbsPosTop (child, availHeight)
+                      - getAbsPosBottom (child, availHeight),
+                      0);
+      } else
+         height = -1;
+   } else
+      // TODO Percentage heights must refer to padding area.
+      height = child->calcHeight (child->getStyle()->height, true, -1,
+                                  containingBlock, forceValue);
+
+   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", height);
+   DBG_OBJ_LEAVE ();
+
+   return height;  
 }
 
 void OutOfFlowMgr::getAbsolutelyPositionedSize (Requisition *cbReq, int *width,
@@ -2369,8 +2399,13 @@ void OutOfFlowMgr::sizeAllocateAbsolutelyPositioned ()
 {
    DBG_OBJ_ENTER0 ("resize.oofm", 0, "sizeAllocateAbsolutelyPositioned");
 
+   Allocation *cbAllocation = getAllocation (containingBlock);
+   //int refWidth = containingBlock->getAvailWidth (true);
+   //int refHeight = containingBlock->getAvailHeight (true);
+   int refWidth = cbAllocation->width;
+   int refHeight = cbAllocation->ascent + cbAllocation->descent;
+
    for (int i = 0; i < absolutelyPositioned->size(); i++) {
-      Allocation *cbAllocation = getAllocation (containingBlock);
       Widget *child = absolutelyPositioned->get (i);
 
       Requisition childRequisition;
@@ -2378,11 +2413,8 @@ void OutOfFlowMgr::sizeAllocateAbsolutelyPositioned ()
 
       Allocation childAllocation;
 
-      childAllocation.x =
-         cbAllocation->x + getAbsPosLeft (child, cbAllocation->width);
-      childAllocation.y =
-         cbAllocation->y + getAbsPosTop (child, cbAllocation->ascent
-                                         + cbAllocation->descent);
+      childAllocation.x = cbAllocation->x + getAbsPosLeft (child, refWidth);
+      childAllocation.y = cbAllocation->y + getAbsPosTop (child, refHeight);
       // TODO (i) Consider {min|max}-{width|heigt}. (ii) Clarify where
       // sizes refer to. (iii) Height is always apportioned to descent
       // (ascent is preserved), which makes sense when the children
@@ -2392,8 +2424,7 @@ void OutOfFlowMgr::sizeAllocateAbsolutelyPositioned ()
          childAllocation.width = style::absLengthVal (child->getStyle()->width);
       else if (style::isPerLength (child->getStyle()->width))
          childAllocation.width =
-            style::multiplyWithPerLength (cbAllocation->width,
-                                          child->getStyle()->width);
+            style::multiplyWithPerLength (refWidth, child->getStyle()->width);
       else
           childAllocation.width = childRequisition.width;
 
@@ -2404,8 +2435,7 @@ void OutOfFlowMgr::sizeAllocateAbsolutelyPositioned ()
          splitHeightPreserveAscent (height, &childAllocation.ascent,
                                     &childAllocation.descent);
       } else if (style::isPerLength (child->getStyle()->height)) {
-         int height = style::multiplyWithPerLength (cbAllocation->ascent
-                                                    + cbAllocation->descent,
+         int height = style::multiplyWithPerLength (refHeight,
                                                     child->getStyle()->height);
          splitHeightPreserveAscent (height, &childAllocation.ascent,
                                     &childAllocation.descent);
