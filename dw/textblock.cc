@@ -591,9 +591,12 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             /* Commented lines break the n2 and n3 test cases at
              * http://www.dillo.org/test/img/ */
             childAllocation.y =
-               lineYOffsetCanvasAllocation (line, allocation)
-               + (line->boxAscent - word->size.ascent)
-               - word->content.widget->getStyle()->margin.top;
+               misc::max (lineYOffsetCanvasAllocation (line, allocation)
+                          + (line->boxAscent - word->size.ascent)
+                          - word->content.widget->getStyle()->margin.top,
+                          // Should not exceed the top padding/border/margin
+                          // (could cause CPU hogging in some cases) ...
+                          boxOffsetY ());
 
             DBG_OBJ_MSG_START ();
             DBG_OBJ_MSGF ("resize", 1,
