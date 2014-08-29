@@ -259,6 +259,20 @@ int Table::calcAvailWidthForDescendant (Widget *child)
             for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
                width += colWidths->get (col + i);
             width = misc::max (width, 0);
+
+            if (child != actualChild) {
+               // For table cells (direct children: child == actualChild),
+               // CSS 'width' is already regarded in the column calculation.
+               // However, for children of the table cells, CSS 'width' must
+               // be regarded here.
+
+               int corrWidth = width;
+               child->calcFinalWidth (child->getStyle(), -1, this, 0, true,
+                                      &corrWidth);
+
+               // But better not exceed it ... (TODO: Only here?)
+               width = misc::min (width, corrWidth);
+            }
          }
       }
    }

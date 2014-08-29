@@ -475,6 +475,9 @@ protected:
 
    friend class TextblockIterator;
 
+   // See sizeAllocateImpl for details. It is also used elsewhere.
+   core::Allocation childBaseAllocation;
+
    /* These fields provide some ad-hoc-functionality, used by sub-classes. */
    bool hasListitemValue; /* If true, the first word of the page is treated
                           specially (search in source). */
@@ -637,24 +640,25 @@ protected:
       return getTextblockForLine (lineNo) == NULL;
    }
 
-   inline int lineYOffsetWidgetAllocation (Line *line,
-                                           core::Allocation *allocation)
+   inline int _lineYOffsetWidgetAllocation (Line *line,
+                                            core::Allocation *allocation)
    {
       return line->top + (allocation->ascent - lines->getRef(0)->boxAscent);
    }
 
    inline int lineYOffsetWidget (Line *line)
    {
-      return lineYOffsetWidgetAllocation (line, &allocation);
+      return _lineYOffsetWidgetAllocation (line, &childBaseAllocation);
    }
 
    /**
-    * Like lineYOffsetCanvas, but with the allocation as parameter.
+    * Like lineYOffsetCanvas, but with the allocation as parameter. Rarely used
+    * outside of lineYOffsetCanvas.
     */
-   inline int lineYOffsetCanvasAllocation (Line *line,
+   inline int _lineYOffsetCanvasAllocation (Line *line,
                                            core::Allocation *allocation)
    {
-      return allocation->y + lineYOffsetWidgetAllocation (line, allocation);
+      return allocation->y + _lineYOffsetWidgetAllocation (line, allocation);
    }
 
    /**
@@ -662,7 +666,7 @@ protected:
     */
    inline int lineYOffsetCanvas (Line *line)
    {
-      return lineYOffsetCanvasAllocation(line, &allocation);
+      return _lineYOffsetCanvasAllocation(line, &childBaseAllocation);
    }
 
    inline int lineYOffsetWidgetI (int lineIndex)
@@ -673,8 +677,8 @@ protected:
    inline int lineYOffsetWidgetIAllocation (int lineIndex,
                                             core::Allocation *allocation)
    {
-      return lineYOffsetWidgetAllocation (lines->getRef (lineIndex),
-                                          allocation);
+      return _lineYOffsetWidgetAllocation (lines->getRef (lineIndex),
+                                           allocation);
    }
 
    inline int lineYOffsetCanvasI (int lineIndex)
