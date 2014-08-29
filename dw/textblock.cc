@@ -536,6 +536,43 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
    showMissingLines ();
 
+   // In some cases, this allocation results in child allocation which
+   // exceed the top of this allocation, which will then result in an
+   // endless resize idle cascade and CPU hogging (when floats come
+   // into play).
+   //
+   // Example:
+   // 
+   // <div id="id1" style="height: 50px">
+   //   <div id="id2">...</div>
+   // <div>
+   //
+   // Assume that the inner section, div#id2, has a height of 200px =
+   // 100px (ascent) + 100px (descent). For the outer section,
+   // div#id1, this will be initially calculated for the size, but
+   // then (because of CSS 'height') reduced to 50px = 50px (ascent) +
+   // 0px (descent). Without the following correction, the inner
+   // section (div#id2) would be allocated at 50px top of the
+   // allocation of the outer section: childAllocation->y =
+   // allocation->y - 50.
+   //
+   // For this reason, we calculat "childBaseAllocation", which will
+   // avoid this case; in the example above, the height will be 50px =
+   // 100px (ascent) - 50px (descent: negative).
+
+   core::Allocation childBaseAllocation;
+   childBaseAllocation.x = allocation->x;
+   childBaseAllocation.y = allocation->y;
+   childBaseAllocation.width = allocation->width;
+   childBaseAllocation.ascent =
+      misc::max (allocation->ascent,
+                 // Reconstruct the initial size; see
+                 // Textblock::sizeRequestImpl.
+                 (lines->size () > 0 ? lines->getRef(0)->boxAscent : 0)
+                 + verticalOffset + getStyle()->boxOffsetY ());
+   childBaseAllocation.descent =
+      allocation->ascent + allocation->descent - childBaseAllocation.ascent;
+
    if (containingBlock->outOfFlowMgr)
       containingBlock->outOfFlowMgr->sizeAllocateStart (this, allocation);
 
@@ -557,7 +594,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       // Especially for floats, allocation->width may be different
       // from the line break width, so that for centered and right
       // text, the offsets have to be recalculated again.
-      calcTextOffset (lineIndex, allocation->width);
+      calcTextOffset (lineIndex, childBaseAllocation.width);
 
       line = lines->getRef (lineIndex);
       xCursor = line->textOffset;
@@ -576,10 +613,10 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                           "allocating widget in flow: line %d, word %d",
                           lineIndex, wordIndex);
 
-            childAllocation.x = xCursor + allocation->x;
+            childAllocation.x = xCursor + childBaseAllocation.x;
 
             DBG_OBJ_MSGF ("resize", 1, "childAllocation.x = %d + %d = %d",
-                          xCursor, allocation->x, childAllocation.x);
+                          xCursor, childBaseAllocation.x, childAllocation.x);
 
             /** \todo Justification within the line is done here. */
 
@@ -591,29 +628,30 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             /* Commented lines break the n2 and n3 test cases at
              * http://www.dillo.org/test/img/ */
             childAllocation.y =
-               misc::max (lineYOffsetCanvasAllocation (line, allocation)
-                          + (line->boxAscent - word->size.ascent)
-                          - word->content.widget->getStyle()->margin.top,
-                          // Should not exceed the top padding/border/margin
-                          // (could cause CPU hogging in some cases) ...
-                          boxOffsetY ());
+               lineYOffsetCanvasAllocation (line, &childBaseAllocation)
+               + (line->boxAscent - word->size.ascent)
+               - word->content.widget->getStyle()->margin.top;
 
             DBG_OBJ_MSG_START ();
             DBG_OBJ_MSGF ("resize", 1,
                           "lineYOffsetWidgetAllocation (...) = %d + (%d - %d) "
                           "= %d",
-                          line->top, allocation->ascent,
+                          line->top, childBaseAllocation.ascent,
                           lines->getRef(0)->boxAscent,
-                          lineYOffsetWidgetAllocation  (line, allocation));
+                          lineYOffsetWidgetAllocation  (line,
+                                                        &childBaseAllocation));
             DBG_OBJ_MSGF ("resize", 1,
                           "lineYOffsetCanvasAllocation (...) = %d + %d = %d",
-                          allocation->y,
-                          lineYOffsetWidgetAllocation (line, allocation),
-                          lineYOffsetCanvasAllocation (line, allocation));
+                          childBaseAllocation.y,
+                          lineYOffsetWidgetAllocation (line,
+                                                       &childBaseAllocation),
+                          lineYOffsetCanvasAllocation (line,
+                                                       &childBaseAllocation));
             DBG_OBJ_MSG_END ();
             DBG_OBJ_MSGF ("resize", 1,
                           "childAllocation.y = %d + (%d - %d) - %d = %d",
-                          lineYOffsetCanvasAllocation (line, allocation),
+                          lineYOffsetCanvasAllocation (line,
+                                                       &childBaseAllocation),
                           line->boxAscent, word->size.ascent,
                           word->content.widget->getStyle()->margin.top,
                           childAllocation.y);
@@ -660,7 +698,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                     core::Content::BREAK)) {
 
                   int childChangedY =
-                     misc::min(childAllocation.y - allocation->y +
+                     misc::min(childAllocation.y - childBaseAllocation.y +
                         childAllocation.ascent + childAllocation.descent,
                         oldChildAllocation->y - this->allocation.y +
                         oldChildAllocation->ascent +
