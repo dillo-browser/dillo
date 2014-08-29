@@ -560,7 +560,6 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    // avoid this case; in the example above, the height will be 50px =
    // 100px (ascent) - 50px (descent: negative).
 
-   core::Allocation childBaseAllocation;
    childBaseAllocation.x = allocation->x;
    childBaseAllocation.y = allocation->y;
    childBaseAllocation.width = allocation->width;
@@ -572,6 +571,12 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                  + verticalOffset + getStyle()->boxOffsetY ());
    childBaseAllocation.descent =
       allocation->ascent + allocation->descent - childBaseAllocation.ascent;
+
+   DBG_OBJ_SET_NUM ("childBaseAllocation.x", childBaseAllocation.x);
+   DBG_OBJ_SET_NUM ("childBaseAllocation.y", childBaseAllocation.y);
+   DBG_OBJ_SET_NUM ("childBaseAllocation.width", childBaseAllocation.width);
+   DBG_OBJ_SET_NUM ("childBaseAllocation.ascent", childBaseAllocation.ascent);
+   DBG_OBJ_SET_NUM ("childBaseAllocation.descent", childBaseAllocation.descent);
 
    if (containingBlock->outOfFlowMgr)
       containingBlock->outOfFlowMgr->sizeAllocateStart (this, allocation);
@@ -627,31 +632,13 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             /* align=bottom (base line) */
             /* Commented lines break the n2 and n3 test cases at
              * http://www.dillo.org/test/img/ */
-            childAllocation.y =
-               lineYOffsetCanvasAllocation (line, &childBaseAllocation)
+            childAllocation.y = lineYOffsetCanvas (line)
                + (line->boxAscent - word->size.ascent)
                - word->content.widget->getStyle()->margin.top;
 
-            DBG_OBJ_MSG_START ();
-            DBG_OBJ_MSGF ("resize", 1,
-                          "lineYOffsetWidgetAllocation (...) = %d + (%d - %d) "
-                          "= %d",
-                          line->top, childBaseAllocation.ascent,
-                          lines->getRef(0)->boxAscent,
-                          lineYOffsetWidgetAllocation  (line,
-                                                        &childBaseAllocation));
-            DBG_OBJ_MSGF ("resize", 1,
-                          "lineYOffsetCanvasAllocation (...) = %d + %d = %d",
-                          childBaseAllocation.y,
-                          lineYOffsetWidgetAllocation (line,
-                                                       &childBaseAllocation),
-                          lineYOffsetCanvasAllocation (line,
-                                                       &childBaseAllocation));
-            DBG_OBJ_MSG_END ();
             DBG_OBJ_MSGF ("resize", 1,
                           "childAllocation.y = %d + (%d - %d) - %d = %d",
-                          lineYOffsetCanvasAllocation (line,
-                                                       &childBaseAllocation),
+                          lineYOffsetCanvas (line),
                           line->boxAscent, word->size.ascent,
                           word->content.widget->getStyle()->margin.top,
                           childAllocation.y);
@@ -734,7 +721,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
          y = allocation->y + allocation->ascent + allocation->descent;
       } else {
          Line *line = lines->getRef(findLineOfWord (anchor->wordIndex));
-         y = lineYOffsetCanvasAllocation (line, allocation);
+         y = lineYOffsetCanvas (line);
       }
       changeAnchor (anchor->name, y);
    }
@@ -1599,11 +1586,13 @@ int Textblock::findLineIndexWhenNotAllocated (int y)
 int Textblock::findLineIndexWhenAllocated (int y)
 {
    assert (wasAllocated ());
-   return findLineIndex (y, allocation.ascent);
+   return findLineIndex (y, childBaseAllocation.ascent);
 }
 
 int Textblock::findLineIndex (int y, int ascent)
 {
+   DBG_OBJ_ENTER ("events", 0, "findLineIndex", "%d, %d", y, ascent);
+
    core::Allocation alloc;
    alloc.ascent = ascent; // More is not needed.
 
@@ -1632,6 +1621,10 @@ int Textblock::findLineIndex (int y, int ascent)
     * Dw_page_find_link() --EG
     * That function has now been inlined into Dw_page_motion_notify() --JV
     */
+
+   DBG_OBJ_MSGF ("events", 1, "=> %d", low);
+   DBG_OBJ_LEAVE ();
+
    return low;
 }
 
