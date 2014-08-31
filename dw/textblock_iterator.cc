@@ -36,14 +36,16 @@ Textblock::TextblockIterator::TextblockIterator (Textblock *textblock,
    core::Iterator (textblock, mask, atEnd)
 {
    if (atEnd) {
-      // Note: either all or no OOFM is defined.
-      if (textblock->outOfFlowMgr[0]) {
-         oofmIndex = NUM_OOFM - 1;
-         index = textblock->outOfFlowMgr[NUM_OOFM - 1]->getNumWidgets();
-      } else {
-         oofmIndex = -1;
+      oofmIndex = NUM_OOFM - 1;
+      while (oofmIndex >= 0 &&
+             (textblock->outOfFlowMgr[oofmIndex] == NULL ||
+              textblock->outOfFlowMgr[oofmIndex]->getNumWidgets() == 0))
+         oofmIndex--;
+
+      if (oofmIndex >= 0)
+         index = textblock->outOfFlowMgr[oofmIndex]->getNumWidgets();
+      else
          index = textblock->words->size();
-      }
    } else {
       oofmIndex = -1;
       index = -1;
@@ -60,7 +62,7 @@ Textblock::TextblockIterator::TextblockIterator (Textblock *textblock,
    this->oofmIndex = oofmIndex;
    this->index = index;
 
-   // TODO To be completely exact, oofm should be considered here.
+   // TODO To be completely exact, oofmIndex should be considered here.
    if (index < 0)
       content.type = core::Content::START;
    else if (index >= textblock->words->size())
@@ -101,7 +103,8 @@ bool Textblock::TextblockIterator::next ()
             // End of current OOFM list reached.
             oofmIndex++;
             while (oofmIndex < NUM_OOFM &&
-                   textblock->outOfFlowMgr[oofmIndex]->getNumWidgets() == 0)
+                   (textblock->outOfFlowMgr[oofmIndex] == NULL ||
+                    textblock->outOfFlowMgr[oofmIndex]->getNumWidgets() == 0))
                oofmIndex++;
             
             if (oofmIndex == NUM_OOFM) {
@@ -120,25 +123,20 @@ bool Textblock::TextblockIterator::next ()
             content = textblock->words->getRef(index)->content;
          else {
             // End of words list reached.
-            if (textblock->outOfFlowMgr[0] == NULL) {
-               // No OOFM widgets (no OOFM at all).
+            oofmIndex = 0;
+            while (oofmIndex < NUM_OOFM &&
+                   (textblock->outOfFlowMgr[oofmIndex] == NULL ||
+                    textblock->outOfFlowMgr[oofmIndex]->getNumWidgets() == 0))
+               oofmIndex++;
+
+            if (oofmIndex == NUM_OOFM) {
                content.type = core::Content::END;
                return false;
             } else {
-               oofmIndex = 0;
-               while (oofmIndex < NUM_OOFM &&
-                      textblock->outOfFlowMgr[oofmIndex]->getNumWidgets() == 0)
-                  oofmIndex++;
-
-               if (oofmIndex == NUM_OOFM) {
-                  content.type = core::Content::END;
-                  return false;
-               } else {
-                  index = 0;
-                  content.type = core::Content::WIDGET_OOF_CONT;
-                  content.widget =
-                     textblock->outOfFlowMgr[oofmIndex]->getWidget (index);
-               }
+               index = 0;
+               content.type = core::Content::WIDGET_OOF_CONT;
+               content.widget =
+                  textblock->outOfFlowMgr[oofmIndex]->getWidget (index);
             }
          }
       }
@@ -166,7 +164,8 @@ bool Textblock::TextblockIterator::prev ()
          } else {
             oofmIndex--;
             while (oofmIndex >= 0 &&
-                   textblock->outOfFlowMgr[oofmIndex]->getNumWidgets() == 0)
+                   (textblock->outOfFlowMgr[oofmIndex] == NULL ||
+                    textblock->outOfFlowMgr[oofmIndex]->getNumWidgets() == 0))
                oofmIndex--;
 
             if (oofmIndex >= 0) {
