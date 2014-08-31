@@ -124,7 +124,7 @@ namespace dw {
  *
  * dw::Textblock makes use of incremental resizing as described in \ref
  * dw-widget-sizes. The parentRef is, for children of a dw::Textblock, simply
- * the number of the line.
+ * the number of the line. [<b>Update:</b> Incorrect; see \ref dw-out-of-flow.]
  *
  * Generally, there are three cases which may change the size of the
  * widget:
@@ -246,10 +246,57 @@ private:
 
    static const char *hyphenDrawChar;
 
-   Textblock *containingBlock;
-   OutOfFlowMgr *outOfFlowMgr;
-
 protected:
+   enum { OOFM_FLOATS, OOFM_ABSOLUTE, OOFM_FIXED, NUM_OOFM };
+   enum { PARENT_REF_OOFM_BITS = 2,
+          PARENT_REF_OOFM_MASK = (1 << PARENT_REF_OOFM_BITS) - 1 };
+
+   Textblock *containingBlock[NUM_OOFM];
+   OutOfFlowMgr *outOfFlowMgr[NUM_OOFM];
+
+   inline bool isParentRefOOF (int parentRef)
+   { return parentRef != -1 && (parentRef & PARENT_REF_OOFM_MASK); }
+
+   inline int makeParentRefInFlow (int lineNo)
+   { return (lineNo << PARENT_REF_OOFM_BITS); }
+   inline int getParentRefLineNo (int parentRef)
+   { assert (!isParentRefOOF (parentRef));
+      return parentRef >> PARENT_REF_OOFM_BITS; }
+
+   inline int makeParentRefOOF (int oofmIndex, int oofmSubRef)
+   { return (oofmSubRef << PARENT_REF_OOFM_BITS) | (oofmIndex + 1); }
+   inline int getParentRefOOFSubRef (int parentRef)
+   { assert (isParentRefOOF (parentRef));
+      return parentRef >> PARENT_REF_OOFM_BITS; }
+   inline int getParentRefOOFIndex (int parentRef)
+   { assert (isParentRefOOF (parentRef));
+      return (parentRef & PARENT_REF_OOFM_MASK) - 1; }
+   inline OutOfFlowMgr *getParentRefOutOfFlowMgr (int parentRef)
+   { return outOfFlowMgr[getParentRefOOFIndex (parentRef)]; }
+
+   inline bool isWidgetOOF (Widget *widget)
+   { return isParentRefOOF (widget->parentRef); }
+
+   inline int getWidgetLineNo (Widget *widget)
+   { return getParentRefLineNo (widget->parentRef); }
+
+   inline int getWidgetOOFSubRef (Widget *widget)
+   { return getParentRefOOFSubRef (widget->parentRef); }
+   inline int getWidgetOOFIndex (Widget *widget)
+   { return getParentRefOOFIndex (widget->parentRef); }
+   inline OutOfFlowMgr *getWidgetOutOfFlowMgr (Widget *widget)
+   { return getParentRefOutOfFlowMgr (widget->parentRef); }
+
+   static inline bool testWidgetFloat (Widget *widget)
+   { return widget->getStyle()->vloat != core::style::FLOAT_NONE; }
+   static inline bool testWidgetAbsolutelyPositioned (Widget *widget)
+   { return widget->getStyle()->position == core::style::POSITION_ABSOLUTE; }
+   static inline bool testWidgetFixedPositioned (Widget *widget)
+   { return widget->getStyle()->position == core::style::POSITION_FIXED; }
+   static inline bool testWidgetOutOfFlow (Widget *widget)
+   { return testWidgetFloat (widget) || testWidgetAbsolutelyPositioned (widget)
+         || testWidgetFixedPositioned (widget); }
+
    /**
     * \brief Implementation used for words.
     */
@@ -453,14 +500,14 @@ protected:
    class TextblockIterator: public core::Iterator
    {
    private:
-      bool oofm;
+      int oofmIndex; // -1 means in flow
       int index;
 
    public:
       TextblockIterator (Textblock *textblock, core::Content::Type mask,
                          bool atEnd);
       TextblockIterator (Textblock *textblock, core::Content::Type mask,
-                         bool oofm, int index);
+                         int oofmIndex, int index);
 
       lout::object::Object *clone();
       int compareTo(lout::object::Comparable *other);
@@ -782,11 +829,12 @@ protected:
 
    void addText0 (const char *text, size_t len, short flags,
                   core::style::Style *style, core::Requisition *size);
+   void initOutOfFlowMgrs ();
    void calcTextSizes (const char *text, size_t textLen,
                        core::style::Style *style,
                        int numBreaks, int *breakPos,
                        core::Requisition *wordSize);
-   static bool isContainingBlock (Widget *widget);
+   static bool isContainingBlock (Widget *widget, int oofmIndex);
 
    inline bool mustBeWidenedToAvailWidth () {
       DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");

@@ -191,7 +191,7 @@ int AlignedTableCell::getValue ()
 void AlignedTableCell::setMaxValue (int maxValue, int value)
 {
    line1Offset = maxValue - value;
-   queueResize (OutOfFlowMgr::createRefNormalFlow (0), true);
+   queueResize (makeParentRefInFlow (0), true);
 }
 
 } // namespace dw

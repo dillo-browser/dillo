@@ -1,7 +1,7 @@
 /*
  * Dillo Widget
  *
- * Copyright 2013-2014 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2014 Sebastian Geerken <sgeerken@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "outofflowmgr.hh"
-#include "textblock.hh"
-#include "../lout/debug.hh"
-
+#include "oofposfixedmgr.hh"
 
 namespace dw {
 
-OutOfFlowMgr::OutOfFlowMgr ()
-{
-}
-
-OutOfFlowMgr::~OutOfFlowMgr ()
+OOFPosFixedMgr::OOFPosFixedMgr (Textblock *containingBlock) :
+   OOFPositionedMgr (containingBlock)
 {
 }
 
