@@ -1200,8 +1200,8 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
       }
    }
 
-   it = new TextblockIterator (this, core::Content::maskForSelection (true),
-                               false, wordIndex);
+   it = TextblockIterator::createWordIndexIterator
+           (this, core::Content::maskForSelection (true), wordIndex);
    r = selectionHandleEvent (eventType, it, charPos, link, event);
    it->unref ();
    return r;

@@ -500,14 +500,23 @@ protected:
    class TextblockIterator: public core::Iterator
    {
    private:
-      int oofmIndex; // -1 means in flow
+      enum { NUM_SECTIONS = NUM_OOFM + 1 };
+      int sectionIndex; // 0 means in flow, otherwise OOFM index + 1
       int index;
+
+      TextblockIterator (Textblock *textblock, core::Content::Type mask,
+                         int sectionIndex, int index);
+
+      int numParts (int sectionIndex);
+      void getPart (int sectionIndex, int index, core::Content *content);
 
    public:
       TextblockIterator (Textblock *textblock, core::Content::Type mask,
                          bool atEnd);
-      TextblockIterator (Textblock *textblock, core::Content::Type mask,
-                         int oofmIndex, int index);
+
+      inline static TextblockIterator *createWordIndexIterator
+         (Textblock *textblock, core::Content::Type mask, int wordIndex)
+      { return new TextblockIterator (textblock, mask, 0, wordIndex); }
 
       lout::object::Object *clone();
       int compareTo(lout::object::Comparable *other);
@@ -856,8 +865,8 @@ public:
    static void setPenaltyEmDashRight2 (int penaltyRightEmDash2);
    static void setStretchabilityFactor (int stretchabilityFactor);
 
-   Textblock(bool limitTextWidth);
-   ~Textblock();
+   Textblock (bool limitTextWidth);
+   ~Textblock ();
 
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 
