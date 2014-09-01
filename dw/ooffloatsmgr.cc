@@ -1709,8 +1709,15 @@ void OOFFloatsMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
    getFloatsSize (cbReq, LEFT, &oofWidthtLeft, &oofHeightLeft);
    getFloatsSize (cbReq, RIGHT, &oofWidthRight, &oofHeightRight);
 
-   *oofWidth = max (oofWidthtLeft, oofWidthRight);
-   *oofHeight = max (oofHeightLeft, oofHeightRight);
+   // Floats must be within the *content* area of the containing
+   // block, not its *margin* area (which is equivalent to the
+   // requisition / allocation). For this reason, boxRestWidth() and
+   // boxRestHeight() are added here.
+   
+   *oofWidth =
+      max (oofWidthtLeft, oofWidthRight) + containingBlock->boxRestWidth ();
+   *oofHeight =
+      max (oofHeightLeft, oofHeightRight) + containingBlock->boxRestHeight ();
 
    DBG_OBJ_MSGF ("resize.oofm", 1,
                  "=> (l: %d, r: %d => %d) * (l: %d, r: %d => %d)",

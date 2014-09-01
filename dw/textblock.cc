@@ -424,17 +424,10 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
 
          outOfFlowMgr[i]->getSize (requisition, &oofWidth, &oofHeight);
 
-         // Widgets OOF must be within the *content* area, not the
-         // *margin* area (which is equivalent to the requisition /
-         // allocation). For this reason, boxRestWidth() and
-         // boxRestHeight() must be considered.
-
-         if (oofWidth + boxRestWidth () > requisition->width)
-            requisition->width = oofWidth + boxRestWidth ();
-         if (oofHeight + boxRestHeight ()
-             > requisition->ascent + requisition->descent)
-            requisition->descent =
-               oofHeight + boxRestHeight () - requisition->ascent;
+         if (oofWidth > requisition->width)
+            requisition->width = oofWidth;
+         if (oofHeight > requisition->ascent + requisition->descent)
+            requisition->descent = oofHeight - requisition->ascent;
       }
    }
 
