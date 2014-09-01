@@ -625,7 +625,7 @@ int Widget::getAvailHeight (bool forceValue)
       } else if (style::isPerLength (getStyle()->height)) {
          DBG_OBJ_MSGF ("resize", 1, "percentage height: %g%%",
                        100 * style::perLengthVal_useThisOnlyForDebugging
-                       (getStyle()->height));
+                                (getStyle()->height));
          // Notice that here -- unlike getAvailWidth() --
          // layout->hScrollbarThickness is not considered here;
          // something like canvasWidthGreater (analogue to

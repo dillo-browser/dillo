@@ -70,51 +70,24 @@ void OOFPositionedMgr::sizeAllocateEnd (Textblock *caller)
 
 void OOFPositionedMgr::sizeAllocateChildren ()
 {
-   DBG_OBJ_ENTER0 ("resize.oofm", 0, "sizeAllocateAbsolutelyPositioned");
+   DBG_OBJ_ENTER0 ("resize.oofm", 0, "sizeAllocateChildren");
 
-   //int refWidth = containingBlock->getAvailWidth (true);
-   //int refHeight = containingBlock->getAvailHeight (true);
-   int refWidth = containingBlockAllocation.width;
-   int refHeight =
-      containingBlockAllocation.ascent + containingBlockAllocation.descent;
+   int refWidth = containingBlock->getAvailWidth (true);
+   int refHeight = containingBlock->getAvailHeight (true);
 
    for (int i = 0; i < children->size(); i++) {
       Widget *child = children->get (i);
 
-      Requisition childRequisition;
-      child->sizeRequest (&childRequisition);
+      int x, y, width, ascent, descent;
+      calcPosAndSizeChildOfChild (child, refWidth, refHeight, &x, &y, &width,
+                                  &ascent, &descent);
 
       Allocation childAllocation;
-
-      childAllocation.x =
-         containingBlockAllocation.x + getAbsPosLeft (child, refWidth);
-      childAllocation.y =
-         containingBlockAllocation.y + getAbsPosTop (child, refHeight);
-      // TODO (i) Consider {min|max}-{width|heigt}. (ii) Clarify where
-      // sizes refer to. (iii) Height is always apportioned to descent
-      // (ascent is preserved), which makes sense when the children
-      // are textblocks. (iv) Consider minimal length?
-
-      if (style::isAbsLength (child->getStyle()->width))
-         childAllocation.width = style::absLengthVal (child->getStyle()->width);
-      else if (style::isPerLength (child->getStyle()->width))
-         childAllocation.width =
-            style::multiplyWithPerLength (refWidth, child->getStyle()->width);
-      else
-          childAllocation.width = childRequisition.width;
-
-      childAllocation.ascent = childRequisition.ascent;
-      childAllocation.descent = childRequisition.descent;
-      if (style::isAbsLength (child->getStyle()->height)) {
-         int height = style::absLengthVal (child->getStyle()->height);
-         splitHeightPreserveAscent (height, &childAllocation.ascent,
-                                    &childAllocation.descent);
-      } else if (style::isPerLength (child->getStyle()->height)) {
-         int height = style::multiplyWithPerLength (refHeight,
-                                                    child->getStyle()->height);
-         splitHeightPreserveAscent (height, &childAllocation.ascent,
-                                    &childAllocation.descent);
-      }
+      childAllocation.x = containingBlockAllocation.x + x;
+      childAllocation.y = containingBlockAllocation.y + y;
+      childAllocation.width = width;
+      childAllocation.ascent = ascent;
+      childAllocation.descent = descent;
 
       child->sizeAllocate (&childAllocation);
    }
@@ -256,8 +229,19 @@ void OOFPositionedMgr::getSize (Requisition *cbReq, int *oofWidth,
 {
    DBG_OBJ_ENTER0 ("resize.oofm", 0, "getSize");
 
-   // TODO
    *oofWidth = *oofHeight = 0;
+
+   int refWidth = containingBlock->getAvailWidth (true);
+   int refHeight = containingBlock->getAvailHeight (true);
+
+   for (int i = 0; i < children->size(); i++) {
+      Widget *child = children->get(i);
+      int x, y, width, ascent, descent;
+      calcPosAndSizeChildOfChild (child, refWidth, refHeight, &x, &y, &width,
+                                  &ascent, &descent);
+      *oofWidth = max (*oofWidth, x + width);
+      *oofHeight = max (*oofHeight, y + ascent + descent);
+   }      
 
    DBG_OBJ_LEAVE ();
 }
@@ -349,8 +333,8 @@ int OOFPositionedMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
       if (forceValue) {
          int availWidth = containingBlock->getAvailWidth (true);
          width = max (availWidth - containingBlock->boxDiffWidth ()
-                      - getAbsPosLeft (child, availWidth)
-                      - getAbsPosRight (child, availWidth),
+                      - getPosLeft (child, availWidth)
+                      - getPosRight (child, availWidth),
                       0);
       } else
          width = -1;
@@ -388,9 +372,9 @@ int OOFPositionedMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
       if (forceValue) {
          int availHeight = containingBlock->getAvailHeight (true);
          height = max (availHeight - containingBlock->boxDiffHeight ()
-                      - getAbsPosTop (child, availHeight)
-                      - getAbsPosBottom (child, availHeight),
-                      0);
+                       - getPosTop (child, availHeight)
+                       - getPosBottom (child, availHeight),
+                       0);
       } else
          height = -1;
    } else
@@ -404,7 +388,7 @@ int OOFPositionedMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
    return height;  
 }
 
-int OOFPositionedMgr::getAbsPosBorder (style::Length cssValue, int refLength)
+int OOFPositionedMgr::getPosBorder (style::Length cssValue, int refLength)
 {
    if (style::isAbsLength (cssValue))
       return style::absLengthVal (cssValue);
@@ -413,6 +397,55 @@ int OOFPositionedMgr::getAbsPosBorder (style::Length cssValue, int refLength)
    else
       // standard value for 'left', 'right', 'top', 'bottom':
       return 0;
+}
+
+void OOFPositionedMgr::calcPosAndSizeChildOfChild (Widget *child, int refWidth,
+                                                   int refHeight, int *x,
+                                                   int *y, int *width,
+                                                   int *ascent, int *descent)
+{
+   DBG_OBJ_ENTER ("resize.oofm", 0, "calcPosAndSizeChildOfChild",
+                  "%p, %d, %d, ...", child, refWidth, refHeight);
+
+   Requisition childRequisition;
+   child->sizeRequest (&childRequisition);
+
+   *x = getPosLeft (child, refWidth);
+   *y = getPosTop (child, refHeight);
+
+   // TODO (i) Consider {min|max}-{width|heigt}. (ii) Clarify where
+   // sizes refer to. (iii) Height is always apportioned to descent
+   // (ascent is preserved), which makes sense when the children are
+   // textblocks. (iv) Consider minimal width (getMinWidth)?
+
+   if (style::isAbsLength (child->getStyle()->width))
+      *width = style::absLengthVal (child->getStyle()->width);
+   else if (style::isPerLength (child->getStyle()->width))
+      *width = style::multiplyWithPerLength (refWidth,
+                                             child->getStyle()->width);
+   else
+      *width = childRequisition.width;
+   
+   *ascent = childRequisition.ascent;
+   *descent = childRequisition.descent;
+   if (style::isAbsLength (child->getStyle()->height)) {
+      DBG_OBJ_MSGF ("resize.oofm", 1, "absolute height: %dpx",
+                    style::absLengthVal (child->getStyle()->height));
+      int height = style::absLengthVal (child->getStyle()->height);
+      splitHeightPreserveAscent (height, ascent, descent);
+   } else if (style::isPerLength (child->getStyle()->height)) {
+      DBG_OBJ_MSGF ("resize.oofm", 1, "percentage height: %g%%",
+                    100 * style::perLengthVal_useThisOnlyForDebugging
+                             (child->getStyle()->height));
+      int height = style::multiplyWithPerLength (refHeight,
+                                                 child->getStyle()->height);
+      splitHeightPreserveAscent (height, ascent, descent);
+   } else
+      DBG_OBJ_MSG ("resize.oofm", 1, "height not specified");
+
+   DBG_OBJ_MSGF ("resize.oofm", 0, "=> %d, %d, %d * (%d + %d)",
+                 *x, *y, *width, *ascent, *descent);
+   DBG_OBJ_LEAVE ();
 }
 
 int OOFPositionedMgr::getNumWidgets ()

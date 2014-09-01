@@ -17,16 +17,19 @@ private:
    bool haveExtremesChanged ();
    void sizeAllocateChildren ();
 
-   inline int getAbsPosLeft (core::Widget *child, int availWidth)
-   { return getAbsPosBorder (child->getStyle()->left, availWidth); }
-   inline int getAbsPosRight (core::Widget *child, int availWidth)
-   { return getAbsPosBorder (child->getStyle()->right, availWidth); }
-   inline int getAbsPosTop (core::Widget *child, int availHeight)
-   { return getAbsPosBorder (child->getStyle()->top, availHeight); }
-   inline int getAbsPosBottom (core::Widget *child, int availHeight)
-   { return getAbsPosBorder (child->getStyle()->bottom, availHeight); }
+   inline int getPosLeft (core::Widget *child, int availWidth)
+   { return getPosBorder (child->getStyle()->left, availWidth); }
+   inline int getPosRight (core::Widget *child, int availWidth)
+   { return getPosBorder (child->getStyle()->right, availWidth); }
+   inline int getPosTop (core::Widget *child, int availHeight)
+   { return getPosBorder (child->getStyle()->top, availHeight); }
+   inline int getPosBottom (core::Widget *child, int availHeight)
+   { return getPosBorder (child->getStyle()->bottom, availHeight); }
 
-   int getAbsPosBorder (core::style::Length cssValue, int refLength);
+   int getPosBorder (core::style::Length cssValue, int refLength);
+   void calcPosAndSizeChildOfChild (core::Widget *child, int refWidth,
+                                    int refHeight, int *x, int *y, int *width,
+                                    int *ascent, int *descent);
 
 public:
    OOFPositionedMgr (Textblock *containingBlock);
