@@ -9,6 +9,7 @@ class OOFPosAbsMgr: public OOFPositionedMgr
 {
 public:
    OOFPosAbsMgr (Textblock *containingBlock);
+   ~OOFPosAbsMgr ();
 };
 
 } // namespace dw

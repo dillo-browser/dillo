@@ -24,6 +24,12 @@ namespace dw {
 OOFPosFixedMgr::OOFPosFixedMgr (Textblock *containingBlock) :
    OOFPositionedMgr (containingBlock)
 {
+   DBG_OBJ_CREATE ("dw::OOFPosFixedMgr");
+}
+
+OOFPosFixedMgr::~OOFPosFixedMgr ()
+{
+   DBG_OBJ_DELETE ();
 }
 
 } // namespace dw

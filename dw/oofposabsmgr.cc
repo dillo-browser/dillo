@@ -24,6 +24,12 @@ namespace dw {
 OOFPosAbsMgr::OOFPosAbsMgr (Textblock *containingBlock) :
    OOFPositionedMgr (containingBlock)
 {
+   DBG_OBJ_CREATE ("dw::OOFPosAbsMgr");
+}
+
+OOFPosAbsMgr::~OOFPosAbsMgr ()
+{
+   DBG_OBJ_DELETE ();
 }
 
 } // namespace dw
