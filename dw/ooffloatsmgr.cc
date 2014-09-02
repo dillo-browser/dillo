@@ -1036,7 +1036,7 @@ bool OOFFloatsMgr::doFloatsExceedCB (Side side)
       if (vloat->getWidget()->wasAllocated ()) {
          Allocation *fla = vloat->getWidget()->getAllocation ();
          DBG_OBJ_MSGF ("resize.oofm", 2,
-                       "Does FlA = (%d, %d, %d * %d) exceed CBA = "
+                       "Does FlA = (%d, %d, %d * %d) exceed CB req+alloc = "
                        "(%d, %d, %d * %d)?",
                        fla->x, fla->y, fla->width, fla->ascent + fla->descent,
                        containingBlockAllocation.x, containingBlockAllocation.y,

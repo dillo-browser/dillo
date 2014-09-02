@@ -107,25 +107,24 @@ void OOFPositionedMgr::containerSizeChangedForChildren ()
 
 bool OOFPositionedMgr::doChildrenExceedCB ()
 {
-   // TODO Something similar like this for positioned elements.
-
-#if 0
-   DBG_OBJ_ENTER ("resize.oofm", 0, "doFloatsExceedCB", "%s",
-                  side == LEFT ? "LEFT" : "RIGHT");
+   DBG_OBJ_ENTER0 ("resize.oofm", 0, "doChildrenExceedCB");
 
    // This method is called to determine whether the *requisition* of
-   // the CB must be recalculated. So, we check the float allocations
-   // against the *requisition* of the CB, which may (e. g. within
-   // tables) differ from the new allocation. (Generally, a widget may
-   // allocated at a different size.)
+   // the CB must be recalculated. So, we check the allocations of the
+   // children against the *requisition* of the CB, which may
+   // (e. g. within tables) differ from the new allocation.
+   // (Generally, a widget may allocated at a different size.)
    Requisition cbReq;
    containingBlock->sizeRequest (&cbReq);
+   bool exceeds = false;
+
+   DBG_OBJ_MSG_START ();
 
    for (int i = 0; i < children->size () && !exceeds; i++) {
       Widget *child = children->get (i);
       Allocation *childAlloc = child->getAllocation ();
       DBG_OBJ_MSGF ("resize.oofm", 2,
-                    "Does childAlloc = (%d, %d, %d * %d) exceed CBA = "
+                    "Does childAlloc = (%d, %d, %d * %d) exceed CB alloc+req = "
                     "(%d, %d, %d * %d)?",
                     childAlloc->x, childAlloc->y, childAlloc->width,
                     childAlloc->ascent + childAlloc->descent,
@@ -141,13 +140,12 @@ bool OOFPositionedMgr::doChildrenExceedCB ()
          DBG_OBJ_MSG ("resize.oofm", 2, "No.");
    }
 
+   DBG_OBJ_MSG_END ();
+
    DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", exceeds ? "true" : "false");
    DBG_OBJ_LEAVE ();
 
    return exceeds;
-#endif
-
-   return false;
 }
 
 bool OOFPositionedMgr::haveExtremesChanged ()
