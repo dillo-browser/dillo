@@ -926,10 +926,14 @@ bool Textblock::isContainingBlock (Widget *widget, int oofmIndex)
           testWidgetOutOfFlow (widget));
       
    case OOFM_ABSOLUTE:
-      // Only the toplevel widget (as for all) as well as absolutely
-      // and fixedly positioned elements constitute the containing
-      // block for absolutely positioned elements, but neither floats
-      // nor other elements like table cells.
+      // Only the toplevel widget (as for all) as well as absolutely,
+      // relatively, and fixedly positioned elements constitute the
+      // containing block for absolutely positioned elements, but
+      // neither floats nor other elements like table cells.
+      //
+      // (Notice that relative positions are not yet supported, but
+      // only tested to get the correct containing block. Furthermore,
+      // it seems that this test would be incorrect for floats.)
       // 
       // We also test whether this widget is a textblock: is this
       // necessary? (What about other absolutely widgets containing
@@ -938,7 +942,8 @@ bool Textblock::isContainingBlock (Widget *widget, int oofmIndex)
       return widget->instanceOf (Textblock::CLASS_ID) &&
          (widget->getParent() == NULL ||
           testWidgetAbsolutelyPositioned (widget) ||
-          testWidgetFixedPositioned (widget));
+          testWidgetRelativelyPositioned (widget) ||
+          testWidgetFixedlyPositioned (widget));
       
    case OOFM_FIXED:
       // The single container for fixedly positioned elements is the
@@ -2393,7 +2398,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
          oofmIndex = OOFM_FLOATS;
       else if (testWidgetAbsolutelyPositioned (widget))
          oofmIndex = OOFM_ABSOLUTE;
-      else if (testWidgetFixedPositioned (widget))
+      else if (testWidgetFixedlyPositioned (widget))
          oofmIndex = OOFM_FIXED;
       else
          lout::misc::assertNotReached ();

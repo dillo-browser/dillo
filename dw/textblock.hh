@@ -291,11 +291,14 @@ protected:
    { return widget->getStyle()->vloat != core::style::FLOAT_NONE; }
    static inline bool testWidgetAbsolutelyPositioned (Widget *widget)
    { return widget->getStyle()->position == core::style::POSITION_ABSOLUTE; }
-   static inline bool testWidgetFixedPositioned (Widget *widget)
+   static inline bool testWidgetFixedlyPositioned (Widget *widget)
    { return widget->getStyle()->position == core::style::POSITION_FIXED; }
    static inline bool testWidgetOutOfFlow (Widget *widget)
    { return testWidgetFloat (widget) || testWidgetAbsolutelyPositioned (widget)
-         || testWidgetFixedPositioned (widget); }
+         || testWidgetFixedlyPositioned (widget); }
+
+   static inline bool testWidgetRelativelyPositioned (Widget *widget)
+   { return widget->getStyle()->position == core::style::POSITION_RELATIVE; }
 
    /**
     * \brief Implementation used for words.
@@ -851,7 +854,7 @@ protected:
          // In detail, this depends on what the respective OOFM does
          // with the child widget:
          !(testWidgetFloat (this) || testWidgetAbsolutelyPositioned (this) ||
-           testWidgetFixedPositioned (this));
+           testWidgetFixedlyPositioned (this));
       DBG_OBJ_MSGF ("resize", 0, "=> %s", b ? "true" : "false");
       DBG_OBJ_LEAVE ();
       return b;
