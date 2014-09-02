@@ -847,9 +847,11 @@ protected:
 
    inline bool mustBeWidenedToAvailWidth () {
       DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
-      // TODO Probably absolutely positioned textblocks must be excluded, too.
       bool b = getStyle()->display == core::style::DISPLAY_BLOCK &&
-         getStyle()->vloat == core::style::FLOAT_NONE;
+         // In detail, this depends on what the respective OOFM does
+         // with the child widget:
+         !(testWidgetFloat (this) || testWidgetAbsolutelyPositioned (this) ||
+           testWidgetFixedPositioned (this));
       DBG_OBJ_MSGF ("resize", 0, "=> %s", b ? "true" : "false");
       DBG_OBJ_LEAVE ();
       return b;
