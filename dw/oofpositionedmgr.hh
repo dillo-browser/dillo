@@ -7,7 +7,16 @@ namespace dw {
 
 class OOFPositionedMgr: public OutOfFlowMgr
 {
-private:
+protected:
+   virtual int cbBoxOffsetX () = 0;
+   virtual int cbBoxOffsetY () = 0;
+   virtual int cbBoxRestWidth () = 0;
+   virtual int cbBoxRestHeight () = 0;
+
+   inline int cbBoxDiffWidth () { return cbBoxOffsetX () + cbBoxRestWidth (); }
+   inline int cbBoxDiffHeight ()
+   { return cbBoxOffsetY () + cbBoxRestHeight (); }
+
    Textblock *containingBlock;
    core::Allocation containingBlockAllocation;
 

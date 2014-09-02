@@ -7,6 +7,12 @@ namespace dw {
 
 class OOFPosFixedMgr: public OOFPositionedMgr
 {
+protected:
+   int cbBoxOffsetX ();
+   int cbBoxOffsetY ();
+   int cbBoxRestWidth ();
+   int cbBoxRestHeight ();
+
 public:
    OOFPosFixedMgr (Textblock *containingBlock);
    ~OOFPosFixedMgr ();

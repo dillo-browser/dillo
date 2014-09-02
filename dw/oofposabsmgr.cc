@@ -18,6 +18,7 @@
  */
 
 #include "oofposabsmgr.hh"
+#include "textblock.hh"
 
 namespace dw {
 
@@ -30,6 +31,30 @@ OOFPosAbsMgr::OOFPosAbsMgr (Textblock *containingBlock) :
 OOFPosAbsMgr::~OOFPosAbsMgr ()
 {
    DBG_OBJ_DELETE ();
+}
+
+int OOFPosAbsMgr::cbBoxOffsetX ()
+{
+   return containingBlock->boxOffsetX ()
+      - containingBlock->getStyle()->padding.left;
+}
+
+int OOFPosAbsMgr::cbBoxOffsetY ()
+{
+   return containingBlock->boxOffsetY ()
+      - containingBlock->getStyle()->padding.top;
+}
+
+int OOFPosAbsMgr::cbBoxRestWidth ()
+{
+   return containingBlock->boxRestWidth ()
+      - containingBlock->getStyle()->padding.right;
+}
+
+int OOFPosAbsMgr::cbBoxRestHeight ()
+{
+   return containingBlock->boxRestHeight ()
+      - containingBlock->getStyle()->padding.bottom;
 }
 
 } // namespace dw

@@ -32,4 +32,25 @@ OOFPosFixedMgr::~OOFPosFixedMgr ()
    DBG_OBJ_DELETE ();
 }
 
+
+int OOFPosFixedMgr::cbBoxOffsetX ()
+{
+   return 0;
+}
+
+int OOFPosFixedMgr::cbBoxOffsetY ()
+{
+   return 0;
+}
+
+int OOFPosFixedMgr::cbBoxRestWidth ()
+{
+   return 0;
+}
+
+int OOFPosFixedMgr::cbBoxRestHeight ()
+{
+   return 0;
+}
+
 } // namespace dw
