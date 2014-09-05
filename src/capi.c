@@ -750,8 +750,13 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                DataBuf *dbuf = Data1;
                bool_t finished = a_Cache_process_dbuf(IORead, dbuf->Buf,
                                                       dbuf->Size, conn->url);
-               if (finished)
-                  a_Chain_bcb(OpSend, Info, NULL, "reply_complete");
+               if (finished && Capi_conn_valid(conn) && conn->InfoRecv) {
+                  /* If we have a persistent connection where cache tells us
+                   * that we've received the full response, and cache didn't
+                   * trigger an abort and tear everything down, tell upstream.
+                   */
+                  a_Chain_bcb(OpSend, conn->InfoRecv, NULL, "reply_complete");
+               }
             } else if (strcmp(Data2, "send_status_message") == 0) {
                a_UIcmd_set_msg(conn->bw, "%s", Data1);
             } else if (strcmp(Data2, "chat") == 0) {
