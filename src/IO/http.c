@@ -48,6 +48,8 @@ D_STMT_START {                                                        \
 
 #define _MSG_BW(web, root, ...)
 
+static const int HTTP_PORT  = 80;
+
 static const int HTTP_SOCKET_USE_PROXY   = 0x1;
 static const int HTTP_SOCKET_QUEUED      = 0x4;
 static const int HTTP_SOCKET_TO_BE_FREED = 0x8;
@@ -455,7 +457,7 @@ static int Http_connect_socket(ChainLink *Info)
          struct sockaddr_in *sin = (struct sockaddr_in *)&name;
          socket_len = sizeof(struct sockaddr_in);
          sin->sin_family = dh->af;
-         sin->sin_port = S->port ? htons(S->port) : htons(DILLO_URL_HTTP_PORT);
+         sin->sin_port = S->port ? htons(S->port) : htons(HTTP_PORT);
          memcpy(&sin->sin_addr, dh->data, (size_t)dh->alen);
          if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
             MSG("Connecting to %s\n", inet_ntoa(sin->sin_addr));
@@ -469,7 +471,7 @@ static int Http_connect_socket(ChainLink *Info)
          socket_len = sizeof(struct sockaddr_in6);
          sin6->sin6_family = dh->af;
          sin6->sin6_port =
-            S->port ? htons(S->port) : htons(DILLO_URL_HTTP_PORT);
+            S->port ? htons(S->port) : htons(HTTP_PORT);
          memcpy(&sin6->sin6_addr, dh->data, dh->alen);
          inet_ntop(dh->af, dh->data, buf, sizeof(buf));
          if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
