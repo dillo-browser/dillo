@@ -158,6 +158,7 @@ void a_Http_set_proxy_passwd(const char *str)
 static int Http_sock_new(void)
 {
    SocketData_t *S = dNew0(SocketData_t, 1);
+   S->SockFD = -1;
    return a_Klist_insert(&ValidSocks, S);
 }
 
@@ -233,6 +234,8 @@ static void Http_socket_free(int SKey)
       if (S->flags & HTTP_SOCKET_QUEUED) {
          S->flags |= HTTP_SOCKET_TO_BE_FREED;
       } else {
+         if (S->SockFD != -1)
+            Http_fd_map_remove_entry(S->SockFD);
          if (S->connected_to) {
             HostConnection_t *hc = Http_host_connection_get(S->connected_to);
             hc->active_conns--;
@@ -240,7 +243,6 @@ static void Http_socket_free(int SKey)
             if (hc->active_conns == 0)
                Http_host_connection_remove(hc);
          }
-         Http_fd_map_remove_entry(S->SockFD);
          dFree(S);
       }
    }
