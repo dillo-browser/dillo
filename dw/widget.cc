@@ -761,6 +761,9 @@ void Widget::correctExtremes (Extremes *extremes)
       DBG_OBJ_MSG_END ();
    }
 
+   if (extremes->maxWidth < extremes->minWidth)
+      extremes->maxWidth = extremes->minWidth;
+
    DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
                  extremes->minWidth, extremes->maxWidth);
    DBG_OBJ_LEAVE ();
