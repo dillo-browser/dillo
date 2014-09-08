@@ -787,12 +787,15 @@ protected:
 
    inline bool mustBeWidenedToAvailWidth () {
       DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
-      // TODO Probably absolutely positioned textblocks must be excluded, too.
-      bool b = getStyle()->display == core::style::DISPLAY_BLOCK &&
-         getStyle()->vloat == core::style::FLOAT_NONE;
-      DBG_OBJ_MSGF ("resize", 0, "=> %s", b ? "true" : "false");
+      bool toplevel = getParent () == NULL,
+         block = getStyle()->display == core::style::DISPLAY_BLOCK,
+         vloat = getStyle()->vloat != core::style::FLOAT_NONE,
+         result =  (toplevel || block) && !vloat;
+      DBG_OBJ_MSGF ("resize", 0, "=> %s (toplevel: %s, block: %s, float: %s)",
+                    result ? "true" : "false", toplevel ? "true" : "false",
+                    block ? "true" : "false", vloat ? "true" : "false");
       DBG_OBJ_LEAVE ();
-      return b;
+      return result;
    }
 
 public:
