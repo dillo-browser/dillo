@@ -829,12 +829,12 @@ void Widget::calcFinalWidth (style::Style *style, int refWidth,
    
    if (width != -1)
       *finalWidth = width;
-   if (minWidth != -1 && (*finalWidth == -1 || *finalWidth < minWidth))
+   if (minWidth != -1 && *finalWidth != -1 && *finalWidth < minWidth)
       *finalWidth = minWidth;
-   if (maxWidth != -1 && (*finalWidth == -1 || *finalWidth > maxWidth))
+   if (maxWidth != -1 && *finalWidth == -1 && *finalWidth > maxWidth)
       *finalWidth = maxWidth;
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
+   DBG_OBJ_MSGF ("resize", 1, "=> %d", *finalWidth);
    DBG_OBJ_LEAVE ();
 }
 
@@ -1438,9 +1438,7 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
 
    int width;
 
-   if (child->getStyle()->width == style::LENGTH_AUTO &&
-       child->getStyle()->minWidth == style::LENGTH_AUTO &&
-       child->getStyle()->maxWidth == style::LENGTH_AUTO) {
+   if (child->getStyle()->width == style::LENGTH_AUTO) {
       DBG_OBJ_MSG ("resize", 1, "no specification");
       if (forceValue)
          width = misc::max (getAvailWidth (true) - boxDiffWidth (), 0);
