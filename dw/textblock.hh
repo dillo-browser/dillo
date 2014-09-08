@@ -790,7 +790,7 @@ protected:
       bool toplevel = getParent () == NULL,
          block = getStyle()->display == core::style::DISPLAY_BLOCK,
          vloat = getStyle()->vloat != core::style::FLOAT_NONE,
-         result =  (toplevel || block) && !vloat;
+         result =  toplevel || (block && !vloat);
       DBG_OBJ_MSGF ("resize", 0, "=> %s (toplevel: %s, block: %s, float: %s)",
                     result ? "true" : "false", toplevel ? "true" : "false",
                     block ? "true" : "false", vloat ? "true" : "false");
