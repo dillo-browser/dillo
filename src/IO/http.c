@@ -863,10 +863,12 @@ static void Http_host_connection_remove(HostConnection_t *hc)
 static void Http_host_connection_remove_all()
 {
    HostConnection_t *hc;
+   SocketData_t *sd;
 
    while (dList_length(host_connections) > 0) {
       hc = (HostConnection_t*) dList_nth_data(host_connections, 0);
-      while (Http_socket_dequeue(hc));
+      while ((sd = Http_socket_dequeue(hc)))
+         dFree(sd);
       Http_host_connection_remove(hc);
    }
    dList_free(host_connections);
