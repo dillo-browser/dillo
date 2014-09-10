@@ -103,8 +103,8 @@ void Png_error_handling(png_structp png_ptr, png_const_charp msg)
 {
    DilloPng *png;
 
-   MSG("Png_error_handling: %s\n", msg);
    png = png_get_error_ptr(png_ptr);
+   MSG("Png_error_handling: %s: %s\n", URL_STR(png->url), msg);
 
    png->error = 1;
    png->state = IS_finished;
