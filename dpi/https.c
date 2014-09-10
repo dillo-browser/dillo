@@ -156,9 +156,11 @@ static void yes_ssl_support(void)
       }
    }
 
-   /* Do not use the SSLv2 protocol. */
+   /* Do not use the obsolete insecure SSLv2 protocol, and everyone disabled
+    * TLS compression when the CRIME exploit became widely known in 2012.
+    */
    if (exit_error == 0){
-      SSL_CTX_set_options(ssl_context, SSL_OP_NO_SSLv2);
+      SSL_CTX_set_options(ssl_context, SSL_OP_NO_SSLv2|SSL_OP_NO_COMPRESSION);
    }
 
    /*Set directory to load certificates from*/
@@ -188,10 +190,11 @@ static void yes_ssl_support(void)
    }
 
    if (exit_error == 0){
-      /* Need to do the following if we want to deal with all
-       * possible ciphers
+      /* Don't want: eNULL, which has no encryption; aNULL, which has no
+       * authentication; LOW, which as of 2014 use 64 or 56-bit encryption;
+       * EXPORT40, which uses 40-bit encryption.
        */
-      SSL_set_cipher_list(ssl_connection, "ALL");
+      SSL_CTX_set_cipher_list(ssl_context, "ALL:!aNULL:!eNULL:!LOW:!EXPORT40");
 
       /* Need to do this if we want to have the option of dealing
        * with self-signed certs

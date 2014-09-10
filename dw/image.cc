@@ -239,7 +239,20 @@ void Image::sizeRequestImpl (core::Requisition *requisition)
 
 void Image::getExtremesImpl (core::Extremes *extremes)
 {
-   int width = (buffer ? buffer->getRootWidth () : 0) + boxDiffWidth ();
+   int contentWidth;
+   if (buffer)
+      contentWidth =buffer->getRootWidth ();
+   else {
+      if (altText && altText[0]) {
+         if (altTextWidth == -1)
+            altTextWidth =
+               layout->textWidth (getStyle()->font, altText, strlen (altText));
+         contentWidth = altTextWidth;
+      } else
+         contentWidth = 0;
+   }
+
+   int width = contentWidth +  + boxDiffWidth ();
 
    // With percentage width, the image may be narrower than the buffer.
    extremes->minWidth =

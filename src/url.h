@@ -13,15 +13,6 @@
 #include "../dlib/dlib.h"
 
 
-#define DILLO_URL_HTTP_PORT        80
-#define DILLO_URL_HTTPS_PORT       443
-#define DILLO_URL_FTP_PORT         21
-#define DILLO_URL_MAILTO_PORT      25
-#define DILLO_URL_NEWS_PORT        119
-#define DILLO_URL_TELNET_PORT      23
-#define DILLO_URL_GOPHER_PORT      70
-
-
 /*
  * Values for DilloUrl->flags.
  * Specifies which which action to perform with an URL.

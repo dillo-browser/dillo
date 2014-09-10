@@ -232,17 +232,31 @@ static void Menu_stylesheet_cb(Fl_Widget*, void *vUrl)
    }
 }
 
+static void Menu_bugmeter_validate(const char *validator_url)
+{
+   if (popup_url &&
+       dStrAsciiCasecmp(URL_SCHEME(popup_url), "dpi")) {
+      const char *popup_str = URL_STR(popup_url),
+                 *ptr = strrchr(popup_str, '#');
+      char *no_fragment = ptr ? dStrndup(popup_str, ptr - popup_str)
+                              : dStrdup(popup_str);
+      char *encoded = a_Url_encode_hex_str(no_fragment);
+      Dstr *dstr = dStr_sized_new(128);
+
+      dStr_sprintf(dstr, validator_url, encoded);
+      a_UIcmd_open_urlstr(popup_bw, dstr->str);
+      dStr_free(dstr, 1);
+      dFree(encoded);
+      dFree(no_fragment);
+   }
+}
+
 /*
  * Validate URL with the W3C
  */
 static void Menu_bugmeter_validate_w3c_cb(Fl_Widget*, void*)
 {
-   Dstr *dstr = dStr_sized_new(128);
-
-   dStr_sprintf(dstr, "http://validator.w3.org/check?uri=%s",
-                URL_STR(popup_url));
-   a_UIcmd_open_urlstr(popup_bw, dstr->str);
-   dStr_free(dstr, 1);
+   Menu_bugmeter_validate("http://validator.w3.org/check?uri=%s");
 }
 
 /*
@@ -250,13 +264,8 @@ static void Menu_bugmeter_validate_w3c_cb(Fl_Widget*, void*)
  */
 static void Menu_bugmeter_validate_wdg_cb(Fl_Widget*, void*)
 {
-   Dstr *dstr = dStr_sized_new(128);
-
-   dStr_sprintf(dstr,
-      "http://www.htmlhelp.org/cgi-bin/validate.cgi?url=%s&warnings=yes",
-      URL_STR(popup_url));
-   a_UIcmd_open_urlstr(popup_bw, dstr->str);
-   dStr_free(dstr, 1);
+   Menu_bugmeter_validate(
+      "http://www.htmlhelp.org/cgi-bin/validate.cgi?url=%s&warnings=yes");
 }
 
 /*

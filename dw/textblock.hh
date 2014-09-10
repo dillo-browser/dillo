@@ -850,14 +850,22 @@ protected:
 
    inline bool mustBeWidenedToAvailWidth () {
       DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
-      bool b = getStyle()->display == core::style::DISPLAY_BLOCK &&
+      bool toplevel = getParent () == NULL,
+         block = getStyle()->display == core::style::DISPLAY_BLOCK,
+         vloat = testWidgetFloat (this),
+         abspos = testWidgetAbsolutelyPositioned (this),
+         fixpos = testWidgetFixedlyPositioned (this),
          // In detail, this depends on what the respective OOFM does
          // with the child widget:
-         !(testWidgetFloat (this) || testWidgetAbsolutelyPositioned (this) ||
-           testWidgetFixedlyPositioned (this));
-      DBG_OBJ_MSGF ("resize", 0, "=> %s", b ? "true" : "false");
+         result =  toplevel || (block && !(vloat || abspos || fixpos));
+      DBG_OBJ_MSGF ("resize", 0,
+                    "=> %s (toplevel: %s, block: %s, float: %s, abspos: %s, "
+                    "fixpos: %s)",
+                    result ? "true" : "false", toplevel ? "true" : "false",
+                    block ? "true" : "false", vloat ? "true" : "false",
+                    abspos ? "true" : "false", fixpos ? "true" : "false");
       DBG_OBJ_LEAVE ();
-      return b;
+      return result;
    }
 
 public:
