@@ -2702,7 +2702,8 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
 {
    _MSG("Registering ANCHOR: %s\n", name);
    if (!HT2TB(html)->addAnchor (name, html->style ()))
-      BUG_MSG("Anchor names must be unique within the document ('%s').", name);
+      BUG_MSG("Anchor names must be unique within the document (\"%s\").",
+              name);
    /*
     * According to Sec. 12.2.1 of the HTML 4.01 spec, "anchor names that
     * differ only in case may not appear in the same document", but
