@@ -252,7 +252,7 @@ protected:
           PARENT_REF_OOFM_MASK = (1 << PARENT_REF_OOFM_BITS) - 1 };
 
    Textblock *containingBlock[NUM_OOFM];
-   OutOfFlowMgr *outOfFlowMgr[NUM_OOFM];
+   oof::OutOfFlowMgr *outOfFlowMgr[NUM_OOFM];
 
    inline bool isParentRefOOF (int parentRef)
    { return parentRef != -1 && (parentRef & PARENT_REF_OOFM_MASK); }
@@ -271,7 +271,7 @@ protected:
    inline int getParentRefOOFIndex (int parentRef)
    { assert (isParentRefOOF (parentRef));
       return (parentRef & PARENT_REF_OOFM_MASK) - 1; }
-   inline OutOfFlowMgr *getParentRefOutOfFlowMgr (int parentRef)
+   inline oof::OutOfFlowMgr *getParentRefOutOfFlowMgr (int parentRef)
    { return outOfFlowMgr[getParentRefOOFIndex (parentRef)]; }
 
    inline bool isWidgetOOF (Widget *widget)
@@ -284,7 +284,7 @@ protected:
    { return getParentRefOOFSubRef (widget->parentRef); }
    inline int getWidgetOOFIndex (Widget *widget)
    { return getParentRefOOFIndex (widget->parentRef); }
-   inline OutOfFlowMgr *getWidgetOutOfFlowMgr (Widget *widget)
+   inline oof::OutOfFlowMgr *getWidgetOutOfFlowMgr (Widget *widget)
    { return getParentRefOutOfFlowMgr (widget->parentRef); }
 
    static inline bool testWidgetFloat (Widget *widget)

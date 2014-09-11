@@ -1946,7 +1946,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
       int y = yOffsetOfPossiblyMissingLine (lines->size ());
            
       for (int i = 0; i < NUM_OOFM; i++) {
-         OutOfFlowMgr *oofm = containingBlock[i]->outOfFlowMgr[i];
+         oof::OutOfFlowMgr *oofm = containingBlock[i]->outOfFlowMgr[i];
          if (oofm) {
             // Consider the example:
             //

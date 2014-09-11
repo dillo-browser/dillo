@@ -29,6 +29,8 @@ using namespace dw::core::style;
 
 namespace dw {
 
+namespace oof {
+
 OOFPositionedMgr::OOFPositionedMgr (Textblock *containingBlock)
 {
    DBG_OBJ_CREATE ("dw::OOFPositionedMgr");
@@ -524,5 +526,7 @@ Widget *OOFPositionedMgr::getWidget (int i)
 {
    return children->get (i);
 }
+
+} // namespace oof
 
 } // namespace dw

@@ -21,6 +21,8 @@
 
 namespace dw {
 
+namespace oof {
+
 OOFPosFixedMgr::OOFPosFixedMgr (Textblock *containingBlock) :
    OOFPositionedMgr (containingBlock)
 {
@@ -52,5 +54,7 @@ int OOFPosFixedMgr::cbBoxRestHeight ()
 {
    return 0;
 }
+
+} // namespace oof
 
 } // namespace dw

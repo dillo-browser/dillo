@@ -25,6 +25,8 @@
 
 namespace dw {
 
+namespace oof {
+
 OutOfFlowMgr::OutOfFlowMgr ()
 {
 }
@@ -32,5 +34,7 @@ OutOfFlowMgr::OutOfFlowMgr ()
 OutOfFlowMgr::~OutOfFlowMgr ()
 {
 }
+
+} // namespace oof
 
 } // namespace dw

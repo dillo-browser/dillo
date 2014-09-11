@@ -2354,14 +2354,14 @@ void Textblock::initOutOfFlowMgrs ()
 {
    if (containingBlock[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] == NULL) {
       containingBlock[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] =
-         new OOFFloatsMgr (containingBlock[OOFM_FLOATS]);
+         new oof::OOFFloatsMgr (containingBlock[OOFM_FLOATS]);
       DBG_OBJ_ASSOC (containingBlock[OOFM_FLOATS],
                      containingBlock[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS]);
    }
 
    if (containingBlock[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] == NULL) {
       containingBlock[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] =
-         new OOFPosAbsMgr (containingBlock[OOFM_ABSOLUTE]);
+         new oof::OOFPosAbsMgr (containingBlock[OOFM_ABSOLUTE]);
       DBG_OBJ_ASSOC (containingBlock[OOFM_ABSOLUTE],
                      containingBlock[OOFM_ABSOLUTE]
                      ->outOfFlowMgr[OOFM_ABSOLUTE]);
@@ -2369,7 +2369,7 @@ void Textblock::initOutOfFlowMgrs ()
 
    if (containingBlock[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] == NULL) {
       containingBlock[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] =
-         new OOFPosFixedMgr (containingBlock[OOFM_FIXED]);
+         new oof::OOFPosFixedMgr (containingBlock[OOFM_FIXED]);
       DBG_OBJ_ASSOC (containingBlock[OOFM_FIXED],
                      containingBlock[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED]);
    }

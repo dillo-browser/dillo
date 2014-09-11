@@ -22,6 +22,8 @@
 
 namespace dw {
 
+namespace oof {
+
 OOFPosAbsMgr::OOFPosAbsMgr (Textblock *containingBlock) :
    OOFPositionedMgr (containingBlock)
 {
@@ -56,5 +58,7 @@ int OOFPosAbsMgr::cbBoxRestHeight ()
    return containingBlock->boxRestHeight ()
       - containingBlock->getStyle()->padding.bottom;
 }
+
+} // namespace oof
 
 } // namespace dw

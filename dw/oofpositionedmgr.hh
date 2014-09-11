@@ -5,6 +5,8 @@
 
 namespace dw {
 
+namespace oof {
+
 class OOFPositionedMgr: public OutOfFlowMgr
 {
 protected:
@@ -93,6 +95,8 @@ public:
    int getNumWidgets ();
    core::Widget *getWidget (int i);
 };
+
+} // namespace oof
 
 } // namespace dw
 

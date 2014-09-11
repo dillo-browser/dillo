@@ -29,6 +29,8 @@ using namespace dw::core::style;
 
 namespace dw {
 
+namespace oof {
+
 OOFFloatsMgr::WidgetInfo::WidgetInfo (OOFFloatsMgr *oofm, Widget *widget)
 {
    this->oofm = oofm;
@@ -2251,5 +2253,7 @@ Widget *OOFFloatsMgr::getWidget (int i)
    else
       return rightFloatsAll->get(i - leftFloatsAll->size())->getWidget ();
 }
+
+} // namespace oof
 
 } // namespace dw

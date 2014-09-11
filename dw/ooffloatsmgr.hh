@@ -5,6 +5,8 @@
 
 namespace dw {
 
+namespace oof {
+
 class OOFFloatsMgr: public OutOfFlowMgr
 {
    friend class WidgetInfo;
@@ -371,6 +373,8 @@ public:
    int getNumWidgets ();
    core::Widget *getWidget (int i);
 };
+
+} // namespace oof
 
 } // namespace dw
 

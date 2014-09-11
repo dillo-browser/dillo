@@ -7,6 +7,8 @@ namespace dw {
 
 class Textblock;
 
+namespace oof {
+
 /**
  * \brief Represents additional data for containing blocks.
  */
@@ -69,6 +71,8 @@ public:
    virtual int getNumWidgets () = 0;
    virtual core::Widget *getWidget (int i) = 0;
 };
+
+} // namespace oof
 
 } // namespace dw
 

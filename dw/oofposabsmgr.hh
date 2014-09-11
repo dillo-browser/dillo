@@ -5,6 +5,8 @@
 
 namespace dw {
 
+namespace oof {
+
 class OOFPosAbsMgr: public OOFPositionedMgr
 {
 protected:
@@ -17,6 +19,8 @@ public:
    OOFPosAbsMgr (Textblock *containingBlock);
    ~OOFPosAbsMgr ();
 };
+
+} // namespace oof
 
 } // namespace dw
 
