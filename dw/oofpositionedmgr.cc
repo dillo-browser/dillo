@@ -18,7 +18,7 @@
  */
 
 #include "oofpositionedmgr.hh"
-#include "textblock.hh"
+#include "oofawarewidget.hh"
 #include "../lout/debug.hh"
 
 using namespace lout::object;
@@ -31,11 +31,11 @@ namespace dw {
 
 namespace oof {
 
-OOFPositionedMgr::OOFPositionedMgr (Textblock *containingBlock)
+OOFPositionedMgr::OOFPositionedMgr (OOFAwareWidget *container)
 {
    DBG_OBJ_CREATE ("dw::OOFPositionedMgr");
 
-   this->containingBlock = (Textblock*)containingBlock;
+   this->container = (OOFAwareWidget*)container;
    children = new Vector<Widget> (1, false);
    DBG_OBJ_SET_NUM ("children.size", children->size());
 }
@@ -47,23 +47,23 @@ OOFPositionedMgr::~OOFPositionedMgr ()
    DBG_OBJ_DELETE ();
 }
 
-void OOFPositionedMgr::sizeAllocateStart (Textblock *caller,
+void OOFPositionedMgr::sizeAllocateStart (OOFAwareWidget *caller,
                                           Allocation *allocation)
 {
-   containingBlockAllocation = *allocation;
+   containerAllocation = *allocation;
 }
 
-void OOFPositionedMgr::sizeAllocateEnd (Textblock *caller)
+void OOFPositionedMgr::sizeAllocateEnd (OOFAwareWidget *caller)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateEnd", "%p", caller);
 
-   if (caller == containingBlock) {
+   if (caller == container) {
       sizeAllocateChildren ();
 
-      bool sizeChanged = doChildrenExceedCB ();
+      bool sizeChanged = doChildrenExceedContainer ();
       bool extremesChanged = haveExtremesChanged ();
       if (sizeChanged || extremesChanged)
-         containingBlock->oofSizeChanged (extremesChanged);
+         container->oofSizeChanged (extremesChanged);
    }
 
    DBG_OBJ_LEAVE ();
@@ -74,8 +74,8 @@ void OOFPositionedMgr::sizeAllocateChildren ()
 {
    DBG_OBJ_ENTER0 ("resize.oofm", 0, "sizeAllocateChildren");
 
-   int refWidth = containingBlock->getAvailWidth (true) - cbBoxDiffWidth ();
-   int refHeight = containingBlock->getAvailHeight (true) - cbBoxDiffHeight ();
+   int refWidth = container->getAvailWidth (true) - containerBoxDiffWidth ();
+   int refHeight = container->getAvailHeight (true) - containerBoxDiffHeight ();
 
    for (int i = 0; i < children->size(); i++) {
       Widget *child = children->get (i);
@@ -85,8 +85,8 @@ void OOFPositionedMgr::sizeAllocateChildren ()
                                   &ascent, &descent);
 
       Allocation childAllocation;
-      childAllocation.x = containingBlockAllocation.x + x + cbBoxOffsetX ();
-      childAllocation.y = containingBlockAllocation.y + y + cbBoxOffsetY ();
+      childAllocation.x = containerAllocation.x + x + containerBoxOffsetX ();
+      childAllocation.y = containerAllocation.y + y + containerBoxOffsetY ();
       childAllocation.width = width;
       childAllocation.ascent = ascent;
       childAllocation.descent = descent;
@@ -107,17 +107,17 @@ void OOFPositionedMgr::containerSizeChangedForChildren ()
    DBG_OBJ_LEAVE ();
 }
 
-bool OOFPositionedMgr::doChildrenExceedCB ()
+bool OOFPositionedMgr::doChildrenExceedContainer ()
 {
-   DBG_OBJ_ENTER0 ("resize.oofm", 0, "doChildrenExceedCB");
+   DBG_OBJ_ENTER0 ("resize.oofm", 0, "doChildrenExceedContainer");
 
    // This method is called to determine whether the *requisition* of
-   // the CB must be recalculated. So, we check the allocations of the
-   // children against the *requisition* of the CB, which may
-   // (e. g. within tables) differ from the new allocation.
+   // the container must be recalculated. So, we check the allocations
+   // of the children against the *requisition* of the container,
+   // which may (e. g. within tables) differ from the new allocation.
    // (Generally, a widget may allocated at a different size.)
-   Requisition cbReq;
-   containingBlock->sizeRequest (&cbReq);
+   Requisition containerReq;
+   container->sizeRequest (&containerReq);
    bool exceeds = false;
 
    DBG_OBJ_MSG_START ();
@@ -126,16 +126,18 @@ bool OOFPositionedMgr::doChildrenExceedCB ()
       Widget *child = children->get (i);
       Allocation *childAlloc = child->getAllocation ();
       DBG_OBJ_MSGF ("resize.oofm", 2,
-                    "Does childAlloc = (%d, %d, %d * %d) exceed CB alloc+req = "
-                    "(%d, %d, %d * %d)?",
+                    "Does childAlloc = (%d, %d, %d * %d) exceed container "
+                    "alloc+req = (%d, %d, %d * %d)?",
                     childAlloc->x, childAlloc->y, childAlloc->width,
                     childAlloc->ascent + childAlloc->descent,
-                    containingBlockAllocation.x, containingBlockAllocation.y,
-                    cbReq.width, cbReq.ascent + cbReq.descent);
+                    containerAllocation.x, containerAllocation.y,
+                    containerReq.width,
+                    containerReq.ascent + containerReq.descent);
       if (childAlloc->x + childAlloc->width
-          > containingBlockAllocation.x + cbReq.width ||
+          > containerAllocation.x + containerReq.width ||
           childAlloc->y + childAlloc->ascent + childAlloc->descent
-          > containingBlockAllocation.y + cbReq.ascent + cbReq.descent) {
+          > containerAllocation.y +
+            containerReq.ascent + containerReq.descent) {
          exceeds = true;
          DBG_OBJ_MSG ("resize.oofm", 2, "Yes.");
       } else
@@ -173,16 +175,17 @@ void OOFPositionedMgr::draw (View *view, Rectangle *area)
 }
 
 
-void OOFPositionedMgr::addWidgetInFlow (Textblock *textblock,
-                                    Textblock *parentBlock, int externalIndex)
+void OOFPositionedMgr::addWidgetInFlow (OOFAwareWidget *widget,
+                                        OOFAwareWidget *parent,
+                                        int externalIndex)
 {
 }
 
-int OOFPositionedMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
-                                 int externalIndex)
+int OOFPositionedMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generater,
+                                    int externalIndex)
 {
    DBG_OBJ_ENTER ("construct.oofm", 0, "addWidgetOOF", "%p, %p, %d",
-                  widget, generatingBlock, externalIndex);
+                  widget, generator, externalIndex);
 
    children->put (widget);
    int subRef = children->size() - 1;
@@ -194,7 +197,7 @@ int OOFPositionedMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
    return subRef;
 }
 
-void OOFPositionedMgr::moveExternalIndices (Textblock *generatingBlock,
+void OOFPositionedMgr::moveExternalIndices (OOFAwareWidget *generator,
                                             int oldStartIndex, int diff)
 {
 }
@@ -226,33 +229,34 @@ void OOFPositionedMgr::tellPosition (Widget *widget, int yReq)
 {
 }
 
-void OOFPositionedMgr::getSize (Requisition *cbReq, int *oofWidth,
+void OOFPositionedMgr::getSize (Requisition *containerReq, int *oofWidth,
                                 int *oofHeight)
 {
    DBG_OBJ_ENTER0 ("resize.oofm", 0, "getSize");
 
    *oofWidth = *oofHeight = 0;
 
-   int refWidth = containingBlock->getAvailWidth (true);
-   int refHeight = containingBlock->getAvailHeight (true);
+   int refWidth = container->getAvailWidth (true);
+   int refHeight = container->getAvailHeight (true);
 
    for (int i = 0; i < children->size(); i++) {
       Widget *child = children->get(i);
       int x, y, width, ascent, descent;
       calcPosAndSizeChildOfChild (child, refWidth, refHeight, &x, &y, &width,
                                   &ascent, &descent);
-      *oofWidth = max (*oofWidth, x + width) + cbBoxDiffWidth ();
-      *oofHeight = max (*oofHeight, y + ascent + descent) + cbBoxDiffHeight ();
+      *oofWidth = max (*oofWidth, x + width) + containerBoxDiffWidth ();
+      *oofHeight =
+         max (*oofHeight, y + ascent + descent) + containerBoxDiffHeight ();
    }      
 
    DBG_OBJ_LEAVE ();
 }
 
-void OOFPositionedMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
+void OOFPositionedMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
                                     int *oofMaxWidth)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "getExtremes", "(%d / %d), ...",
-                  cbExtr->minWidth, cbExtr->maxWidth);
+                  containerExtr->minWidth, containerExtr->maxWidth);
 
    // TODO Something to do?
    *oofMinWidth = *oofMaxWidth = 0;
@@ -261,44 +265,46 @@ void OOFPositionedMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
 }
 
 
-int OOFPositionedMgr::getLeftBorder (Textblock *textblock, int y, int h,
-                                     Textblock *lastGB, int lastExtIndex)
+int OOFPositionedMgr::getLeftBorder (OOFAwareWidget *widget, int y, int h,
+                                     OOFAwareWidget *lastGen, int lastExtIndex)
 {
    return 0;
 }
 
-int OOFPositionedMgr::getRightBorder (Textblock *textblock, int y, int h,
-                                      Textblock *lastGB, int lastExtIndex)
+int OOFPositionedMgr::getRightBorder (OOFAwareWidget *widget, int y, int h,
+                                      OOFAwareWidget *lastGen, int lastExtIndex)
 {
    return 0;
 }
 
-bool OOFPositionedMgr::hasFloatLeft (Textblock *textblock, int y, int h,
-                                 Textblock *lastGB, int lastExtIndex)
+bool OOFPositionedMgr::hasFloatLeft (OOFAwareWidget *widget, int y, int h,
+                                     OOFAwareWidget *lastGen, int lastExtIndex)
 {
    return false;
 }
 
-bool OOFPositionedMgr::hasFloatRight (Textblock *textblock, int y, int h,
-                                  Textblock *lastGB, int lastExtIndex)
+bool OOFPositionedMgr::hasFloatRight (OOFAwareWidget *widget, int y, int h,
+                                      OOFAwareWidget *lastGen, int lastExtIndex)
 {
    return false;
 }
 
 
-int OOFPositionedMgr::getLeftFloatHeight (Textblock *textblock, int y, int h,
-                                      Textblock *lastGB, int lastExtIndex)
+int OOFPositionedMgr::getLeftFloatHeight (OOFAwareWidget *widget, int y, int h,
+                                          OOFAwareWidget *lastGen,
+                                          int lastExtIndex)
 {
    return 0;
 }
 
-int OOFPositionedMgr::getRightFloatHeight (Textblock *textblock, int y, int h,
-                                       Textblock *lastGB, int lastExtIndex)
+int OOFPositionedMgr::getRightFloatHeight (OOFAwareWidget *widget, int y, int h,
+                                           OOFAwareWidget *lastGen,
+                                           int lastExtIndex)
 {
    return 0;
 }
 
-int OOFPositionedMgr::getClearPosition (Textblock *textblock)
+int OOFPositionedMgr::getClearPosition (OOFAwareWidget *widget)
 {
    return 0;
 }
@@ -333,8 +339,8 @@ int OOFPositionedMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
       // TODO Is "boxDiffWidth()" correct here?
       DBG_OBJ_MSG ("resize.oofm", 1, "no specification");
       if (forceValue) {
-         int availWidth = containingBlock->getAvailWidth (true);
-         width = max (availWidth - cbBoxDiffWidth ()
+         int availWidth = container->getAvailWidth (true);
+         width = max (availWidth - containerBoxDiffWidth ()
                       // Regard an undefined value as 0:
                       - max (getPosLeft (child, availWidth), 0),
                       - max (getPosRight (child, availWidth), 0),
@@ -343,10 +349,10 @@ int OOFPositionedMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
          width = -1;
    } else {
       if (forceValue) {
-         int availWidth = containingBlock->getAvailWidth (true);
+         int availWidth = container->getAvailWidth (true);
          child->calcFinalWidth (child->getStyle(),
-                                availWidth - cbBoxDiffWidth (), NULL, 0, true,
-                                &width);
+                                availWidth - containerBoxDiffWidth (), NULL,
+                                0, true, &width);
       } else
          width = -1;
    }
@@ -375,8 +381,8 @@ int OOFPositionedMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
       // TODO Is "boxDiffHeight()" correct here?
       DBG_OBJ_MSG ("resize.oofm", 1, "no specification");
       if (forceValue) {
-         int availHeight = containingBlock->getAvailHeight (true);
-         height = max (availHeight - cbBoxDiffHeight ()
+         int availHeight = container->getAvailHeight (true);
+         height = max (availHeight - containerBoxDiffHeight ()
                        // Regard an undefined value as 0:
                        - max (getPosTop (child, availHeight), 0),
                        - max (getPosBottom (child, availHeight), 0),
@@ -385,10 +391,10 @@ int OOFPositionedMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
          height = -1;
    } else {
       if (forceValue) {
-         int availHeight = containingBlock->getAvailHeight (true);
+         int availHeight = container->getAvailHeight (true);
          height = child->calcHeight (child->getStyle()->height, true,
-                                     availHeight - - cbBoxDiffHeight (), NULL,
-                                     true);
+                                     availHeight - containerBoxDiffHeight (),
+                                     NULL, true);
       } else
          height = -1;
    }

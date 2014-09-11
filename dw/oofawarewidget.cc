@@ -17,41 +17,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "oofposfixedmgr.hh"
+#include "oofawarewidget.hh"
+
+using namespace lout::misc;
 
 namespace dw {
 
 namespace oof {
 
-OOFPosFixedMgr::OOFPosFixedMgr (OOFAwareWidget *container) :
-   OOFPositionedMgr (container)
+void OOFAwareWidget::borderChanged (int y, Widget *vloat)
 {
-   DBG_OBJ_CREATE ("dw::OOFPosFixedMgr");
+   assertNotReached ();
 }
 
-OOFPosFixedMgr::~OOFPosFixedMgr ()
+void OOFAwareWidget::oofSizeChanged (bool extremesChanged)
 {
-   DBG_OBJ_DELETE ();
+   DBG_OBJ_ENTER ("resize", 0, "oofSizeChanged", "%s",
+                  extremesChanged ? "true" : "false");
+   queueResize (-1, extremesChanged);
+
+   // Extremes changes may become also relevant for the children.
+   if (extremesChanged)
+      containerSizeChanged ();
+
+   DBG_OBJ_LEAVE ();
 }
 
-
-int OOFPosFixedMgr::containerBoxOffsetX ()
+int OOFAwareWidget::getLineBreakWidth ()
 {
-   return 0;
-}
-
-int OOFPosFixedMgr::containerBoxOffsetY ()
-{
-   return 0;
-}
-
-int OOFPosFixedMgr::containerBoxRestWidth ()
-{
-   return 0;
-}
-
-int OOFPosFixedMgr::containerBoxRestHeight ()
-{
+   assertNotReached ();
    return 0;
 }
 

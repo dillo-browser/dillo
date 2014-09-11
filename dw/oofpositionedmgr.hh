@@ -10,21 +10,22 @@ namespace oof {
 class OOFPositionedMgr: public OutOfFlowMgr
 {
 protected:
-   virtual int cbBoxOffsetX () = 0;
-   virtual int cbBoxOffsetY () = 0;
-   virtual int cbBoxRestWidth () = 0;
-   virtual int cbBoxRestHeight () = 0;
+   virtual int containerBoxOffsetX () = 0;
+   virtual int containerBoxOffsetY () = 0;
+   virtual int containerBoxRestWidth () = 0;
+   virtual int containerBoxRestHeight () = 0;
 
-   inline int cbBoxDiffWidth () { return cbBoxOffsetX () + cbBoxRestWidth (); }
-   inline int cbBoxDiffHeight ()
-   { return cbBoxOffsetY () + cbBoxRestHeight (); }
+   inline int containerBoxDiffWidth ()
+   { return containerBoxOffsetX () + containerBoxRestWidth (); }
+   inline int containerBoxDiffHeight ()
+   { return containerBoxOffsetY () + containerBoxRestHeight (); }
 
-   Textblock *containingBlock;
-   core::Allocation containingBlockAllocation;
+   OOFAwareWidget *container;
+   core::Allocation containerAllocation;
 
    lout::container::typed::Vector<core::Widget> *children;
 
-   bool doChildrenExceedCB ();
+   bool doChildrenExceedContainer ();
    bool haveExtremesChanged ();
    void sizeAllocateChildren ();
 
@@ -43,11 +44,12 @@ protected:
                                     int *ascent, int *descent);
 
 public:
-   OOFPositionedMgr (Textblock *containingBlock);
+   OOFPositionedMgr (OOFAwareWidget *container);
    ~OOFPositionedMgr ();
 
-   void sizeAllocateStart (Textblock *caller, core::Allocation *allocation);
-   void sizeAllocateEnd (Textblock *caller);
+   void sizeAllocateStart (OOFAwareWidget *caller,
+                           core::Allocation *allocation);
+   void sizeAllocateEnd (OOFAwareWidget *caller);
    void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area);
 
@@ -55,35 +57,36 @@ public:
    void markExtremesChange (int ref);
    core::Widget *getWidgetAtPoint (int x, int y, int level);
 
-   void addWidgetInFlow (Textblock *textblock, Textblock *parentBlock,
+   void addWidgetInFlow (OOFAwareWidget *widget, OOFAwareWidget *parent,
                          int externalIndex);
-   int addWidgetOOF (core::Widget *widget, Textblock *generatingBlock,
+   int addWidgetOOF (core::Widget *widget, OOFAwareWidget *generator,
                      int externalIndex);
-   void moveExternalIndices (Textblock *generatingBlock, int oldStartIndex,
+   void moveExternalIndices (OOFAwareWidget *generator, int oldStartIndex,
                              int diff);
 
    void tellPosition (core::Widget *widget, int yReq);
 
-   void getSize (core::Requisition *cbReq, int *oofWidth, int *oofHeight);
-   void getExtremes (core::Extremes *cbExtr,
+   void getSize (core::Requisition *containerReq, int *oofWidth,
+                 int *oofHeight);
+   void getExtremes (core::Extremes *containerExtr,
                      int *oofMinWidth, int *oofMaxWidth);
 
-   int getLeftBorder (Textblock *textblock, int y, int h, Textblock *lastGB,
-                      int lastExtIndex);
-   int getRightBorder (Textblock *textblock, int y, int h, Textblock *lastGB,
-                       int lastExtIndex);
+   int getLeftBorder (OOFAwareWidget *widget, int y, int h,
+                      OOFAwareWidget *lastGen, int lastExtIndex);
+   int getRightBorder (OOFAwareWidget *widget, int y, int h,
+                       OOFAwareWidget *lastGen, int lastExtIndex);
 
-   bool hasFloatLeft (Textblock *textblock, int y, int h, Textblock *lastGB,
-                      int lastExtIndex);
-   bool hasFloatRight (Textblock *textblock, int y, int h, Textblock *lastGB,
-                       int lastExtIndex);
+   bool hasFloatLeft (OOFAwareWidget *widget, int y, int h,
+                      OOFAwareWidget *lastGen, int lastExtIndex);
+   bool hasFloatRight (OOFAwareWidget *widget, int y, int h,
+                       OOFAwareWidget *lastGen, int lastExtIndex);
 
-   int getLeftFloatHeight (Textblock *textblock, int y, int h,
-                           Textblock *lastGB, int lastExtIndex);
-   int getRightFloatHeight (Textblock *textblock, int y, int h,
-                            Textblock *lastGB, int lastExtIndex);
+   int getLeftFloatHeight (OOFAwareWidget *widget, int y, int h,
+                           OOFAwareWidget *lastGen, int lastExtIndex);
+   int getRightFloatHeight (OOFAwareWidget *widget, int y, int h,
+                            OOFAwareWidget *lastGen, int lastExtIndex);
 
-   int getClearPosition (Textblock *textblock);
+   int getClearPosition (OOFAwareWidget *widget);
 
    bool affectsLeftBorder (core::Widget *widget);
    bool affectsRightBorder (core::Widget *widget);

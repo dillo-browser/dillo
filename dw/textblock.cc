@@ -2980,7 +2980,7 @@ void Textblock::setVerticalOffset (int verticalOffset)
 }
 
 /**
- * Called by dw::OutOfFlowMgr when the border has changed due to a
+ * Called by dw::OOFFloatsMgr when the border has changed due to a
  * float (or some floats).
  *
  * "y", which given in widget coordinates, denotes the minimal
@@ -3142,6 +3142,11 @@ void Textblock::oofSizeChanged (bool extremesChanged)
       containerSizeChanged ();
 
    DBG_OBJ_LEAVE ();
+}
+
+int Textblock::getLineBreakWidth ()
+{
+   return lineBreakWidth;
 }
 
 Textblock *Textblock::getTextblockForLine (Line *line)

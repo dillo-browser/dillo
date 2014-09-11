@@ -5,6 +5,7 @@
 
 #include "core.hh"
 #include "outofflowmgr.hh"
+#include "oofawarewidget.hh"
 #include "../lout/misc.hh"
 
 // These were used when improved line breaking and hyphenation were implemented.
@@ -152,7 +153,7 @@ namespace dw {
  * necessary, or otherwise the line from which a rewrap is necessary.
  *
  */
-class Textblock: public core::Widget
+class Textblock: public oof::OOFAwareWidget
 {
 private:
    /**
@@ -905,7 +906,7 @@ public:
 
    void borderChanged (int y, core::Widget *vloat);
    void oofSizeChanged (bool extremesChanged);
-   inline int getLineBreakWidth () { return lineBreakWidth; }
+   int getLineBreakWidth ();
 };
 
 #define DBG_SET_WORD_PENALTY(n, i, is)             \

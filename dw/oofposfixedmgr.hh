@@ -10,13 +10,13 @@ namespace oof {
 class OOFPosFixedMgr: public OOFPositionedMgr
 {
 protected:
-   int cbBoxOffsetX ();
-   int cbBoxOffsetY ();
-   int cbBoxRestWidth ();
-   int cbBoxRestHeight ();
+   int containerBoxOffsetX ();
+   int containerBoxOffsetY ();
+   int containerBoxRestWidth ();
+   int containerBoxRestHeight ();
 
 public:
-   OOFPosFixedMgr (Textblock *containingBlock);
+   OOFPosFixedMgr (OOFAwareWidget *container);
    ~OOFPosFixedMgr ();
 };
 

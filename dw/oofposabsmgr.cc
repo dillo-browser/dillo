@@ -18,14 +18,14 @@
  */
 
 #include "oofposabsmgr.hh"
-#include "textblock.hh"
+#include "oofawarewidget.hh"
 
 namespace dw {
 
 namespace oof {
 
-OOFPosAbsMgr::OOFPosAbsMgr (Textblock *containingBlock) :
-   OOFPositionedMgr (containingBlock)
+OOFPosAbsMgr::OOFPosAbsMgr (OOFAwareWidget *container) :
+   OOFPositionedMgr (container)
 {
    DBG_OBJ_CREATE ("dw::OOFPosAbsMgr");
 }
@@ -35,28 +35,24 @@ OOFPosAbsMgr::~OOFPosAbsMgr ()
    DBG_OBJ_DELETE ();
 }
 
-int OOFPosAbsMgr::cbBoxOffsetX ()
+int OOFPosAbsMgr::containerBoxOffsetX ()
 {
-   return containingBlock->boxOffsetX ()
-      - containingBlock->getStyle()->padding.left;
+   return container->boxOffsetX () - container->getStyle()->padding.left;
 }
 
-int OOFPosAbsMgr::cbBoxOffsetY ()
+int OOFPosAbsMgr::containerBoxOffsetY ()
 {
-   return containingBlock->boxOffsetY ()
-      - containingBlock->getStyle()->padding.top;
+   return container->boxOffsetY () - container->getStyle()->padding.top;
 }
 
-int OOFPosAbsMgr::cbBoxRestWidth ()
+int OOFPosAbsMgr::containerBoxRestWidth ()
 {
-   return containingBlock->boxRestWidth ()
-      - containingBlock->getStyle()->padding.right;
+   return container->boxRestWidth () - container->getStyle()->padding.right;
 }
 
-int OOFPosAbsMgr::cbBoxRestHeight ()
+int OOFPosAbsMgr::containerBoxRestHeight ()
 {
-   return containingBlock->boxRestHeight ()
-      - containingBlock->getStyle()->padding.bottom;
+   return container->boxRestHeight () - container->getStyle()->padding.bottom;
 }
 
 } // namespace oof

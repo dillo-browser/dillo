@@ -5,12 +5,12 @@
 
 namespace dw {
 
-class Textblock;
-
 namespace oof {
 
+class OOFAwareWidget;
+
 /**
- * \brief Represents additional data for containing blocks.
+ * \brief Represents additional data for OOF containers.
  */
 class OutOfFlowMgr
 {
@@ -18,9 +18,9 @@ public:
    OutOfFlowMgr ();
    virtual ~OutOfFlowMgr ();
 
-   virtual void sizeAllocateStart (Textblock *caller,
+   virtual void sizeAllocateStart (OOFAwareWidget *caller,
                                    core::Allocation *allocation) = 0;
-   virtual void sizeAllocateEnd (Textblock *caller) = 0;
+   virtual void sizeAllocateEnd (OOFAwareWidget *caller) = 0;
    virtual void containerSizeChangedForChildren () = 0;
    virtual void draw (core::View *view, core::Rectangle *area) = 0;
 
@@ -28,45 +28,47 @@ public:
    virtual void markExtremesChange (int ref) = 0;
    virtual core::Widget *getWidgetAtPoint (int x, int y, int level) = 0;
 
-   virtual void addWidgetInFlow (Textblock *textblock, Textblock *parentBlock,
-                                 int externalIndex) = 0;
-   virtual int addWidgetOOF (core::Widget *widget, Textblock *generatingBlock,
+   virtual void addWidgetInFlow (OOFAwareWidget *widget,
+                                 OOFAwareWidget *parent, int externalIndex) = 0;
+   virtual int addWidgetOOF (core::Widget *widget, OOFAwareWidget *generator,
                              int externalIndex) = 0;
-   virtual void moveExternalIndices (Textblock *generatingBlock,
+   virtual void moveExternalIndices (OOFAwareWidget *generator,
                                      int oldStartIndex, int diff) = 0;
    
    virtual void tellPosition (core::Widget *widget, int yReq) = 0;
-
-   virtual void getSize (core::Requisition *cbReq, int *oofWidth,
+   
+   virtual void getSize (core::Requisition *containerReq, int *oofWidth,
                          int *oofHeight) = 0;
-   virtual void getExtremes (core::Extremes *cbExtr, int *oofMinWidth,
+   virtual void getExtremes (core::Extremes *containerExtr, int *oofMinWidth,
                              int *oofMaxWidth) = 0;
 
 
-   virtual int getLeftBorder (Textblock *textblock, int y, int h,
-                              Textblock *lastGB, int lastExtIndex) = 0;
-   virtual int getRightBorder (Textblock *textblock, int y, int h,
-                               Textblock *lastGB, int lastExtIndex) = 0;
+   virtual int getLeftBorder (OOFAwareWidget *widget, int y, int h,
+                              OOFAwareWidget *lastGen, int lastExtIndex) = 0;
+   virtual int getRightBorder (OOFAwareWidget *widget, int y, int h,
+                               OOFAwareWidget *lastGen, int lastExtIndex) = 0;
 
-   virtual bool hasFloatLeft (Textblock *textblock, int y, int h,
-                              Textblock *lastGB, int lastExtIndex) = 0;
-   virtual bool hasFloatRight (Textblock *textblock, int y, int h,
-                               Textblock *lastGB, int lastExtIndex) = 0;
+   virtual bool hasFloatLeft (OOFAwareWidget *widget, int y, int h,
+                              OOFAwareWidget *lastGen, int lastExtIndex) = 0;
+   virtual bool hasFloatRight (OOFAwareWidget *widget, int y, int h,
+                               OOFAwareWidget *lastGen, int lastExtIndex) = 0;
 
-   virtual int getLeftFloatHeight (Textblock *textblock, int y, int h,
-                                   Textblock *lastGB, int lastExtIndex) = 0;
-   virtual int getRightFloatHeight (Textblock *textblock, int y, int h,
-                                    Textblock *lastGB, int lastExtIndex) = 0;
-
+   virtual int getLeftFloatHeight (OOFAwareWidget *widget, int y, int h,
+                                   OOFAwareWidget *lastGen, int lastExtIndex)
+      = 0;
+   virtual int getRightFloatHeight (OOFAwareWidget *widget, int y, int h,
+                                    OOFAwareWidget *lastGen, int lastExtIndex)
+      = 0;
+   
    virtual bool affectsLeftBorder (core::Widget *widget) = 0;
    virtual bool affectsRightBorder (core::Widget *widget) = 0;
 
-   virtual int getClearPosition (Textblock *textblock) = 0;
+   virtual int getClearPosition (OOFAwareWidget *widget) = 0;
 
    virtual bool dealingWithSizeOfChild (core::Widget *child) = 0;
    virtual int getAvailWidthOfChild (core::Widget *child, bool forceValue) = 0;
    virtual int getAvailHeightOfChild (core::Widget *child, bool forceValue) = 0;
-
+   
    // for iterators
    virtual int getNumWidgets () = 0;
    virtual core::Widget *getWidget (int i) = 0;

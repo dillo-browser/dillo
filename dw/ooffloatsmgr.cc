@@ -18,8 +18,10 @@
  */
 
 #include "ooffloatsmgr.hh"
-#include "textblock.hh"
+#include "oofawarewidget.hh"
 #include "../lout/debug.hh"
+
+#include <limits.h>
 
 using namespace lout::object;
 using namespace lout::container::typed;
@@ -62,8 +64,8 @@ void OOFFloatsMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
 // ----------------------------------------------------------------------
 
 OOFFloatsMgr::Float::Float (OOFFloatsMgr *oofm, Widget *widget,
-                            Textblock *generatingBlock, int externalIndex) :
-   WidgetInfo (oofm, widget)
+                            OOFAwareWidget *generatingBlock, int externalIndex)
+   : WidgetInfo (oofm, widget)
 {
    this->generatingBlock = generatingBlock;
    this->externalIndex = externalIndex;
@@ -134,7 +136,7 @@ void OOFFloatsMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->append (" }");
 }
 
-bool OOFFloatsMgr::Float::covers (Textblock *textblock, int y, int h)
+bool OOFFloatsMgr::Float::covers (OOFAwareWidget *textblock, int y, int h)
 {
    DBG_OBJ_ENTER_O ("border", 0, getOOFFloatsMgr (), "covers",
                     "%p, %d, %d [vloat: %p]",
@@ -286,8 +288,8 @@ int OOFFloatsMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
                       "(a) generating blocks equal => %d - %d = %d",
                       f1->externalIndex, f2->externalIndex, r);
    } else {
-      TBInfo *t1 = oofm->getTextblock (f1->generatingBlock),
-         *t2 = oofm->getTextblock (f2->generatingBlock);
+      TBInfo *t1 = oofm->getOOFAwareWidget (f1->generatingBlock),
+         *t2 = oofm->getOOFAwareWidget (f2->generatingBlock);
       bool rdef = false;
 
       for (TBInfo *t = t1; t != NULL; t = t->parent)
@@ -297,8 +299,8 @@ int OOFFloatsMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
             DBG_OBJ_MSGF_O ("border", 2, oofm,
                             "(b) %p is an achestor of %p; direct child is "
                             "%p (%d) => %d - %d = %d\n",
-                            t2->getTextblock (), t1->getTextblock (),
-                            t->getTextblock (), t->parentExtIndex,
+                            t2->getOOFAwareWidget (), t1->getOOFAwareWidget (),
+                            t->getOOFAwareWidget (), t->parentExtIndex,
                             t->parentExtIndex, f2->externalIndex, r);
          }
 
@@ -309,8 +311,8 @@ int OOFFloatsMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
             DBG_OBJ_MSGF_O ("border", 2, oofm,
                             "(c) %p is an achestor of %p; direct child is %p "
                             "(%d) => %d - %d = %d\n",
-                            t1->getTextblock (), t2->getTextblock (),
-                            t->getTextblock (), t->parentExtIndex,
+                            t1->getOOFAwareWidget (), t2->getOOFAwareWidget (),
+                            t->getOOFAwareWidget (), t->parentExtIndex,
                             f1->externalIndex, t->parentExtIndex, r);
          }
 
@@ -326,7 +328,7 @@ int OOFFloatsMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
    return r;
 }
 
-int OOFFloatsMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
+int OOFFloatsMgr::SortedFloatsVector::findFloatIndex (OOFAwareWidget *lastGB,
                                                       int lastExtIndex)
 {
    DBG_OBJ_ENTER_O ("border", 0, oofm, "findFloatIndex", "%p, %d",
@@ -353,12 +355,12 @@ int OOFFloatsMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
 
    //printf ("[%p] findFloatIndex (%p, %d) => i = %d, r = %d (size = %d); "
    //        "in %s list %p on the %s side\n",
-   //        oofm->containingBlock, lastGB, lastExtIndex, i, r, size (),
+   //        oofm->container, lastGB, lastExtIndex, i, r, size (),
    //        type == GB ? "GB" : "CB", this, side == LEFT ? "left" : "right");
 
    //for (int i = 0; i < size (); i++) {
    //   Float *f = get(i);
-   //   TBInfo *t = oofm->getTextblock(f->generatingBlock);
+   //   TBInfo *t = oofm->getOOFAwareWidget(f->generatingBlock);
    //   printf ("   %d: (%p [%d, %p], %d)\n", i, f->generatingBlock,
    //           t->index, t->parent ? t->parent->textblock : NULL,
    //           get(i)->externalIndex);
@@ -369,7 +371,7 @@ int OOFFloatsMgr::SortedFloatsVector::findFloatIndex (Textblock *lastGB,
    return r;
 }
 
-int OOFFloatsMgr::SortedFloatsVector::find (Textblock *textblock, int y,
+int OOFFloatsMgr::SortedFloatsVector::find (OOFAwareWidget *textblock, int y,
                                             int start, int end)
 {
    DBG_OBJ_ENTER_O ("border", 0, oofm, "find", "%p, %d, %d, %d",
@@ -387,9 +389,9 @@ int OOFFloatsMgr::SortedFloatsVector::find (Textblock *textblock, int y,
    return result;
 }
 
-int OOFFloatsMgr::SortedFloatsVector::findFirst (Textblock *textblock,
+int OOFFloatsMgr::SortedFloatsVector::findFirst (OOFAwareWidget *textblock,
                                                  int y, int h,
-                                                 Textblock *lastGB,
+                                                 OOFAwareWidget *lastGB,
                                                  int lastExtIndex,
                                                  int *lastReturn)
 {
@@ -463,7 +465,7 @@ void OOFFloatsMgr::SortedFloatsVector::put (Float *vloat)
    vloat->setIndex (type, size() - 1);
 }
 
-OOFFloatsMgr::TBInfo::TBInfo (OOFFloatsMgr *oofm, Textblock *textblock,
+OOFFloatsMgr::TBInfo::TBInfo (OOFFloatsMgr *oofm, OOFAwareWidget *textblock,
                               TBInfo *parent, int parentExtIndex) :
    WidgetInfo (oofm, textblock)
 {
@@ -493,11 +495,11 @@ void OOFFloatsMgr::TBInfo::updateAllocation ()
    DBG_OBJ_LEAVE_O (getWidget ());
 }
 
-OOFFloatsMgr::OOFFloatsMgr (Textblock *containingBlock)
+OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container)
 {
    DBG_OBJ_CREATE ("dw::OOFFloatsMgr");
 
-   this->containingBlock = (Textblock*)containingBlock;
+   this->container = (OOFAwareWidget*)container;
 
    leftFloatsCB = new SortedFloatsVector (this, LEFT, CB);
    rightFloatsCB = new SortedFloatsVector (this, RIGHT, CB);
@@ -514,16 +516,16 @@ OOFFloatsMgr::OOFFloatsMgr (Textblock *containingBlock)
    floatsByWidget = new HashTable <TypedPointer <Widget>, Float> (true, false);
 
    tbInfos = new Vector<TBInfo> (1, false);
-   tbInfosByTextblock =
-      new HashTable <TypedPointer <Textblock>, TBInfo> (true, true);
+   tbInfosByOOFAwareWidget =
+      new HashTable <TypedPointer <OOFAwareWidget>, TBInfo> (true, true);
 
    leftFloatsMark = rightFloatsMark = 0;
    lastLeftTBIndex = lastRightTBIndex = 0;
 
-   containingBlockWasAllocated = containingBlock->wasAllocated ();
-   containingBlockAllocation = *(containingBlock->getAllocation());
+   containerWasAllocated = container->wasAllocated ();
+   containerAllocation = *(container->getAllocation());
 
-   addWidgetInFlow (this->containingBlock, NULL, 0);
+   addWidgetInFlow (this->container, NULL, 0);
 }
 
 OOFFloatsMgr::~OOFFloatsMgr ()
@@ -533,10 +535,10 @@ OOFFloatsMgr::~OOFFloatsMgr ()
    delete leftFloatsCB;
    delete rightFloatsCB;
 
-   // Order is important: tbInfosByTextblock is owner of the instances
-   // of TBInfo.tbInfosByTextblock
+   // Order is important: tbInfosByOOFAwareWidget is owner of the instances
+   // of TBInfo.tbInfosByOOFAwareWidget
    delete tbInfos;
-   delete tbInfosByTextblock;
+   delete tbInfosByOOFAwareWidget;
 
    delete floatsByWidget;
 
@@ -549,24 +551,25 @@ OOFFloatsMgr::~OOFFloatsMgr ()
    DBG_OBJ_DELETE ();
 }
 
-void OOFFloatsMgr::sizeAllocateStart (Textblock *caller, Allocation *allocation)
+void OOFFloatsMgr::sizeAllocateStart (OOFAwareWidget *caller,
+                                      Allocation *allocation)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateStart",
                   "%p, (%d, %d, %d * (%d + %d))",
                   caller, allocation->x, allocation->y, allocation->width,
                   allocation->ascent, allocation->descent);
 
-   getTextblock(caller)->allocation = *allocation;
-   getTextblock(caller)->wasAllocated = true;
+   getOOFAwareWidget(caller)->allocation = *allocation;
+   getOOFAwareWidget(caller)->wasAllocated = true;
 
-   if (caller == containingBlock) {
+   if (caller == container) {
       // In the size allocation process, the *first* OOFM method
       // called is sizeAllocateStart, with the containing block as an
       // argument. So this is the correct point to initialize size
       // allocation.
 
-      containingBlockAllocation = *allocation;
-      containingBlockWasAllocated = true;
+      containerAllocation = *allocation;
+      containerWasAllocated = true;
 
       // Move floats from GB lists to the one CB list.
       moveFromGBToCB (LEFT);
@@ -580,19 +583,19 @@ void OOFFloatsMgr::sizeAllocateStart (Textblock *caller, Allocation *allocation)
    DBG_OBJ_LEAVE ();
 }
 
-void OOFFloatsMgr::sizeAllocateEnd (Textblock *caller)
+void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateEnd", "%p", caller);
 
    // (Later, absolutely positioned blocks have to be allocated.)
 
-   if (caller != containingBlock) {
+   if (caller != container) {
       // Allocate all floats "before" this textblock.
       sizeAllocateFloats (LEFT, leftFloatsCB->findFloatIndex (caller, -1));
       sizeAllocateFloats (RIGHT, rightFloatsCB->findFloatIndex (caller, -1));
    }
 
-   if (caller == containingBlock) {
+   if (caller == container) {
       // In the size allocation process, the *last* OOFM method called
       // is sizeAllocateEnd, with the containing block as an
       // argument. So this is the correct point to finish size
@@ -604,12 +607,12 @@ void OOFFloatsMgr::sizeAllocateEnd (Textblock *caller)
 
       // Check changes of both textblocks and floats allocation. (All
       // is checked by hasRelationChanged (...).)
-      for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-              tbInfosByTextblock->iterator ();
+      for (lout::container::typed::Iterator<TypedPointer <OOFAwareWidget> > it =
+              tbInfosByOOFAwareWidget->iterator ();
            it.hasNext (); ) {
-         TypedPointer <Textblock> *key = it.getNext ();
-         TBInfo *tbInfo = tbInfosByTextblock->get (key);
-         Textblock *tb = key->getTypedValue();
+         TypedPointer <OOFAwareWidget> *key = it.getNext ();
+         TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (key);
+         OOFAwareWidget *tb = key->getTypedValue();
 
          int minFloatPos;
          Widget *minFloat;
@@ -621,12 +624,12 @@ void OOFFloatsMgr::sizeAllocateEnd (Textblock *caller)
       checkAllocatedFloatCollisions (RIGHT);
 
       // Store some information for later use.
-      for (lout::container::typed::Iterator<TypedPointer <Textblock> > it =
-              tbInfosByTextblock->iterator ();
+      for (lout::container::typed::Iterator<TypedPointer <OOFAwareWidget> > it =
+              tbInfosByOOFAwareWidget->iterator ();
            it.hasNext (); ) {
-         TypedPointer <Textblock> *key = it.getNext ();
-         TBInfo *tbInfo = tbInfosByTextblock->get (key);
-         Textblock *tb = key->getTypedValue();
+         TypedPointer <OOFAwareWidget> *key = it.getNext ();
+         TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (key);
+         OOFAwareWidget *tb = key->getTypedValue();
 
          tbInfo->updateAllocation ();
          tbInfo->lineBreakWidth = tb->getLineBreakWidth ();
@@ -648,7 +651,7 @@ void OOFFloatsMgr::sizeAllocateEnd (Textblock *caller)
          rightFloatsCB->get(i)->updateAllocation ();
 
       if (sizeChanged || extremesChanged)
-         containingBlock->oofSizeChanged (extremesChanged);
+         container->oofSizeChanged (extremesChanged);
    }
 
    DBG_OBJ_LEAVE ();
@@ -722,7 +725,7 @@ bool OOFFloatsMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
       Float *vloat = list->get(i);
       int floatPos;
 
-      if (tbInfo->getTextblock () == vloat->generatingBlock)
+      if (tbInfo->getOOFAwareWidget () == vloat->generatingBlock)
          DBG_OBJ_MSGF ("resize.oofm", 1,
                        "not checking (generating!) textblock %p against float "
                        "%p", tbInfo->getWidget (), vloat->getWidget ());
@@ -731,10 +734,10 @@ bool OOFFloatsMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
 
          int newFlx =
             calcFloatX (vloat, side,
-                        gba->x - containingBlockAllocation.x, gba->width,
+                        gba->x - containerAllocation.x, gba->width,
                         vloat->generatingBlock->getLineBreakWidth ());
          int newFly = vloat->generatingBlock->getAllocation()->y
-            - containingBlockAllocation.y + vloat->yReal;
+            - containerAllocation.y + vloat->yReal;
 
          DBG_OBJ_MSGF ("resize.oofm", 1,
                        "checking textblock %p against float %p",
@@ -1026,7 +1029,7 @@ bool OOFFloatsMgr::doFloatsExceedCB (Side side)
    // tables) differ from the new allocation. (Generally, a widget may
    // allocated at a different size.)
    core::Requisition cbReq;
-   containingBlock->sizeRequest (&cbReq);
+   container->sizeRequest (&cbReq);
 
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    bool exceeds = false;
@@ -1041,11 +1044,11 @@ bool OOFFloatsMgr::doFloatsExceedCB (Side side)
                        "Does FlA = (%d, %d, %d * %d) exceed CB req+alloc = "
                        "(%d, %d, %d * %d)?",
                        fla->x, fla->y, fla->width, fla->ascent + fla->descent,
-                       containingBlockAllocation.x, containingBlockAllocation.y,
+                       containerAllocation.x, containerAllocation.y,
                        cbReq.width, cbReq.ascent + cbReq.descent);
-         if (fla->x + fla->width > containingBlockAllocation.x + cbReq.width ||
+         if (fla->x + fla->width > containerAllocation.x + cbReq.width ||
              fla->y + fla->ascent + fla->descent
-             > containingBlockAllocation.y + cbReq.ascent + cbReq.descent) {
+             > containerAllocation.y + cbReq.ascent + cbReq.descent) {
             exceeds = true;
             DBG_OBJ_MSG ("resize.oofm", 2, "Yes.");
          } else
@@ -1081,7 +1084,7 @@ bool OOFFloatsMgr::haveExtremesChanged (Side side)
       Float *vloat = list->get (i);
       // When the GB is the CB, an allocation change does not play a
       // role here.
-      if (vloat->generatingBlock != containingBlock) {
+      if (vloat->generatingBlock != container) {
          if (!vloat->wasThenAllocated () && vloat->isNowAllocated ())
             changed = true;
          else {
@@ -1089,8 +1092,8 @@ bool OOFFloatsMgr::haveExtremesChanged (Side side)
             // containinBlock->getAllocation() (old value) and
             // containinBlockAllocation (new value) are different.
 
-            Allocation *oldCBA = containingBlock->getAllocation ();
-            Allocation *newCBA = &containingBlockAllocation;
+            Allocation *oldCBA = container->getAllocation ();
+            Allocation *newCBA = &containerAllocation;
 
             // Compare also to getFloatsExtremes. The box difference
             // of the GB (from style) has not changed in this context,
@@ -1169,7 +1172,7 @@ void OOFFloatsMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
                   side == LEFT ? "LEFT" : "RIGHT", *lastAllocatedFloat,
                   newLastAllocatedFloat, list->size ());
 
-   Allocation *cba = &containingBlockAllocation;
+   Allocation *cba = &containerAllocation;
 
    for (int i = *lastAllocatedFloat + 1; i <= newLastAllocatedFloat; i++) {
       Float *vloat = list->get(i);
@@ -1219,12 +1222,12 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
       // container, it is corrected (but not left of the container).
       // This way, we save space and, especially within tables, avoid
       // some problems.
-      if (wasAllocated (containingBlock) &&
-          x + vloat->size.width > containingBlock->getLineBreakWidth ()) {
-         x = max (0, containingBlock->getLineBreakWidth () - vloat->size.width);
+      if (wasAllocated (container) &&
+          x + vloat->size.width > container->getLineBreakWidth ()) {
+         x = max (0, container->getLineBreakWidth () - vloat->size.width);
          DBG_OBJ_MSGF ("resize.common", 1,
                        "corrected to: max (0, %d - %d) = %d",
-                       containingBlock->getLineBreakWidth (), vloat->size.width,
+                       container->getLineBreakWidth (), vloat->size.width,
                        x);
       }
       break;
@@ -1283,23 +1286,25 @@ void OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
    }
 }
 
-void OOFFloatsMgr::addWidgetInFlow (Textblock *textblock,
-                                    Textblock *parentBlock, int externalIndex)
+void OOFFloatsMgr::addWidgetInFlow (OOFAwareWidget *textblock,
+                                    OOFAwareWidget *parentBlock,
+                                    int externalIndex)
 {
    //printf ("[%p] addWidgetInFlow (%p, %p, %d)\n",
-   //        containingBlock, textblock, parentBlock, externalIndex);
+   //        container, textblock, parentBlock, externalIndex);
 
    TBInfo *tbInfo =
       new TBInfo (this, textblock,
-                  parentBlock ? getTextblock (parentBlock) : NULL,
+                  parentBlock ? getOOFAwareWidget (parentBlock) : NULL,
                   externalIndex);
    tbInfo->index = tbInfos->size();
 
    tbInfos->put (tbInfo);
-   tbInfosByTextblock->put (new TypedPointer<Textblock> (textblock), tbInfo);
+   tbInfosByOOFAwareWidget->put (new TypedPointer<OOFAwareWidget> (textblock),
+                                 tbInfo);
 }
 
-int OOFFloatsMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
+int OOFFloatsMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generatingBlock,
                                  int externalIndex)
 {
    DBG_OBJ_ENTER ("construct.oofm", 0, "addWidgetOOF", "%p, %p, %d",
@@ -1307,7 +1312,7 @@ int OOFFloatsMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
 
    int subRef;
 
-   TBInfo *tbInfo = getTextblock (generatingBlock);
+   TBInfo *tbInfo = getOOFAwareWidget (generatingBlock);
    Float *vloat = new Float (this, widget, generatingBlock, externalIndex);
 
    // Note: Putting the float first in the GB list, and then, possibly
@@ -1380,10 +1385,10 @@ int OOFFloatsMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
    return subRef;
 }
 
-void OOFFloatsMgr::moveExternalIndices (Textblock *generatingBlock,
+void OOFFloatsMgr::moveExternalIndices (OOFAwareWidget *generatingBlock,
                                         int oldStartIndex, int diff)
 {
-   TBInfo *tbInfo = getTextblock (generatingBlock);
+   TBInfo *tbInfo = getOOFAwareWidget (generatingBlock);
    moveExternalIndices (tbInfo->leftFloatsGB, oldStartIndex, diff);
    moveExternalIndices (tbInfo->rightFloatsGB, oldStartIndex, diff);
 }
@@ -1673,7 +1678,7 @@ void OOFFloatsMgr::getFloatsListsAndSide (Float *vloat,
                                           SortedFloatsVector **listOpp,
                                           Side *side)
 {
-   TBInfo *tbInfo = getTextblock (vloat->generatingBlock);
+   TBInfo *tbInfo = getOOFAwareWidget (vloat->generatingBlock);
 
    switch (vloat->getWidget()->getStyle()->vloat) {
    case FLOAT_LEFT:
@@ -1717,9 +1722,9 @@ void OOFFloatsMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
    // boxRestHeight() are added here.
    
    *oofWidth =
-      max (oofWidthtLeft, oofWidthRight) + containingBlock->boxRestWidth ();
+      max (oofWidthtLeft, oofWidthRight) + container->boxRestWidth ();
    *oofHeight =
-      max (oofHeightLeft, oofHeightRight) + containingBlock->boxRestHeight ();
+      max (oofHeightLeft, oofHeightRight) + container->boxRestHeight ();
 
    DBG_OBJ_MSGF ("resize.oofm", 1,
                  "=> (l: %d, r: %d => %d) * (l: %d, r: %d => %d)",
@@ -1735,7 +1740,7 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
                   cbReq->width, cbReq->ascent, cbReq->descent,
                   side == LEFT ? "LEFT" : "RIGHT");
 
-   SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
+   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (container, side);
 
    *width = *height = 0;
 
@@ -1744,21 +1749,21 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
 
-      if (vloat->generatingBlock == containingBlock ||
+      if (vloat->generatingBlock == container ||
           wasAllocated (vloat->generatingBlock)) {
          ensureFloatSize (vloat);
          int x, y;
 
-         if (vloat->generatingBlock == containingBlock) {
+         if (vloat->generatingBlock == container) {
             x = calcFloatX (vloat, side, 0, cbReq->width,
                             vloat->generatingBlock->getLineBreakWidth ());
             y = vloat->yReal;
          } else {
             Allocation *gba = getAllocation(vloat->generatingBlock);
             x = calcFloatX (vloat, side,
-                            gba->x - containingBlockAllocation.x, gba->width,
+                            gba->x - containerAllocation.x, gba->width,
                             vloat->generatingBlock->getLineBreakWidth ());
-            y = gba->y - containingBlockAllocation.y + vloat->yReal;
+            y = gba->y - containerAllocation.y + vloat->yReal;
          }
 
          *width = max (*width, x +  vloat->size.width);
@@ -1809,7 +1814,7 @@ void OOFFloatsMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
 
    *minWidth = *maxWidth = 0;
 
-   SortedFloatsVector *list = getFloatsListForTextblock (containingBlock, side);
+   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (container, side);
    DBG_OBJ_MSGF ("resize.oofm", 1, "%d floats to be examined", list->size());
 
    for (int i = 0; i < list->size(); i++) {
@@ -1852,7 +1857,7 @@ bool OOFFloatsMgr::getFloatDiffToCB (Float *vloat, int *leftDiff,
 
    bool result;
 
-   if (vloat->generatingBlock == containingBlock) {
+   if (vloat->generatingBlock == container) {
       *leftDiff = vloat->generatingBlock->getStyle()->boxOffsetX();
       *rightDiff = vloat->generatingBlock->getStyle()->boxRestWidth();
       result = true;
@@ -1861,20 +1866,20 @@ bool OOFFloatsMgr::getFloatDiffToCB (Float *vloat, int *leftDiff,
                     *leftDiff, *rightDiff);
    } else if (wasAllocated (vloat->generatingBlock)) {
       Allocation *gba = getAllocation(vloat->generatingBlock);
-      *leftDiff = gba->x - containingBlockAllocation.x
+      *leftDiff = gba->x - containerAllocation.x
          + vloat->generatingBlock->getStyle()->boxOffsetX();
       *rightDiff =
-         (containingBlockAllocation.x + containingBlockAllocation.width)
+         (containerAllocation.x + containerAllocation.width)
          - (gba->x + gba->width)
          + vloat->generatingBlock->getStyle()->boxRestWidth();
       result = true;
       DBG_OBJ_MSGF ("resize.oofm", 1,
                     "GB != CB => leftDiff = %d - %d + %d = %d, "
                     "rightDiff = (%d + %d) - (%d + %d) + %d = %d",
-                    gba->x, containingBlockAllocation.x,
+                    gba->x, containerAllocation.x,
                     vloat->generatingBlock->getStyle()->boxOffsetX(),
-                    *leftDiff, containingBlockAllocation.x,
-                    containingBlockAllocation.width, gba->x, gba->width,
+                    *leftDiff, containerAllocation.x,
+                    containerAllocation.width, gba->x, gba->width,
                     vloat->generatingBlock->getStyle()->boxRestWidth(),
                     *rightDiff);
    } else {
@@ -1886,10 +1891,10 @@ bool OOFFloatsMgr::getFloatDiffToCB (Float *vloat, int *leftDiff,
    return result;
 }
 
-OOFFloatsMgr::TBInfo *OOFFloatsMgr::getTextblock (Textblock *textblock)
+OOFFloatsMgr::TBInfo *OOFFloatsMgr::getOOFAwareWidget (OOFAwareWidget *widget)
 {
-   TypedPointer<Textblock> key (textblock);
-   TBInfo *tbInfo = tbInfosByTextblock->get (&key);
+   TypedPointer<OOFAwareWidget> key (widget);
+   TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (&key);
    assert (tbInfo);
    return tbInfo;
 }
@@ -1903,8 +1908,8 @@ OOFFloatsMgr::TBInfo *OOFFloatsMgr::getTextblock (Textblock *textblock)
  * but is 0 if there is no float, so a caller should also consider
  * other borders.
  */
-int OOFFloatsMgr::getLeftBorder (Textblock *textblock, int y, int h,
-                                 Textblock *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getLeftBorder (OOFAwareWidget *textblock, int y, int h,
+                                 OOFAwareWidget *lastGB, int lastExtIndex)
 {
    int b = getBorder (textblock, LEFT, y, h, lastGB, lastExtIndex);
    DBG_OBJ_MSGF ("border", 0, "left border (%p, %d, %d, %p, %d) => %d",
@@ -1918,8 +1923,8 @@ int OOFFloatsMgr::getLeftBorder (Textblock *textblock, int y, int h,
  *
  * See also getLeftBorder(int, int);
  */
-int OOFFloatsMgr::getRightBorder (Textblock *textblock, int y, int h,
-                                  Textblock *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getRightBorder (OOFAwareWidget *textblock, int y, int h,
+                                  OOFAwareWidget *lastGB, int lastExtIndex)
 {
    int b = getBorder (textblock, RIGHT, y, h, lastGB, lastExtIndex);
    DBG_OBJ_MSGF ("border", 0, "right border (%p, %d, %d, %p, %d) => %d",
@@ -1927,14 +1932,14 @@ int OOFFloatsMgr::getRightBorder (Textblock *textblock, int y, int h,
    return b;
 }
 
-int OOFFloatsMgr::getBorder (Textblock *textblock, Side side, int y, int h,
-                             Textblock *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
+                             OOFAwareWidget *lastGB, int lastExtIndex)
 {
    DBG_OBJ_ENTER ("border", 0, "getBorder", "%p, %s, %d, %d, %p, %d",
                   textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
                   lastGB, lastExtIndex);
 
-   SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
+   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (textblock, side);
    int last;   
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, &last);
 
@@ -2002,10 +2007,10 @@ int OOFFloatsMgr::getBorder (Textblock *textblock, Side side, int y, int h,
 }
 
 
-OOFFloatsMgr::SortedFloatsVector *OOFFloatsMgr::getFloatsListForTextblock
-   (Textblock *textblock, Side side)
+OOFFloatsMgr::SortedFloatsVector *OOFFloatsMgr::getFloatsListForOOFAwareWidget
+   (OOFAwareWidget *textblock, Side side)
 {
-   DBG_OBJ_ENTER ("oofm.common", 1, "getFloatsListForTextblock", "%p, %s",
+   DBG_OBJ_ENTER ("oofm.common", 1, "getFloatsListForOOFAwareWidget", "%p, %s",
                   textblock, side == LEFT ? "LEFT" : "RIGHT");
 
    OOFFloatsMgr::SortedFloatsVector *list;
@@ -2015,7 +2020,7 @@ OOFFloatsMgr::SortedFloatsVector *OOFFloatsMgr::getFloatsListForTextblock
       list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    } else {
       DBG_OBJ_MSG ("oofm.common", 2, "returning <b>GB</b> list");
-      TBInfo *tbInfo = getTextblock (textblock);
+      TBInfo *tbInfo = getOOFAwareWidget (textblock);
       list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
    }
 
@@ -2024,8 +2029,8 @@ OOFFloatsMgr::SortedFloatsVector *OOFFloatsMgr::getFloatsListForTextblock
 }
 
 
-bool OOFFloatsMgr::hasFloatLeft (Textblock *textblock, int y, int h,
-                                 Textblock *lastGB, int lastExtIndex)
+bool OOFFloatsMgr::hasFloatLeft (OOFAwareWidget *textblock, int y, int h,
+                                 OOFAwareWidget *lastGB, int lastExtIndex)
 {
    bool b = hasFloat (textblock, LEFT, y, h, lastGB, lastExtIndex);
    DBG_OBJ_MSGF ("border", 0, "has float left (%p, %d, %d, %p, %d) => %s",
@@ -2033,8 +2038,8 @@ bool OOFFloatsMgr::hasFloatLeft (Textblock *textblock, int y, int h,
    return b;
 }
 
-bool OOFFloatsMgr::hasFloatRight (Textblock *textblock, int y, int h,
-                                  Textblock *lastGB, int lastExtIndex)
+bool OOFFloatsMgr::hasFloatRight (OOFAwareWidget *textblock, int y, int h,
+                                  OOFAwareWidget *lastGB, int lastExtIndex)
 {
    bool b = hasFloat (textblock, RIGHT, y, h, lastGB, lastExtIndex);
    DBG_OBJ_MSGF ("border", 0, "has float right (%p, %d, %d, %p, %d) => %s",
@@ -2042,14 +2047,14 @@ bool OOFFloatsMgr::hasFloatRight (Textblock *textblock, int y, int h,
    return b;
 }
 
-bool OOFFloatsMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
-                             Textblock *lastGB, int lastExtIndex)
+bool OOFFloatsMgr::hasFloat (OOFAwareWidget *textblock, Side side, int y, int h,
+                             OOFAwareWidget *lastGB, int lastExtIndex)
 {
    DBG_OBJ_ENTER ("border", 0, "hasFloat", "%p, %s, %d, %d, %p, %d",
                   textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
                   lastGB, lastExtIndex);
 
-   SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
+   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (textblock, side);
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, NULL);
 
    DBG_OBJ_MSGF ("border", 1, "first = %d", first);
@@ -2057,27 +2062,28 @@ bool OOFFloatsMgr::hasFloat (Textblock *textblock, Side side, int y, int h,
    return first != -1;
 }
 
-int OOFFloatsMgr::getLeftFloatHeight (Textblock *textblock, int y, int h,
-                                      Textblock *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getLeftFloatHeight (OOFAwareWidget *textblock, int y, int h,
+                                      OOFAwareWidget *lastGB, int lastExtIndex)
 {
    return getFloatHeight (textblock, LEFT, y, h, lastGB, lastExtIndex);
 }
 
-int OOFFloatsMgr::getRightFloatHeight (Textblock *textblock, int y, int h,
-                                       Textblock *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getRightFloatHeight (OOFAwareWidget *textblock, int y, int h,
+                                       OOFAwareWidget *lastGB, int lastExtIndex)
 {
    return getFloatHeight (textblock, RIGHT, y, h, lastGB, lastExtIndex);
 }
 
 // Calculate height from the position *y*.
-int OOFFloatsMgr::getFloatHeight (Textblock *textblock, Side side, int y, int h,
-                                  Textblock *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getFloatHeight (OOFAwareWidget *textblock, Side side, int y,
+                                  int h, OOFAwareWidget *lastGB,
+                                  int lastExtIndex)
 {
    DBG_OBJ_ENTER ("border", 0, "getFloatHeight", "%p, %s, %d, %d, %p, %d",
                   textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
                   lastGB, lastExtIndex);
 
-   SortedFloatsVector *list = getFloatsListForTextblock (textblock, side);
+   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (textblock, side);
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, NULL);
    assert (first != -1);   /* This method must not be called when there is no
                               float on the respective side. */
@@ -2115,7 +2121,7 @@ int OOFFloatsMgr::getFloatHeight (Textblock *textblock, Side side, int y, int h,
 /**
  * Returns position relative to the textblock "tb".
  */
-int OOFFloatsMgr::getClearPosition (Textblock *textblock)
+int OOFFloatsMgr::getClearPosition (OOFAwareWidget *textblock)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "getClearPosition", "%p", textblock);
 
@@ -2153,7 +2159,7 @@ bool OOFFloatsMgr::affectsRightBorder (core::Widget *widget)
    return widget->getStyle()->vloat == core::style::FLOAT_RIGHT;
 };
 
-int OOFFloatsMgr::getClearPosition (Textblock *textblock, Side side)
+int OOFFloatsMgr::getClearPosition (OOFAwareWidget *textblock, Side side)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "getClearPosition", "%p, %s",
                   textblock, side == LEFT ? "LEFT" : "RIGHT");
@@ -2204,7 +2210,7 @@ void OOFFloatsMgr::ensureFloatSize (Float *vloat)
       DBG_OBJ_MSG ("resize.oofm", 1, "dirty: recalculation");
 
       vloat->getWidget()->sizeRequest (&vloat->size);
-      vloat->cbLineBreakWidth = containingBlock->getLineBreakWidth ();
+      vloat->cbLineBreakWidth = container->getLineBreakWidth ();
       vloat->dirty = false;
       DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
 

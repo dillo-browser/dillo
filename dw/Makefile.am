@@ -69,6 +69,8 @@ libDw_widgets_a_SOURCES = \
 	image.hh \
 	listitem.cc \
 	listitem.hh \
+	oofawarewidget.cc \
+	oofawarewidget.hh \
 	ooffloatsmgr.cc \
 	ooffloatsmgr.hh \
 	oofposabsmgr.cc \

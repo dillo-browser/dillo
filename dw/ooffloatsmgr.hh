@@ -7,6 +7,13 @@ namespace dw {
 
 namespace oof {
 
+/**
+ * \brief OutOfFlowMgr implementation dealing with floats.
+ *
+ * Note: The identifiers and comments of this class still refer to
+ * "Textblock" instead of "OOFAwareWidget"; should be cleaned up some
+ * day. (OTOH, these widgets are always textblocks.)
+ */
 class OOFFloatsMgr: public OutOfFlowMgr
 {
    friend class WidgetInfo;
@@ -15,12 +22,12 @@ private:
    enum Side { LEFT, RIGHT };
    enum SFVType { GB, CB };
 
-   Textblock *containingBlock;
+   OOFAwareWidget *container;
 
    // These two values are redundant to TBInfo::wasAllocated and
    // TBInfo::allocation, for some special cases.
-   bool containingBlockWasAllocated;
-   core::Allocation containingBlockAllocation;
+   bool containerWasAllocated;
+   core::Allocation containerAllocation;
 
    class WidgetInfo: public lout::object::Object
    {
@@ -57,11 +64,12 @@ private:
       {
       private:
          OOFFloatsMgr *oofm;
-         Textblock *refTB;
+         OOFAwareWidget *refTB;
          SFVType type; // actually only used for debugging
 
       public:
-         ComparePosition (OOFFloatsMgr *oofm, Textblock *refTB, SFVType type)
+         ComparePosition (OOFFloatsMgr *oofm, OOFAwareWidget *refTB,
+                          SFVType type)
          { this->oofm = oofm; this->refTB = refTB; this->type = type; }
          int compare(Object *o1, Object *o2);
       };
@@ -84,7 +92,7 @@ private:
          int compare(Object *o1, Object *o2);
       };
 
-      Textblock *generatingBlock;
+      OOFAwareWidget *generatingBlock;
       int externalIndex;
       int yReq, yReal; // relative to generator, not container
       int indexGBList; /* Refers to TBInfo::leftFloatsGB or
@@ -100,13 +108,13 @@ private:
       bool dirty, sizeChangedSinceLastAllocation;
 
       Float (OOFFloatsMgr *oofm, core::Widget *widget,
-             Textblock *generatingBlock, int externalIndex);
+             OOFAwareWidget *generatingBlock, int externalIndex);
 
       inline bool isNowAllocated () { return getWidget()->wasAllocated (); }
       inline int getNewXCB () { return getWidget()->getAllocation()->x -
-            getOOFFloatsMgr()->containingBlockAllocation.x; }
+            getOOFFloatsMgr()->containerAllocation.x; }
       inline int getNewYCB () { return getWidget()->getAllocation()->y -
-            getOOFFloatsMgr()->containingBlockAllocation.y; }
+            getOOFFloatsMgr()->containerAllocation.y; }
       inline int getNewWidth () { return getWidget()->getAllocation()->width; }
       inline int getNewHeight () { return getWidget()->getAllocation()->ascent +
             getWidget()->getAllocation()->descent; }
@@ -120,7 +128,7 @@ private:
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);
 
-      bool covers (Textblock *textblock, int y, int h);
+      bool covers (OOFAwareWidget *textblock, int y, int h);
    };
 
    /**
@@ -149,10 +157,10 @@ private:
          lout::container::typed::Vector<Float> (1, false)
       { this->oofm = oofm; this->side = side; this->type = type; }
 
-      int findFloatIndex (Textblock *lastGB, int lastExtIndex);
-      int find (Textblock *textblock, int y, int start, int end);
-      int findFirst (Textblock *textblock, int y, int h, Textblock *lastGB,
-                     int lastExtIndex, int *lastReturn);
+      int findFloatIndex (OOFAwareWidget *lastGB, int lastExtIndex);
+      int find (OOFAwareWidget *textblock, int y, int start, int end);
+      int findFirst (OOFAwareWidget *textblock, int y, int h,
+                     OOFAwareWidget *lastGB, int lastExtIndex, int *lastReturn);
       int findLastBeforeSideSpanningIndex (int sideSpanningIndex);
       void put (Float *vloat);
 
@@ -188,27 +196,27 @@ private:
       // as long as this textblock is not allocates.
       SortedFloatsVector *leftFloatsGB, *rightFloatsGB;
 
-      TBInfo (OOFFloatsMgr *oofm, Textblock *textblock,
+      TBInfo (OOFFloatsMgr *oofm, OOFAwareWidget *textblock,
               TBInfo *parent, int parentExtIndex);
       ~TBInfo ();
 
       inline bool isNowAllocated () {
-         return getOOFFloatsMgr()->wasAllocated (getTextblock ()); }
+         return getOOFFloatsMgr()->wasAllocated (getOOFAwareWidget ()); }
       inline int getNewXCB () {
-         return getOOFFloatsMgr()->getAllocation (getTextblock ())->x -
-            getOOFFloatsMgr()->containingBlockAllocation.x; }
+         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ())->x -
+            getOOFFloatsMgr()->containerAllocation.x; }
       inline int getNewYCB () {
-         return getOOFFloatsMgr()->getAllocation (getTextblock ())->y -
-            getOOFFloatsMgr()->containingBlockAllocation.y; }
+         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ())->y -
+            getOOFFloatsMgr()->containerAllocation.y; }
       inline int getNewWidth () {
-         return getOOFFloatsMgr()->getAllocation (getTextblock ())->width; }
+         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ())->width; }
       inline int getNewHeight () {
          core::Allocation *allocation =
-            getOOFFloatsMgr()->getAllocation (getTextblock ());
+            getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ());
          return allocation->ascent + allocation->descent; }
       void updateAllocation ();
 
-      inline Textblock *getTextblock () { return (Textblock*)getWidget (); }
+      inline OOFAwareWidget *getOOFAwareWidget () { return (OOFAwareWidget*)getWidget (); }
    };
 
    // These two lists store all floats, in the order in which they are
@@ -227,8 +235,8 @@ private:
                                      <dw::core::Widget>, Float> *floatsByWidget;
 
    lout::container::typed::Vector<TBInfo> *tbInfos;
-   lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
-                                     TBInfo> *tbInfosByTextblock;
+   lout::container::typed::HashTable<lout::object::TypedPointer<OOFAwareWidget>,
+                                     TBInfo> *tbInfosByOOFAwareWidget;
 
    int lastLeftTBIndex, lastRightTBIndex, leftFloatsMark, rightFloatsMark;
 
@@ -236,16 +244,16 @@ private:
     * Variant of Widget::wasAllocated(), which can also be used within
     * OOFM::sizeAllocateEnd().
     */
-   inline bool wasAllocated (Textblock *textblock) {
-      return getTextblock(textblock)->wasAllocated;
+   inline bool wasAllocated (OOFAwareWidget *textblock) {
+      return getOOFAwareWidget(textblock)->wasAllocated;
    }
 
    /**
     * Variant of Widget::getAllocation(), which can also be used
     * within OOFM::sizeAllocateEnd().
     */
-   inline core::Allocation *getAllocation (Textblock *textblock) {
-      return &(getTextblock(textblock)->allocation);
+   inline core::Allocation *getAllocation (OOFAwareWidget *textblock) {
+      return &(getOOFAwareWidget(textblock)->allocation);
    }
 
    void moveExternalIndices (SortedFloatsVector *list, int oldStartIndex,
@@ -291,18 +299,19 @@ private:
                            int *maxWidth);
    bool getFloatDiffToCB (Float *vloat, int *leftDiff, int *rightDiff);
 
-   TBInfo *getTextblock (Textblock *textblock);
-   int getBorder (Textblock *textblock, Side side, int y, int h,
-                  Textblock *lastGB, int lastExtIndex);
-   SortedFloatsVector *getFloatsListForTextblock (Textblock *textblock,
-                                                  Side side);
-   bool hasFloat (Textblock *textblock, Side side, int y, int h,
-                  Textblock *lastGB, int lastExtIndex);
+   TBInfo *getOOFAwareWidget (OOFAwareWidget *textblock);
+   int getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
+                  OOFAwareWidget *lastGB, int lastExtIndex);
+   SortedFloatsVector *getFloatsListForOOFAwareWidget (OOFAwareWidget
+                                                       *textblock,
+                                                       Side side);
+   bool hasFloat (OOFAwareWidget *textblock, Side side, int y, int h,
+                  OOFAwareWidget *lastGB, int lastExtIndex);
 
-   int getFloatHeight (Textblock *textblock, Side side, int y, int h,
-                       Textblock *lastGB, int lastExtIndex);
+   int getFloatHeight (OOFAwareWidget *textblock, Side side, int y, int h,
+                       OOFAwareWidget *lastGB, int lastExtIndex);
 
-   int getClearPosition (Textblock *textblock, Side side);
+   int getClearPosition (OOFAwareWidget *textblock, Side side);
 
    void ensureFloatSize (Float *vloat);
 
@@ -319,11 +328,12 @@ private:
    { return ref == -1 ? ref : (ref >> 1); }
 
 public:
-   OOFFloatsMgr (Textblock *containingBlock);
+   OOFFloatsMgr (OOFAwareWidget *container);
    ~OOFFloatsMgr ();
 
-   void sizeAllocateStart (Textblock *caller, core::Allocation *allocation);
-   void sizeAllocateEnd (Textblock *caller);
+   void sizeAllocateStart (OOFAwareWidget *caller,
+                           core::Allocation *allocation);
+   void sizeAllocateEnd (OOFAwareWidget *caller);
    void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area);
 
@@ -333,11 +343,11 @@ public:
 
    static bool _isWidgetOutOfFlow (core::Widget *widget);
    static bool _isWidgetHandledByOOFM (core::Widget *widget);
-   void addWidgetInFlow (Textblock *textblock, Textblock *parentBlock,
+   void addWidgetInFlow (OOFAwareWidget *textblock, OOFAwareWidget *parentBlock,
                          int externalIndex);
-   int addWidgetOOF (core::Widget *widget, Textblock *generatingBlock,
+   int addWidgetOOF (core::Widget *widget, OOFAwareWidget *generatingBlock,
                      int externalIndex);
-   void moveExternalIndices (Textblock *generatingBlock, int oldStartIndex,
+   void moveExternalIndices (OOFAwareWidget *generatingBlock, int oldStartIndex,
                              int diff);
 
    void tellPosition (core::Widget *widget, int yReq);
@@ -346,25 +356,25 @@ public:
    void getExtremes (core::Extremes *cbExtr,
                      int *oofMinWidth, int *oofMaxWidth);
 
-   int getLeftBorder (Textblock *textblock, int y, int h, Textblock *lastGB,
-                      int lastExtIndex);
-   int getRightBorder (Textblock *textblock, int y, int h, Textblock *lastGB,
-                       int lastExtIndex);
+   int getLeftBorder (OOFAwareWidget *textblock, int y, int h,
+                      OOFAwareWidget *lastGB, int lastExtIndex);
+   int getRightBorder (OOFAwareWidget *textblock, int y, int h,
+                       OOFAwareWidget *lastGB, int lastExtIndex);
 
-   bool hasFloatLeft (Textblock *textblock, int y, int h, Textblock *lastGB,
-                      int lastExtIndex);
-   bool hasFloatRight (Textblock *textblock, int y, int h, Textblock *lastGB,
-                       int lastExtIndex);
+   bool hasFloatLeft (OOFAwareWidget *textblock, int y, int h,
+                      OOFAwareWidget *lastGB, int lastExtIndex);
+   bool hasFloatRight (OOFAwareWidget *textblock, int y, int h, 
+                       OOFAwareWidget *lastGB, int lastExtIndex);
 
-   int getLeftFloatHeight (Textblock *textblock, int y, int h,
-                           Textblock *lastGB, int lastExtIndex);
-   int getRightFloatHeight (Textblock *textblock, int y, int h,
-                            Textblock *lastGB, int lastExtIndex);
+   int getLeftFloatHeight (OOFAwareWidget *textblock, int y, int h,
+                           OOFAwareWidget *lastGB, int lastExtIndex);
+   int getRightFloatHeight (OOFAwareWidget *textblock, int y, int h,
+                            OOFAwareWidget *lastGB, int lastExtIndex);
 
    bool affectsLeftBorder (core::Widget *widget);
    bool affectsRightBorder (core::Widget *widget);
 
-   int getClearPosition (Textblock *textblock);
+   int getClearPosition (OOFAwareWidget *textblock);
 
    bool dealingWithSizeOfChild (core::Widget *child);
    int getAvailWidthOfChild (core::Widget *child, bool forceValue);

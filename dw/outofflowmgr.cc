@@ -19,7 +19,7 @@
 
 
 #include "outofflowmgr.hh"
-#include "textblock.hh"
+#include "oofawarewidget.hh"
 #include "../lout/debug.hh"
 
 
