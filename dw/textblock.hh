@@ -246,38 +246,6 @@ private:
    static const char *hyphenDrawChar;
 
 protected:
-   inline bool isParentRefOOF (int parentRef)
-   { return parentRef != -1 && (parentRef & PARENT_REF_OOFM_MASK); }
-
-   inline int makeParentRefInFlow (int lineNo)
-   { return (lineNo << PARENT_REF_OOFM_BITS); }
-   inline int getParentRefLineNo (int parentRef)
-   { assert (!isParentRefOOF (parentRef));
-      return parentRef >> PARENT_REF_OOFM_BITS; }
-
-   inline int makeParentRefOOF (int oofmIndex, int oofmSubRef)
-   { return (oofmSubRef << PARENT_REF_OOFM_BITS) | (oofmIndex + 1); }
-   inline int getParentRefOOFSubRef (int parentRef)
-   { assert (isParentRefOOF (parentRef));
-      return parentRef >> PARENT_REF_OOFM_BITS; }
-   inline int getParentRefOOFIndex (int parentRef)
-   { assert (isParentRefOOF (parentRef));
-      return (parentRef & PARENT_REF_OOFM_MASK) - 1; }
-   inline oof::OutOfFlowMgr *getParentRefOutOfFlowMgr (int parentRef)
-   { return outOfFlowMgr[getParentRefOOFIndex (parentRef)]; }
-
-   inline bool isWidgetOOF (Widget *widget)
-   { return isParentRefOOF (widget->parentRef); }
-
-   inline int getWidgetLineNo (Widget *widget)
-   { return getParentRefLineNo (widget->parentRef); }
-
-   inline int getWidgetOOFSubRef (Widget *widget)
-   { return getParentRefOOFSubRef (widget->parentRef); }
-   inline int getWidgetOOFIndex (Widget *widget)
-   { return getParentRefOOFIndex (widget->parentRef); }
-   inline oof::OutOfFlowMgr *getWidgetOutOfFlowMgr (Widget *widget)
-   { return getParentRefOutOfFlowMgr (widget->parentRef); }
 
    /**
     * \brief Implementation used for words.

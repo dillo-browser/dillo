@@ -1,7 +1,7 @@
 #ifndef __DW_TABLE_HH__
 #define __DW_TABLE_HH__
 
-#include "core.hh"
+#include "oofawarewidget.hh"
 #include "alignedtablecell.hh"
 #include "../lout/misc.hh"
 
@@ -319,7 +319,7 @@ namespace dw {
  * Here, \em foo-bar refers to the attribute \em bar of the tag \em foo foo.
  * Look at the HTML parser for more details.
  */
-class Table: public core::Widget
+class Table: public oof::OOFAwareWidget
 {
 private:
    struct Child

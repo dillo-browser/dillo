@@ -124,6 +124,9 @@ void Table::sizeRequestImpl (core::Requisition *requisition)
 
    correctRequisition (requisition, core::splitHeightPreserveDescent);
 
+   // For the order, see similar reasoning for dw::Textblock.
+   correctRequisitionByOOF (requisition);
+
    DBG_OBJ_LEAVE ();
 }
 
@@ -152,6 +155,9 @@ void Table::getExtremesImpl (core::Extremes *extremes)
 
    correctExtremes (extremes);
 
+   // For the order, see similar reasoning for dw::Textblock.
+   correctExtremesByOOF (extremes);
+
    DBG_OBJ_LEAVE ();
 }
 
@@ -160,6 +166,8 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
    DBG_OBJ_ENTER ("resize", 0, "sizeAllocateImpl", "%d, %d; %d * (%d + %d)",
                   allocation->x, allocation->y, allocation->width,
                   allocation->ascent, allocation->descent);
+
+   sizeAllocateStart (allocation);
 
    calcCellSizes (true);
 
@@ -200,6 +208,8 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
 
       x += colWidths->get (col) + getStyle()->hBorderSpacing;
    }
+
+   sizeAllocateEnd ();
 
    DBG_OBJ_LEAVE ();
 }
@@ -306,6 +316,8 @@ void Table::containerSizeChangedForChildren ()
       }
    }
 
+   containerSizeChangedForChildrenOOF ();
+
    DBG_OBJ_LEAVE ();
 }
 
@@ -371,6 +383,8 @@ void Table::draw (core::View *view, core::Rectangle *area)
             child->draw (view, &childArea);
       }
    }
+
+   drawOOF (view, area);
 }
 
 void Table::removeChild (Widget *child)

@@ -300,18 +300,6 @@ Textblock::~Textblock ()
    delete words;
    delete anchors;
 
-   for (int i = 0; i < NUM_OOFM; i++) {
-      if(outOfFlowMgr[i]) {
-         // I feel more comfortable by letting the textblock delete these
-         // widgets, instead of doing this in ~OutOfFlowMgr.
-         
-         for (int j = 0; j < outOfFlowMgr[i]->getNumWidgets (); j++)
-            delete outOfFlowMgr[i]->getWidget (j);
-         
-         delete outOfFlowMgr[i];
-      }
-   }
-
    /* Make sure we don't own widgets anymore. Necessary before call of
       parent class destructor. (???) */
    words = NULL;
@@ -404,22 +392,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    // Is this really what we want? An alternative could be that
    // OutOfFlowMgr::getSize honours CSS attributes an corrected sizes.
 
-   for (int i = 0; i < NUM_OOFM; i++) {
-      if (outOfFlowMgr[i]) {
-         int oofWidth, oofHeight;
-         DBG_OBJ_MSGF ("resize", 1,
-                       "before considering widgets by OOFM #%d: %d * (%d + %d)",
-                       i, requisition->width, requisition->ascent,
-                       requisition->descent);
-
-         outOfFlowMgr[i]->getSize (requisition, &oofWidth, &oofHeight);
-
-         if (oofWidth > requisition->width)
-            requisition->width = oofWidth;
-         if (oofHeight > requisition->ascent + requisition->descent)
-            requisition->descent = oofHeight - requisition->ascent;
-      }
-   }
+   correctRequisitionByOOF (requisition);
 
    DBG_OBJ_MSGF ("resize", 1, "final: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
@@ -500,22 +473,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                  extremes->minWidth, extremes->minWidthIntrinsic,
                  extremes->maxWidth, extremes->maxWidthIntrinsic);
 
-   for (int i = 0; i < NUM_OOFM; i++) {
-      if (outOfFlowMgr[i]) {
-         int oofMinWidth, oofMaxWidth;
-         outOfFlowMgr[i]->getExtremes (extremes, &oofMinWidth, &oofMaxWidth);
-         
-         DBG_OBJ_MSGF ("resize", 1, "OOFM (#%d) correction: %d / %d",
-                       i, oofMinWidth, oofMaxWidth);
-
-         extremes->minWidth = misc::max (extremes->minWidth, oofMinWidth);
-         extremes->minWidthIntrinsic =
-            misc::max (extremes->minWidthIntrinsic, oofMinWidth);
-         extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);
-         extremes->maxWidthIntrinsic =
-            misc::max (extremes->maxWidthIntrinsic, oofMinWidth);
-      }
-   }
+   correctExtremesByOOF (extremes);
 
    DBG_OBJ_MSGF ("resize", 0,
                  "finally, after considering OOFM: %d (%d) / %d (%d)",
@@ -770,9 +728,7 @@ void Textblock::containerSizeChangedForChildren ()
          word->content.widget->containerSizeChanged ();
    }
 
-   for (int i = 0; i < NUM_OOFM; i++)
-      if (outOfFlowMgr[i])
-         outOfFlowMgr[i]->containerSizeChangedForChildren ();
+   containerSizeChangedForChildrenOOF ();
    
    DBG_OBJ_LEAVE ();
 }
@@ -782,7 +738,7 @@ bool Textblock::affectsSizeChangeContainerChild (Widget *child)
    DBG_OBJ_ENTER ("resize", 0,
                   "Textblock/affectsSizeChangeContainerChild", "%p", child);
 
-   // See Textblock::getAvailWidthForChild() and Textblock::oofSizeChanged():
+   // See Textblock::getAvailWidthOfChild() and Textblock::oofSizeChanged():
    // Extremes changes affect the size of the child, too:
    bool ret;
    if (!mustBeWidenedToAvailWidth () &&
@@ -836,9 +792,10 @@ void Textblock::markSizeChange (int ref)
          now, but addLine(...) will do everything necessary. */
       if (ref != -1) {
          if (wrapRefLines == -1)
-            wrapRefLines = getParentRefLineNo (ref);
+            wrapRefLines = getParentRefInFlowSubRef (ref);
          else
-            wrapRefLines = misc::min (wrapRefLines, getParentRefLineNo (ref));
+            wrapRefLines = misc::min (wrapRefLines,
+                                      getParentRefInFlowSubRef (ref));
       }
 
       DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
@@ -869,10 +826,10 @@ void Textblock::markExtremesChange (int ref)
          now, but addLine(...) will do everything necessary. */
       if (ref != -1) {
          if (wrapRefParagraphs == -1)
-            wrapRefParagraphs = getParentRefLineNo (ref);
+            wrapRefParagraphs = getParentRefInFlowSubRef (ref);
          else
             wrapRefParagraphs =
-               misc::min (wrapRefParagraphs, getParentRefLineNo (ref));
+               misc::min (wrapRefParagraphs, getParentRefInFlowSubRef (ref));
       }
 
       DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);
@@ -1703,9 +1660,7 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
       drawLine (line, view, area);
    }
 
-   for (int i = 0; i < NUM_OOFM; i++)
-      if(outOfFlowMgr[i])
-         outOfFlowMgr[i]->draw(view, area);
+   drawOOF (view, area);
 
    DBG_OBJ_LEAVE ();
 }
@@ -2550,7 +2505,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
          if (!isfirst) {
             /* The text block we searched for has been found. */
             Word *word2;
-            int lineno = getWidgetLineNo (widget);
+            int lineno = getWidgetInFlowSubRef (widget);
 
             if (lineno > 0 &&
                 (word2 =
@@ -2664,7 +2619,7 @@ void Textblock::breakAdded ()
  * This is an optimized version of the general
  * dw::core::Widget::getWidgetAtPoint method.
  */
-core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
+core::Widget  *Textblock::getWidgetAtPoint (int x, int y, int level)
 {
    //printf ("%*s-> examining the %s %p (%d, %d, %d x (%d + %d))\n",
    //        3 * level, "", getClassName (), this, allocation.x, allocation.y,
@@ -2683,13 +2638,9 @@ core::Widget  *Textblock::getWidgetAtPoint(int x, int y, int level)
    // First, search for widgets out of flow, notably floats, since
    // there are cases where they overlap child textblocks. Should
    // later be refined using z-index.
-   for (int i = 0; i < NUM_OOFM; i++) {
-      Widget *oofWidget =
-         outOfFlowMgr[i] ?
-         outOfFlowMgr[i]->getWidgetAtPoint (x, y, level) : NULL;
-      if (oofWidget)
-         return oofWidget;
-   }
+   Widget *oofWidget = getWidgetOOFAtPoint (x, y, level);
+   if (oofWidget)
+      return oofWidget;
 
    lineIndex = findLineIndexWhenAllocated (y - allocation.y);
 
@@ -3012,7 +2963,7 @@ void Textblock::oofSizeChanged (bool extremesChanged)
                   extremesChanged ? "true" : "false");
    queueResize (-1, extremesChanged);
 
-   // See Textblock::getAvailWidthForChild(): Extremes changes may become also
+   // See Textblock::getAvailWidthOfChild(): Extremes changes may become also
    // relevant for the children, under certain conditions:
    if (extremesChanged && !mustBeWidenedToAvailWidth ())
       containerSizeChanged ();

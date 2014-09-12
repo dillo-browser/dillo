@@ -45,6 +45,17 @@ OOFAwareWidget::OOFAwareWidget ()
 
 OOFAwareWidget::~OOFAwareWidget ()
 {
+   for (int i = 0; i < NUM_OOFM; i++) {
+      if(outOfFlowMgr[i]) {
+         // I feel more comfortable by letting the OOF aware widget delete 
+         // these widgets, instead of doing this in ~OutOfFlowMgr.
+         for (int j = 0; j < outOfFlowMgr[i]->getNumWidgets (); j++)
+            delete outOfFlowMgr[i]->getWidget (j);
+         
+         delete outOfFlowMgr[i];
+      }
+   }
+
    DBG_OBJ_DELETE ();
 }
 
@@ -132,8 +143,7 @@ void OOFAwareWidget::notifySetParent ()
             oofContainer[oofmIndex] = (OOFAwareWidget*)widget;
          }
    
-      DBG_OBJ_ARRSET_PTR ("containingBlock", oofmIndex,
-                          containingBlock[oofmIndex]);
+      DBG_OBJ_ARRSET_PTR ("oofContainer", oofmIndex, oofContainer[oofmIndex]);
 
       assert (oofContainer[oofmIndex] != NULL);
    }
@@ -163,6 +173,46 @@ void OOFAwareWidget::initOutOfFlowMgrs ()
    }
 }
 
+void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition)
+{
+   for (int i = 0; i < NUM_OOFM; i++) {
+      if (outOfFlowMgr[i]) {
+         int oofWidth, oofHeight;
+         DBG_OBJ_MSGF ("resize", 1,
+                       "before considering widgets by OOFM #%d: %d * (%d + %d)",
+                       i, requisition->width, requisition->ascent,
+                       requisition->descent);
+
+         outOfFlowMgr[i]->getSize (requisition, &oofWidth, &oofHeight);
+
+         if (oofWidth > requisition->width)
+            requisition->width = oofWidth;
+         if (oofHeight > requisition->ascent + requisition->descent)
+            requisition->descent = oofHeight - requisition->ascent;
+      }
+   }
+}
+
+void OOFAwareWidget::correctExtremesByOOF (Extremes *extremes)
+{
+   for (int i = 0; i < NUM_OOFM; i++) {
+      if (outOfFlowMgr[i]) {
+         int oofMinWidth, oofMaxWidth;
+         outOfFlowMgr[i]->getExtremes (extremes, &oofMinWidth, &oofMaxWidth);
+         
+         DBG_OBJ_MSGF ("resize", 1, "OOFM (#%d) correction: %d / %d",
+                       i, oofMinWidth, oofMaxWidth);
+
+         extremes->minWidth = max (extremes->minWidth, oofMinWidth);
+         extremes->minWidthIntrinsic = max (extremes->minWidthIntrinsic,
+                                            oofMinWidth);
+         extremes->maxWidth = max (extremes->maxWidth, oofMaxWidth);
+         extremes->maxWidthIntrinsic = max (extremes->maxWidthIntrinsic,
+                                            oofMinWidth);
+      }
+   }
+}
+
 void OOFAwareWidget::sizeAllocateStart (core::Allocation *allocation)
 {
 
@@ -176,6 +226,33 @@ void OOFAwareWidget::sizeAllocateEnd ()
    for (int i = 0; i < NUM_OOFM; i++)
       if (oofContainer[i]->outOfFlowMgr[i])
          oofContainer[i]->outOfFlowMgr[i]->sizeAllocateEnd (this);
+}
+
+void OOFAwareWidget::containerSizeChangedForChildrenOOF ()
+{
+   for (int i = 0; i < NUM_OOFM; i++)
+      if (outOfFlowMgr[i])
+         outOfFlowMgr[i]->containerSizeChangedForChildren ();
+}
+
+void OOFAwareWidget::drawOOF (View *view, Rectangle *area)
+{
+   for (int i = 0; i < NUM_OOFM; i++)
+      if(outOfFlowMgr[i])
+         outOfFlowMgr[i]->draw(view, area);
+}
+
+Widget *OOFAwareWidget::getWidgetOOFAtPoint (int x, int y, int level)
+{
+   for (int i = 0; i < NUM_OOFM; i++) {
+      Widget *oofWidget =
+         outOfFlowMgr[i] ?
+         outOfFlowMgr[i]->getWidgetAtPoint (x, y, level) : NULL;
+      if (oofWidget)
+         return oofWidget;
+   }
+
+   return NULL;
 }
 
 void OOFAwareWidget::borderChanged (int y, Widget *vloat)

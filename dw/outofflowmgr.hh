@@ -5,6 +5,9 @@
 
 namespace dw {
 
+/**
+ *  \brief Out Of Flow. See \ref dw-out-of-flow.
+ */
 namespace oof {
 
 class OOFAwareWidget;

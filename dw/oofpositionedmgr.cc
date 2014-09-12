@@ -181,7 +181,7 @@ void OOFPositionedMgr::addWidgetInFlow (OOFAwareWidget *widget,
 {
 }
 
-int OOFPositionedMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generater,
+int OOFPositionedMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generator,
                                     int externalIndex)
 {
    DBG_OBJ_ENTER ("construct.oofm", 0, "addWidgetOOF", "%p, %p, %d",
