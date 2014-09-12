@@ -3025,6 +3025,16 @@ int Textblock::getLineBreakWidth ()
    return lineBreakWidth;
 }
 
+bool Textblock::isPossibleContainer (int oofmIndex)
+{
+   return true;
+}
+
+bool Textblock::isPossibleContainerParent (int oofmIndex)
+{
+   return true;
+}
+
 Textblock *Textblock::getTextblockForLine (Line *line)
 {
    return getTextblockForLine (line->firstWord, line->lastWord);

@@ -21,10 +21,6 @@
 #include "ooffloatsmgr.hh"
 #include "oofposabsmgr.hh"
 #include "oofposfixedmgr.hh"
-#include "textblock.hh"
-
-// TODO: Avoid reference to Textblock by replacing
-// "instanceOf (Textblock::CLASS_ID)" by some new methods.
 
 using namespace dw;
 using namespace dw::core;
@@ -58,28 +54,35 @@ void OOFAwareWidget::notifySetAsTopLevel()
       = oofContainer[OOFM_FIXED] = this;
 }
 
-bool OOFAwareWidget::isContainingBlock (Widget *widget, int oofmIndex)
+bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
 {
+   // TODO The methods isPossibleContainer() and isPossibleContainerParent()
+   // are only used in few cases. Does not matter currently, however.
+
    switch (oofmIndex) {
    case OOFM_FLOATS:
-      return
-         // For floats, only textblocks are considered as containing
-         // blocks.
-         widget->instanceOf (Textblock::CLASS_ID) &&
-         // The second condition: that this block is "out of flow", in a
-         // wider sense.
-         (// The toplevel widget is "out of flow", since there is no
-          // parent, and so no context.
-          widget->getParent() == NULL ||
-          // A similar reasoning applies to a widget with another parent
-          // than a textblock (typical example: a table cell (this is
-          // also a text block) within a table widget).
-          !widget->getParent()->instanceOf (Textblock::CLASS_ID) ||
-          // Inline blocks are containing blocks, too.
-          widget->getStyle()->display == core::style::DISPLAY_INLINE_BLOCK ||
-          // Finally, "out of flow" in a narrower sense: floats; absolutely
-          // and fixedly positioned elements.
-          testWidgetOutOfFlow (widget));
+      return widget->instanceOf (OOFAwareWidget::CLASS_ID) &&
+         (// For floats, only some OOF aware widgets are considered as
+          // containers.
+          ((OOFAwareWidget*)widget)->isPossibleContainer (OOFM_FLOATS) &&
+          // The second condition: that this block is "out of flow", in a
+          // wider sense.
+          (// The toplevel widget is "out of flow", since there is no
+           // parent, and so no context.
+           widget->getParent() == NULL ||
+           // A similar reasoning applies to a widget with an
+           // unsuitable parent (typical example: a table cell (this
+           // is also a text block, so possible float container)
+           // within a table widget, which is not a suitable float
+           // container parent).
+           !(widget->getParent()->instanceOf (OOFAwareWidget::CLASS_ID) &&
+             ((OOFAwareWidget*)widget->getParent())
+                 ->isPossibleContainerParent (OOFM_FLOATS)) ||
+           // Inline blocks are containing blocks, too.
+           widget->getStyle()->display == core::style::DISPLAY_INLINE_BLOCK ||
+           // Finally, "out of flow" in a narrower sense: floats; absolutely
+           // and fixedly positioned elements.
+           testWidgetOutOfFlow (widget)));
       
    case OOFM_ABSOLUTE:
       // Only the toplevel widget (as for all) as well as absolutely,
@@ -124,7 +127,7 @@ void OOFAwareWidget::notifySetParent ()
       for (Widget *widget = this;
            widget != NULL && oofContainer[oofmIndex] == NULL;
            widget = widget->getParent ())
-         if (isContainingBlock (widget, oofmIndex)) {
+         if (isOOFContainer (widget, oofmIndex)) {
             assert (widget->instanceOf (OOFAwareWidget::CLASS_ID));
             oofContainer[oofmIndex] = (OOFAwareWidget*)widget;
          }
@@ -197,6 +200,16 @@ int OOFAwareWidget::getLineBreakWidth ()
 {
    assertNotReached ();
    return 0;
+}
+
+bool OOFAwareWidget::isPossibleContainer (int oofmIndex)
+{
+   return oofmIndex != OOFM_FLOATS;
+}
+
+bool OOFAwareWidget::isPossibleContainerParent (int oofmIndex)
+{
+   return oofmIndex != OOFM_FLOATS;
 }
 
 } // namespace oof

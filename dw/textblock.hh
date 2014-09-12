@@ -880,6 +880,8 @@ public:
    void borderChanged (int y, core::Widget *vloat);
    void oofSizeChanged (bool extremesChanged);
    int getLineBreakWidth ();
+   bool isPossibleContainer (int oofmIndex);
+   bool isPossibleContainerParent (int oofmIndex);
 };
 
 #define DBG_SET_WORD_PENALTY(n, i, is)             \

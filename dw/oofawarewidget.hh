@@ -49,7 +49,7 @@ protected:
    void notifySetAsTopLevel();
    void notifySetParent();
 
-   static bool isContainingBlock (Widget *widget, int oofmIndex);
+   static bool isOOFContainer (Widget *widget, int oofmIndex);
 
 public:
    static int CLASS_ID;
@@ -60,6 +60,8 @@ public:
    virtual void borderChanged (int y, core::Widget *vloat);
    virtual void oofSizeChanged (bool extremesChanged);
    virtual int getLineBreakWidth (); // Should perhaps be renamed.
+   virtual bool isPossibleContainer (int oofmIndex);
+   virtual bool isPossibleContainerParent (int oofmIndex);
 };
 
 } // namespace oof
