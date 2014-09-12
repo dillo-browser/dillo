@@ -70,6 +70,7 @@ libDw_widgets_a_SOURCES = \
 	listitem.cc \
 	listitem.hh \
 	oofawarewidget.cc \
+	oofawarewidget_iterator.cc \
 	oofawarewidget.hh \
 	ooffloatsmgr.cc \
 	ooffloatsmgr.hh \

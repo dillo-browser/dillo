@@ -52,6 +52,35 @@ protected:
    enum { PARENT_REF_OOFM_BITS = 2,
           PARENT_REF_OOFM_MASK = (1 << PARENT_REF_OOFM_BITS) - 1 };
 
+   class OOFAwareWidgetIterator: public core::Iterator
+   {
+   private:
+      enum { NUM_SECTIONS = NUM_OOFM + 1 };
+      int sectionIndex; // 0 means in flow, otherwise OOFM index + 1
+      int index;
+
+      int numParts (int sectionIndex);
+      void getPart (int sectionIndex, int index, core::Content *content);
+
+   protected:
+      virtual int numContentsInFlow () = 0;
+      virtual void getContentInFlow (int index, core::Content *content) = 0;
+
+      void highlightOOF (int start, int end, core::HighlightLayer layer);
+      void unhighlightOOF (int direction, core::HighlightLayer layer);
+      void getAllocationOOF (int start, int end, core::Allocation *allocation);
+
+   public:
+      OOFAwareWidgetIterator (OOFAwareWidget *widget, core::Content::Type mask,
+                              bool atEnd);
+
+      int compareTo(lout::object::Comparable *other);
+
+      bool next ();
+      bool prev ();
+      void print ();
+   };
+
    inline bool isParentRefOOF (int parentRef)
    { return parentRef != -1 && (parentRef & PARENT_REF_OOFM_MASK); }
 
