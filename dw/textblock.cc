@@ -19,9 +19,6 @@
 
 
 #include "textblock.hh"
-#include "ooffloatsmgr.hh"
-#include "oofposabsmgr.hh"
-#include "oofposfixedmgr.hh"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 #include "../lout/unicode.hh"
@@ -229,11 +226,6 @@ Textblock::Textblock (bool limitTextWidth)
    DBG_OBJ_CREATE ("dw::Textblock");
    registerName ("dw::Textblock", &CLASS_ID);
    setButtonSensitive(true);
-
-   for (int i = 0; i < NUM_OOFM; i++) {
-      oofContainer[i] = NULL;
-      outOfFlowMgr[i] = NULL;
-   }
 
    hasListitemValue = false;
    leftInnerPadding = 0;
@@ -585,9 +577,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    DBG_OBJ_SET_NUM ("childBaseAllocation.ascent", childBaseAllocation.ascent);
    DBG_OBJ_SET_NUM ("childBaseAllocation.descent", childBaseAllocation.descent);
 
-   for (int i = 0; i < NUM_OOFM; i++)
-      if (searchOutOfFlowMgr(i))
-         searchOutOfFlowMgr(i)->sizeAllocateStart (this, allocation);
+   sizeAllocateStart (allocation);
 
    int lineIndex, wordIndex;
    Line *line;
@@ -715,9 +705,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
    DBG_OBJ_MSG_END ();
 
-   for (int i = 0; i < NUM_OOFM; i++)
-      if (searchOutOfFlowMgr(i))
-         searchOutOfFlowMgr(i)->sizeAllocateEnd (this);
+   sizeAllocateEnd ();
       
    for (int i = 0; i < anchors->size(); i++) {
       Anchor *anchor = anchors->getRef(i);
@@ -2347,30 +2335,6 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
    processWord (words->size () - 1);
 
    DBG_OBJ_LEAVE ();
-}
-
-void Textblock::initOutOfFlowMgrs ()
-{
-   if (oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] == NULL) {
-      oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] =
-         new oof::OOFFloatsMgr (oofContainer[OOFM_FLOATS]);
-      DBG_OBJ_ASSOC (oofContainer[OOFM_FLOATS],
-                     oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS]);
-   }
-
-   if (oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] == NULL) {
-      oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] =
-         new oof::OOFPosAbsMgr (oofContainer[OOFM_ABSOLUTE]);
-      DBG_OBJ_ASSOC (oofContainer[OOFM_ABSOLUTE],
-                     oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE]);
-   }
-
-   if (oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] == NULL) {
-      oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] =
-         new oof::OOFPosFixedMgr (oofContainer[OOFM_FIXED]);
-      DBG_OBJ_ASSOC (oofContainer[OOFM_FIXED],
-                     oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED]);
-   }
 }
 
 /**

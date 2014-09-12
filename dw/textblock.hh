@@ -833,7 +833,6 @@ protected:
 
    void addText0 (const char *text, size_t len, short flags,
                   core::style::Style *style, core::Requisition *size);
-   void initOutOfFlowMgrs ();
    void calcTextSizes (const char *text, size_t textLen,
                        core::style::Style *style,
                        int numBreaks, int *breakPos,

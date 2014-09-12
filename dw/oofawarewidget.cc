@@ -18,12 +18,67 @@
  */
 
 #include "oofawarewidget.hh"
+#include "ooffloatsmgr.hh"
+#include "oofposabsmgr.hh"
+#include "oofposfixedmgr.hh"
+#include "textblock.hh"
 
 using namespace lout::misc;
 
 namespace dw {
 
 namespace oof {
+
+OOFAwareWidget::OOFAwareWidget ()
+{
+   for (int i = 0; i < NUM_OOFM; i++) {
+      oofContainer[i] = NULL;
+      outOfFlowMgr[i] = NULL;
+   }
+}
+
+OOFAwareWidget::~OOFAwareWidget ()
+{
+}
+
+void OOFAwareWidget::initOutOfFlowMgrs ()
+{
+   if (oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] == NULL) {
+      oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] =
+         new OOFFloatsMgr (oofContainer[OOFM_FLOATS]);
+      DBG_OBJ_ASSOC (oofContainer[OOFM_FLOATS],
+                     oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS]);
+   }
+
+   if (oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] == NULL) {
+      oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] =
+         new OOFPosAbsMgr (oofContainer[OOFM_ABSOLUTE]);
+      DBG_OBJ_ASSOC (oofContainer[OOFM_ABSOLUTE],
+                     oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE]);
+   }
+
+   if (oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] == NULL) {
+      oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] =
+         new OOFPosFixedMgr (oofContainer[OOFM_FIXED]);
+      DBG_OBJ_ASSOC (oofContainer[OOFM_FIXED],
+                     oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED]);
+   }
+}
+
+void OOFAwareWidget::sizeAllocateStart (core::Allocation *allocation)
+{
+
+   for (int i = 0; i < NUM_OOFM; i++)
+      if (oofContainer[i]->outOfFlowMgr[i])
+         oofContainer[i]->outOfFlowMgr[i]->sizeAllocateStart (this, allocation);
+}
+
+void OOFAwareWidget::sizeAllocateEnd ()
+{
+   for (int i = 0; i < NUM_OOFM; i++)
+      if (oofContainer[i]->outOfFlowMgr[i])
+         oofContainer[i]->outOfFlowMgr[i]->sizeAllocateEnd (this);
+}
 
 void OOFAwareWidget::borderChanged (int y, Widget *vloat)
 {
