@@ -34,8 +34,13 @@ namespace dw {
 
 namespace oof {
 
+int OOFAwareWidget::CLASS_ID = -1;
+
 OOFAwareWidget::OOFAwareWidget ()
 {
+   DBG_OBJ_CREATE ("dw::oof::OOFAwareWidget");
+   registerName ("dw::oof::OOFAwareWidget", &CLASS_ID);
+
    for (int i = 0; i < NUM_OOFM; i++) {
       oofContainer[i] = NULL;
       outOfFlowMgr[i] = NULL;
@@ -44,6 +49,7 @@ OOFAwareWidget::OOFAwareWidget ()
 
 OOFAwareWidget::~OOFAwareWidget ()
 {
+   DBG_OBJ_DELETE ();
 }
 
 void OOFAwareWidget::notifySetAsTopLevel()
@@ -89,7 +95,7 @@ bool OOFAwareWidget::isContainingBlock (Widget *widget, int oofmIndex)
       // necessary? (What about other absolutely widgets containing
       // children, like tables? TODO: Check CSS spec.)
 
-      return widget->instanceOf (Textblock::CLASS_ID) &&
+      return widget->instanceOf (OOFAwareWidget::CLASS_ID) &&
          (widget->getParent() == NULL ||
           testWidgetAbsolutelyPositioned (widget) ||
           testWidgetRelativelyPositioned (widget) ||
@@ -119,8 +125,8 @@ void OOFAwareWidget::notifySetParent ()
            widget != NULL && oofContainer[oofmIndex] == NULL;
            widget = widget->getParent ())
          if (isContainingBlock (widget, oofmIndex)) {
-            assert (widget->instanceOf (Textblock::CLASS_ID));
-            oofContainer[oofmIndex] = (Textblock*)widget;
+            assert (widget->instanceOf (OOFAwareWidget::CLASS_ID));
+            oofContainer[oofmIndex] = (OOFAwareWidget*)widget;
          }
    
       DBG_OBJ_ARRSET_PTR ("containingBlock", oofmIndex,

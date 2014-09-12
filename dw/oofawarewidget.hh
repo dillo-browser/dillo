@@ -52,6 +52,8 @@ protected:
    static bool isContainingBlock (Widget *widget, int oofmIndex);
 
 public:
+   static int CLASS_ID;
+
    OOFAwareWidget ();
    ~OOFAwareWidget ();
 

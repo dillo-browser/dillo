@@ -283,8 +283,6 @@ Textblock::Textblock (bool limitTextWidth)
 
 Textblock::~Textblock ()
 {
-   _MSG("Textblock::~Textblock\n");
-
    /* make sure not to call a free'd tooltip (very fast overkill) */
    hoverTooltip = NULL;
 
