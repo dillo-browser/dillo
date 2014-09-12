@@ -229,15 +229,22 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
 
    int width;
 
-   // Unlike other containers, the table widget sometimes narrows
-   // columns to a width less than specified by CSS (see
-   // forceCalcCellSizes). For this reason, the column widths have to
-   // be calculated in all cases.
-   if (forceValue) {
-      calcCellSizes (false);
-      width = calcAvailWidthForDescendant (child);
-   } else
-      width = -1;
+   if (isWidgetOOF(child)) {
+      assert (getWidgetOutOfFlowMgr(child) &&
+              getWidgetOutOfFlowMgr(child)->dealingWithSizeOfChild (child));
+      width =
+         getWidgetOutOfFlowMgr(child)->getAvailWidthOfChild (child, forceValue);
+   } else {
+      // Unlike other containers, the table widget sometimes narrows
+      // columns to a width less than specified by CSS (see
+      // forceCalcCellSizes). For this reason, the column widths have to
+      // be calculated in all cases.
+      if (forceValue) {
+         calcCellSizes (false);
+         width = calcAvailWidthForDescendant (child);
+      } else
+         width = -1;
+   }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_LEAVE ();
@@ -479,6 +486,8 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
 
    curCol += colspanEff;
 
+   widget->parentRef = makeParentRefInFlow (0);
+   
    widget->setParent (this);
    if (rowStyle->get (curRow))
       widget->setBgColor (rowStyle->get(curRow)->backgroundColor);

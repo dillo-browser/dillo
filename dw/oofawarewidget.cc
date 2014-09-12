@@ -255,6 +255,29 @@ Widget *OOFAwareWidget::getWidgetOOFAtPoint (int x, int y, int level)
    return NULL;
 }
 
+
+int OOFAwareWidget::getAvailWidthOfChild (Widget *child, bool forceValue)
+{
+   if (isWidgetOOF(child)) {
+      assert (getWidgetOutOfFlowMgr(child) &&
+              getWidgetOutOfFlowMgr(child)->dealingWithSizeOfChild (child));
+      return getWidgetOutOfFlowMgr(child)->getAvailWidthOfChild (child,
+                                                                 forceValue);
+   } else
+      return Widget::getAvailWidthOfChild (child, forceValue);
+}
+
+int OOFAwareWidget::getAvailHeightOfChild (Widget *child, bool forceValue)
+{
+   if (isWidgetOOF(child)) {
+      assert (getWidgetOutOfFlowMgr(child) &&
+              getWidgetOutOfFlowMgr(child)->dealingWithSizeOfChild (child));
+      return getWidgetOutOfFlowMgr(child)->getAvailHeightOfChild (child,
+                                                                  forceValue);
+   } else
+      return Widget::getAvailWidthOfChild (child, forceValue);
+}
+
 void OOFAwareWidget::borderChanged (int y, Widget *vloat)
 {
    assertNotReached ();

@@ -31,9 +31,19 @@ namespace oof {
  * - dw::oof::OOFAwareWidget::getWidgetOOFAtPoint (from
  *   dw::core::Widget::getWidgetAtPoint)
  *
- * See dw::Textblock on how this is done best. For both generators and
- * containers of floats (which is only implemented by dw::Textblock)
- * it gets a bit more complicated.
+ * See dw::Textblock on how this is done best.
+ *
+ * Furthermore, implementations of dw::core::Widget::getAvailWidthOfChild
+ * and dw::core::Widget::getAvailHeightOfChild have to distinguish
+ * between widgets in flow and out of flow; see implementations of
+ * dw::oof::OOFAwareWidget. (Open issue: What about
+ * dw::core::Widget::correctRequisitionOfChild and
+ * dw::core::Widget::correctExtremesOfChild? Currently, all widgets
+ * are used the default implementation.)
+ *
+ * For both generators
+ * and containers of floats (which is only implemented by
+ * dw::Textblock) it gets a bit more complicated.
  */
 class OOFAwareWidget: public core::Widget
 {
@@ -104,10 +114,13 @@ protected:
    void drawOOF (core::View *view, core::Rectangle *area);
    core::Widget *getWidgetOOFAtPoint (int x, int y, int level);
 
+   static bool isOOFContainer (Widget *widget, int oofmIndex);
+
    void notifySetAsTopLevel();
    void notifySetParent();
 
-   static bool isOOFContainer (Widget *widget, int oofmIndex);
+   int getAvailWidthOfChild (Widget *child, bool forceValue);
+   int getAvailHeightOfChild (Widget *child, bool forceValue);
 
 public:
    static int CLASS_ID;
