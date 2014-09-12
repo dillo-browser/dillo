@@ -447,36 +447,24 @@ protected:
       int wordIndex;
    };
 
-   class TextblockIterator: public core::Iterator
+   class TextblockIterator: public OOFAwareWidgetIterator
    {
-   private:
-      enum { NUM_SECTIONS = NUM_OOFM + 1 };
-      int sectionIndex; // 0 means in flow, otherwise OOFM index + 1
-      int index;
-
-      TextblockIterator (Textblock *textblock, core::Content::Type mask,
-                         int sectionIndex, int index);
-
-      int numParts (int sectionIndex);
-      void getPart (int sectionIndex, int index, core::Content *content);
+   protected:
+      int numContentsInFlow ();
+      void getContentInFlow (int index, core::Content *content);
 
    public:
       TextblockIterator (Textblock *textblock, core::Content::Type mask,
                          bool atEnd);
 
-      inline static TextblockIterator *createWordIndexIterator
-         (Textblock *textblock, core::Content::Type mask, int wordIndex)
-      { return new TextblockIterator (textblock, mask, 0, wordIndex); }
+      static TextblockIterator *createWordIndexIterator
+        (Textblock *textblock, core::Content::Type mask, int wordIndex);
 
       lout::object::Object *clone();
-      int compareTo(lout::object::Comparable *other);
 
-      bool next ();
-      bool prev ();
       void highlight (int start, int end, core::HighlightLayer layer);
       void unhighlight (int direction, core::HighlightLayer layer);
       void getAllocation (int start, int end, core::Allocation *allocation);
-      void print ();
    };
 
    friend class TextblockIterator;

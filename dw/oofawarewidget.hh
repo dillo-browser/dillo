@@ -59,20 +59,26 @@ protected:
       int sectionIndex; // 0 means in flow, otherwise OOFM index + 1
       int index;
 
-      int numParts (int sectionIndex);
+      int numParts (int sectionIndex, int numContentsInFlow = -1);
       void getPart (int sectionIndex, int index, core::Content *content);
 
    protected:
       virtual int numContentsInFlow () = 0;
       virtual void getContentInFlow (int index, core::Content *content) = 0;
 
+      void setValues (int sectionIndex, int index);
+      inline void cloneValues (OOFAwareWidgetIterator *other)
+      { other->setValues (sectionIndex, index); }         
+
+      inline bool inFlow () { return sectionIndex == 0; }
+      inline bool getInFlowIndex () { assert (inFlow ()); return index; }
       void highlightOOF (int start, int end, core::HighlightLayer layer);
       void unhighlightOOF (int direction, core::HighlightLayer layer);
       void getAllocationOOF (int start, int end, core::Allocation *allocation);
 
    public:
       OOFAwareWidgetIterator (OOFAwareWidget *widget, core::Content::Type mask,
-                              bool atEnd);
+                              bool atEnd, int numContentsInFlow);
 
       int compareTo(lout::object::Comparable *other);
 

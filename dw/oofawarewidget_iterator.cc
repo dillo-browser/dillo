@@ -31,12 +31,50 @@ namespace dw {
 
 namespace oof {
 
-int OOFAwareWidget::OOFAwareWidgetIterator::numParts (int sectionIndex)
+// "numContentsInFlow" is passed here to avoid indirectly callin the (virtual)
+// method numContentsInFlow() from the constructor.
+OOFAwareWidget::OOFAwareWidgetIterator::OOFAwareWidgetIterator
+   (OOFAwareWidget *widget, Content::Type mask, bool atEnd,
+    int numContentsInFlow) :
+   Iterator (widget, mask, atEnd)   
+{
+   if (atEnd) {
+      sectionIndex = NUM_SECTIONS - 1;
+      while (sectionIndex >= 0 &&
+             numParts (sectionIndex, numContentsInFlow) == 0)
+         sectionIndex--;
+      index = numParts (sectionIndex, numContentsInFlow);
+   } else {
+      sectionIndex = 0;
+      index = -1;
+   }
+
+   content.type = atEnd ? core::Content::END : core::Content::START;
+}
+
+void OOFAwareWidget::OOFAwareWidgetIterator::setValues (int sectionIndex,
+                                                        int index)
+{
+   this->sectionIndex = sectionIndex;
+   this->index = index;
+
+   if (sectionIndex == 0 && index < 0)
+      content.type = core::Content::START;
+   else if (sectionIndex == NUM_SECTIONS - 1 &&
+            index >= numParts (sectionIndex))
+      content.type = core::Content::END;
+   else
+      getPart (sectionIndex, index, &content);
+}
+
+int OOFAwareWidget::OOFAwareWidgetIterator::numParts (int sectionIndex,
+                                                      int numContentsInFlow)
 {
    OOFAwareWidget *widget = (OOFAwareWidget*)getWidget();
 
    if (sectionIndex == 0)
-      return numContentsInFlow ();
+      return numContentsInFlow == -1 ?
+         this->numContentsInFlow () : numContentsInFlow;
    else
       return widget->outOfFlowMgr[sectionIndex - 1] ?
          widget->outOfFlowMgr[sectionIndex - 1]->getNumWidgets () : 0;
@@ -44,14 +82,14 @@ int OOFAwareWidget::OOFAwareWidgetIterator::numParts (int sectionIndex)
 
 void OOFAwareWidget::OOFAwareWidgetIterator::getPart (int sectionIndex,
                                                       int index,
-                                                      core::Content *content)
+                                                      Content *content)
 {
    OOFAwareWidget *widget = (OOFAwareWidget*)getWidget();
 
    if (sectionIndex == 0)
       getContentInFlow (index, content);
    else {
-      content->type = core::Content::WIDGET_OOF_CONT;
+      content->type = Content::WIDGET_OOF_CONT;
       content->widget =
          widget->outOfFlowMgr[sectionIndex - 1]->getWidget (index);
    }
@@ -69,7 +107,7 @@ int OOFAwareWidget::OOFAwareWidgetIterator::compareTo (Comparable *other)
 
 bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
 {
-   if (content.type == core::Content::END)
+   if (content.type == Content::END)
       return false;
 
    do {
@@ -77,11 +115,11 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
 
       if (index >= numParts(sectionIndex)) {
          sectionIndex++;
-         while (sectionIndex < NUM_SECTIONS && numParts(sectionIndex) == 0)
+         while (sectionIndex < NUM_SECTIONS && numParts (sectionIndex) == 0)
             sectionIndex++;
             
          if (sectionIndex == NUM_SECTIONS) {
-            content.type = core::Content::END;
+            content.type = Content::END;
             return false;
          } else
             index = 0;
@@ -95,7 +133,7 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
 
 bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
 {
-   if (content.type == core::Content::START)
+   if (content.type == Content::START)
       return false;
 
    do {
@@ -103,14 +141,14 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
 
       if (index < 0) {
          sectionIndex--;
-         while (sectionIndex >= 0 && numParts(sectionIndex) == 0)
+         while (sectionIndex >= 0 && numParts (sectionIndex) == 0)
             sectionIndex--;
             
          if (sectionIndex < 0) {
-            content.type = core::Content::START;
+            content.type = Content::START;
             return false;
          } else
-            index = numParts(sectionIndex) - 1;
+            index = numParts (sectionIndex) - 1;
       }
 
       getPart (sectionIndex, index, &content);
@@ -120,21 +158,21 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
 }
 
 void OOFAwareWidget::OOFAwareWidgetIterator::highlightOOF (int start, int end,
-                                                           core::HighlightLayer
-                                                           layer)
+                                                           HighlightLayer layer)
 {
    // TODO What about OOF widgets?
 }
 
-void OOFAwareWidget::OOFAwareWidgetIterator::unhighlightOOF
-   (int direction, core::HighlightLayer layer)
+void OOFAwareWidget::OOFAwareWidgetIterator::unhighlightOOF (int direction,
+                                                             HighlightLayer
+                                                             layer)
 {
    // TODO What about OOF widgets?
 }
 
 void OOFAwareWidget::OOFAwareWidgetIterator::getAllocationOOF (int start,
                                                                int end,
-                                                               core::Allocation
+                                                               Allocation
                                                                *allocation)
 {
    // TODO Consider start and end?
