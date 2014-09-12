@@ -559,8 +559,13 @@ void OOFFloatsMgr::sizeAllocateStart (OOFAwareWidget *caller,
                   caller, allocation->x, allocation->y, allocation->width,
                   allocation->ascent, allocation->descent);
 
-   getOOFAwareWidget(caller)->allocation = *allocation;
-   getOOFAwareWidget(caller)->wasAllocated = true;
+   // Some callers are not registered, especially tables. (Where the
+   // floats manager is actually empty?)
+   TBInfo *oofAWInfo = getOOFAwareWidgetPerhaps (caller);
+   if (oofAWInfo) {
+      oofAWInfo->allocation = *allocation;
+      oofAWInfo->wasAllocated = true;
+   }
 
    if (caller == container) {
       // In the size allocation process, the *first* OOFM method
@@ -1891,10 +1896,16 @@ bool OOFFloatsMgr::getFloatDiffToCB (Float *vloat, int *leftDiff,
    return result;
 }
 
-OOFFloatsMgr::TBInfo *OOFFloatsMgr::getOOFAwareWidget (OOFAwareWidget *widget)
+OOFFloatsMgr::TBInfo *OOFFloatsMgr::getOOFAwareWidgetPerhaps (OOFAwareWidget
+                                                              *widget)
 {
    TypedPointer<OOFAwareWidget> key (widget);
-   TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (&key);
+   return tbInfosByOOFAwareWidget->get (&key);
+}
+
+OOFFloatsMgr::TBInfo *OOFFloatsMgr::getOOFAwareWidget (OOFAwareWidget *widget)
+{
+   TBInfo *tbInfo = getOOFAwareWidgetPerhaps (widget);
    assert (tbInfo);
    return tbInfo;
 }

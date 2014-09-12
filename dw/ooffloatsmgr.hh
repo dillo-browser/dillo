@@ -216,7 +216,8 @@ private:
          return allocation->ascent + allocation->descent; }
       void updateAllocation ();
 
-      inline OOFAwareWidget *getOOFAwareWidget () { return (OOFAwareWidget*)getWidget (); }
+      inline OOFAwareWidget *getOOFAwareWidget ()
+      { return (OOFAwareWidget*)getWidget (); }
    };
 
    // These two lists store all floats, in the order in which they are
@@ -300,6 +301,7 @@ private:
    bool getFloatDiffToCB (Float *vloat, int *leftDiff, int *rightDiff);
 
    TBInfo *getOOFAwareWidget (OOFAwareWidget *textblock);
+   TBInfo *getOOFAwareWidgetPerhaps (OOFAwareWidget *textblock);
    int getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
                   OOFAwareWidget *lastGB, int lastExtIndex);
    SortedFloatsVector *getFloatsListForOOFAwareWidget (OOFAwareWidget
