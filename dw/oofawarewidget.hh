@@ -24,16 +24,35 @@ protected:
 
 public:
    OOFAwareWidget *oofContainer[NUM_OOFM];
-   oof::OutOfFlowMgr *outOfFlowMgr[NUM_OOFM];
+   OutOfFlowMgr *outOfFlowMgr[NUM_OOFM];
 
 protected:
+   inline OutOfFlowMgr *searchOutOfFlowMgr (int oofmIndex)
+   { return oofContainer[oofmIndex] ?
+         oofContainer[oofmIndex]->outOfFlowMgr[oofmIndex] : NULL; }
+
+   static inline bool testWidgetFloat (Widget *widget)
+   { return widget->getStyle()->vloat != core::style::FLOAT_NONE; }
+   static inline bool testWidgetAbsolutelyPositioned (Widget *widget)
+   { return widget->getStyle()->position == core::style::POSITION_ABSOLUTE; }
+   static inline bool testWidgetFixedlyPositioned (Widget *widget)
+   { return widget->getStyle()->position == core::style::POSITION_FIXED; }
+   static inline bool testWidgetOutOfFlow (Widget *widget)
+   { return testWidgetFloat (widget) || testWidgetAbsolutelyPositioned (widget)
+         || testWidgetFixedlyPositioned (widget); }
+
+   static inline bool testWidgetRelativelyPositioned (Widget *widget)
+   { return widget->getStyle()->position == core::style::POSITION_RELATIVE; }
+
    void initOutOfFlowMgrs ();
    void sizeAllocateStart (core::Allocation *allocation);
    void sizeAllocateEnd ();
 
-   inline OutOfFlowMgr *searchOutOfFlowMgr (int oofmIndex)
-   { return oofContainer[oofmIndex] ?
-         oofContainer[oofmIndex]->outOfFlowMgr[oofmIndex] : NULL; }
+   void notifySetAsTopLevel();
+   void notifySetParent();
+
+   static bool isContainingBlock (Widget *widget, int oofmIndex);
+
 public:
    OOFAwareWidget ();
    ~OOFAwareWidget ();

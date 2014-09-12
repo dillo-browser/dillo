@@ -23,6 +23,11 @@
 #include "oofposfixedmgr.hh"
 #include "textblock.hh"
 
+// TODO: Avoid reference to Textblock by replacing
+// "instanceOf (Textblock::CLASS_ID)" by some new methods.
+
+using namespace dw;
+using namespace dw::core;
 using namespace lout::misc;
 
 namespace dw {
@@ -39,6 +44,90 @@ OOFAwareWidget::OOFAwareWidget ()
 
 OOFAwareWidget::~OOFAwareWidget ()
 {
+}
+
+void OOFAwareWidget::notifySetAsTopLevel()
+{
+   oofContainer[OOFM_FLOATS] = oofContainer[OOFM_ABSOLUTE]
+      = oofContainer[OOFM_FIXED] = this;
+}
+
+bool OOFAwareWidget::isContainingBlock (Widget *widget, int oofmIndex)
+{
+   switch (oofmIndex) {
+   case OOFM_FLOATS:
+      return
+         // For floats, only textblocks are considered as containing
+         // blocks.
+         widget->instanceOf (Textblock::CLASS_ID) &&
+         // The second condition: that this block is "out of flow", in a
+         // wider sense.
+         (// The toplevel widget is "out of flow", since there is no
+          // parent, and so no context.
+          widget->getParent() == NULL ||
+          // A similar reasoning applies to a widget with another parent
+          // than a textblock (typical example: a table cell (this is
+          // also a text block) within a table widget).
+          !widget->getParent()->instanceOf (Textblock::CLASS_ID) ||
+          // Inline blocks are containing blocks, too.
+          widget->getStyle()->display == core::style::DISPLAY_INLINE_BLOCK ||
+          // Finally, "out of flow" in a narrower sense: floats; absolutely
+          // and fixedly positioned elements.
+          testWidgetOutOfFlow (widget));
+      
+   case OOFM_ABSOLUTE:
+      // Only the toplevel widget (as for all) as well as absolutely,
+      // relatively, and fixedly positioned elements constitute the
+      // containing block for absolutely positioned elements, but
+      // neither floats nor other elements like table cells.
+      //
+      // (Notice that relative positions are not yet supported, but
+      // only tested to get the correct containing block. Furthermore,
+      // it seems that this test would be incorrect for floats.)
+      // 
+      // We also test whether this widget is a textblock: is this
+      // necessary? (What about other absolutely widgets containing
+      // children, like tables? TODO: Check CSS spec.)
+
+      return widget->instanceOf (Textblock::CLASS_ID) &&
+         (widget->getParent() == NULL ||
+          testWidgetAbsolutelyPositioned (widget) ||
+          testWidgetRelativelyPositioned (widget) ||
+          testWidgetFixedlyPositioned (widget));
+      
+   case OOFM_FIXED:
+      // The single container for fixedly positioned elements is the
+      // toplevel (canvas; actually the viewport). (The toplevel
+      // widget should always be a textblock; at least this is the
+      // case in dillo.)
+      return widget->getParent() == NULL;
+
+   default:
+      // compiler happiness
+      lout::misc::assertNotReached ();
+      return false;
+   }
+}
+
+void OOFAwareWidget::notifySetParent ()
+{
+   // Search for containing blocks.
+   for (int oofmIndex = 0; oofmIndex < NUM_OOFM; oofmIndex++) {
+      oofContainer[oofmIndex] = NULL;
+
+      for (Widget *widget = this;
+           widget != NULL && oofContainer[oofmIndex] == NULL;
+           widget = widget->getParent ())
+         if (isContainingBlock (widget, oofmIndex)) {
+            assert (widget->instanceOf (Textblock::CLASS_ID));
+            oofContainer[oofmIndex] = (Textblock*)widget;
+         }
+   
+      DBG_OBJ_ARRSET_PTR ("containingBlock", oofmIndex,
+                          containingBlock[oofmIndex]);
+
+      assert (oofContainer[oofmIndex] != NULL);
+   }
 }
 
 void OOFAwareWidget::initOutOfFlowMgrs ()

@@ -279,19 +279,6 @@ protected:
    inline oof::OutOfFlowMgr *getWidgetOutOfFlowMgr (Widget *widget)
    { return getParentRefOutOfFlowMgr (widget->parentRef); }
 
-   static inline bool testWidgetFloat (Widget *widget)
-   { return widget->getStyle()->vloat != core::style::FLOAT_NONE; }
-   static inline bool testWidgetAbsolutelyPositioned (Widget *widget)
-   { return widget->getStyle()->position == core::style::POSITION_ABSOLUTE; }
-   static inline bool testWidgetFixedlyPositioned (Widget *widget)
-   { return widget->getStyle()->position == core::style::POSITION_FIXED; }
-   static inline bool testWidgetOutOfFlow (Widget *widget)
-   { return testWidgetFloat (widget) || testWidgetAbsolutelyPositioned (widget)
-         || testWidgetFixedlyPositioned (widget); }
-
-   static inline bool testWidgetRelativelyPositioned (Widget *widget)
-   { return widget->getStyle()->position == core::style::POSITION_RELATIVE; }
-
    /**
     * \brief Implementation used for words.
     */
@@ -816,9 +803,6 @@ protected:
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
 
-   void notifySetAsTopLevel();
-   void notifySetParent();
-
    bool isBlockLevel ();
 
    void draw (core::View *view, core::Rectangle *area);
@@ -837,7 +821,6 @@ protected:
                        core::style::Style *style,
                        int numBreaks, int *breakPos,
                        core::Requisition *wordSize);
-   static bool isContainingBlock (Widget *widget, int oofmIndex);
 
    inline bool mustBeWidenedToAvailWidth () {
       DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
