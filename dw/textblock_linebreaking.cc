@@ -735,10 +735,10 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                core::Content *content = &(words->getRef(i)->content);
                if (content->type == core::Content::WIDGET_OOF_REF) {
                   for (int j = 0; newFloatPos == -1 && j < NUM_OOFM; j++) {
-                     if ((oofContainer[j]->outOfFlowMgr[j]
-                          ->affectsLeftBorder (content->widget) ||
-                          oofContainer[j]->outOfFlowMgr[j]
-                          ->affectsRightBorder (content->widget)))
+                     if ((searchOutOfFlowMgr(j) ->affectsLeftBorder(content
+                                                                    ->widget) ||
+                          searchOutOfFlowMgr(j)->affectsRightBorder (content
+                                                                     ->widget)))
                         newFloatPos = i;
                   }
                }
@@ -755,7 +755,7 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                lastFloatPos = newFloatPos;
 
                for (int i = 0; i < NUM_OOFM; i++)
-                  oofContainer[i]->outOfFlowMgr[i]->tellPosition
+                  searchOutOfFlowMgr(i)->tellPosition
                      (words->getRef(lastFloatPos)->content.widget, yNewLine);
 
                balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
@@ -1416,10 +1416,8 @@ void Textblock::moveWordIndices (int wordIndex, int num, int *addIndex1)
                  wordIndex, num);
 
    for (int i = 0; i < NUM_OOFM; i++)
-      if (oofContainer[i]->outOfFlowMgr[i])
-         oofContainer[i]->outOfFlowMgr[i]->moveExternalIndices (this,
-                                                                   wordIndex,
-                                                                   num);
+      if (searchOutOfFlowMgr(i))
+         searchOutOfFlowMgr(i)->moveExternalIndices (this, wordIndex, num);
 
    for (int i = lines->size () - 1; i >= 0; i--) {
       Line *line = lines->getRef (i);
@@ -1904,11 +1902,10 @@ void Textblock::initNewLine ()
       int clearPosition = 0;
       
       for (int i = 0; i < NUM_OOFM; i++)
-         if (oofContainer[i] && oofContainer[i]->outOfFlowMgr[i])
+         if (searchOutOfFlowMgr(i))
             clearPosition =
                misc::max (clearPosition,
-                          oofContainer[i]->outOfFlowMgr[i]->getClearPosition
-                             (this));
+                          searchOutOfFlowMgr(i)->getClearPosition (this));
 
       setVerticalOffset (misc::max (clearPosition, 0));
    }
@@ -1936,7 +1933,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
 
    bool oofmDefined = false;
    for (int i = 0; i < NUM_OOFM && !oofmDefined; i++)
-      if (oofContainer[i] && oofContainer[i]->outOfFlowMgr[i])
+      if (searchOutOfFlowMgr(i))
          oofmDefined = true;
 
    if (oofmDefined) {
@@ -1946,7 +1943,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
       int y = yOffsetOfPossiblyMissingLine (lines->size ());
            
       for (int i = 0; i < NUM_OOFM; i++) {
-         oof::OutOfFlowMgr *oofm = oofContainer[i]->outOfFlowMgr[i];
+         oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr(i);
          if (oofm) {
             // Consider the example:
             //

@@ -22,11 +22,9 @@ protected:
    enum { PARENT_REF_OOFM_BITS = 2,
           PARENT_REF_OOFM_MASK = (1 << PARENT_REF_OOFM_BITS) - 1 };
 
-public:
    OOFAwareWidget *oofContainer[NUM_OOFM];
    OutOfFlowMgr *outOfFlowMgr[NUM_OOFM];
 
-protected:
    inline OutOfFlowMgr *searchOutOfFlowMgr (int oofmIndex)
    { return oofContainer[oofmIndex] ?
          oofContainer[oofmIndex]->outOfFlowMgr[oofmIndex] : NULL; }

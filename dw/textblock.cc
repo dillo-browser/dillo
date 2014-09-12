@@ -2284,8 +2284,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       widget->setParent (oofContainer[oofmIndex]);
       widget->setGenerator (this);
       int oofmSubRef =
-         oofContainer[oofmIndex]->outOfFlowMgr[oofmIndex]
-            ->addWidgetOOF (widget, this, words->size ());
+         searchOutOfFlowMgr(oofmIndex)->addWidgetOOF (widget, this,
+                                                      words->size ());
       widget->parentRef = makeParentRefOOF (oofmIndex, oofmSubRef);
 
       Word *word = addWord (0, 0, 0, 0, style);
@@ -2301,8 +2301,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       // TODO Replace (perhaps) later "textblock" by "OOF aware widget".
       if (widget->instanceOf (Textblock::CLASS_ID)) {
          for (int i = 0; i < NUM_OOFM; i++)
-            oofContainer[i]->outOfFlowMgr[i]
-               ->addWidgetInFlow ((Textblock*)widget, this, words->size ());
+            searchOutOfFlowMgr(i)->addWidgetInFlow ((Textblock*)widget, this,
+                                                    words->size ());
       }
 
       core::Requisition size;
