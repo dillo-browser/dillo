@@ -3,8 +3,6 @@
 
 #include <limits.h>
 
-#include "core.hh"
-#include "outofflowmgr.hh"
 #include "oofawarewidget.hh"
 #include "../lout/misc.hh"
 
@@ -248,13 +246,6 @@ private:
    static const char *hyphenDrawChar;
 
 protected:
-   enum { OOFM_FLOATS, OOFM_ABSOLUTE, OOFM_FIXED, NUM_OOFM };
-   enum { PARENT_REF_OOFM_BITS = 2,
-          PARENT_REF_OOFM_MASK = (1 << PARENT_REF_OOFM_BITS) - 1 };
-
-   Textblock *containingBlock[NUM_OOFM];
-   oof::OutOfFlowMgr *outOfFlowMgr[NUM_OOFM];
-
    inline bool isParentRefOOF (int parentRef)
    { return parentRef != -1 && (parentRef & PARENT_REF_OOFM_MASK); }
 

@@ -2,6 +2,7 @@
 #define __DW_OOFAWAREWIDGET_HH__
 
 #include "core.hh"
+#include "outofflowmgr.hh"
 
 namespace dw {
 
@@ -16,6 +17,18 @@ namespace oof {
  */
 class OOFAwareWidget: public core::Widget
 {
+protected:
+   enum { OOFM_FLOATS, OOFM_ABSOLUTE, OOFM_FIXED, NUM_OOFM };
+   enum { PARENT_REF_OOFM_BITS = 2,
+          PARENT_REF_OOFM_MASK = (1 << PARENT_REF_OOFM_BITS) - 1 };
+
+public:
+   OOFAwareWidget *oofContainer[NUM_OOFM];
+   oof::OutOfFlowMgr *outOfFlowMgr[NUM_OOFM];
+
+   inline OutOfFlowMgr *searchOutOfFlowMgr (int oofmIndex)
+   { return oofContainer[oofmIndex] ?
+         oofContainer[oofmIndex]->outOfFlowMgr[oofmIndex] : NULL; }
 public:
    virtual void borderChanged (int y, core::Widget *vloat);
    virtual void oofSizeChanged (bool extremesChanged);

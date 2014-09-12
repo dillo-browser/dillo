@@ -231,7 +231,7 @@ Textblock::Textblock (bool limitTextWidth)
    setButtonSensitive(true);
 
    for (int i = 0; i < NUM_OOFM; i++) {
-      containingBlock[i] = NULL;
+      oofContainer[i] = NULL;
       outOfFlowMgr[i] = NULL;
    }
 
@@ -586,9 +586,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    DBG_OBJ_SET_NUM ("childBaseAllocation.descent", childBaseAllocation.descent);
 
    for (int i = 0; i < NUM_OOFM; i++)
-      if (containingBlock[i]->outOfFlowMgr[i])
-         containingBlock[i]->outOfFlowMgr[i]->sizeAllocateStart (this,
-                                                                 allocation);
+      if (searchOutOfFlowMgr(i))
+         searchOutOfFlowMgr(i)->sizeAllocateStart (this, allocation);
 
    int lineIndex, wordIndex;
    Line *line;
@@ -717,8 +716,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    DBG_OBJ_MSG_END ();
 
    for (int i = 0; i < NUM_OOFM; i++)
-      if (containingBlock[i]->outOfFlowMgr[i])
-         containingBlock[i]->outOfFlowMgr[i]->sizeAllocateEnd (this);
+      if (searchOutOfFlowMgr(i))
+         searchOutOfFlowMgr(i)->sizeAllocateEnd (this);
       
    for (int i = 0; i < anchors->size(); i++) {
       Anchor *anchor = anchors->getRef(i);
@@ -898,8 +897,8 @@ void Textblock::markExtremesChange (int ref)
 
 void Textblock::notifySetAsTopLevel()
 {
-   containingBlock[OOFM_FLOATS] = containingBlock[OOFM_ABSOLUTE]
-      = containingBlock[OOFM_FIXED] = this;
+   oofContainer[OOFM_FLOATS] = oofContainer[OOFM_ABSOLUTE]
+      = oofContainer[OOFM_FIXED] = this;
 }
 
 bool Textblock::isContainingBlock (Widget *widget, int oofmIndex)
@@ -963,21 +962,21 @@ void Textblock::notifySetParent ()
 {
    // Search for containing blocks.
    for (int oofmIndex = 0; oofmIndex < NUM_OOFM; oofmIndex++) {
-      containingBlock[oofmIndex] = NULL;
+      oofContainer[oofmIndex] = NULL;
 
       for (Widget *widget = this;
-           widget != NULL && containingBlock[oofmIndex] == NULL;
+           widget != NULL && oofContainer[oofmIndex] == NULL;
            widget = widget->getParent ())
          if (isContainingBlock (widget, oofmIndex)) {
             assert (widget->instanceOf (Textblock::CLASS_ID));
-            containingBlock[oofmIndex] = (Textblock*)widget;
+            oofContainer[oofmIndex] = (Textblock*)widget;
          }
    
       DBG_OBJ_ARRSET_PTR ("containingBlock", oofmIndex,
                           containingBlock[oofmIndex]);
-   }
 
-   assert (containingBlock != NULL);
+      assert (oofContainer[oofmIndex] != NULL);
+   }
 }
 
 bool Textblock::isBlockLevel ()
@@ -2352,26 +2351,25 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
 
 void Textblock::initOutOfFlowMgrs ()
 {
-   if (containingBlock[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] == NULL) {
-      containingBlock[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] =
-         new oof::OOFFloatsMgr (containingBlock[OOFM_FLOATS]);
-      DBG_OBJ_ASSOC (containingBlock[OOFM_FLOATS],
-                     containingBlock[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS]);
+   if (oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] == NULL) {
+      oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] =
+         new oof::OOFFloatsMgr (oofContainer[OOFM_FLOATS]);
+      DBG_OBJ_ASSOC (oofContainer[OOFM_FLOATS],
+                     oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS]);
    }
 
-   if (containingBlock[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] == NULL) {
-      containingBlock[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] =
-         new oof::OOFPosAbsMgr (containingBlock[OOFM_ABSOLUTE]);
-      DBG_OBJ_ASSOC (containingBlock[OOFM_ABSOLUTE],
-                     containingBlock[OOFM_ABSOLUTE]
-                     ->outOfFlowMgr[OOFM_ABSOLUTE]);
+   if (oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] == NULL) {
+      oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE] =
+         new oof::OOFPosAbsMgr (oofContainer[OOFM_ABSOLUTE]);
+      DBG_OBJ_ASSOC (oofContainer[OOFM_ABSOLUTE],
+                     oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE]);
    }
 
-   if (containingBlock[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] == NULL) {
-      containingBlock[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] =
-         new oof::OOFPosFixedMgr (containingBlock[OOFM_FIXED]);
-      DBG_OBJ_ASSOC (containingBlock[OOFM_FIXED],
-                     containingBlock[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED]);
+   if (oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] == NULL) {
+      oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] =
+         new oof::OOFPosFixedMgr (oofContainer[OOFM_FIXED]);
+      DBG_OBJ_ASSOC (oofContainer[OOFM_FIXED],
+                     oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED]);
    }
 }
 
@@ -2403,10 +2401,10 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       else
          lout::misc::assertNotReached ();
 
-      widget->setParent (containingBlock[oofmIndex]);
+      widget->setParent (oofContainer[oofmIndex]);
       widget->setGenerator (this);
       int oofmSubRef =
-         containingBlock[oofmIndex]->outOfFlowMgr[oofmIndex]
+         oofContainer[oofmIndex]->outOfFlowMgr[oofmIndex]
             ->addWidgetOOF (widget, this, words->size ());
       widget->parentRef = makeParentRefOOF (oofmIndex, oofmSubRef);
 
@@ -2423,7 +2421,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       // TODO Replace (perhaps) later "textblock" by "OOF aware widget".
       if (widget->instanceOf (Textblock::CLASS_ID)) {
          for (int i = 0; i < NUM_OOFM; i++)
-            containingBlock[i]->outOfFlowMgr[i]
+            oofContainer[i]->outOfFlowMgr[i]
                ->addWidgetInFlow ((Textblock*)widget, this, words->size ());
       }
 
