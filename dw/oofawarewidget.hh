@@ -15,39 +15,52 @@ namespace oof {
  * (Perhaps it should be diffenciated between the two roles, container
  * and generator, but this would make multiple inheritance necessary.)
  *
- * A sub class should at least take care to call these methods at the
- * respective points:
+ * Requirements for sub classes (in most cases refer to dw::Textblock
+ * as a good example):
  *
- * - dw::oof::OOFAwareWidget::correctRequisitionByOOF (from
- *   dw::core::Widget::getExtremesImpl)
- * - dw::oof::OOFAwareWidget::correctExtremesByOOF (from
- *   dw::core::Widget::sizeRequestImpl)
- * - dw::oof::OOFAwareWidget::sizeAllocateStart
- * - dw::oof::OOFAwareWidget::sizeAllocateEnd (latter two from
- *   dw::core::Widget::sizeAllocateImpl)
- * - dw::oof::OOFAwareWidget::containerSizeChangedForChildrenOOF
- *   (from dw::core::Widget::containerSizeChangedForChildren)
- * - dw::oof::OOFAwareWidget::drawOOF (from dw::core::Widget::draw)
- * - dw::oof::OOFAwareWidget::getWidgetOOFAtPoint (from
- *   dw::core::Widget::getWidgetAtPoint)
+ * - A sub class should at least take care to call these methods at the
+ *   respective points:
  *
- * See dw::Textblock on how this is done best.
+ *   - dw::oof::OOFAwareWidget::correctRequisitionByOOF (from
+ *     dw::core::Widget::getExtremesImpl)
+ *   - dw::oof::OOFAwareWidget::correctExtremesByOOF (from
+ *     dw::core::Widget::sizeRequestImpl)
+ *   - dw::oof::OOFAwareWidget::sizeAllocateStart
+ *   - dw::oof::OOFAwareWidget::sizeAllocateEnd (latter two from
+ *     dw::core::Widget::sizeAllocateImpl)
+ *   - dw::oof::OOFAwareWidget::containerSizeChangedForChildrenOOF
+ *     (from dw::core::Widget::containerSizeChangedForChildren)
+ *   - dw::oof::OOFAwareWidget::drawOOF (from dw::core::Widget::draw)
+ *   - dw::oof::OOFAwareWidget::getWidgetOOFAtPoint (from
+ *     dw::core::Widget::getWidgetAtPoint)
  *
- * Furthermore, implementations of dw::core::Widget::getAvailWidthOfChild
- * and dw::core::Widget::getAvailHeightOfChild have to distinguish
- * between widgets in flow and out of flow; see implementations of
- * dw::oof::OOFAwareWidget. (Open issue: What about
- * dw::core::Widget::correctRequisitionOfChild and
- * dw::core::Widget::correctExtremesOfChild? Currently, all widgets
- * are used the default implementation.)
+ * - Implementations of dw::core::Widget::getAvailWidthOfChild and
+ *   dw::core::Widget::getAvailHeightOfChild have to distinguish
+ *   between widgets in flow and out of flow; see implementations of
+ *   dw::oof::OOFAwareWidget. (Open issue: What about
+ *   dw::core::Widget::correctRequisitionOfChild and
+ *   dw::core::Widget::correctExtremesOfChild? Currently, all widgets
+ *   are used the default implementation.)
  *
- * Also, iterators have to consider widgets out of flow;
- * dw::oof::OOFAwareWidget::OOFAwareWidgetIterator is recommended as
- * base class.
+ * - Iterators have to consider widgets out of flow;
+ *   dw::oof::OOFAwareWidget::OOFAwareWidgetIterator is recommended as
+ *   base class.
  *
- * For both generators
- * and containers of floats (which is only implemented by
- * dw::Textblock) it gets a bit more complicated.
+ * - dw::core::Widget::parentRef has to be set for widgets in flow; if
+ *   not used further, a simple *makeParentRefInFlow(0)* is sufficient
+ *   (as dw::Table::addCell does). Widgets which are only containers,
+ *   but not generators, do not have to care about widgets out of
+ *   flow in this regard.
+ *
+ * For both generators and containers of floats (which is only
+ * implemented by dw::Textblock) it gets a bit more complicated.
+ *
+ * \todo Currently, on the level of dw::oof::OOFAwareWidget, nothing
+ * is done about dw::core::Widget::markSizeChange and
+ * dw::core::Widget::markExtremesChange. This does not matter, though:
+ * dw::Textblock takes care of these, and dw::Table is only connected
+ * to subclasses of dw::oof::OOFPositionedMgr, which do care about
+ * these. However, this should be considered for completeness.
  */
 class OOFAwareWidget: public core::Widget
 {
