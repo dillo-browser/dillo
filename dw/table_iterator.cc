@@ -28,107 +28,62 @@ namespace dw {
 
 Table::TableIterator::TableIterator (Table *table,
                                      core::Content::Type mask, bool atEnd):
-   core::Iterator (table, mask, atEnd)
+   OOFAwareWidgetIterator (table, mask, atEnd, table->children->size ())
 {
-   index = atEnd ? table->children->size () : -1;
-   content.type = atEnd ? core::Content::END : core::Content::START;
-}
-
-Table::TableIterator::TableIterator (Table *table,
-                                     core::Content::Type mask, int index):
-   core::Iterator (table, mask, false)
-{
-   this->index = index;
-
-   if (index < 0)
-      content.type = core::Content::START;
-   else if (index >= table->children->size ())
-      content.type = core::Content::END;
-   else {
-      content.type = core::Content::WIDGET_IN_FLOW;
-      content.widget = table->children->get(index)->cell.widget;
-   }
 }
 
 object::Object *Table::TableIterator::clone()
 {
-   return new TableIterator ((Table*)getWidget(), getMask(), index);
+   TableIterator *tIt =
+      new TableIterator ((Table*)getWidget(), getMask(), false);
+   cloneValues (tIt);
+   return tIt;
 }
 
-int Table::TableIterator::compareTo(object::Comparable *other)
-{
-   return index - ((TableIterator*)other)->index;
-}
-
-bool Table::TableIterator::next ()
-{
-   Table *table = (Table*)getWidget();
-
-   if (content.type == core::Content::END)
-      return false;
-
-   // tables only contain widgets (in flow):
-   if ((getMask() & core::Content::WIDGET_IN_FLOW) == 0) {
-      content.type = core::Content::END;
-      return false;
-   }
-
-   do {
-      index++;
-      if (index >= table->children->size ()) {
-         content.type = core::Content::END;
-         return false;
-      }
-   } while (table->children->get(index) == NULL ||
-            table->children->get(index)->type != Child::CELL);
-
-   content.type = core::Content::WIDGET_IN_FLOW;
-   content.widget = table->children->get(index)->cell.widget;
-   return true;
-}
-
-bool Table::TableIterator::prev ()
-{
-   Table *table = (Table*)getWidget();
-
-   if (content.type == core::Content::START)
-      return false;
-
-   // tables only contain widgets (in flow):
-   if ((getMask() & core::Content::WIDGET_IN_FLOW) == 0) {
-      content.type = core::Content::START;
-      return false;
-   }
-
-   do {
-      index--;
-      if (index < 0) {
-         content.type = core::Content::START;
-         return false;
-      }
-   } while (table->children->get(index) == NULL ||
-            table->children->get(index)->type != Child::CELL);
-
-   content.type = core::Content::WIDGET_IN_FLOW;
-   content.widget = table->children->get(index)->cell.widget;
-   return true;
-}
 
 void Table::TableIterator::highlight (int start, int end,
                                       core::HighlightLayer layer)
 {
-   /** todo Needs this an implementation? */
+   if (inFlow ()) {
+      /** todo Needs this an implementation? */
+   } else
+      highlightOOF (start, end, layer);
 }
 
 void Table::TableIterator::unhighlight (int direction,
                                         core::HighlightLayer layer)
 {
+   if (inFlow ()) {
+      // ???
+   } else
+      unhighlightOOF (direction, layer);
 }
 
 void Table::TableIterator::getAllocation (int start, int end,
                                                   core::Allocation *allocation)
 {
-   /** \bug Not implemented. */
+   if (inFlow ()) {
+      /** \bug Not implemented. */
+   } else
+      getAllocationOOF (start, end, allocation);
+}
+
+int Table::TableIterator::numContentsInFlow ()
+{
+   return ((Table*)getWidget())->children->size ();
+}
+
+void Table::TableIterator::getContentInFlow (int index,
+                                             core::Content *content)
+{
+   Table *table = (Table*)getWidget();
+
+   if (table->children->get(index) != NULL &&
+       table->children->get(index)->type == Child::CELL) {
+      content->type = core::Content::WIDGET_IN_FLOW;
+      content->widget = table->children->get(index)->cell.widget;
+   } else
+      content->type = core::Content::INVALID;       
 }
 
 } // namespace dw

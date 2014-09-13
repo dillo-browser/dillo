@@ -41,6 +41,10 @@ namespace oof {
  * dw::core::Widget::correctExtremesOfChild? Currently, all widgets
  * are used the default implementation.)
  *
+ * Also, iterators have to consider widgets out of flow;
+ * dw::oof::OOFAwareWidget::OOFAwareWidgetIterator is recommended as
+ * base class.
+ *
  * For both generators
  * and containers of floats (which is only implemented by
  * dw::Textblock) it gets a bit more complicated.

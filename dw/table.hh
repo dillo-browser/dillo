@@ -339,20 +339,17 @@ private:
       };
    };
 
-   class TableIterator: public core::Iterator
+   class TableIterator: public OOFAwareWidgetIterator
    {
-   private:
-      int index;
+   protected:
+      int numContentsInFlow ();
+      void getContentInFlow (int index, core::Content *content);
 
    public:
       TableIterator (Table *table, core::Content::Type mask, bool atEnd);
-      TableIterator (Table *table, core::Content::Type mask, int index);
 
       lout::object::Object *clone();
-      int compareTo(lout::object::Comparable *other);
 
-      bool next ();
-      bool prev ();
       void highlight (int start, int end, core::HighlightLayer layer);
       void unhighlight (int direction, core::HighlightLayer layer);
       void getAllocation (int start, int end, core::Allocation *allocation);
