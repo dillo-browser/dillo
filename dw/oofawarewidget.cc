@@ -278,6 +278,14 @@ int OOFAwareWidget::getAvailHeightOfChild (Widget *child, bool forceValue)
       return Widget::getAvailWidthOfChild (child, forceValue);
 }
 
+void OOFAwareWidget::removeChild (Widget *child)
+{
+   // Sub classes should implement this method (and Textblock and
+   // Table do so), so this point is only reached from
+   // ~OOFAwareWidget, which removes widgets out of flow.
+   assert (isWidgetOOF (child));
+}
+
 void OOFAwareWidget::borderChanged (int y, Widget *vloat)
 {
    assertNotReached ();

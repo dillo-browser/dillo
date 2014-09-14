@@ -174,6 +174,8 @@ protected:
    int getAvailWidthOfChild (Widget *child, bool forceValue);
    int getAvailHeightOfChild (Widget *child, bool forceValue);
 
+   void removeChild (Widget *child);
+
 public:
    static int CLASS_ID;
 
