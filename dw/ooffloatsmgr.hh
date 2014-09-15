@@ -300,8 +300,10 @@ private:
                            int *maxWidth);
    bool getFloatDiffToCB (Float *vloat, int *leftDiff, int *rightDiff);
 
-   TBInfo *getOOFAwareWidget (OOFAwareWidget *textblock);
-   TBInfo *getOOFAwareWidgetPerhaps (OOFAwareWidget *textblock);
+   TBInfo *getOOFAwareWidget (OOFAwareWidget *widget);
+   TBInfo *getOOFAwareWidgetWhenRegistered (OOFAwareWidget *widget);
+   inline bool isOOFAwareWidgetRegistered (OOFAwareWidget *widget)
+   { return getOOFAwareWidgetWhenRegistered (widget) != NULL; }
    int getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
                   OOFAwareWidget *lastGB, int lastExtIndex);
    SortedFloatsVector *getFloatsListForOOFAwareWidget (OOFAwareWidget

@@ -561,7 +561,7 @@ void OOFFloatsMgr::sizeAllocateStart (OOFAwareWidget *caller,
 
    // Some callers are not registered, especially tables. (Where the
    // floats manager is actually empty?)
-   TBInfo *oofAWInfo = getOOFAwareWidgetPerhaps (caller);
+   TBInfo *oofAWInfo = getOOFAwareWidgetWhenRegistered (caller);
    if (oofAWInfo) {
       oofAWInfo->allocation = *allocation;
       oofAWInfo->wasAllocated = true;
@@ -592,71 +592,71 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateEnd", "%p", caller);
 
-   // (Later, absolutely positioned blocks have to be allocated.)
-
-   if (caller != container) {
-      // Allocate all floats "before" this textblock.
-      sizeAllocateFloats (LEFT, leftFloatsCB->findFloatIndex (caller, -1));
-      sizeAllocateFloats (RIGHT, rightFloatsCB->findFloatIndex (caller, -1));
-   }
-
-   if (caller == container) {
-      // In the size allocation process, the *last* OOFM method called
-      // is sizeAllocateEnd, with the containing block as an
-      // argument. So this is the correct point to finish size
-      // allocation.
-
-      // Allocate all remaining floats.
-      sizeAllocateFloats (LEFT, leftFloatsCB->size () - 1);
-      sizeAllocateFloats (RIGHT, rightFloatsCB->size () - 1);
-
-      // Check changes of both textblocks and floats allocation. (All
-      // is checked by hasRelationChanged (...).)
-      for (lout::container::typed::Iterator<TypedPointer <OOFAwareWidget> > it =
-              tbInfosByOOFAwareWidget->iterator ();
-           it.hasNext (); ) {
-         TypedPointer <OOFAwareWidget> *key = it.getNext ();
-         TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (key);
-         OOFAwareWidget *tb = key->getTypedValue();
-
-         int minFloatPos;
-         Widget *minFloat;
-         if (hasRelationChanged (tbInfo, &minFloatPos, &minFloat))
-            tb->borderChanged (minFloatPos, minFloat);
+   if (isOOFAwareWidgetRegistered (caller)) {
+      if (caller != container) {
+         // Allocate all floats "before" this textblock.
+         sizeAllocateFloats (LEFT, leftFloatsCB->findFloatIndex (caller, -1));
+         sizeAllocateFloats (RIGHT, rightFloatsCB->findFloatIndex (caller, -1));
       }
 
-      checkAllocatedFloatCollisions (LEFT);
-      checkAllocatedFloatCollisions (RIGHT);
+      if (caller == container) {
+         // In the size allocation process, the *last* OOFM method called
+         // is sizeAllocateEnd, with the containing block as an
+         // argument. So this is the correct point to finish size
+         // allocation.
 
-      // Store some information for later use.
-      for (lout::container::typed::Iterator<TypedPointer <OOFAwareWidget> > it =
-              tbInfosByOOFAwareWidget->iterator ();
-           it.hasNext (); ) {
-         TypedPointer <OOFAwareWidget> *key = it.getNext ();
-         TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (key);
-         OOFAwareWidget *tb = key->getTypedValue();
+         // Allocate all remaining floats.
+         sizeAllocateFloats (LEFT, leftFloatsCB->size () - 1);
+         sizeAllocateFloats (RIGHT, rightFloatsCB->size () - 1);
 
-         tbInfo->updateAllocation ();
-         tbInfo->lineBreakWidth = tb->getLineBreakWidth ();
+         // Check changes of both textblocks and floats allocation. (All
+         // is checked by hasRelationChanged (...).)
+         for (lout::container::typed::Iterator<TypedPointer <OOFAwareWidget> >
+                 it = tbInfosByOOFAwareWidget->iterator ();
+              it.hasNext (); ) {
+            TypedPointer <OOFAwareWidget> *key = it.getNext ();
+            TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (key);
+            OOFAwareWidget *tb = key->getTypedValue();
+
+            int minFloatPos;
+            Widget *minFloat;
+            if (hasRelationChanged (tbInfo, &minFloatPos, &minFloat))
+               tb->borderChanged (minFloatPos, minFloat);
+         }
+
+         checkAllocatedFloatCollisions (LEFT);
+         checkAllocatedFloatCollisions (RIGHT);
+
+         // Store some information for later use.
+         for (lout::container::typed::Iterator<TypedPointer <OOFAwareWidget> >
+                 it = tbInfosByOOFAwareWidget->iterator ();
+              it.hasNext (); ) {
+            TypedPointer <OOFAwareWidget> *key = it.getNext ();
+            TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (key);
+            OOFAwareWidget *tb = key->getTypedValue();
+
+            tbInfo->updateAllocation ();
+            tbInfo->lineBreakWidth = tb->getLineBreakWidth ();
+         }
+
+         // There are cases where some allocated floats (TODO: later also
+         // absolutely positioned elements?) exceed the CB allocation.
+         bool sizeChanged = doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT);
+
+         // Similar for extremes. (TODO: here also absolutely positioned
+         // elements?)
+         bool extremesChanged =
+            haveExtremesChanged (LEFT) || haveExtremesChanged (RIGHT);
+
+         for (int i = 0; i < leftFloatsCB->size(); i++)
+            leftFloatsCB->get(i)->updateAllocation ();
+
+         for (int i = 0; i < rightFloatsCB->size(); i++)
+            rightFloatsCB->get(i)->updateAllocation ();
+
+         if (sizeChanged || extremesChanged)
+            container->oofSizeChanged (extremesChanged);
       }
-
-      // There are cases where some allocated floats (TODO: later also
-      // absolutely positioned elements?) exceed the CB allocation.
-      bool sizeChanged = doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT);
-
-      // Similar for extremes. (TODO: here also absolutely positioned
-      // elements?)
-      bool extremesChanged =
-         haveExtremesChanged (LEFT) || haveExtremesChanged (RIGHT);
-
-      for (int i = 0; i < leftFloatsCB->size(); i++)
-         leftFloatsCB->get(i)->updateAllocation ();
-
-      for (int i = 0; i < rightFloatsCB->size(); i++)
-         rightFloatsCB->get(i)->updateAllocation ();
-
-      if (sizeChanged || extremesChanged)
-         container->oofSizeChanged (extremesChanged);
    }
 
    DBG_OBJ_LEAVE ();
@@ -1896,17 +1896,24 @@ bool OOFFloatsMgr::getFloatDiffToCB (Float *vloat, int *leftDiff,
    return result;
 }
 
-OOFFloatsMgr::TBInfo *OOFFloatsMgr::getOOFAwareWidgetPerhaps (OOFAwareWidget
-                                                              *widget)
+OOFFloatsMgr::TBInfo *OOFFloatsMgr::getOOFAwareWidgetWhenRegistered
+   (OOFAwareWidget *widget)
 {
+   DBG_OBJ_ENTER ("oofm.common", 0, "getOOFAwareWidgetWhenRegistered", "%p",
+                  widget);
    TypedPointer<OOFAwareWidget> key (widget);
-   return tbInfosByOOFAwareWidget->get (&key);
+   TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (&key);
+   DBG_OBJ_MSGF ("oofm.common", 1, "found? %s", tbInfo ? "yes" : "no");
+   DBG_OBJ_LEAVE ();
+   return tbInfo;
 }
 
 OOFFloatsMgr::TBInfo *OOFFloatsMgr::getOOFAwareWidget (OOFAwareWidget *widget)
 {
-   TBInfo *tbInfo = getOOFAwareWidgetPerhaps (widget);
+   DBG_OBJ_ENTER ("oofm.common", 0, "getOOFAwareWidget", "%p", widget);
+   TBInfo *tbInfo = getOOFAwareWidgetWhenRegistered (widget);
    assert (tbInfo);
+   DBG_OBJ_LEAVE ();
    return tbInfo;
 }
 
