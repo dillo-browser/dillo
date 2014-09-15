@@ -91,6 +91,8 @@ Widget::Widget ()
    deleteCallbackFunc = NULL;
 
    widgetImgRenderer = NULL;
+
+   stackingContextMgr = NULL;
 }
 
 Widget::~Widget ()
@@ -103,6 +105,9 @@ Widget::~Widget ()
          style->backgroundImage->removeExternalImgRenderer (widgetImgRenderer);
       delete widgetImgRenderer;
    }
+
+   if (stackingContextMgr)
+      delete stackingContextMgr;
 
    if (style)
       style->unref ();
@@ -169,6 +174,17 @@ void Widget::setParent (Widget *parent)
    // used). Does not occur in dillo, where the toplevel widget is a
    // Textblock.
    DBG_OBJ_SET_PTR ("container", container);
+
+   // If at all, stackingContextMgr should have set *before*, see also
+   // Widget::setStyle() and Layout::addWidget().
+   if (stackingContextMgr) {
+      Widget *stackingContextWidget = parent;
+      while (stackingContextWidget &&
+             stackingContextWidget->stackingContextMgr == NULL)
+         stackingContextWidget = stackingContextWidget->parent;
+      assert (stackingContextWidget);
+      stackingContextWidget->stackingContextMgr->addChildSCWidget (this);
+   }
 
    notifySetParent();
 }
@@ -1076,6 +1092,15 @@ void Widget::setStyle (style::Style *style)
 
    if (layout != NULL) {
       layout->updateCursor ();
+   }
+
+   // After Layout::addWidget() (as toplevel widget) or Widget::setParent()
+   // (which also sets layout), changes of the style cannot be considered
+   // anymore. (Should print a warning?)
+   if (layout == NULL &&
+       StackingContextMgr::isEstablishingStackingContext (this)) {
+      stackingContextMgr = new StackingContextMgr (this);
+      DBG_OBJ_ASSOC_CHILD (stackingContextMgr);
    }
 
    if (sizeChanged)

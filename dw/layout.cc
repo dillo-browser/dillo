@@ -374,6 +374,13 @@ void Layout::addWidget (Widget *widget)
       return;
    }
 
+   // The toplevel widget always establishes a stacking context. It could
+   // already be set in Widget::setStyle().
+   if (widget->stackingContextMgr == NULL) {
+      widget->stackingContextMgr = new StackingContextMgr (widget);
+      DBG_OBJ_ASSOC (widget, widget->stackingContextMgr);
+   }
+
    topLevel = widget;
    widget->layout = this;
    widget->container = NULL;

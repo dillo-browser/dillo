@@ -1649,6 +1649,9 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
       drawBox (view, getStyle(), area, 0, verticalOffset, allocation.width,
                getHeight() - verticalOffset, false);
 
+   if (stackingContextMgr)
+      stackingContextMgr->drawBottom (view, area);
+
    lineIndex = findLineIndexWhenAllocated (area->y);
 
    for (; lineIndex < lines->size (); lineIndex++) {
@@ -1661,6 +1664,9 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
    }
 
    drawOOF (view, area);
+
+   if (stackingContextMgr)
+      stackingContextMgr->drawTop (view, area);
 
    DBG_OBJ_LEAVE ();
 }

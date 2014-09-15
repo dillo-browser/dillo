@@ -193,6 +193,12 @@ protected:
     */
    style::Box extraSpace;
 
+   /**
+    * \brief Set iff this widget constitutes a stacking context, as
+    *    defined by CSS.
+    */
+   StackingContextMgr *stackingContextMgr;
+
    /*inline void printFlags () {
       DBG_IF_RTFL {
          char buf[10 * 3 - 1 + 1];

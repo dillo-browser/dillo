@@ -23,6 +23,8 @@ libDw_core_a_SOURCES = \
 	platform.hh \
 	selection.hh \
 	selection.cc \
+	stackingcontextmgr.hh \
+	stackingcontextmgr.cc \
 	style.cc \
 	style.hh \
 	types.cc \
