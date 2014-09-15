@@ -7,6 +7,8 @@
 #   error Do not include this file directly, use "core.hh" instead.
 #endif
 
+#include <limits.h>
+
 #include "../lout/signal.hh"
 #include "../lout/debug.hh"
 
@@ -367,6 +369,17 @@ enum ClearType {
    CLEAR_NONE
 };
 
+enum {
+   /**
+    * \brief 'z-index' is stored as int; use this for the value 'auto'.
+    *
+    * Only some random value, which has to be checked explicitly; do
+    * not compare this (less or greater) to integer values of
+    * 'z-index'.
+    */
+   Z_INDEX_AUTO = INT_MAX
+};
+
 /**
  * \brief Type for representing all lengths within dw::core::style.
  *
@@ -544,6 +557,7 @@ public:
    ListStylePosition listStylePosition;
    ListStyleType listStyleType;
    Cursor cursor;
+   int zIndex;
 
    int x_link;
    int x_img;

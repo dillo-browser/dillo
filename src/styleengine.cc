@@ -725,6 +725,12 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
          case CSS_PROPERTY_MAX_HEIGHT:
             computeLength (&attrs->maxHeight, p->value.intVal, attrs->font);
             break;
+         case CSS_PROPERTY_Z_INDEX:
+            if (p->type == CSS_LENGTH_TYPE_AUTO)
+               attrs->zIndex = dw::core::style::Z_INDEX_AUTO;
+            else
+               attrs->zIndex = p->value.intVal;
+            break;
          case PROPERTY_X_LINK:
             attrs->x_link = p->value.intVal;
             break;

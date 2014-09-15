@@ -273,7 +273,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"width", {CSS_TYPE_LENGTH_PERCENTAGE, CSS_TYPE_AUTO, CSS_TYPE_UNUSED}, NULL},
    {"word-spacing", {CSS_TYPE_ENUM, CSS_TYPE_SIGNED_LENGTH, CSS_TYPE_UNUSED},
     Css_word_spacing_enum_vals},
-   {"z-index", {CSS_TYPE_UNUSED}, NULL},
+   {"z-index", {CSS_TYPE_INTEGER, CSS_TYPE_AUTO, CSS_TYPE_UNUSED}, NULL},
 
    /* These are extensions, for internal used, and never parsed. */
    {"x-link", {CSS_TYPE_INTEGER, CSS_TYPE_UNUSED}, NULL},
@@ -789,9 +789,12 @@ bool CssParser::tokenMatchesProperty(CssPropertyName prop, CssValueType *type)
             return true;
          break;
 
-      case CSS_TYPE_UNUSED:
       case CSS_TYPE_INTEGER:
-         /* Not used for parser values. */
+         if (ttype == CSS_TK_DECINT)
+            return true;
+         break;
+
+      case CSS_TYPE_UNUSED:
       default:
          assert(false);
          break;
@@ -1170,12 +1173,18 @@ bool CssParser::parseValue(CssPropertyName prop,
       }
       break;
 
+   case CSS_TYPE_INTEGER:
+      if (ttype == CSS_TK_DECINT) {
+         val->intVal = strtol(tval, NULL, 10);
+         ret = true;
+         nextToken();
+      }
+      break;
+
    case CSS_TYPE_UNUSED:
       /* nothing */
       break;
 
-   case CSS_TYPE_INTEGER:
-      /* Not used for parser values. */
    default:
       assert(false);            /* not reached */
    }
