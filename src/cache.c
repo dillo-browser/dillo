@@ -983,6 +983,7 @@ bool_t a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
 
             a_Bw_remove_client(web->bw, Client->Key);
             Cache_client_dequeue(Client);
+            --i; /* Keep the index value in the next iteration */
          }
       }
    }

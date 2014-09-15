@@ -2709,7 +2709,8 @@ static void Html_add_anchor(DilloHtml *html, const char *name)
 {
    _MSG("Registering ANCHOR: %s\n", name);
    if (!HT2TB(html)->addAnchor (name, html->style ()))
-      BUG_MSG("Anchor names must be unique within the document ('%s').", name);
+      BUG_MSG("Anchor names must be unique within the document (\"%s\").",
+              name);
    /*
     * According to Sec. 12.2.1 of the HTML 4.01 spec, "anchor names that
     * differ only in case may not appear in the same document", but
@@ -3255,27 +3256,26 @@ void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url)
    dReturn_if (url == NULL || ! prefs.load_stylesheets);
 
    _MSG("Html_load_stylesheet: ");
-   if (a_Capi_get_buf(url, &data, &len)) {
+   if ((a_Capi_get_flags_with_redirection(url) & CAPI_Completed) &&
+       a_Capi_get_buf(url, &data, &len)) {
       _MSG("cached URL=%s len=%d", URL_STR(url), len);
-      if (a_Capi_get_flags_with_redirection(url) & CAPI_Completed) {
-         if (strncmp("@charset \"", data, 10) == 0) {
-            char *endq = strchr(data+10, '"');
+      if (strncmp("@charset \"", data, 10) == 0) {
+         char *endq = strchr(data+10, '"');
 
-            if (endq && (endq - data <= 51)) {
-               /* IANA limits charset names to 40 characters */
-               char *content_type;
+         if (endq && (endq - data <= 51)) {
+            /* IANA limits charset names to 40 characters */
+            char *content_type;
 
-               *endq = '\0';
-               content_type = dStrconcat("text/css; charset=", data+10, NULL);
-               *endq = '"';
-               a_Capi_unref_buf(url);
-               a_Capi_set_content_type(url, content_type, "meta");
-               dFree(content_type);
-               a_Capi_get_buf(url, &data, &len);
-            }
+            *endq = '\0';
+            content_type = dStrconcat("text/css; charset=", data+10, NULL);
+            *endq = '"';
+            a_Capi_unref_buf(url);
+            a_Capi_set_content_type(url, content_type, "meta");
+            dFree(content_type);
+            a_Capi_get_buf(url, &data, &len);
          }
-         html->styleEngine->parse(html, url, data, len, CSS_ORIGIN_AUTHOR);
       }
+      html->styleEngine->parse(html, url, data, len, CSS_ORIGIN_AUTHOR);
       a_Capi_unref_buf(url);
    } else {
       /* Fill a Web structure for the cache query */
