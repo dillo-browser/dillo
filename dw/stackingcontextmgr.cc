@@ -57,18 +57,48 @@ void StackingContextMgr::addChildSCWidget (Widget *widget)
    DBG_OBJ_ARRSET_PTR ("scWidgets", scWidgets->size() - 1, widget);
 }
 
+void StackingContextMgr::drawBottom (View *view, Rectangle *area)
+{
+   DBG_OBJ_ENTER ("draw", 0, "drawBottom", "%d, %d, %d * %d",
+                  area->x, area->y, area->width, area->height);
+   draw (view, area, INT_MIN, -1);
+   DBG_OBJ_LEAVE ();
+}
+
+void StackingContextMgr::drawTop (View *view, Rectangle *area)
+{
+   DBG_OBJ_ENTER ("draw", 0, "drawBottom", "%d, %d, %d * %d",
+                  area->x, area->y, area->width, area->height);
+   draw (view, area, 0, INT_MAX);
+   DBG_OBJ_LEAVE ();
+}
+
 void StackingContextMgr::draw (View *view, Rectangle *area, int startZIndex,
                                int endZIndex)
 {
+   DBG_OBJ_ENTER ("draw", 0, "draw", "[%d, %d, %d * %d], %d, %d",
+                  area->x, area->y, area->width, area->height. startZIndex,
+                  endZIndex);
+
    for (int zIndex = max (minZIndex, startZIndex);
         zIndex <= min (maxZIndex, endZIndex); zIndex++) {
+      DBG_OBJ_MSGF ("draw", 1, "draw", "drawing zIndex = %d", zIndex);
+      DBG_OBJ_MSG_START ();
+
       for (int i = 0; i < scWidgets->size (); i++) {
          Widget *child = scWidgets->get (i);
+         DBG_OBJ_MSGF ("draw", 2, "draw", "widget %p has zIndex = %d",
+                       child, child->getStyle()->zIndex);
          Rectangle childArea;
-         if (child->intersects (area, &childArea))
+         if (child->getStyle()->zIndex == zIndex &&
+             child->intersects (area, &childArea))
             child->draw (view, &childArea);
       }
+
+      DBG_OBJ_MSG_END ();
    }
+
+   DBG_OBJ_LEAVE ();
 }
 
 

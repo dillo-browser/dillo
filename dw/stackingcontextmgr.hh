@@ -37,10 +37,8 @@ public:
 
    void addChildSCWidget (Widget *widget);
 
-   inline void drawBottom (View *view, Rectangle *area)
-   { draw (view, area, INT_MIN, -1); }
-   inline void drawTop (View *view, Rectangle *area)
-   { draw (view, area, 0, INT_MAX); }
+   void drawBottom (View *view, Rectangle *area);
+   void drawTop (View *view, Rectangle *area);
 };
 
 } // namespace core
