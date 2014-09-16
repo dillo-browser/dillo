@@ -816,7 +816,7 @@ void UI::set_location(const char *str)
 {
    if (!str) str = "";
    Location->value(str);
-   Location->position(strlen(str));
+   Location->position((Fl::focus() == Location) ? strlen(str) : 0);
 }
 
 /*
