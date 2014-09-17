@@ -734,7 +734,20 @@ int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
    DBG_OBJ_ENTER ("resize", 0, "Textblock/getAvailWidthOfChild", "%p, %s",
                   child, forceValue ? "true" : "false");
 
-   int width = Widget::getAvailWidthOfChild (child, forceValue);
+   int width;
+
+   if (child->getStyle()->width == core::style::LENGTH_AUTO) {
+      // No width specified: similar to standard implementation (see
+      // there), but "leftInnerPadding" has to be considered, too.
+      DBG_OBJ_MSG ("resize", 1, "no specification");
+      if (forceValue)
+         width = misc::max (getAvailWidth (true) - boxDiffWidth ()
+                            - leftInnerPadding,
+                            0);
+      else
+         width = -1;
+   } else
+      width = Widget::getAvailWidthOfChild (child, forceValue);
 
    if (forceValue && this == child->getContainer () &&
        !mustBeWidenedToAvailWidth ()) {
