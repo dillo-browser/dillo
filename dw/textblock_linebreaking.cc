@@ -1435,6 +1435,18 @@ void Textblock::moveWordIndices (int wordIndex, int num, int *addIndex1)
       }
    }
 
+   // Unlike the last line, the last paragraph is already constructed. (To
+   // make sure we cover all cases, we iterate over the last paragraphs.)
+   Paragraph *par;
+   for (int parNo = paragraphs->size () - 1;
+        parNo >= 0 &&
+           (par = paragraphs->getRef(parNo)) && par->lastWord > wordIndex;
+        parNo--) {
+      par->lastWord += num;
+      if (par->firstWord > wordIndex)
+         par->firstWord += num;
+   }
+
    // Addiditional indices. When needed, the number can be extended.
    if (addIndex1 && *addIndex1 >= wordIndex)
       *addIndex1 += num;
