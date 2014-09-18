@@ -77,17 +77,17 @@ void StackingContextMgr::draw (View *view, Rectangle *area, int startZIndex,
                                int endZIndex)
 {
    DBG_OBJ_ENTER ("draw", 0, "draw", "[%d, %d, %d * %d], %d, %d",
-                  area->x, area->y, area->width, area->height. startZIndex,
+                  area->x, area->y, area->width, area->height, startZIndex,
                   endZIndex);
 
    for (int zIndex = max (minZIndex, startZIndex);
         zIndex <= min (maxZIndex, endZIndex); zIndex++) {
-      DBG_OBJ_MSGF ("draw", 1, "draw", "drawing zIndex = %d", zIndex);
+      DBG_OBJ_MSGF ("draw", 1, "drawing zIndex = %d", zIndex);
       DBG_OBJ_MSG_START ();
 
       for (int i = 0; i < scWidgets->size (); i++) {
          Widget *child = scWidgets->get (i);
-         DBG_OBJ_MSGF ("draw", 2, "draw", "widget %p has zIndex = %d",
+         DBG_OBJ_MSGF ("draw", 2, "widget %p has zIndex = %d",
                        child, child->getStyle()->zIndex);
          Rectangle childArea;
          if (child->getStyle()->zIndex == zIndex &&
