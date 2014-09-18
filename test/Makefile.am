@@ -25,6 +25,7 @@ noinst_PROGRAMS = \
 	dw-resource-test \
 	dw-ui-test \
 	containers \
+	identity \
 	shapes \
 	cookies \
 	liang \
@@ -190,6 +191,9 @@ shapes_LDADD = \
 
 containers_SOURCES = containers.cc
 containers_LDADD = $(top_builddir)/lout/liblout.a
+
+identity_SOURCES = identity.cc
+identity_LDADD = $(top_builddir)/lout/liblout.a
 
 cookies_SOURCES = cookies.c
 cookies_LDADD = \
