@@ -228,13 +228,12 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
                   child, forceValue ? "true" : "false");
 
    int width;
+   oof::OutOfFlowMgr *oofm;
 
-   if (isWidgetOOF(child)) {
-      assert (getWidgetOutOfFlowMgr(child) &&
-              getWidgetOutOfFlowMgr(child)->dealingWithSizeOfChild (child));
-      width =
-         getWidgetOutOfFlowMgr(child)->getAvailWidthOfChild (child, forceValue);
-   } else {
+   if (isWidgetOOF(child) && (oofm = getWidgetOutOfFlowMgr(child)) &&
+       oofm->dealingWithSizeOfChild (child))
+      width = oofm->getAvailWidthOfChild (child, forceValue);
+   else {
       // Unlike other containers, the table widget sometimes narrows
       // columns to a width less than specified by CSS (see
       // forceCalcCellSizes). For this reason, the column widths have to
