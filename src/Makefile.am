@@ -2,7 +2,7 @@ AM_CPPFLAGS= \
 	-I$(top_srcdir) \
 	-DDILLO_SYSCONF='"$(sysconfdir)/"' \
 	-DDILLO_DOCDIR='"$(docdir)/"' \
-	-DCUR_WORKING_DIR='"@BASE_CUR_WORKING_DIR@/src"'
+	-DCUR_WORKING_DIR='"@BASE_CUR_WORKING_DIR@/src"' \
 	@LIBJPEG_CPPFLAGS@
 
 AM_CFLAGS = @LIBPNG_CFLAGS@
