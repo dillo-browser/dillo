@@ -35,24 +35,33 @@ OOFPosAbsMgr::~OOFPosAbsMgr ()
    DBG_OBJ_DELETE ();
 }
 
+// Comment for all containerBox* implementations: for the toplevel
+// widget, assume margin = border = 0 (should perhaps set so when
+// widgets are constructed), so that the padding area is actually the
+// allocation.
+
 int OOFPosAbsMgr::containerBoxOffsetX ()
 {
-   return container->boxOffsetX () - container->getStyle()->padding.left;
+   return container->getParent () ?
+      container->boxOffsetX () - container->getStyle()->padding.left : 0;
 }
 
 int OOFPosAbsMgr::containerBoxOffsetY ()
 {
-   return container->boxOffsetY () - container->getStyle()->padding.top;
+   return container->getParent () ?
+      container->boxOffsetY () - container->getStyle()->padding.top : 0;
 }
 
 int OOFPosAbsMgr::containerBoxRestWidth ()
 {
-   return container->boxRestWidth () - container->getStyle()->padding.right;
+   return container->getParent () ?
+      container->boxRestWidth () - container->getStyle()->padding.right : 0;
 }
 
 int OOFPosAbsMgr::containerBoxRestHeight ()
 {
-   return container->boxRestHeight () - container->getStyle()->padding.bottom;
+   return container->getParent () ?
+      container->boxRestHeight () - container->getStyle()->padding.bottom : 0;
 }
 
 } // namespace oof
