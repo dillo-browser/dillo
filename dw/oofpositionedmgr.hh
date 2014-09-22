@@ -10,6 +10,16 @@ namespace oof {
 class OOFPositionedMgr: public OutOfFlowMgr
 {
 protected:
+   class Child: public lout::object::Object
+   {
+   public:
+      core::Widget *widget, *generator;
+      int x, y;
+
+      inline Child (core::Widget *widget, core::Widget *generator)
+      { this->widget = widget; this->generator = generator; x = y = 0; }  
+   };
+
    virtual int containerBoxOffsetX () = 0;
    virtual int containerBoxOffsetY () = 0;
    virtual int containerBoxRestWidth () = 0;
@@ -23,7 +33,7 @@ protected:
    OOFAwareWidget *container;
    core::Allocation containerAllocation;
 
-   lout::container::typed::Vector<core::Widget> *children;
+   lout::container::typed::Vector<Child> *children;
 
    bool doChildrenExceedContainer ();
    bool haveExtremesChanged ();
@@ -39,9 +49,9 @@ protected:
    { return getPosBorder (child->getStyle()->bottom, availHeight); }
 
    int getPosBorder (core::style::Length cssValue, int refLength);
-   void calcPosAndSizeChildOfChild (core::Widget *child, int refWidth,
-                                    int refHeight, int *x, int *y, int *width,
-                                    int *ascent, int *descent);
+   void calcPosAndSizeChildOfChild (Child *child, int refWidth, int refHeight,
+                                    int *x, int *y, int *width, int *ascent,
+                                    int *descent);
 
 public:
    OOFPositionedMgr (OOFAwareWidget *container);
