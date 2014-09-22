@@ -36,13 +36,16 @@ OOFPositionedMgr::OOFPositionedMgr (OOFAwareWidget *container)
    DBG_OBJ_CREATE ("dw::OOFPositionedMgr");
 
    this->container = (OOFAwareWidget*)container;
-   children = new Vector<Child> (1, true);
+   children = new Vector<Child> (1, false);
+   childrenByWidget = new HashTable<TypedPointer<Widget>, Child> (true, true);
+
    DBG_OBJ_SET_NUM ("children.size", children->size());
 }
 
 OOFPositionedMgr::~OOFPositionedMgr ()
 {
    delete children;
+   delete childrenByWidget;
 
    DBG_OBJ_DELETE ();
 }
@@ -193,7 +196,10 @@ int OOFPositionedMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generator,
    DBG_OBJ_ENTER ("construct.oofm", 0, "addWidgetOOF", "%p, %p, %d",
                   widget, generator, externalIndex);
 
-   children->put (new Child (widget, generator));
+   Child *child = new Child (widget, generator);
+   children->put (child);
+   childrenByWidget->put (new TypedPointer<Widget> (widget), child);
+
    int subRef = children->size() - 1;
    DBG_OBJ_SET_NUM ("children.size", children->size());
    DBG_OBJ_ARRSET_PTR ("children", children->size() - 1, widget);
@@ -235,6 +241,20 @@ Widget *OOFPositionedMgr::getWidgetAtPoint (int x, int y, int level)
 
 void OOFPositionedMgr::tellPosition (Widget *widget, int x, int y)
 {
+   DBG_OBJ_ENTER ("resize.oofm", 0, "tellPosition", "%p, %d, %d",
+                  widget, x, y);
+
+   TypedPointer<Widget> key (widget);
+   Child *child = childrenByWidget->get (&key);
+   assert (child);
+
+   child->x = x;
+   child->y = y;
+
+   DBG_OBJ_SET_NUM_O (child->widget, "<Positioned>.x", x);
+   DBG_OBJ_SET_NUM_O (child->widget, "<Positioned>.y", y);
+
+   DBG_OBJ_LEAVE ();
 }
 
 void OOFPositionedMgr::getSize (Requisition *containerReq, int *oofWidth,
@@ -323,6 +343,11 @@ bool OOFPositionedMgr::affectsLeftBorder (Widget *widget)
 }
 
 bool OOFPositionedMgr::affectsRightBorder (Widget *widget)
+{
+   return false;
+}
+
+bool OOFPositionedMgr::mayAffectBordersAtAll ()
 {
    return false;
 }
@@ -445,14 +470,14 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
    bool widthDefined;
    if (style::isAbsLength (child->widget->getStyle()->width)) {
       DBG_OBJ_MSGF ("resize.oofm", 1, "absolute width: %dpx",
-                    style::absLengthVal (child->getStyle()->width));
+                    style::absLengthVal (child->widget->getStyle()->width));
       *width = style::absLengthVal (child->widget->getStyle()->width)
          + child->widget->boxDiffWidth ();
       widthDefined = true;
    } else if (style::isPerLength (child->widget->getStyle()->width)) {
       DBG_OBJ_MSGF ("resize.oofm", 1, "percentage width: %g%%",
                     100 * style::perLengthVal_useThisOnlyForDebugging
-                             (child->getStyle()->width));
+                             (child->widget->getStyle()->width));
       *width = style::multiplyWithPerLength (refWidth,
                                              child->widget->getStyle()->width)
          + child->widget->boxDiffWidth ();
@@ -486,7 +511,7 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
    *descent = childRequisition.descent;
    if (style::isAbsLength (child->widget->getStyle()->height)) {
       DBG_OBJ_MSGF ("resize.oofm", 1, "absolute height: %dpx",
-                    style::absLengthVal (child->getStyle()->height));
+                    style::absLengthVal (child->widget->getStyle()->height));
       int height = style::absLengthVal (child->widget->getStyle()->height)
          + child->widget->boxDiffHeight ();
       splitHeightPreserveAscent (height, ascent, descent);
@@ -494,7 +519,7 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
    } else if (style::isPerLength (child->widget->getStyle()->height)) {
       DBG_OBJ_MSGF ("resize.oofm", 1, "percentage height: %g%%",
                     100 * style::perLengthVal_useThisOnlyForDebugging
-                             (child->getStyle()->height));
+                             (child->widget->getStyle()->height));
       int height =
          style::multiplyWithPerLength (refHeight,
                                        child->widget->getStyle()->height)

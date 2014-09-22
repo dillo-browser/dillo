@@ -377,6 +377,7 @@ public:
 
    bool affectsLeftBorder (core::Widget *widget);
    bool affectsRightBorder (core::Widget *widget);
+   bool mayAffectBordersAtAll ();
 
    int getClearPosition (OOFAwareWidget *textblock);
 

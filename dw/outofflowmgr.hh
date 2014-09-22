@@ -65,6 +65,7 @@ public:
    
    virtual bool affectsLeftBorder (core::Widget *widget) = 0;
    virtual bool affectsRightBorder (core::Widget *widget) = 0;
+   virtual bool mayAffectBordersAtAll () = 0;
 
    virtual int getClearPosition (OOFAwareWidget *widget) = 0;
 

@@ -2260,6 +2260,11 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
                                                       words->size ());
       widget->parentRef = makeParentRefOOF (oofmIndex, oofmSubRef);
 
+      DBG_OBJ_MSGF ("construct.word", 1,
+                    "ouf of flow: oofmIndex = %d, oofmSubRef = %d => "
+                    "parentRef = %d",
+                    oofmIndex, oofmSubRef, widget->parentRef);
+
       Word *word = addWord (0, 0, 0, 0, style);
       word->content.type = core::Content::WIDGET_OOF_REF;
       word->content.widget = widget;
@@ -2268,6 +2273,8 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       // problems with breaking near float definitions.)
       setBreakOption (word, style, 0, 0, false);
    } else {
+      DBG_OBJ_MSG ("construct.word", 1, "in flow");
+
       widget->setParent (this);
 
       // TODO Replace (perhaps) later "textblock" by "OOF aware widget".

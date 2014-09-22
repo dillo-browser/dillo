@@ -710,6 +710,7 @@ protected:
    void processWord (int wordIndex);
    virtual int wordWrap (int wordIndex, bool wrapAll);
    int wrapWordInFlow (int wordIndex, bool wrapAll);
+   int wrapWordOofRef (int wordIndex, bool wrapAll);
    void balanceBreakPosAndHeight (int wordIndex, int firstIndex,
                                   int *searchUntil, bool tempNewLine,
                                   int penaltyIndex, bool borderIsCalculated,

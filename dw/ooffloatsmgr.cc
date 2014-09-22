@@ -2177,6 +2177,11 @@ bool OOFFloatsMgr::affectsRightBorder (core::Widget *widget)
    return widget->getStyle()->vloat == core::style::FLOAT_RIGHT;
 };
 
+bool OOFFloatsMgr::mayAffectBordersAtAll ()
+{
+   return true;
+}
+
 int OOFFloatsMgr::getClearPosition (OOFAwareWidget *textblock, Side side)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "getClearPosition", "%p, %s",

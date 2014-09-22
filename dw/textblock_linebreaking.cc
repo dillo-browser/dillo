@@ -570,7 +570,7 @@ int Textblock::wordWrap (int wordIndex, bool wrapAll)
 
    int n;
    if (word->content.type == core::Content::WIDGET_OOF_REF)
-      n = 0;
+      n = wrapWordOofRef (wordIndex, wrapAll);
    else
       n = wrapWordInFlow (wordIndex, wrapAll);
 
@@ -735,8 +735,8 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                core::Content *content = &(words->getRef(i)->content);
                if (content->type == core::Content::WIDGET_OOF_REF) {
                   for (int j = 0; newFloatPos == -1 && j < NUM_OOFM; j++) {
-                     if ((searchOutOfFlowMgr(j) ->affectsLeftBorder(content
-                                                                    ->widget) ||
+                     if ((searchOutOfFlowMgr(j)->affectsLeftBorder(content
+                                                                   ->widget) ||
                           searchOutOfFlowMgr(j)->affectsRightBorder (content
                                                                      ->widget)))
                         newFloatPos = i;
@@ -836,6 +836,29 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
    DBG_OBJ_LEAVE ();
 
    return diffWords;
+}
+
+int Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
+{
+   DBG_OBJ_ENTER ("construct.word", 0, "wrapWordOofRef", "%d, %s",
+                  wordIndex, wrapAll ? "true" : "false");
+
+   Word *word = words->getRef (wordIndex);
+   Widget *widget = word->content.widget;
+   int yNewLine = yOffsetOfPossiblyMissingLine (lines->size ());
+
+   // Floats, which affect either border, are handled in wrapWordInFlow; this
+   // is rather for positioned elements.
+   oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (getWidgetOOFIndex (widget));
+   DBG_OBJ_MSGF ("construct.word", 1, "parentRef = %d, oofm = %p",
+                 widget->parentRef, oofm);
+   if (oofm && !oofm->mayAffectBordersAtAll ())
+      // TODO Again, "x = 0" is not correct (see above).
+      oofm->tellPosition (widget, 0, yNewLine);
+
+   DBG_OBJ_LEAVE ();
+
+   return 0; // Words list not changed.
 }
 
 // *height must be initialized, but not *breakPos.

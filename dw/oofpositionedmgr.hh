@@ -34,7 +34,10 @@ protected:
    core::Allocation containerAllocation;
 
    lout::container::typed::Vector<Child> *children;
-
+   lout::container::typed::HashTable<lout::object::TypedPointer
+                                        <dw::core::Widget>,
+                                     Child> *childrenByWidget;
+   
    bool doChildrenExceedContainer ();
    bool haveExtremesChanged ();
    void sizeAllocateChildren ();
@@ -100,6 +103,7 @@ public:
 
    bool affectsLeftBorder (core::Widget *widget);
    bool affectsRightBorder (core::Widget *widget);
+   bool mayAffectBordersAtAll ();
 
    bool dealingWithSizeOfChild (core::Widget *child);
    int getAvailWidthOfChild (core::Widget *child, bool forceValue);
