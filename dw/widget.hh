@@ -180,10 +180,8 @@ protected:
    Allocation allocation;
 
    inline int getHeight () { return allocation.ascent + allocation.descent; }
-   inline int getContentWidth() { return allocation.width
-                                     - style->boxDiffWidth (); }
-   inline int getContentHeight() { return getHeight ()
-                                      - style->boxDiffHeight (); }
+   inline int getContentWidth() { return allocation.width - boxDiffWidth (); }
+   inline int getContentHeight() { return getHeight () - boxDiffHeight (); }
 
    Layout *layout;
 

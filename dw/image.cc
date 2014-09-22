@@ -334,7 +334,7 @@ void Image::leaveNotifyImpl (core::EventCrossing *event)
  */
 int Image::contentX (core::MousePositionEvent *event)
 {
-   int ret = event->xWidget - getStyle()->boxOffsetX();
+   int ret = event->xWidget - boxOffsetX();
 
    ret = misc::min(getContentWidth(), misc::max(ret, 0));
    return ret;
@@ -342,7 +342,7 @@ int Image::contentX (core::MousePositionEvent *event)
 
 int Image::contentY (core::MousePositionEvent *event)
 {
-   int ret = event->yWidget - getStyle()->boxOffsetY();
+   int ret = event->yWidget - boxOffsetY();
 
    ret = misc::min(getContentHeight(), misc::max(ret, 0));
    return ret;
@@ -412,8 +412,8 @@ void Image::draw (core::View *view, core::Rectangle *area)
    drawWidgetBox (view, area, false);
 
    if (buffer) {
-      dx = getStyle()->boxOffsetX ();
-      dy = getStyle()->boxOffsetY ();
+      dx = boxOffsetX ();
+      dy = boxOffsetY ();
       content.x = dx;
       content.y = dy;
       content.width = getContentWidth ();
@@ -440,31 +440,29 @@ void Image::draw (core::View *view, core::Rectangle *area)
              (getContentHeight() <
               getStyle()->font->ascent + getStyle()->font->descent)) {
             clippingView = usedView =
-               view->getClippingView (allocation.x + getStyle()->boxOffsetX (),
-                                      allocation.y + getStyle()->boxOffsetY (),
+               view->getClippingView (allocation.x + boxOffsetX (),
+                                      allocation.y + boxOffsetY (),
                                       getContentWidth(),
                                       getContentHeight());
          }
 
          usedView->drawSimpleWrappedText (getStyle()->font, getStyle()->color,
                              core::style::Color::SHADING_NORMAL,
-                             allocation.x + getStyle()->boxOffsetX (),
-                             allocation.y + getStyle()->boxOffsetY (),
+                             allocation.x + boxOffsetX (),
+                             allocation.y + boxOffsetY (),
                              getContentWidth(), getContentHeight(), altText);
 
          if (clippingView)
             view->mergeClippingView (clippingView);
       }
       if (mapKey) {
-         clippingView = view->getClippingView (allocation.x +
-                                               getStyle()->boxOffsetX (),
-                                               allocation.y +
-                                               getStyle()->boxOffsetY (),
+         clippingView = view->getClippingView (allocation.x + boxOffsetX (),
+                                               allocation.y + boxOffsetY (),
                                                getContentWidth(),
                                                getContentHeight());
          mapList->drawMap(mapKey, clippingView, getStyle(),
-                          allocation.x + getStyle()->boxOffsetX (),
-                          allocation.y + getStyle()->boxOffsetY ());
+                          allocation.x + boxOffsetX (),
+                          allocation.y + boxOffsetY ());
          view->mergeClippingView (clippingView);
       }
    }
@@ -515,9 +513,8 @@ void Image::drawRow (int row)
 
    buffer->getRowArea (row, &area);
    if (area.width && area.height)
-      queueDrawArea (area.x + getStyle()->boxOffsetX (),
-                     area.y + getStyle()->boxOffsetY (),
-                     area.width, area.height);
+      queueDrawArea (area.x + boxOffsetX (), area.y + boxOffsetY (), area.width,
+                     area.height);
 }
 
 void Image::finish ()

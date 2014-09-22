@@ -1648,8 +1648,7 @@ int Textblock::calcLineBreakWidth (int lineIndex)
    if (limitTextWidth &&
        layout->getUsesViewport () &&
        // margin/border/padding will be subtracted later,  via OOFM.
-       lineBreakWidth - getStyle()->boxDiffWidth()
-       > layout->getWidthViewport () - 10)
+       lineBreakWidth - boxDiffWidth() > layout->getWidthViewport () - 10)
       lineBreakWidth = layout->getWidthViewport () - 10;
    if (lineIndex == 0)
       lineBreakWidth -= line1OffsetEff;
@@ -1661,8 +1660,8 @@ int Textblock::calcLineBreakWidth (int lineIndex)
    } else
       leftBorder = rightBorder = 0;
 
-   leftBorder = misc::max (leftBorder, getStyle()->boxOffsetX());
-   rightBorder = misc::max (rightBorder, getStyle()->boxRestWidth());
+   leftBorder = misc::max (leftBorder, boxOffsetX());
+   rightBorder = misc::max (rightBorder, boxRestWidth());
 
    lineBreakWidth -= (leftBorder + rightBorder);
 

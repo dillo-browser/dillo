@@ -1220,9 +1220,9 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
    case LEFT:
       // Left floats are always aligned on the left side of the
       // generator (content, not allocation) ...
-      x = gbX + vloat->generatingBlock->getStyle()->boxOffsetX();
+      x = gbX + vloat->generatingBlock->boxOffsetX();
       DBG_OBJ_MSGF ("resize.oofm", 1, "left: x = %d + %d = %d",
-                    gbX, vloat->generatingBlock->getStyle()->boxOffsetX(), x);
+                    gbX, vloat->generatingBlock->boxOffsetX(), x);
       // ... but when the float exceeds the line break width of the
       // container, it is corrected (but not left of the container).
       // This way, we save space and, especially within tables, avoid
@@ -1247,12 +1247,12 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
       // is often smaller that the line break.)
 
       x = max (gbX + gbLineBreakWidth - vloat->size.width
-               - vloat->generatingBlock->getStyle()->boxRestWidth(),
+               - vloat->generatingBlock->boxRestWidth(),
                // Do not exceed CB allocation:
                0);
       DBG_OBJ_MSGF ("resize.common", 1, "x = max (%d + %d - %d - %d, 0) = %d",
                     gbX, gbLineBreakWidth, vloat->size.width,
-                    vloat->generatingBlock->getStyle()->boxRestWidth(), x);
+                    vloat->generatingBlock->boxRestWidth(), x);
       break;
 
    default:
@@ -1641,7 +1641,7 @@ bool OOFFloatsMgr::collidesH (Float *vloat, Float *other, SFVType type)
 
    if (vloat->generatingBlock == other->generatingBlock)
       collidesH = vloat->size.width + other->size.width
-         + vloat->generatingBlock->getStyle()->boxDiffWidth()
+         + vloat->generatingBlock->boxDiffWidth()
          > vloat->generatingBlock->getLineBreakWidth();
    else {
       assert (wasAllocated (vloat->generatingBlock));
@@ -1863,8 +1863,8 @@ bool OOFFloatsMgr::getFloatDiffToCB (Float *vloat, int *leftDiff,
    bool result;
 
    if (vloat->generatingBlock == container) {
-      *leftDiff = vloat->generatingBlock->getStyle()->boxOffsetX();
-      *rightDiff = vloat->generatingBlock->getStyle()->boxRestWidth();
+      *leftDiff = vloat->generatingBlock->boxOffsetX();
+      *rightDiff = vloat->generatingBlock->boxRestWidth();
       result = true;
       DBG_OBJ_MSGF ("resize.oofm", 1,
                     "GB == CB => leftDiff = %d, rightDiff = %d",
@@ -1872,20 +1872,19 @@ bool OOFFloatsMgr::getFloatDiffToCB (Float *vloat, int *leftDiff,
    } else if (wasAllocated (vloat->generatingBlock)) {
       Allocation *gba = getAllocation(vloat->generatingBlock);
       *leftDiff = gba->x - containerAllocation.x
-         + vloat->generatingBlock->getStyle()->boxOffsetX();
+         + vloat->generatingBlock->boxOffsetX();
       *rightDiff =
          (containerAllocation.x + containerAllocation.width)
          - (gba->x + gba->width)
-         + vloat->generatingBlock->getStyle()->boxRestWidth();
+         + vloat->generatingBlock->boxRestWidth();
       result = true;
       DBG_OBJ_MSGF ("resize.oofm", 1,
                     "GB != CB => leftDiff = %d - %d + %d = %d, "
                     "rightDiff = (%d + %d) - (%d + %d) + %d = %d",
                     gba->x, containerAllocation.x,
-                    vloat->generatingBlock->getStyle()->boxOffsetX(),
-                    *leftDiff, containerAllocation.x,
-                    containerAllocation.width, gba->x, gba->width,
-                    vloat->generatingBlock->getStyle()->boxRestWidth(),
+                    vloat->generatingBlock->boxOffsetX(), *leftDiff,
+                    containerAllocation.x, containerAllocation.width,
+                    gba->x, gba->width, vloat->generatingBlock->boxRestWidth(),
                     *rightDiff);
    } else {
       DBG_OBJ_MSG ("resize.oofm", 1, "GB != CB, and float not allocated");
@@ -1986,8 +1985,8 @@ int OOFFloatsMgr::getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
             int thisBorder;
             if (vloat->generatingBlock == textblock) {
                int borderIn = side == LEFT ?
-                  vloat->generatingBlock->getStyle()->boxOffsetX() :
-                  vloat->generatingBlock->getStyle()->boxRestWidth();
+                  vloat->generatingBlock->boxOffsetX() :
+                  vloat->generatingBlock->boxRestWidth();
                thisBorder = vloat->size.width + borderIn;
                DBG_OBJ_MSGF ("border", 1, "GB: thisBorder = %d + %d = %d",
                              vloat->size.width, borderIn, thisBorder);

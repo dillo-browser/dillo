@@ -112,14 +112,13 @@ void Table::sizeRequestImpl (core::Requisition *requisition)
    /**
     * \bug Baselines are not regarded here.
     */
-   requisition->width = getStyle()->boxDiffWidth ()
-      + (numCols + 1) * getStyle()->hBorderSpacing;
+   requisition->width =
+      boxDiffWidth () + (numCols + 1) * getStyle()->hBorderSpacing;
    for (int col = 0; col < numCols; col++)
       requisition->width += colWidths->get (col);
 
    requisition->ascent =
-      getStyle()->boxDiffHeight () + cumHeight->get (numRows)
-      + getStyle()->vBorderSpacing;
+      boxDiffHeight () + cumHeight->get (numRows) + getStyle()->vBorderSpacing;
    requisition->descent = 0;
 
    correctRequisition (requisition, core::splitHeightPreserveDescent);
@@ -175,10 +174,8 @@ void Table::sizeAllocateImpl (core::Allocation *allocation)
     * \bug Baselines are not regarded here.
     */
 
-   int offy =
-      allocation->y + getStyle()->boxOffsetY () + getStyle()->vBorderSpacing;
-   int x =
-      allocation->x + getStyle()->boxOffsetX () + getStyle()->hBorderSpacing;
+   int offy = allocation->y + boxOffsetY () + getStyle()->vBorderSpacing;
+   int x = allocation->x + boxOffsetX () + getStyle()->hBorderSpacing;
 
    for (int col = 0; col < numCols; col++) {
       for (int row = 0; row < numRows; row++) {

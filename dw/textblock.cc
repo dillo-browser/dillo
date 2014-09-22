@@ -356,11 +356,11 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    }
 
    DBG_OBJ_MSGF ("resize", 1, "left inner padding = %d, boxDiffWidth = %d",
-                 leftInnerPadding, getStyle()->boxDiffWidth ());
+                 leftInnerPadding, boxDiffWidth ());
 
-   requisition->width += leftInnerPadding + getStyle()->boxDiffWidth ();
-   requisition->ascent += verticalOffset + getStyle()->boxOffsetY ();
-   requisition->descent += getStyle()->boxRestHeight ();
+   requisition->width += leftInnerPadding + boxDiffWidth ();
+   requisition->ascent += verticalOffset + boxOffsetY ();
+   requisition->descent += boxRestHeight ();
 
    if (mustBeWidenedToAvailWidth ()) {
       DBG_OBJ_MSGF ("resize", 1,
@@ -455,7 +455,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
                  extremes->minWidth, extremes->minWidthIntrinsic,
                  extremes->maxWidth, extremes->maxWidthIntrinsic);
 
-   int diff = leftInnerPadding + getStyle()->boxDiffWidth ();
+   int diff = leftInnerPadding + boxDiffWidth ();
    extremes->minWidth += diff;
    extremes->minWidthIntrinsic += diff;
    extremes->maxWidth += diff;
@@ -523,7 +523,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                  // Reconstruct the initial size; see
                  // Textblock::sizeRequestImpl.
                  (lines->size () > 0 ? lines->getRef(0)->boxAscent : 0)
-                 + verticalOffset + getStyle()->boxOffsetY ());
+                 + verticalOffset + boxOffsetY ());
    childBaseAllocation.descent =
       allocation->ascent + allocation->descent - childBaseAllocation.ascent;
 
@@ -1500,7 +1500,7 @@ int Textblock::findLineIndexWhenNotAllocated (int y)
    else
       return findLineIndex (y,
                             lines->getRef(0)->boxAscent + verticalOffset +
-                            getStyle()->boxOffsetY());
+                            boxOffsetY());
 }
 
 int Textblock::findLineIndexWhenAllocated (int y)
@@ -3065,17 +3065,17 @@ int Textblock::yOffsetOfPossiblyMissingLine (int lineNo)
    int result;
 
    if (lineNo == 0) {
-      result = verticalOffset + getStyle()->boxOffsetY();
+      result = verticalOffset + boxOffsetY();
       DBG_OBJ_MSGF ("line.yoffset", 1, "first line: %d + %d = %d",
-                    verticalOffset, getStyle()->boxOffsetY(), result);
+                    verticalOffset, boxOffsetY(), result);
    } else {
       Line *prevLine = lines->getRef (lineNo - 1);
-      result = verticalOffset + getStyle()->boxOffsetY() +
+      result = verticalOffset + boxOffsetY() +
          prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
          prevLine->breakSpace;
       DBG_OBJ_MSGF ("line.yoffset", 1,
                     "other line: %d + %d + %d + (%d + %d) + %d = %d",
-                    verticalOffset, getStyle()->boxOffsetY(),
+                    verticalOffset, boxOffsetY(),
                     prevLine->top, prevLine->boxAscent, prevLine->boxDescent,
                     prevLine->breakSpace, result);
    }
