@@ -753,14 +753,15 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 
                // Step 2: position the float and re-calculate the line.
 
-               // TODO "x = 0" is not quite correct, but this does not
-               // matter (currently?).
+               // TODO "x" is not quite correct, but this does not matter
+               // (currently?).
 
                lastFloatPos = newFloatPos;
 
                for (int i = 0; i < NUM_OOFM; i++)
                   searchOutOfFlowMgr(i)->tellPosition
-                     (words->getRef(lastFloatPos)->content.widget, 0, yNewLine);
+                     (words->getRef(lastFloatPos)->content.widget,
+                      boxOffsetX (), yNewLine);
 
                balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
                                          tempNewLine, penaltyIndex, false,
@@ -853,8 +854,8 @@ int Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
    DBG_OBJ_MSGF ("construct.word", 1, "parentRef = %d, oofm = %p",
                  widget->parentRef, oofm);
    if (oofm && !oofm->mayAffectBordersAtAll ())
-      // TODO Again, "x = 0" is not correct (see above).
-      oofm->tellPosition (widget, 0, yNewLine);
+      // TODO Again, "x" is not correct (see above).
+      oofm->tellPosition (widget, boxOffsetX (), yNewLine);
 
    DBG_OBJ_LEAVE ();
 
