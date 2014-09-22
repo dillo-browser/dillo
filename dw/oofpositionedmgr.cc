@@ -50,7 +50,13 @@ OOFPositionedMgr::~OOFPositionedMgr ()
 void OOFPositionedMgr::sizeAllocateStart (OOFAwareWidget *caller,
                                           Allocation *allocation)
 {
-   containerAllocation = *allocation;
+   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateStart",
+                  "%p, (%d, %d, %d * (%d + %d))",
+                  caller, allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
+   if (caller == container)
+      containerAllocation = *allocation;
+   DBG_OBJ_LEAVE ();
 }
 
 void OOFPositionedMgr::sizeAllocateEnd (OOFAwareWidget *caller)
