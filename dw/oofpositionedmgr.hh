@@ -64,7 +64,7 @@ public:
    void moveExternalIndices (OOFAwareWidget *generator, int oldStartIndex,
                              int diff);
 
-   void tellPosition (core::Widget *widget, int yReq);
+   void tellPosition (core::Widget *widget, int x, int y);
 
    void getSize (core::Requisition *containerReq, int *oofWidth,
                  int *oofHeight);

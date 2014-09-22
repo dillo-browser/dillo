@@ -752,11 +752,15 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                floatHandled = true;
 
                // Step 2: position the float and re-calculate the line.
+
+               // TODO "x = 0" is not quite correct, but this does not
+               // matter (currently?).
+
                lastFloatPos = newFloatPos;
 
                for (int i = 0; i < NUM_OOFM; i++)
                   searchOutOfFlowMgr(i)->tellPosition
-                     (words->getRef(lastFloatPos)->content.widget, yNewLine);
+                     (words->getRef(lastFloatPos)->content.widget, 0, yNewLine);
 
                balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
                                          tempNewLine, penaltyIndex, false,

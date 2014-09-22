@@ -231,7 +231,7 @@ Widget *OOFPositionedMgr::getWidgetAtPoint (int x, int y, int level)
    return NULL;
 }
 
-void OOFPositionedMgr::tellPosition (Widget *widget, int yReq)
+void OOFPositionedMgr::tellPosition (Widget *widget, int x, int y)
 {
 }
 
