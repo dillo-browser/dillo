@@ -757,11 +757,12 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                // (currently?).
 
                lastFloatPos = newFloatPos;
-
-               for (int i = 0; i < NUM_OOFM; i++)
-                  searchOutOfFlowMgr(i)->tellPosition
-                     (words->getRef(lastFloatPos)->content.widget,
-                      boxOffsetX (), yNewLine);
+               
+               Widget *widget = words->getRef(lastFloatPos)->content.widget;
+               oof::OutOfFlowMgr *oofm =
+                  searchOutOfFlowMgr (getWidgetOOFIndex (widget));
+               if (oofm && oofm->mayAffectBordersAtAll ())
+                  oofm->tellPosition (widget, boxOffsetX (), yNewLine);
 
                balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
                                          tempNewLine, penaltyIndex, false,
