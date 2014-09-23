@@ -747,7 +747,8 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
    }
 
    if (imgUrl && prefs.load_background_images &&
-       !stack->getRef (i)->displayNone)
+       !stack->getRef (i)->displayNone &&
+       !(URL_FLAGS(pageUrl) & URL_SpamSafe))
    {
       attrs->backgroundImage = StyleImage::create();
       DilloImage *image =
