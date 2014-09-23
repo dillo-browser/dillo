@@ -129,6 +129,11 @@ int AlignedTableCell::applyPerHeight (int containerHeight,
    return tablecell::applyPerHeight (this, containerHeight, perHeight);
 }
 
+bool AlignedTableCell::adjustExtraSpaceWhenCorrectingRequisitionByOOF ()
+{
+   return tablecell::adjustExtraSpaceWhenCorrectingRequisitionByOOF ();
+}
+
 int AlignedTableCell::wordWrap(int wordIndex, bool wrapAll)
 {
    Textblock::Word *word;

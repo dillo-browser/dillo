@@ -22,6 +22,8 @@ protected:
 
    bool getAdjustMinWidth ();
 
+   bool adjustExtraSpaceWhenCorrectingRequisitionByOOF ();
+
    int wordWrap (int wordIndex, bool wrapAll);
 
    int getValue ();

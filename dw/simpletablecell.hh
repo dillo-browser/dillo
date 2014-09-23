@@ -18,6 +18,8 @@ protected:
 
    bool getAdjustMinWidth ();
 
+   bool adjustExtraSpaceWhenCorrectingRequisitionByOOF ();
+
 public:
    static int CLASS_ID;
 

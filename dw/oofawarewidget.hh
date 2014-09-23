@@ -188,6 +188,7 @@ public:
    virtual int getLineBreakWidth (); // Should perhaps be renamed.
    virtual bool isPossibleContainer (int oofmIndex);
    virtual bool isPossibleContainerParent (int oofmIndex);
+   virtual bool adjustExtraSpaceWhenCorrectingRequisitionByOOF ();
 };
 
 } // namespace oof

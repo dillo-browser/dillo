@@ -187,11 +187,21 @@ void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition,
 
          outOfFlowMgr[i]->getSize (requisition, &oofWidth, &oofHeight);
 
-         if (oofWidth > requisition->width)
+         if (oofWidth > requisition->width) {
+            if (adjustExtraSpaceWhenCorrectingRequisitionByOOF ())
+               extraSpace.right = max (extraSpace.right,
+                                       oofWidth - requisition->width);
             requisition->width = oofWidth;
-         if (oofHeight > requisition->ascent + requisition->descent)
+         }
+
+         if (oofHeight > requisition->ascent + requisition->descent) {
+            if (adjustExtraSpaceWhenCorrectingRequisitionByOOF ())
+               extraSpace.bottom = max (extraSpace.bottom,
+                                        oofHeight - (requisition->ascent +
+                                                     requisition->descent));
             splitHeightFun (oofHeight,
                             &requisition->ascent, &requisition->descent);
+         }
       }
    }
 }
@@ -321,6 +331,11 @@ bool OOFAwareWidget::isPossibleContainer (int oofmIndex)
 bool OOFAwareWidget::isPossibleContainerParent (int oofmIndex)
 {
    return oofmIndex != OOFM_FLOATS;
+}
+
+bool OOFAwareWidget::adjustExtraSpaceWhenCorrectingRequisitionByOOF ()
+{
+   return true;
 }
 
 } // namespace oof
