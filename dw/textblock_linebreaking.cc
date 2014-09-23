@@ -1947,7 +1947,7 @@ void Textblock::initNewLine ()
                misc::max (clearPosition,
                           searchOutOfFlowMgr(i)->getClearPosition (this));
 
-      setVerticalOffset (misc::max (clearPosition, 0));
+      setClearPosition (misc::max (clearPosition, 0));
    }
 
    calcBorders (lines->size() > 0 ?

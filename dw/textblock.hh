@@ -522,8 +522,9 @@ protected:
    /* This value is (currently) set by setAscent(). */
    int lineBreakWidth;
 
-   // Additional vertical offset, used for the "clear" attribute.
-   int verticalOffset;
+   // Vertical offset at the top, used for the "clear" attribute. Goes
+   // into "extraSpace".
+   int clearPosition;
 
    int wrapRefLines, wrapRefParagraphs;  /* 0-based. Important: Both
                                             are the line numbers, not
@@ -572,7 +573,7 @@ protected:
    void calcBorders (int lastOofRef, int height);
    void showMissingLines ();
    void removeTemporaryLines ();
-   void setVerticalOffset (int verticalOffset);
+   void setClearPosition (int clearPosition);
 
    void decorateText (core::View *view, core::style::Style *style,
                       core::style::Color::Shading shading,
@@ -748,6 +749,8 @@ protected:
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
+
+   void calcExtraSpaceImpl ();
 
    int getAvailWidthOfChild (core::Widget *child, bool forceValue);
    int getAvailHeightOfChild (core::Widget *child, bool forceValue);

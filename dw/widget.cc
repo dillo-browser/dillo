@@ -512,6 +512,7 @@ void Widget::sizeRequest (Requisition *requisition)
    }
 
    if (needsResize ()) {
+      calcExtraSpace ();
       /** \todo Check requisition == &(this->requisition) and do what? */
       sizeRequestImpl (requisition);
       this->requisition = *requisition;
@@ -922,6 +923,8 @@ void Widget::getExtremes (Extremes *extremes)
    }
 
    if (extremesChanged ()) {
+      calcExtraSpace ();
+
       // For backward compatibility (part 1/2):
       extremes->minWidthIntrinsic = extremes->maxWidthIntrinsic = -1;
 
@@ -948,6 +951,24 @@ void Widget::getExtremes (Extremes *extremes)
    leaveGetExtremes ();
 
    DBG_OBJ_LEAVE ();
+}
+
+/**
+ * \brief Calculates dw::core::Widget::extraSpace.
+ *
+ * Delegated to dw::core::Widget::calcExtraSpaceImpl. Called both from
+ * dw::core::Widget::sizeRequest and dw::core::Widget::getExtremes.
+ */
+void Widget::calcExtraSpace ()
+{
+   extraSpace.top = extraSpace.right = extraSpace.bottom = extraSpace.left = 0;
+   calcExtraSpaceImpl ();
+
+   DBG_OBJ_SET_NUM ("extraSpace.top", extraSpace.top);
+   DBG_OBJ_SET_NUM ("extraSpace.bottom", extraSpace.bottom);
+   DBG_OBJ_SET_NUM ("extraSpace.left", extraSpace.left);
+   DBG_OBJ_SET_NUM ("extraSpace.right", extraSpace.right);
+   
 }
 
 /**
@@ -1236,8 +1257,10 @@ void Widget::drawWidgetBox (View *view, Rectangle *area, bool inverse)
    canvasArea.width = area->width;
    canvasArea.height = area->height;
 
-   style::drawBorder (view, layout, &canvasArea, allocation.x, allocation.y,
-                      allocation.width, getHeight (), style, inverse);
+   int xMar, yMar, widthMar, heightMar;
+   getMarginArea (&xMar, &yMar, &widthMar, &heightMar);
+   style::drawBorder (view, layout, &canvasArea, xMar, yMar, widthMar,
+                      heightMar, style, inverse);
 
    int xPad, yPad, widthPad, heightPad;
    getPaddingArea (&xPad, &yPad, &widthPad, &heightPad);
@@ -1411,6 +1434,24 @@ void Widget::scrollTo (HPosition hpos, VPosition vpos,
                      x + allocation.x, y + allocation.y, width, height);
 }
 
+void Widget::getMarginArea (int *xMar, int *yMar, int *widthMar, int *heightMar)
+{
+   *xMar = allocation.x + extraSpace.left;
+   *yMar = allocation.y + extraSpace.top;
+   *widthMar = allocation.width - (extraSpace.left + extraSpace.right);
+   *heightMar = getHeight () - (extraSpace.top + extraSpace.bottom);
+}
+
+void Widget::getBorderArea (int *xBor, int *yBor, int *widthBor, int *heightBor)
+{
+   getMarginArea (xBor, yBor, widthBor, heightBor);
+
+   *xBor += style->margin.left;
+   *yBor += style->margin.top;
+   *widthBor -= style->margin.left + style->margin.right;
+   *heightBor -= style->margin.top + style->margin.bottom;
+}
+
 /**
  * \brief Return the padding area (content plus padding).
  *
@@ -1420,15 +1461,28 @@ void Widget::scrollTo (HPosition hpos, VPosition vpos,
 void Widget::getPaddingArea (int *xPad, int *yPad, int *widthPad,
                              int *heightPad)
 {
-   *xPad = allocation.x + style->margin.left + style->borderWidth.left;
-   *yPad = allocation.y + style->margin.top + style->borderWidth.top;
-   *widthPad = allocation.width - style->margin.left - style->borderWidth.left
-      - style->margin.right - style->borderWidth.right;
-   *heightPad = getHeight () -  style->margin.top - style->borderWidth.top
-      - style->margin.bottom - style->borderWidth.bottom;
+   getBorderArea (xPad, yPad, widthPad, heightPad);
+
+   *xPad += style->borderWidth.left;
+   *yPad += style->borderWidth.top;
+   *widthPad -= style->borderWidth.left + style->borderWidth.right;
+   *heightPad -= style->borderWidth.top + style->borderWidth.bottom;
 }
 
 void Widget::sizeAllocateImpl (Allocation *allocation)
+{
+}
+
+/**
+ * \brief The actual implementation for calculating
+ *    dw::core::Widget::extraSpace.
+ *
+ * The implementation gets a clean value of
+ * dw::core::Widget::extraSpace, which is only corrected. To make sure
+ * all possible influences are considered, the implementation of the
+ * base class should be called, too.
+ */
+void Widget::calcExtraSpaceImpl ()
 {
 }
 

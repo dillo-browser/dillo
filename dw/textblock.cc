@@ -265,8 +265,8 @@ Textblock::Textblock (bool limitTextWidth)
    lineBreakWidth = -1;
    DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
 
-   verticalOffset = 0;
-   DBG_OBJ_SET_NUM ("verticalOffset", verticalOffset);
+   clearPosition = 0;
+   DBG_OBJ_SET_NUM ("clearPosition", clearPosition);
 
    this->limitTextWidth = limitTextWidth;
 
@@ -359,7 +359,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
                  leftInnerPadding, boxDiffWidth ());
 
    requisition->width += leftInnerPadding + boxDiffWidth ();
-   requisition->ascent += verticalOffset + boxOffsetY ();
+   requisition->ascent += boxOffsetY ();
    requisition->descent += boxRestHeight ();
 
    if (mustBeWidenedToAvailWidth ()) {
@@ -523,7 +523,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                  // Reconstruct the initial size; see
                  // Textblock::sizeRequestImpl.
                  (lines->size () > 0 ? lines->getRef(0)->boxAscent : 0)
-                 + verticalOffset + boxOffsetY ());
+                 + boxOffsetY ());
    childBaseAllocation.descent =
       allocation->ascent + allocation->descent - childBaseAllocation.ascent;
 
@@ -680,6 +680,12 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    }
 
    DBG_OBJ_LEAVE ();
+}
+
+void Textblock::calcExtraSpaceImpl ()
+{
+   OOFAwareWidget::calcExtraSpaceImpl ();
+   extraSpace.top = misc::max (extraSpace.top, clearPosition);
 }
 
 int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
@@ -1498,9 +1504,7 @@ int Textblock::findLineIndexWhenNotAllocated (int y)
    if (lines->size() == 0)
       return -1;
    else
-      return findLineIndex (y,
-                            lines->getRef(0)->boxAscent + verticalOffset +
-                            boxOffsetY());
+      return findLineIndex (y, lines->getRef(0)->boxAscent + boxOffsetY());
 }
 
 int Textblock::findLineIndexWhenAllocated (int y)
@@ -1652,15 +1656,7 @@ void Textblock::draw (core::View *view, core::Rectangle *area)
    int lineIndex;
    Line *line;
 
-   // Instead of drawWidgetBox, use drawBox to include verticalOffset.
-   if (getParent() == NULL) {
-      // The toplevel (parent == NULL) widget is a special case, which
-      // we leave to drawWidgetBox; verticalOffset will here always 0.
-      assert (verticalOffset == 0);
-      drawWidgetBox (view, area, false);
-   } else
-      drawBox (view, getStyle(), area, 0, verticalOffset, allocation.width,
-               getHeight() - verticalOffset, false);
+   drawWidgetBox (view, area, false);
 
    if (stackingContextMgr)
       stackingContextMgr->drawBottom (view, area);
@@ -2818,13 +2814,13 @@ void Textblock::queueDrawRange (int index1, int index2)
    }
 }
 
-void Textblock::setVerticalOffset (int verticalOffset)
+void Textblock::setClearPosition (int clearPosition)
 {
-   DBG_OBJ_ENTER ("resize", 0, "setVerticalOffset", "%d", verticalOffset);
+   DBG_OBJ_ENTER ("resize", 0, "setClearPosition", "%d", clearPosition);
 
-   if (this->verticalOffset != verticalOffset) {
-      this->verticalOffset = verticalOffset;
-      DBG_OBJ_SET_NUM ("verticalOffset", verticalOffset);
+   if (this->clearPosition != clearPosition) {
+      this->clearPosition = clearPosition;
+      DBG_OBJ_SET_NUM ("clearPosition", clearPosition);
       mustQueueResize = true;
       queueDraw (); // Could perhaps be optimized.
    }
@@ -3065,19 +3061,16 @@ int Textblock::yOffsetOfPossiblyMissingLine (int lineNo)
    int result;
 
    if (lineNo == 0) {
-      result = verticalOffset + boxOffsetY();
-      DBG_OBJ_MSGF ("line.yoffset", 1, "first line: %d + %d = %d",
-                    verticalOffset, boxOffsetY(), result);
+      result = boxOffsetY();
+      DBG_OBJ_MSGF ("line.yoffset", 1, "first line: %d", result);
    } else {
       Line *prevLine = lines->getRef (lineNo - 1);
-      result = verticalOffset + boxOffsetY() +
-         prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
-         prevLine->breakSpace;
+      result = boxOffsetY() + prevLine->top + prevLine->boxAscent +
+         prevLine->boxDescent + prevLine->breakSpace;
       DBG_OBJ_MSGF ("line.yoffset", 1,
-                    "other line: %d + %d + %d + (%d + %d) + %d = %d",
-                    verticalOffset, boxOffsetY(),
-                    prevLine->top, prevLine->boxAscent, prevLine->boxDescent,
-                    prevLine->breakSpace, result);
+                    "other line: %d + %d + (%d + %d) + %d = %d",
+                    boxOffsetY(), prevLine->top, prevLine->boxAscent,
+                    prevLine->boxDescent, prevLine->breakSpace, result);
    }
 
    DBG_OBJ_LEAVE ();

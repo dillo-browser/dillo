@@ -187,7 +187,10 @@ protected:
 
    /**
     * \brief Space around the margin box. Allocation is extraSpace +
-    *    margin + border + padding + contents;
+    *    margin + border + padding + contents.
+    *
+    * See also dw::core::Widget::calcExtraSpace and
+    * dw::core::Widget::calcExtraSpaceImpl.
     */
    style::Box extraSpace;
 
@@ -274,6 +277,8 @@ protected:
     * \brief See \ref dw-widget-sizes.
     */
    virtual void getExtremesImpl (Extremes *extremes) = 0;
+
+   virtual void calcExtraSpaceImpl ();
 
    /**
     * \brief See \ref dw-widget-sizes.
@@ -427,6 +432,8 @@ public:
    void getExtremes (Extremes *extremes);
    void sizeAllocate (Allocation *allocation);
 
+   void calcExtraSpace ();
+
    int getAvailWidth (bool forceValue);
    int getAvailHeight (bool forceValue);
    virtual bool getAdjustMinWidth () { return Widget::adjustMinWidth; }
@@ -489,6 +496,8 @@ public:
    void scrollTo (HPosition hpos, VPosition vpos,
                   int x, int y, int width, int height);
 
+   void getMarginArea (int *xMar, int *yMar, int *widthMar, int *heightMar);
+   void getBorderArea (int *xBor, int *yBor, int *widthBor, int *heightBor);
    void getPaddingArea (int *xPad, int *yPad, int *widthPad, int *heightPad);
 
    /**
