@@ -190,7 +190,8 @@ protected:
     *    margin + border + padding + contents.
     *
     * See also dw::core::Widget::calcExtraSpace and
-    * dw::core::Widget::calcExtraSpaceImpl.
+    * dw::core::Widget::calcExtraSpaceImpl. Also, it is feasible to
+    * correct this value within dw::core::Widget::sizeRequestImpl.
     */
    style::Box extraSpace;
 

@@ -173,7 +173,9 @@ void OOFAwareWidget::initOutOfFlowMgrs ()
    }
 }
 
-void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition)
+void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition,
+                                              void (*splitHeightFun) (int, int*,
+                                                                      int*))
 {
    for (int i = 0; i < NUM_OOFM; i++) {
       if (outOfFlowMgr[i]) {
@@ -188,7 +190,8 @@ void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition)
          if (oofWidth > requisition->width)
             requisition->width = oofWidth;
          if (oofHeight > requisition->ascent + requisition->descent)
-            requisition->descent = oofHeight - requisition->ascent;
+            splitHeightFun (oofHeight,
+                            &requisition->ascent, &requisition->descent);
       }
    }
 }

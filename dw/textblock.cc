@@ -392,7 +392,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    // Is this really what we want? An alternative could be that
    // OutOfFlowMgr::getSize honours CSS attributes an corrected sizes.
 
-   correctRequisitionByOOF (requisition);
+   correctRequisitionByOOF (requisition, core::splitHeightPreserveAscent);
 
    DBG_OBJ_MSGF ("resize", 1, "final: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);

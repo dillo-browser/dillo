@@ -158,7 +158,8 @@ protected:
    { return widget->getStyle()->position == core::style::POSITION_RELATIVE; }
 
    void initOutOfFlowMgrs ();
-   void correctRequisitionByOOF (core::Requisition *requisition);
+   void correctRequisitionByOOF (core::Requisition *requisition,
+                                 void (*splitHeightFun) (int, int*, int*));
    void correctExtremesByOOF (core::Extremes *extremes);
    void sizeAllocateStart (core::Allocation *allocation);
    void sizeAllocateEnd ();

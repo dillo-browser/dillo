@@ -124,7 +124,7 @@ void Table::sizeRequestImpl (core::Requisition *requisition)
    correctRequisition (requisition, core::splitHeightPreserveDescent);
 
    // For the order, see similar reasoning for dw::Textblock.
-   correctRequisitionByOOF (requisition);
+   correctRequisitionByOOF (requisition, core::splitHeightPreserveDescent);
 
    DBG_OBJ_LEAVE ();
 }
