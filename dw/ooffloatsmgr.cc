@@ -1284,10 +1284,11 @@ void OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
    // first float fitting into the area, and iterate until one is
    // found below the area.
    for (int i = 0; i < list->size(); i++) {
-      Float *vloat = list->get(i);
+      Widget *childWidget = list->get(i)->getWidget ();
       Rectangle childArea;
-      if (vloat->getWidget()->intersects (area, &childArea))
-         vloat->getWidget()->draw (view, &childArea);
+      if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
+          childWidget->intersects (area, &childArea))
+         childWidget->draw (view, &childArea);
    }
 }
 

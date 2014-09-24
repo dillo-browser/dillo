@@ -67,7 +67,7 @@ void StackingContextMgr::drawBottom (View *view, Rectangle *area)
 
 void StackingContextMgr::drawTop (View *view, Rectangle *area)
 {
-   DBG_OBJ_ENTER ("draw", 0, "drawBottom", "%d, %d, %d * %d",
+   DBG_OBJ_ENTER ("draw", 0, "drawTop", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
    draw (view, area, 0, INT_MAX);
    DBG_OBJ_LEAVE ();

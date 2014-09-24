@@ -35,6 +35,14 @@ public:
          widget->getStyle()->zIndex != style::Z_INDEX_AUTO;
    }
 
+   inline static bool handledByStackingContextMgr  (Widget *widget) {
+      // Each widget establishing a stacking context is child of another
+      // stacking context, so drawn by StackingContextMgr::drawTop or
+      // StackingContextMgr::drawBottom etc.
+      return widget->getParent () != NULL
+         && isEstablishingStackingContext (widget);
+   }
+
    void addChildSCWidget (Widget *widget);
 
    void drawBottom (View *view, Rectangle *area);

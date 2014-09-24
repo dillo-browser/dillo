@@ -382,7 +382,8 @@ void Table::draw (core::View *view, core::Rectangle *area)
       if (childDefined (i)) {
          Widget *child = children->get(i)->cell.widget;
          core::Rectangle childArea;
-         if (child->intersects (area, &childArea))
+         if (!core::StackingContextMgr::handledByStackingContextMgr (child) &&
+             child->intersects (area, &childArea))
             child->draw (view, &childArea);
       }
    }

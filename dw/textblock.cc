@@ -1447,8 +1447,9 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                if (word->content.type == core::Content::WIDGET_IN_FLOW) {
                   core::Widget *child = word->content.widget;
                   core::Rectangle childArea;
-
-                  if (child->intersects (area, &childArea))
+                  if (!core::StackingContextMgr::handledByStackingContextMgr
+                          (child) &&
+                      child->intersects (area, &childArea))
                      child->draw (view, &childArea);
                } else {
                   int wordIndex2 = wordIndex;

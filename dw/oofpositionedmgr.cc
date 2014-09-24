@@ -176,7 +176,8 @@ void OOFPositionedMgr::draw (View *view, Rectangle *area)
    for (int i = 0; i < children->size(); i++) {
       Widget *childWidget = children->get(i)->widget;
       Rectangle childArea;
-      if (childWidget->intersects (area, &childArea))
+      if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
+          childWidget->intersects (area, &childArea))
          childWidget->draw (view, &childArea);
    }
 

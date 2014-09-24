@@ -31,12 +31,12 @@ The first is done from bottom to top, the latter from top to bottom.
 I'm here referring to the simplified description in
 <a href="http://www.w3.org/TR/CSS2/visuren.html#z-index">section
 9.9.1</a>. The table shows a recommended order for the implementations
-of dw::core::Widget::draw and dw::core::Widget::getWidgetAtPoint (for
-the latter, read from bottom to top):
+of dw::core::Widget::draw and dw::core::Widget::getWidgetAtPoint
+(for the latter, read from bottom to top)<sup>1</sup>:
  
 <table>
 <tr>
-<th> CSS specification <th> Drawing <th> Mouse events
+<th> CSS specification <th> Drawing <th> Mouse events<sup>2</sup>
 <tr>
 <td> *1. the background and borders of the element forming the
          stacking context.*
@@ -61,8 +61,8 @@ the latter, read from bottom to top):
 
                  This order differs from the specified order, but
                  since floats and in-flow elements do not overlap,
-                 this difference has no effect.
-<td rowspan="4"> ...
+                 this difference has no effect.<sup>3</sup>
+<td rowspan="4"> ...<sup>3</sup>
 <tr>
 <td> *4. the non-positioned floats.*
 <tr>
@@ -87,15 +87,19 @@ the latter, read from bottom to top):
 
 Notes:
 
-- Handling mouse events is, at this time, not implemented at all.
+<sup>1</sup>) This is not quite in conformance with the specification:
+              this description refers to any widget, not only widgets
+              establishing a stacking context. Does this make a
+              difference?
 
-- This is not quite in conformance with the specification: this
-  description refers to any widget, not only widgets establishing a
-  stacking context. Does this make a difference?
+<sup>2</sup>) Handling mouse events is, at this time, not implemented
+              at all.
 
-- Drawing (and handling mouse events, respectively) should avoid
-  dublicate calls: Widgets drawn by dw::core::StackingContextMgr::drawBottom
-  and by dw::core::StackingContextMgr::drawTop should be excluded
-  elsewhere.
+<sup>3</sup>) Drawing (and handling mouse events, respectively) should
+	      avoid dublicate calls: Widgets drawn by
+	      dw::core::StackingContextMgr::drawBottom and by
+	      dw::core::StackingContextMgr::drawTop should be excluded
+	      elsewhere. This can be tested with
+	      dw::core::StackingContextMgr::handledByStackingContextMgr.
 
 */
