@@ -16,7 +16,7 @@ namespace core {
 class OOFAwareWidget;
 
 /**
- * \brief ...
+ * \brief See \ref dw-stacking-context.
  */
 class StackingContextMgr
 {

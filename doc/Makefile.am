@@ -13,6 +13,7 @@ EXTRA_DIST = \
 	dw-images-and-backgrounds.doc \
 	dw-dw-out-of-flow.doc \
 	dw-dw-out-of-flow-2.doc \
+	dw-stacking-context.doc \
 	fltk-problems.doc \
 	rounding-errors.doc \
 	uml-legend.doc \

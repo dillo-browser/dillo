@@ -1,0 +1,101 @@
+/** \page dw-stacking-context Handling stacking contexts.
+
+Stacking Context and dw::core::StackingContextMgr
+=================================================
+
+For the definition of stacking contexts, see CSS 2.1 specification,
+
+- <a href="http://www.w3.org/TR/CSS2/visuren.html#z-index">section
+     9.9.1: Specifying the stack level: the 'z-index' property</a> and
+- <a href="http://www.w3.org/TR/CSS2/zindex.html">appendix E</a>.
+
+A widget establishes a stacking context when it is positioned and its
+style value of *z-index* is different from *auto* (see
+dw::core::StackingContextMgr::isEstablishingStackingContext). In this
+case, it is assigned an instance of dw::core::StackingContextMgr,
+which has also access to the widgets establishing the child contexts.
+
+
+Stacking Order
+==============
+
+The stacking order influences
+
+1. the order in which child widgets are drawn (dw::core::Widget::draw),
+   and
+2. the order in which mouse events are dispatched to child widgets
+   (dw::core::Widget::getWidgetAtPoint).
+
+The first is done from bottom to top, the latter from top to bottom.
+
+I'm here referring to the simplified description in
+<a href="http://www.w3.org/TR/CSS2/visuren.html#z-index">section
+9.9.1</a>. The table shows a recommended order for the implementations
+of dw::core::Widget::draw and dw::core::Widget::getWidgetAtPoint (for
+the latter, read from bottom to top):
+ 
+<table>
+<tr>
+<th> CSS specification <th> Drawing <th> Mouse events
+<tr>
+<td> *1. the background and borders of the element forming the
+         stacking context.*
+<td> dw::core::Widget::drawBox
+<td> Nothing necessary.
+<tr>
+<td> *2. the child stacking contexts with negative stack levels (most
+         negative first).*
+<td> dw::core::StackingContextMgr::drawBottom (when defined)
+<td> ...
+<tr>
+<td> *3. the in-flow, non-inline-level, non-positioned descendants.*
+
+<td rowspan="4"> When (i) widget specific content is drawn, then (ii)
+                 dw::oof::OOFAwareWidget::drawOOF is called, this will
+                 have this effect:
+
+                 1. all in-flow elements are drawn,
+                 2. floats are drawn and
+                 3. positioned elements are drawn (latter two done by
+                    dw::oof::OOFAwareWidget::drawOOF, in this order).
+
+                 This order differs from the specified order, but
+                 since floats and in-flow elements do not overlap,
+                 this difference has no effect.
+<td rowspan="4"> ...
+<tr>
+<td> *4. the non-positioned floats.*
+<tr>
+<td> *5. the in-flow, inline-level, non-positioned descendants,
+         including inline tables and inline blocks.*
+<tr>
+<td> (What about positioned elements with *z-index: auto*? Seems to be
+     missing in
+     <a href="http://www.w3.org/TR/CSS2/visuren.html#z-index">section
+       9.9.1</a>, but mentioned in
+     <a href="http://www.w3.org/TR/CSS2/zindex.html">appendix E</a>,
+     item 8.
+<tr>
+<td> *6. the child stacking contexts with stack level 0 and the
+         positioned descendants with stack level 0.*
+<td rowspan="2"> dw::core::StackingContextMgr::drawTop (when defined)
+<td rowspan="2"> ...
+<tr>
+<td> *7. the child stacking contexts with positive stack levels (least
+         positive first).*
+</table>
+
+Notes:
+
+- Handling mouse events is, at this time, not implemented at all.
+
+- This is not quite in conformance with the specification: this
+  description refers to any widget, not only widgets establishing a
+  stacking context. Does this make a difference?
+
+- Drawing (and handling mouse events, respectively) should avoid
+  dublicate calls: Widgets drawn by dw::core::StackingContextMgr::drawBottom
+  and by dw::core::StackingContextMgr::drawTop should be excluded
+  elsewhere.
+
+*/
