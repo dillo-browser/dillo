@@ -322,7 +322,7 @@
       fflush (stdout); \
    } D_STMT_END
 
-#define DBG_OBJ_COLOR(color, klass) \
+#define DBG_OBJ_COLOR(klass, color) \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-color:%s:%s\n", \
               RTFL_PREFIX_ARGS, color, klass); \
