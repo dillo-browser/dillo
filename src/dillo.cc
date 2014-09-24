@@ -379,18 +379,18 @@ static DilloUrl *makeStartUrl(char *str, bool local)
  */
 int main(int argc, char **argv)
 {
-   DBG_OBJ_COLOR("#c0ff80", "dw::*");
-   DBG_OBJ_COLOR("#c0c0ff", "dw::fltk::*");
-   DBG_OBJ_COLOR("#ffa0a0", "dw::core::*");
-   DBG_OBJ_COLOR("#ffe0a0", "dw::core::style::*");
+   DBG_OBJ_COLOR ("dw::*", "#c0ff80");
+   DBG_OBJ_COLOR ("dw::fltk::*", "#c0c0ff");
+   DBG_OBJ_COLOR ("dw::core::*", "#ffa0a0");
+   DBG_OBJ_COLOR ("dw::core::style::*", "#ffe0a0");
 
-   DBG_OBJ_COLOR ("#80ffa0", "dw::Image");
-   DBG_OBJ_COLOR ("#f0ff80", "dw::Textblock");
-   DBG_OBJ_COLOR ("#d0ff80", "dw::OutOfFlowMgr");
-   DBG_OBJ_COLOR ("#e0ff80", "dw::AlignedTextblock");
-   DBG_OBJ_COLOR ("#b0ff80", "dw::ListItem");
-   DBG_OBJ_COLOR ("#80ff80", "dw::TableCell");
-   DBG_OBJ_COLOR ("#80ffc0", "dw::Table");
+   DBG_OBJ_COLOR ("dw::Image", "#80ffa0");
+   DBG_OBJ_COLOR ("dw::Textblock", "#f0ff80");
+   DBG_OBJ_COLOR ("dw::OutOfFlowMgr", "#d0ff80");
+   DBG_OBJ_COLOR ("dw::AlignedTextblock", "#e0ff80");
+   DBG_OBJ_COLOR ("dw::ListItem", "#b0ff80");
+   DBG_OBJ_COLOR ("dw::TableCell", "#80ff80");
+   DBG_OBJ_COLOR ("dw::Table", "#80ffc0");
 
    uint_t opt_id;
    uint_t options_got = 0;

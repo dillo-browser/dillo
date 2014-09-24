@@ -33,15 +33,6 @@
  * Local data
  */
 
-/* Use of Fl_Text_Display links in a lot of printer code that we don't have
- * any need for currently. This stub prevents that. */
-class FL_EXPORT Fl_Printer : public Fl_Paged_Device {
-public:
-   static const char *class_id;
-   Fl_Printer(void) {};
-};
-const char *Fl_Printer::class_id = "Fl_Printer";
-
 /* Tooltips */
 static Fl_Menu_Window *tt_window = NULL;
 static int in_tooltip = 0, req_tooltip = 0;
