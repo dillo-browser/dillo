@@ -130,21 +130,24 @@ Widget::~Widget ()
  */
 bool Widget::intersects (Rectangle *area, Rectangle *intersection)
 {
-   Rectangle parentArea, childArea;
-
-   parentArea = *area;
-   parentArea.x += parent->allocation.x;
-   parentArea.y += parent->allocation.y;
-
-   childArea.x = allocation.x;
-   childArea.y = allocation.y;
-   childArea.width = allocation.width;
-   childArea.height = getHeight ();
-
-   if (parentArea.intersectsWith (&childArea, intersection)) {
-      intersection->x -= allocation.x;
-      intersection->y -= allocation.y;
-      return true;
+   if (wasAllocated ()) {
+      Rectangle parentArea, childArea;
+      
+      parentArea = *area;
+      parentArea.x += parent->allocation.x;
+      parentArea.y += parent->allocation.y;
+      
+      childArea.x = allocation.x;
+      childArea.y = allocation.y;
+      childArea.width = allocation.width;
+      childArea.height = getHeight ();
+      
+      if (parentArea.intersectsWith (&childArea, intersection)) {
+         intersection->x -= allocation.x;
+         intersection->y -= allocation.y;
+         return true;
+      } else
+         return false;
    } else
       return false;
 }
