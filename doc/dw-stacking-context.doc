@@ -1,4 +1,4 @@
-/** \page dw-stacking-context Handling stacking contexts.
+/** \page dw-stacking-context Handling stacking contexts
 
 Stacking Context and dw::core::StackingContextMgr
 =================================================
