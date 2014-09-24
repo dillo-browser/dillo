@@ -406,6 +406,17 @@ void dStr_vsprintfa (Dstr *ds, const char *format, va_list argp)
          va_copy(argp2, argp);
          n = vsnprintf(ds->str + ds->len, ds->sz - ds->len, format, argp2);
          va_end(argp2);
+#if defined(__sgi)
+         /* IRIX does not conform to C99; if the entire argument did not fit
+          * into the buffer, n = buffer space used (minus 1 for terminator)
+          */
+         if (n > -1 && n + 1 < ds->sz - ds->len) {
+            ds->len += n;      /* Success! */
+            break;
+         } else {
+            n_sz = ds->sz * 2;
+         }
+#else
          if (n > -1 && n < ds->sz - ds->len) {
             ds->len += n;      /* Success! */
             break;
@@ -414,6 +425,7 @@ void dStr_vsprintfa (Dstr *ds, const char *format, va_list argp)
          } else {              /* old glibc */
             n_sz = ds->sz * 2;
          }
+#endif
          dStr_resize(ds, n_sz, (ds->len > 0) ? 1 : 0);
       }
    }
