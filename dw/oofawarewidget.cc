@@ -91,9 +91,12 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
                  ->isPossibleContainerParent (OOFM_FLOATS)) ||
            // Inline blocks are containing blocks, too.
            widget->getStyle()->display == core::style::DISPLAY_INLINE_BLOCK ||
-           // Finally, "out of flow" in a narrower sense: floats; absolutely
-           // and fixedly positioned elements.
-           testWidgetOutOfFlow (widget)));
+           // Finally, "out of flow" in a narrower sense: floats;
+           // absolutely and fixedly positioned elements; furthermore,
+           // relatively positioned elements must already be
+           // considered here, since they may constitute a stacking
+           // context.
+           testWidgetOutOfFlow (widget) || testWidgetPositioned (widget)));
       
    case OOFM_ABSOLUTE:
       // Only the toplevel widget (as for all) as well as absolutely,
@@ -110,10 +113,7 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
       // children, like tables? TODO: Check CSS spec.)
 
       return widget->instanceOf (OOFAwareWidget::CLASS_ID) &&
-         (widget->getParent() == NULL ||
-          testWidgetAbsolutelyPositioned (widget) ||
-          testWidgetRelativelyPositioned (widget) ||
-          testWidgetFixedlyPositioned (widget));
+         (widget->getParent() == NULL || testWidgetPositioned (widget));
       
    case OOFM_FIXED:
       // The single container for fixedly positioned elements is the

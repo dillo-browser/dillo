@@ -150,6 +150,10 @@ protected:
    { return widget->getStyle()->position == core::style::POSITION_ABSOLUTE; }
    static inline bool testWidgetFixedlyPositioned (Widget *widget)
    { return widget->getStyle()->position == core::style::POSITION_FIXED; }
+   static inline bool testWidgetPositioned (Widget *widget)
+   { return testWidgetAbsolutelyPositioned (widget) ||
+         testWidgetRelativelyPositioned (widget) ||
+         testWidgetFixedlyPositioned (widget); }
    static inline bool testWidgetOutOfFlow (Widget *widget)
    { return testWidgetFloat (widget) || testWidgetAbsolutelyPositioned (widget)
          || testWidgetFixedlyPositioned (widget); }
