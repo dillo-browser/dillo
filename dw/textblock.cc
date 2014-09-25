@@ -2644,60 +2644,58 @@ void Textblock::breakAdded ()
  */
 core::Widget *Textblock::getWidgetAtPoint (int x, int y)
 {
-   int lineIndex, wordIndex;
-   Line *line;
+   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPoint", "%d, %d", x, y);
+   Widget *childAtPoint = NULL;
 
    if (x < allocation.x ||
        y < allocation.y ||
        x > allocation.x + allocation.width ||
        y > allocation.y + getHeight ()) {
-      return NULL;
-   }
-
-   // First, ...
-   if (stackingContextMgr) {
-      Widget *scmWidget = stackingContextMgr->getTopWidgetAtPoint (x, y);
-      if (scmWidget)
-         return scmWidget;
-   }
+      DBG_OBJ_MSG ("events", 1, "outside allocation");
+   } else {
+      // First, ...
+      if (childAtPoint == NULL && stackingContextMgr)
+         childAtPoint = stackingContextMgr->getTopWidgetAtPoint (x, y);
  
-   // Then, search for widgets out of flow, notably floats, since
-   // there are cases where they overlap child textblocks.
-   Widget *oofWidget = getWidgetOOFAtPoint (x, y);
-   if (oofWidget)
-      return oofWidget;
+      // Then, search for widgets out of flow, notably floats, since
+      // there are cases where they overlap child textblocks.
+      if (childAtPoint == NULL)
+         childAtPoint = getWidgetOOFAtPoint (x, y);
 
-   lineIndex = findLineIndexWhenAllocated (y - allocation.y);
-
-   if (lineIndex < 0 || lineIndex >= lines->size ()) {
-      return this;
-   }
-
-   line = lines->getRef (lineIndex);
-
-   for (wordIndex = line->firstWord; wordIndex <= line->lastWord;wordIndex++) {
-      Word *word =  words->getRef (wordIndex);
-
-      if (word->content.type == core::Content::WIDGET_IN_FLOW) {
-         core::Widget * childAtPoint;
-         if (!core::StackingContextMgr::handledByStackingContextMgr
-                 (word->content.widget) &&
-             word->content.widget->wasAllocated ()) {
-            childAtPoint = word->content.widget->getWidgetAtPoint (x, y);
-            if (childAtPoint) {
-               return childAtPoint;
+      if (childAtPoint == NULL) {
+         int lineIndex = findLineIndexWhenAllocated (y - allocation.y);
+      
+         if (lineIndex < 0 || lineIndex >= lines->size ())
+            childAtPoint = this;
+         else {
+            Line *line = lines->getRef (lineIndex);
+            
+            for (int wordIndex = line->firstWord;
+                 wordIndex <= line->lastWord && childAtPoint == NULL;
+                 wordIndex++) {
+               Word *word =  words->getRef (wordIndex);
+               if (word->content.type == core::Content::WIDGET_IN_FLOW) {
+                  core::Widget * child = word->content.widget;
+                  if (!core::StackingContextMgr::handledByStackingContextMgr
+                          (child) &&
+                      child->wasAllocated ()) {
+                     childAtPoint = child->getWidgetAtPoint (x, y);
+                  }
+               }
             }
          }
       }
+
+      if (childAtPoint == NULL && stackingContextMgr)
+         childAtPoint = stackingContextMgr->getBottomWidgetAtPoint (x, y);
+
+      if (childAtPoint == NULL)
+         childAtPoint = this;
    }
 
-   if (stackingContextMgr) {
-      Widget *scmWidget = stackingContextMgr->getBottomWidgetAtPoint (x, y);
-      if (scmWidget)
-         return scmWidget;
-   }
-
-   return this;
+   DBG_OBJ_MSGF ("events", 0, "=> %p", childAtPoint);
+   DBG_OBJ_LEAVE ();
+   return childAtPoint;
 }
 
 
