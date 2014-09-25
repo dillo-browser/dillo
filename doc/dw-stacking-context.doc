@@ -32,11 +32,11 @@ I'm here referring to the simplified description in
 <a href="http://www.w3.org/TR/CSS2/visuren.html#z-index">section
 9.9.1</a>. The table shows a recommended order for the implementations
 of dw::core::Widget::draw and dw::core::Widget::getWidgetAtPoint
-(for the latter, read from bottom to top)<sup>1</sup>:
+(for the latter, read from bottom to top):
  
 <table>
 <tr>
-<th> CSS specification <th> Drawing <th> Mouse events<sup>2</sup>
+<th> CSS specification <th> Drawing <th> Mouse events
 <tr>
 <td> *1. the background and borders of the element forming the
          stacking context.*
@@ -46,7 +46,7 @@ of dw::core::Widget::draw and dw::core::Widget::getWidgetAtPoint
 <td> *2. the child stacking contexts with negative stack levels (most
          negative first).*
 <td> dw::core::StackingContextMgr::drawBottom (when defined)
-<td> ...
+<td> dw::core::StackingContextMgr::getBottomWidgetAtPoint (when defined)
 <tr>
 <td> *3. the in-flow, non-inline-level, non-positioned descendants.*
 
@@ -56,13 +56,34 @@ of dw::core::Widget::draw and dw::core::Widget::getWidgetAtPoint
 
                  1. all in-flow elements are drawn,
                  2. floats are drawn and
-                 3. positioned elements are drawn (latter two done by
+                 3. positioned elements with *z-index: auto* are drawn
+                    (latter two done by
                     dw::oof::OOFAwareWidget::drawOOF, in this order).
 
                  This order differs from the specified order, but
                  since floats and in-flow elements do not overlap,
-                 this difference has no effect.<sup>3</sup>
-<td rowspan="4"> ...<sup>3</sup>
+                 this difference has no effect.
+
+                 Drawing in-line elements, floats and positioned
+                 elements with *z-index: auto* and should avoid
+                 duplicate calls: Widgets drawn by
+                 dw::core::StackingContextMgr::drawBottom and by
+                 dw::core::StackingContextMgr::drawTop should be
+                 excluded here. This can be tested with
+                 dw::core::StackingContextMgr::handledByStackingContextMgr.
+
+<td rowspan="4"> Likewise, the implementation should (i) test
+                 dw::oof::OOFAwareWidget::getWidgetOOFAtPoint, and
+                 (ii) search through the chilren. Also, duplicate
+                 calls should be avoided using
+                 dw::core::StackingContextMgr::handledByStackingContextMgr.
+
+                 There are already the implementations
+                 dw::core::Widget::getWidgetAtPoint (ignoring
+                 dw::oof::OutOfFlowMgr) and
+                 dw::oof::OOFAwareWidget::getWidgetAtPoint (including
+                 dw::oof::OutOfFlowMgr).
+
 <tr>
 <td> *4. the non-positioned floats.*
 <tr>
@@ -79,27 +100,15 @@ of dw::core::Widget::draw and dw::core::Widget::getWidgetAtPoint
 <td> *6. the child stacking contexts with stack level 0 and the
          positioned descendants with stack level 0.*
 <td rowspan="2"> dw::core::StackingContextMgr::drawTop (when defined)
-<td rowspan="2"> ...
+<td rowspan="2"> dw::core::StackingContextMgr::getTopWidgetAtPoint
+                 (when defined)
 <tr>
 <td> *7. the child stacking contexts with positive stack levels (least
          positive first).*
 </table>
 
-Notes:
-
-<sup>1</sup>) This is not quite in conformance with the specification:
-              this description refers to any widget, not only widgets
-              establishing a stacking context. Does this make a
-              difference?
-
-<sup>2</sup>) Handling mouse events is, at this time, not implemented
-              at all.
-
-<sup>3</sup>) Drawing (and handling mouse events, respectively) should
-	      avoid dublicate calls: Widgets drawn by
-	      dw::core::StackingContextMgr::drawBottom and by
-	      dw::core::StackingContextMgr::drawTop should be excluded
-	      elsewhere. This can be tested with
-	      dw::core::StackingContextMgr::handledByStackingContextMgr.
+Note: This is not quite in conformance with the specification: this
+description refers to any widget, not only widgets establishing a
+stacking context. Does this make a difference?
 
 */

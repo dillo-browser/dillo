@@ -2642,12 +2642,8 @@ void Textblock::breakAdded ()
  * This is an optimized version of the general
  * dw::core::Widget::getWidgetAtPoint method.
  */
-core::Widget  *Textblock::getWidgetAtPoint (int x, int y, int level)
+core::Widget *Textblock::getWidgetAtPoint (int x, int y)
 {
-   //printf ("%*s-> examining the %s %p (%d, %d, %d x (%d + %d))\n",
-   //        3 * level, "", getClassName (), this, allocation.x, allocation.y,
-   //        allocation.width, allocation.ascent, allocation.descent);
-
    int lineIndex, wordIndex;
    Line *line;
 
@@ -2658,10 +2654,16 @@ core::Widget  *Textblock::getWidgetAtPoint (int x, int y, int level)
       return NULL;
    }
 
-   // First, search for widgets out of flow, notably floats, since
-   // there are cases where they overlap child textblocks. Should
-   // later be refined using z-index.
-   Widget *oofWidget = getWidgetOOFAtPoint (x, y, level);
+   // First, ...
+   if (stackingContextMgr) {
+      Widget *scmWidget = stackingContextMgr->getTopWidgetAtPoint (x, y);
+      if (scmWidget)
+         return scmWidget;
+   }
+ 
+   // Then, search for widgets out of flow, notably floats, since
+   // there are cases where they overlap child textblocks.
+   Widget *oofWidget = getWidgetOOFAtPoint (x, y);
    if (oofWidget)
       return oofWidget;
 
@@ -2678,14 +2680,21 @@ core::Widget  *Textblock::getWidgetAtPoint (int x, int y, int level)
 
       if (word->content.type == core::Content::WIDGET_IN_FLOW) {
          core::Widget * childAtPoint;
-         if (word->content.widget->wasAllocated ()) {
-            childAtPoint = word->content.widget->getWidgetAtPoint (x, y,
-                                                                   level + 1);
+         if (!core::StackingContextMgr::handledByStackingContextMgr
+                 (word->content.widget) &&
+             word->content.widget->wasAllocated ()) {
+            childAtPoint = word->content.widget->getWidgetAtPoint (x, y);
             if (childAtPoint) {
                return childAtPoint;
             }
          }
       }
+   }
+
+   if (stackingContextMgr) {
+      Widget *scmWidget = stackingContextMgr->getBottomWidgetAtPoint (x, y);
+      if (scmWidget)
+         return scmWidget;
    }
 
    return this;

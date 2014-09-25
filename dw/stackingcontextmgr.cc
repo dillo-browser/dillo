@@ -101,6 +101,53 @@ void StackingContextMgr::draw (View *view, Rectangle *area, int startZIndex,
    DBG_OBJ_LEAVE ();
 }
 
+Widget *StackingContextMgr::getTopWidgetAtPoint (int x, int y)
+{
+   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPointTop", "%d, %d", x, y);
+   Widget *widget = getWidgetAtPoint (x, y, 0, INT_MAX);
+   DBG_OBJ_MSGF ("events", 0, "=> %p", widget);
+   DBG_OBJ_LEAVE ();
+   return widget;
+}
+
+Widget *StackingContextMgr::getBottomWidgetAtPoint (int x, int y)
+{
+   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPointBottom", "%d, %d", x, y);
+   Widget *widget = getWidgetAtPoint (x, y, INT_MIN, -1);
+   DBG_OBJ_MSGF ("events", 0, "=> %p", widget);
+   DBG_OBJ_LEAVE ();
+   return widget;
+}
+
+Widget *StackingContextMgr::getWidgetAtPoint (int x, int y, int startZIndex,
+                                              int endZIndex)
+{
+   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPointBottom", "%d, %d", x, y);
+
+   Widget *widgetAtPoint = NULL;
+
+   for (int zIndex = min (maxZIndex, endZIndex);
+        zIndex >= max (minZIndex, startZIndex) && widgetAtPoint == NULL;
+        zIndex--) {
+      DBG_OBJ_MSGF ("events", 1, "searching zIndex = %d", zIndex);
+      DBG_OBJ_MSG_START ();
+
+      for (int i = 0; i < scWidgets->size () && widgetAtPoint == NULL; i++) {
+         Widget *child = scWidgets->get (i);
+         DBG_OBJ_MSGF ("events", 2, "widget %p has zIndex = %d",
+                       child, child->getStyle()->zIndex);
+         if (child->getStyle()->zIndex == zIndex && child->wasAllocated ())
+            widgetAtPoint = scWidgets->get(i)->getWidgetAtPoint (x, y);
+      }
+
+      DBG_OBJ_MSG_END ();
+   }
+
+   DBG_OBJ_MSGF ("events", 0, "=> %p", widgetAtPoint);
+   DBG_OBJ_LEAVE ();
+   return widgetAtPoint;
+}
+
 
 } // namespace core
 

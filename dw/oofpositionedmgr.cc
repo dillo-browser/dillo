@@ -226,18 +226,22 @@ void OOFPositionedMgr::markExtremesChange (int ref)
 {
 }
 
-Widget *OOFPositionedMgr::getWidgetAtPoint (int x, int y, int level)
+Widget *OOFPositionedMgr::getWidgetAtPoint (int x, int y)
 {
-   for (int i = 0; i < children->size(); i++) {
+   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPoint", "%d, %d", x, y);
+   Widget *childAtPoint = NULL;
+
+   for (int i = 0; i < children->size() && childAtPoint == NULL; i++) {
       Widget *childWidget = children->get(i)->widget;
-      if (childWidget->wasAllocated ()) {
-         Widget *childAtPoint = childWidget->getWidgetAtPoint (x, y, level + 1);
-         if (childAtPoint)
-            return childAtPoint;
+      if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
+          childWidget->wasAllocated ()) {
+         childAtPoint = childWidget->getWidgetAtPoint (x, y);
       }
    }
 
-   return NULL;
+   DBG_OBJ_MSGF ("events", 0, "=> %p", childAtPoint);
+   DBG_OBJ_LEAVE ();
+   return childAtPoint;
 }
 
 void OOFPositionedMgr::tellPosition (Widget *widget, int x, int y)

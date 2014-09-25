@@ -1458,23 +1458,23 @@ void OOFFloatsMgr::markExtremesChange (int ref)
    // Nothing to do here.
 }
 
-Widget *OOFFloatsMgr::getWidgetAtPoint (int x, int y, int level)
+Widget *OOFFloatsMgr::getWidgetAtPoint (int x, int y)
 {
-   Widget *childAtPoint = getFloatWidgetAtPoint (leftFloatsCB, x, y, level);
+   Widget *childAtPoint = getFloatWidgetAtPoint (leftFloatsCB, x, y);
    if (childAtPoint == NULL)
-      childAtPoint = getFloatWidgetAtPoint (rightFloatsCB, x, y, level);
+      childAtPoint = getFloatWidgetAtPoint (rightFloatsCB, x, y);
    return childAtPoint;
 }
 
-Widget *OOFFloatsMgr::getFloatWidgetAtPoint (SortedFloatsVector *list,
-                                             int x, int y, int level)
+Widget *OOFFloatsMgr::getFloatWidgetAtPoint (SortedFloatsVector *list, int x,
+                                             int y)
 {
    for (int i = 0; i < list->size(); i++) {
       // Could use binary search to be faster.
-      Float *vloat = list->get(i);
-      if (vloat->getWidget()->wasAllocated ()) {
-         Widget *childAtPoint =
-            vloat->getWidget()->getWidgetAtPoint (x, y, level + 1);
+      Widget *childWidget = list->get(i)->getWidget ();
+      if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
+          childWidget->wasAllocated ()) {
+         Widget *childAtPoint = childWidget->getWidgetAtPoint (x, y);
          if (childAtPoint)
             return childAtPoint;
       }

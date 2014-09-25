@@ -169,7 +169,7 @@ protected:
    void sizeAllocateEnd ();
    void containerSizeChangedForChildrenOOF ();
    void drawOOF (core::View *view, core::Rectangle *area);
-   core::Widget *getWidgetOOFAtPoint (int x, int y, int level);
+   core::Widget *getWidgetOOFAtPoint (int x, int y);
 
    static bool isOOFContainer (Widget *widget, int oofmIndex);
 
@@ -180,6 +180,8 @@ protected:
    int getAvailHeightOfChild (Widget *child, bool forceValue);
 
    void removeChild (Widget *child);
+
+   core::Widget *getWidgetAtPoint (int x, int y);
 
 public:
    static int CLASS_ID;

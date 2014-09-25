@@ -255,12 +255,12 @@ void OOFAwareWidget::drawOOF (View *view, Rectangle *area)
          outOfFlowMgr[i]->draw(view, area);
 }
 
-Widget *OOFAwareWidget::getWidgetOOFAtPoint (int x, int y, int level)
+Widget *OOFAwareWidget::getWidgetOOFAtPoint (int x, int y)
 {
    for (int i = 0; i < NUM_OOFM; i++) {
       Widget *oofWidget =
          outOfFlowMgr[i] ?
-         outOfFlowMgr[i]->getWidgetAtPoint (x, y, level) : NULL;
+         outOfFlowMgr[i]->getWidgetAtPoint (x, y) : NULL;
       if (oofWidget)
          return oofWidget;
    }
@@ -297,6 +297,54 @@ void OOFAwareWidget::removeChild (Widget *child)
    // Table do so), so this point is only reached from
    // ~OOFAwareWidget, which removes widgets out of flow.
    assert (isWidgetOOF (child));
+}
+
+core::Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y)
+{
+   if (x >= allocation.x &&
+       y >= allocation.y &&
+       x <= allocation.x + allocation.width &&
+       y <= allocation.y + getHeight ()) {
+
+      if (stackingContextMgr) {
+         Widget *scmWidget =
+            stackingContextMgr->getTopWidgetAtPoint (x, y);
+         if (scmWidget)
+            return scmWidget;
+      }
+
+      Widget *oofWidget = getWidgetOOFAtPoint (x, y);
+      if (oofWidget)
+         return oofWidget;
+
+      Widget *childAtPoint = NULL;
+      Iterator *it =
+         iterator ((Content::Type)
+                   (Content::WIDGET_IN_FLOW | Content::WIDGET_OOF_CONT),
+                   false);
+
+      while (childAtPoint == NULL && it->next ()) {
+         Widget *child = it->getContent()->widget;
+         if (!StackingContextMgr::handledByStackingContextMgr (child) &&
+             child->wasAllocated ())
+            childAtPoint = child->getWidgetAtPoint (x, y);
+      }
+
+      it->unref ();
+
+      if (childAtPoint)
+         return childAtPoint;
+
+      if (stackingContextMgr) {
+         Widget *scmWidget =
+            stackingContextMgr->getBottomWidgetAtPoint (x, y);
+         if (scmWidget)
+            return scmWidget;
+      }
+       
+      return this;
+   } else
+      return NULL;
 }
 
 void OOFAwareWidget::borderChanged (int y, Widget *vloat)

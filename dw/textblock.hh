@@ -831,7 +831,7 @@ public:
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
 
-   core::Widget *getWidgetAtPoint (int x, int y, int level);
+   core::Widget *getWidgetAtPoint (int x, int y);
    void handOverBreak (core::style::Style *style);
    void changeLinkColor (int link, int newColor);
    void changeWordStyle (int from, int to, core::style::Style *style,

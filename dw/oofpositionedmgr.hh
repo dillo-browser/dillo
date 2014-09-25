@@ -68,7 +68,7 @@ public:
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
-   core::Widget *getWidgetAtPoint (int x, int y, int level);
+   core::Widget *getWidgetAtPoint (int x, int y);
 
    void addWidgetInFlow (OOFAwareWidget *widget, OOFAwareWidget *parent,
                          int externalIndex);

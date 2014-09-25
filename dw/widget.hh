@@ -492,7 +492,7 @@ public:
 
    inline Layout *getLayout () { return layout; }
 
-   virtual Widget *getWidgetAtPoint (int x, int y, int level);
+   virtual Widget *getWidgetAtPoint (int x, int y);
 
    void scrollTo (HPosition hpos, VPosition vpos,
                   int x, int y, int width, int height);

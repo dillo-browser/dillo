@@ -25,7 +25,8 @@ private:
    int minZIndex, maxZIndex;
 
    void draw (View *view, Rectangle *area, int startZIndex, int endZIndex);
-   
+
+   Widget *getWidgetAtPoint (int x, int y, int startZIndex, int endZIndex);
 public:
    StackingContextMgr (Widget *widget);
    ~StackingContextMgr ();
@@ -47,6 +48,9 @@ public:
 
    void drawBottom (View *view, Rectangle *area);
    void drawTop (View *view, Rectangle *area);
+
+   Widget *getTopWidgetAtPoint (int x, int y);
+   Widget *getBottomWidgetAtPoint (int x, int y);
 };
 
 } // namespace core

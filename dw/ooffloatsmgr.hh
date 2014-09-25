@@ -285,8 +285,7 @@ private:
 
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area);
-   core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y,
-                                        int level);
+   core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y);
 
    bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal);
    bool collidesH (Float *vloat, Float *other, SFVType type);
@@ -343,7 +342,7 @@ public:
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
-   core::Widget *getWidgetAtPoint (int x, int y, int level);
+   core::Widget *getWidgetAtPoint (int x, int y);
 
    static bool _isWidgetOutOfFlow (core::Widget *widget);
    static bool _isWidgetHandledByOOFM (core::Widget *widget);

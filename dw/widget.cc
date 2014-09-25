@@ -1389,42 +1389,50 @@ Widget *Widget::getNearestCommonAncestor (Widget *otherWidget)
  *
  * Used by dw::core::Layout:getWidgetAtPoint.
  */
-Widget *Widget::getWidgetAtPoint (int x, int y, int level)
+Widget *Widget::getWidgetAtPoint (int x, int y)
 {
-   Iterator *it;
-   Widget *childAtPoint;
-
-   //printf ("%*s-> examining the %s %p (%d, %d, %d x (%d + %d))\n",
-   //        3 * level, "", getClassName (), this, allocation.x, allocation.y,
-   //        allocation.width, allocation.ascent, allocation.descent);
-
    if (x >= allocation.x &&
        y >= allocation.y &&
        x <= allocation.x + allocation.width &&
        y <= allocation.y + getHeight ()) {
-      //_MSG ("%*s   -> inside\n", 3 * level, "");
-      /*
-       * Iterate over the children of this widget. Test recursively, whether
-       * the point is within the child (or one of its children...). If there
-       * is such a child, it is returned. Otherwise, this widget is returned.
-       */
-      childAtPoint = NULL;
-      it = iterator ((Content::Type)
-                     (Content::WIDGET_IN_FLOW | Content::WIDGET_OOF_CONT),
-                     false);
+
+      if (stackingContextMgr) {
+         Widget *scmWidget =
+            stackingContextMgr->getTopWidgetAtPoint (x, y);
+         if (scmWidget)
+            return scmWidget;
+      }
+
+      // Iterate over the children of this widget. Test recursively, whether
+      // the point is within the child (or one of its children...). If there
+      // is such a child, it is returned. Otherwise, this widget is returned.
+
+      Widget *childAtPoint = NULL;
+      Iterator *it =
+         iterator ((Content::Type)
+                   (Content::WIDGET_IN_FLOW | Content::WIDGET_OOF_CONT),
+                   false);
 
       while (childAtPoint == NULL && it->next ()) {
          Widget *child = it->getContent()->widget;
-         if (child->wasAllocated ())
-            childAtPoint = child->getWidgetAtPoint (x, y, level + 1);
+         if (!StackingContextMgr::handledByStackingContextMgr (child) &&
+             child->wasAllocated ())
+            childAtPoint = child->getWidgetAtPoint (x, y);
       }
 
       it->unref ();
 
       if (childAtPoint)
          return childAtPoint;
-      else
-         return this;
+
+      if (stackingContextMgr) {
+         Widget *scmWidget =
+            stackingContextMgr->getBottomWidgetAtPoint (x, y);
+         if (scmWidget)
+            return scmWidget;
+      }
+       
+      return this;
    } else
       return NULL;
 }
