@@ -88,7 +88,7 @@ protected:
       { other->setValues (sectionIndex, index); }         
 
       inline bool inFlow () { return sectionIndex == 0; }
-      inline bool getInFlowIndex () { assert (inFlow ()); return index; }
+      inline int getInFlowIndex () { assert (inFlow ()); return index; }
       void highlightOOF (int start, int end, core::HighlightLayer layer);
       void unhighlightOOF (int direction, core::HighlightLayer layer);
       void getAllocationOOF (int start, int end, core::Allocation *allocation);
