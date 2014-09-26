@@ -146,11 +146,12 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
                content.type = Content::END;
                r = false;
                cancel = true;
-            } else
+            } else {
                index = 0;
+               getPart (sectionIndex, index, &content);
+            }
          }
          
-         getPart (sectionIndex, index, &content);
       } while (!cancel && (content.type & getMask()) == 0);
    }
 
@@ -199,11 +200,11 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
                content.type = Content::START;
                r = false;
                cancel = true;
-            } else
+            } else {
                index = numParts (sectionIndex) - 1;
-         }
-         
-         getPart (sectionIndex, index, &content);
+               getPart (sectionIndex, index, &content);
+            }
+         }        
       } while (!cancel && (content.type & getMask()) == 0);
    }
       
