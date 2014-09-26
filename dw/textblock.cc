@@ -2812,6 +2812,8 @@ void Textblock::changeWordStyle (int from, int to, core::style::Style *style,
 
 void Textblock::queueDrawRange (int index1, int index2)
 {
+   DBG_OBJ_ENTER ("draw", 0, "queueDrawRange", "%d, %d", index1, index2);
+
    int from = misc::min (index1, index2);
    int to = misc::max (index1, index2);
 
@@ -2833,6 +2835,8 @@ void Textblock::queueDrawRange (int index1, int index2)
 
       queueDrawArea (0, y, allocation.width, h);
    }
+
+   DBG_OBJ_LEAVE ();
 }
 
 void Textblock::setClearPosition (int clearPosition)

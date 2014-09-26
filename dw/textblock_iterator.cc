@@ -59,10 +59,19 @@ object::Object *Textblock::TextblockIterator::clone()
 void Textblock::TextblockIterator::highlight (int start, int end,
                                               core::HighlightLayer layer)
 {
+   DBG_OBJ_ENTER_O ("iterator", 0, getWidget (), "TextblockIterator/highlight",
+                    "..., %d, %d, %d", start, end, layer);
+
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      intoStringBuffer (&sb);
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "iterator: %s",
+                      sb.getChars ());
+   }
+
    if (inFlow ()) {
-      DBG_OBJ_ENTER_O ("events", 0, getWidget (), "TextblockIterator/highlight",
-                       "[in flow: %d], %d, %d, %d", getInFlowIndex (),
-                       start, end, layer);
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "in-flow index: %d",
+                      getInFlowIndex ());
 
       Textblock *textblock = (Textblock*)getWidget();
       int index = getInFlowIndex (), index1 = index, index2 = index;
@@ -104,19 +113,29 @@ void Textblock::TextblockIterator::highlight (int start, int end,
           oldEndIndex != textblock->hlEnd[layer].index ||
           oldEndChar != textblock->hlEnd[layer].nChar)
          textblock->queueDrawRange (index1, index2);
-
-      DBG_OBJ_LEAVE_O (getWidget ());
    } else
       highlightOOF (start, end, layer);
+
+      DBG_OBJ_LEAVE_O (getWidget ());
 }
 
 void Textblock::TextblockIterator::unhighlight (int direction,
                                                 core::HighlightLayer layer)
 {
+   DBG_OBJ_ENTER_O ("iterator", 0, getWidget (),
+                    "TextblockIterator/unhighlight", "..., %d, %d",
+                    direction, layer);
+
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      intoStringBuffer (&sb);
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "iterator: %s",
+                      sb.getChars ());
+   }
+
    if (inFlow ()) {
-      DBG_OBJ_ENTER_O ("events", 0, getWidget (),
-                       "TextblockIterator/unhighlight", "[in flow: %d], %d, %d",
-                       getInFlowIndex (), direction, layer);
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "in-flow index: %d",
+                      getInFlowIndex ());
 
       Textblock *textblock = (Textblock*)getWidget();
       int index = getInFlowIndex (), index1 = index, index2 = index;
@@ -158,10 +177,10 @@ void Textblock::TextblockIterator::unhighlight (int direction,
           oldEndIndex != textblock->hlEnd[layer].index ||
           oldEndChar != textblock->hlEnd[layer].nChar)
          textblock->queueDrawRange (index1, index2);
-
-      DBG_OBJ_LEAVE_O (getWidget ());
    } else
       unhighlightOOF (direction, layer);
+
+   DBG_OBJ_LEAVE_O (getWidget ());
 }
 
 void Textblock::TextblockIterator::getAllocation (int start, int end,
