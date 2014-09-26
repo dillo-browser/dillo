@@ -95,6 +95,15 @@ void OOFAwareWidget::OOFAwareWidgetIterator::getPart (int sectionIndex,
    }
 }
 
+void OOFAwareWidget::OOFAwareWidgetIterator::intoStringBuffer (StringBuffer *sb)
+{
+   Iterator::intoStringBuffer (sb);
+   sb->append (", sectionIndex = ");
+   sb->appendInt (sectionIndex);
+   sb->append (", index = ");
+   sb->appendInt (index);
+}
+
 int OOFAwareWidget::OOFAwareWidgetIterator::compareTo (Comparable *other)
 {
    OOFAwareWidgetIterator *otherTI = (OOFAwareWidgetIterator*)other;
@@ -107,54 +116,108 @@ int OOFAwareWidget::OOFAwareWidgetIterator::compareTo (Comparable *other)
 
 bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
 {
+   DBG_OBJ_ENTER0_O ("iterator", 0, getWidget (),
+                     "OOFAwareWidgetIterator/next");
+
+   DBG_IF_RTFL {
+      StringBuffer sb;
+      intoStringBuffer (&sb);
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "initial value: %s",
+                      sb.getChars ());
+   }
+
+   bool r;
+
    if (content.type == Content::END)
-      return false;
+      r = false;
+   else {
+      r = true;
+      bool cancel = false;
 
-   do {
-      index++;
-
-      if (index >= numParts(sectionIndex)) {
-         sectionIndex++;
-         while (sectionIndex < NUM_SECTIONS && numParts (sectionIndex) == 0)
+      do {
+         index++;
+         
+         if (index >= numParts(sectionIndex)) {
             sectionIndex++;
+            while (sectionIndex < NUM_SECTIONS && numParts (sectionIndex) == 0)
+               sectionIndex++;
             
-         if (sectionIndex == NUM_SECTIONS) {
-            content.type = Content::END;
-            return false;
-         } else
-            index = 0;
-      }
+            if (sectionIndex == NUM_SECTIONS) {
+               content.type = Content::END;
+               r = false;
+               cancel = true;
+            } else
+               index = 0;
+         }
+         
+         getPart (sectionIndex, index, &content);
+      } while (!cancel && (content.type & getMask()) == 0);
+   }
 
-      getPart (sectionIndex, index, &content);
-   } while ((content.type & getMask()) == 0);
+   DBG_IF_RTFL {
+      StringBuffer sb;
+      intoStringBuffer (&sb);
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "final value: %s",
+                      sb.getChars ());
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "return value: %s",
+                      r ? "true" : "false");
+   }
 
-   return true;
+   DBG_OBJ_LEAVE_O (getWidget ());
+   return r;
 }
 
 bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
 {
+   DBG_OBJ_ENTER0_O ("iterator", 0, getWidget (),
+                     "OOFAwareWidgetIterator/prev");
+
+   DBG_IF_RTFL {
+      StringBuffer sb;
+      intoStringBuffer (&sb);
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "initial value: %s",
+                      sb.getChars ());
+   }
+
+   bool r;
+
    if (content.type == Content::START)
-      return false;
+      r = false;
+   else {
+      r = true;
+      bool cancel = false;
 
-   do {
-      index--;
-
-      if (index < 0) {
-         sectionIndex--;
-         while (sectionIndex >= 0 && numParts (sectionIndex) == 0)
+      do {
+         index--;
+         
+         if (index < 0) {
             sectionIndex--;
+            while (sectionIndex >= 0 && numParts (sectionIndex) == 0)
+               sectionIndex--;
             
-         if (sectionIndex < 0) {
-            content.type = Content::START;
-            return false;
-         } else
-            index = numParts (sectionIndex) - 1;
-      }
+            if (sectionIndex < 0) {
+               content.type = Content::START;
+               r = false;
+               cancel = true;
+            } else
+               index = numParts (sectionIndex) - 1;
+         }
+         
+         getPart (sectionIndex, index, &content);
+      } while (!cancel && (content.type & getMask()) == 0);
+   }
+      
+   DBG_IF_RTFL {
+      StringBuffer sb;
+      intoStringBuffer (&sb);
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "final value: %s",
+                      sb.getChars ());
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "return value: %s",
+                      r ? "true" : "false");
+   }
 
-      getPart (sectionIndex, index, &content);
-   } while ((content.type & getMask()) == 0);
-
-   return true;
+   DBG_OBJ_LEAVE_O (getWidget ());
+   return r;
 }
 
 void OOFAwareWidget::OOFAwareWidgetIterator::highlightOOF (int start, int end,
@@ -179,12 +242,6 @@ void OOFAwareWidget::OOFAwareWidgetIterator::getAllocationOOF (int start,
    OOFAwareWidget *widget = (OOFAwareWidget*)getWidget();
    *allocation = *(widget->outOfFlowMgr[sectionIndex - 1]
                    ->getWidget(index)->getAllocation());
-}
-
-void OOFAwareWidget::OOFAwareWidgetIterator::print ()
-{
-   Iterator::print ();
-   printf (", sectionIndex = %d, index = %d", sectionIndex, index);
 }
 
 } // namespace oof

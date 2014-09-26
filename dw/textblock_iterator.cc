@@ -60,6 +60,10 @@ void Textblock::TextblockIterator::highlight (int start, int end,
                                               core::HighlightLayer layer)
 {
    if (inFlow ()) {
+      DBG_OBJ_ENTER_O ("events", 0, getWidget (), "TextblockIterator/highlight",
+                       "[in flow: %d], %d, %d, %d", getInFlowIndex (),
+                       start, end, layer);
+
       Textblock *textblock = (Textblock*)getWidget();
       int index = getInFlowIndex (), index1 = index, index2 = index;
 
@@ -86,11 +90,22 @@ void Textblock::TextblockIterator::highlight (int start, int end,
          textblock->hlEnd[layer].nChar = end;
       }
 
+      DBG_OBJ_ARRATTRSET_NUM_O (textblock, "hlStart", layer, "index",
+                                textblock->hlStart[layer].index);
+      DBG_OBJ_ARRATTRSET_NUM_O (textblock, "hlStart", layer, "nChar",
+                                textblock->hlStart[layer].nChar);
+      DBG_OBJ_ARRATTRSET_NUM_O (textblock, "hlEnd", layer, "index",
+                                textblock->hlEnd[layer].index);
+      DBG_OBJ_ARRATTRSET_NUM_O (textblock, "hlEnd", layer, "nChar",
+                                textblock->hlEnd[layer].nChar);
+
       if (oldStartIndex != textblock->hlStart[layer].index ||
           oldStartChar != textblock->hlStart[layer].nChar ||
           oldEndIndex != textblock->hlEnd[layer].index ||
           oldEndChar != textblock->hlEnd[layer].nChar)
          textblock->queueDrawRange (index1, index2);
+
+      DBG_OBJ_LEAVE_O (getWidget ());
    } else
       highlightOOF (start, end, layer);
 }
@@ -99,6 +114,10 @@ void Textblock::TextblockIterator::unhighlight (int direction,
                                                 core::HighlightLayer layer)
 {
    if (inFlow ()) {
+      DBG_OBJ_ENTER_O ("events", 0, getWidget (),
+                       "TextblockIterator/unhighlight", "[in flow: %d], %d, %d",
+                       getInFlowIndex (), direction, layer);
+
       Textblock *textblock = (Textblock*)getWidget();
       int index = getInFlowIndex (), index1 = index, index2 = index;
 
@@ -125,11 +144,22 @@ void Textblock::TextblockIterator::unhighlight (int direction,
          textblock->hlEnd[layer].nChar = INT_MAX;
       }
 
+      DBG_OBJ_ARRATTRSET_NUM_O (textblock, "hlStart", layer, "index",
+                                textblock->hlStart[layer].index);
+      DBG_OBJ_ARRATTRSET_NUM_O (textblock, "hlStart", layer, "nChar",
+                                textblock->hlStart[layer].nChar);
+      DBG_OBJ_ARRATTRSET_NUM_O (textblock, "hlEnd", layer, "index",
+                                textblock->hlEnd[layer].index);
+      DBG_OBJ_ARRATTRSET_NUM_O (textblock, "hlEnd", layer, "nChar",
+                                textblock->hlEnd[layer].nChar);
+
       if (oldStartIndex != textblock->hlStart[layer].index ||
           oldStartChar != textblock->hlStart[layer].nChar ||
           oldEndIndex != textblock->hlEnd[layer].index ||
           oldEndChar != textblock->hlEnd[layer].nChar)
          textblock->queueDrawRange (index1, index2);
+
+      DBG_OBJ_LEAVE_O (getWidget ());
    } else
       unhighlightOOF (direction, layer);
 }

@@ -276,6 +276,11 @@ Textblock::Textblock (bool limitTextWidth)
       hlStart[layer].nChar = 0;
       hlEnd[layer].index = 0;
       hlEnd[layer].nChar = 0;
+
+      DBG_OBJ_ARRATTRSET_NUM ("hlStart", layer, "index", hlStart[layer].index);
+      DBG_OBJ_ARRATTRSET_NUM ("hlStart", layer, "nChar", hlStart[layer].nChar);
+      DBG_OBJ_ARRATTRSET_NUM ("hlEnd", layer, "index", hlEnd[layer].index);
+      DBG_OBJ_ARRATTRSET_NUM ("hlEnd", layer, "nChar", hlEnd[layer].nChar);
    }
 
    initNewLine ();
@@ -946,6 +951,8 @@ void Textblock::leaveNotifyImpl (core::EventCrossing *event)
 bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                                     core::MousePositionEvent *event)
 {
+   DBG_OBJ_ENTER0 ("events", 0, "sendSelectionEvent");
+
    core::Iterator *it;
    int wordIndex;
    int charPos = 0, link = -1;
@@ -1074,11 +1081,17 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
          }
       }
    }
-
+   
+   DBG_OBJ_MSGF ("events", 1, "wordIndex = %d", wordIndex);
+   DBG_MSG_WORD ("events", 1, "<i>this is:</i> ", wordIndex, "");
+      
    it = TextblockIterator::createWordIndexIterator
            (this, core::Content::maskForSelection (true), wordIndex);
    r = selectionHandleEvent (eventType, it, charPos, link, event);
    it->unref ();
+
+   DBG_OBJ_MSGF ("events", 1, "=> %s", r ? "true" : "false");
+   DBG_OBJ_LEAVE ();
    return r;
 }
 

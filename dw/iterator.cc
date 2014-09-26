@@ -204,14 +204,6 @@ void Iterator::scrollTo (Iterator *it1, Iterator *it2, int start, int end,
    }
 }
 
-
-void Iterator::print ()
-{
-   misc::StringBuffer sb;
-   intoStringBuffer (&sb);
-   printf ("%s", sb.getChars ());
-}
-
 // -------------------
 //    EmptyIterator
 // -------------------

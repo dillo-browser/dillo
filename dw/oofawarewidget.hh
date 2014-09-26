@@ -97,6 +97,7 @@ protected:
       OOFAwareWidgetIterator (OOFAwareWidget *widget, core::Content::Type mask,
                               bool atEnd, int numContentsInFlow);
 
+      void intoStringBuffer(lout::misc::StringBuffer *sb);
       int compareTo(lout::object::Comparable *other);
 
       bool next ();

@@ -294,6 +294,13 @@
       fflush (stdout); \
    } D_STMT_END
 
+#define DBG_OBJ_ARRATTRSET_NUM_O(obj, var, ind, attr, val) \
+   D_STMT_START { \
+      printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d.%s:%d\n", \
+              RTFL_PREFIX_ARGS, obj, var, ind, attr, val); \
+      fflush (stdout); \
+   } D_STMT_END
+
 #define DBG_OBJ_ARRATTRSET_SYM(var, ind, attr, val) \
    D_STMT_START { \
       printf (RTFL_PREFIX_FMT "obj-set:%p:%s.%d.%s:%s\n", \
@@ -367,6 +374,7 @@
 #define DBG_OBJ_ARRSET_PTR(var, ind, val)                      D_STMT_NOP
 #define DBG_OBJ_ARRSET_BOOL(var, ind, val)                     D_STMT_NOP
 #define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val)            D_STMT_NOP
+#define DBG_OBJ_ARRATTRSET_NUM_O(obj, var, ind, attr, val)     D_STMT_NOP
 #define DBG_OBJ_ARRATTRSET_SYM(var, ind, attr, val)            D_STMT_NOP
 #define DBG_OBJ_ARRATTRSET_STR(var, ind, attr, val)            D_STMT_NOP
 #define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val)            D_STMT_NOP
