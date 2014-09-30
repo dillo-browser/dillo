@@ -41,6 +41,7 @@
 ^test/dw-table$
 ^test/dw-table-aligned$
 ^test/dw-ui-test$
+^test/identity$
 ^test/liang$
 ^test/notsosimplevector$
 ^test/shapes$
