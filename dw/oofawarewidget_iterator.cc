@@ -70,14 +70,22 @@ void OOFAwareWidget::OOFAwareWidgetIterator::setValues (int sectionIndex,
 int OOFAwareWidget::OOFAwareWidgetIterator::numParts (int sectionIndex,
                                                       int numContentsInFlow)
 {
+   DBG_OBJ_ENTER_O ("iterator", 0, getWidget(), "numParts", "%d, %d",
+                    sectionIndex, numContentsInFlow);
+
    OOFAwareWidget *widget = (OOFAwareWidget*)getWidget();
+   int result;
 
    if (sectionIndex == 0)
-      return numContentsInFlow == -1 ?
+      result = numContentsInFlow == -1 ?
          this->numContentsInFlow () : numContentsInFlow;
    else
-      return widget->outOfFlowMgr[sectionIndex - 1] ?
+      result = widget->outOfFlowMgr[sectionIndex - 1] ?
          widget->outOfFlowMgr[sectionIndex - 1]->getNumWidgets () : 0;
+
+   DBG_OBJ_MSGF_O ("iterator", 1, getWidget(), "=> %d", result);
+   DBG_OBJ_LEAVE_O (getWidget());
+   return result;
 }
 
 void OOFAwareWidget::OOFAwareWidgetIterator::getPart (int sectionIndex,
@@ -137,7 +145,9 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
       do {
          index++;
          
-         if (index >= numParts(sectionIndex)) {
+         if (index < numParts(sectionIndex))
+            getPart (sectionIndex, index, &content);
+         else {
             sectionIndex++;
             while (sectionIndex < NUM_SECTIONS && numParts (sectionIndex) == 0)
                sectionIndex++;
@@ -150,8 +160,7 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
                index = 0;
                getPart (sectionIndex, index, &content);
             }
-         }
-         
+         }         
       } while (!cancel && (content.type & getMask()) == 0);
    }
 
@@ -191,7 +200,9 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
       do {
          index--;
          
-         if (index < 0) {
+         if (index >= 0)
+            getPart (sectionIndex, index, &content);
+         else {
             sectionIndex--;
             while (sectionIndex >= 0 && numParts (sectionIndex) == 0)
                sectionIndex--;
