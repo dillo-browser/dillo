@@ -442,6 +442,10 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
          prevLine->lastOofRefPositionedBeforeThisLine;
    }
 
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "top", line->top);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "maxLineWidth",
+                           line->maxLineWidth);
+
    for(int i = line->firstWord; i <= line->lastWord; i++)
       accumulateWordForLine (lineIndex, i);
 
@@ -451,16 +455,12 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    // minHeight > 0).
    line->boxAscent = misc::max (line->boxAscent, minHeight);
 
-   DBG_OBJ_MSGF ("construct.line", 1, "top = %d\n", line->top);
-   DBG_OBJ_MSGF ("construct.line", 1, "boxAscent = %d\n", line->boxAscent);
-   DBG_OBJ_MSGF ("construct.line", 1, "boxDescent = %d\n", line->boxDescent);
-   DBG_OBJ_MSGF ("construct.line", 1, "contentAscent = %d\n",
-                 line->contentAscent);
-   DBG_OBJ_MSGF ("construct.line", 1, "contentDescent = %d\n",
-                 line->contentDescent);
-   DBG_OBJ_MSGF ("construct.line", 1, "maxLineWidth = %d (lineWidth = %d)\n",
-                 line->maxLineWidth, lineWidth);
-   DBG_OBJ_MSGF ("construct.line", 1, "textOffset = %d\n", line->textOffset);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "boxAscent", line->boxAscent);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "boxDescent", line->boxDescent);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "contentAscent",
+                           line->contentAscent);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "contentDescent",
+                           line->contentDescent);
 
    mustQueueResize = true;
 

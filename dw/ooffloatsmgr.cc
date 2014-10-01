@@ -2121,17 +2121,18 @@ int OOFFloatsMgr::getFloatHeight (OOFAwareWidget *textblock, Side side, int y,
 
       Allocation *tba = getAllocation(textblock),
          *fla = vloat->getWidget()->getAllocation ();
-      yRelToFloat = y + fla->y - tba->y;
+      yRelToFloat = tba->y + y - fla->y;
 
       DBG_OBJ_MSGF ("border", 1,
                     "caller is not CB: yRelToFloat = %d + %d - %d = %d",
-                    y, fla->y, tba->y, yRelToFloat);
+                    tba->y, y, fla->y, yRelToFloat);
    }
 
    ensureFloatSize (vloat);
-   int height = vloat->size.ascent + vloat->size.descent + yRelToFloat;
+   int height = vloat->size.ascent + vloat->size.descent - yRelToFloat;
 
-   DBG_OBJ_MSGF ("border", 1, "=> %d", height);
+   DBG_OBJ_MSGF ("border", 1, "=> (%d + %d) - %d = %d",
+                 vloat->size.ascent, vloat->size.descent, yRelToFloat, height);
    DBG_OBJ_LEAVE ();
    return height;
 }

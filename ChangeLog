@@ -20,6 +20,7 @@ dillo-3.1 [not released yet]
    percentage value.
  - New dillorc options 'adjust_min_width' and 'adjust_table_min_width'.
  - Make building of test/ files more robust.
+ - Fix Makefile to pick up LIBJPEG_CPPFLAGS.
    Patches: Sebastian Geerken
 +- Image buffer/cache improvements.
    Patch: Jorge Arellano Cid
@@ -28,7 +29,15 @@ dillo-3.1 [not released yet]
 +- HTML5 character references.
  - Give images lower priority when requesting resources (responsiveness).
  - Reuse of connections for HTTP (enable w/ http_persistent_conns in dillorc).
+ - Fix X11 icon name.
+ - Abort failed queries.
+ - In location bar, tend toward showing beginning of URL instead of end.
+ - Remove Fl_Printer stub that always gave problems compiling under OSX.
+ - Handle irix's version of vsnprintf().
    Patches: corvid
++- Avoid requesting background images if an ancestor has display:none.
+ - Don't load background images in --local mode.
+   Patches: Johannes Hofmann
 
 -----------------------------------------------------------------------------
 
