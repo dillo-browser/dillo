@@ -488,7 +488,7 @@ public:
    inline static void setAdjustTableMinWidth (bool adjustTableMinWidth)
    { Table::adjustTableMinWidth = adjustTableMinWidth; }
 
-   inline static int getAdjustTableMinWidth ()
+   inline static bool getAdjustTableMinWidth ()
    { return Table::adjustTableMinWidth; }
 
    Table(bool limitTextWidth);
