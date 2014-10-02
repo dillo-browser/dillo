@@ -737,15 +737,13 @@ void Table::forceCalcCellSizes (bool calcHeights)
    // width for correction.
    int corrWidth =
       Table::getAdjustTableMinWidth () ? extremes.minWidthIntrinsic : 0;
-   int totalWidth = 
-      misc::max (availWidth - ((numCols + 1) * getStyle()->hBorderSpacing
-                               + boxDiffWidth ()),
-                 corrWidth);
-
+   int totalWidth =  misc::max (availWidth, corrWidth)
+      - ((numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ());
+      
    DBG_OBJ_MSGF ("resize", 1,
-                 "totalWidth = max (%d - ((%d - 1) * %d + %d), %d) = <b>%d</b>",
-                 availWidth, numCols, getStyle()->hBorderSpacing,
-                 boxDiffWidth (), corrWidth, totalWidth);
+                 "totalWidth = max (%d, %d) - ((%d - 1) * %d + %d) = <b>%d</b>",
+                 availWidth, corrWidth, numCols, getStyle()->hBorderSpacing,
+                 boxDiffWidth (), totalWidth);
 
    colWidths->setSize (numCols, 0);
    cumHeight->setSize (numRows + 1, 0);
