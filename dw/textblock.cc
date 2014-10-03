@@ -598,8 +598,12 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    for (lineIndex = 0; lineIndex < lines->size (); lineIndex++) {
       // Especially for floats, allocation->width may be different
       // from the line break width, so that for centered and right
-      // text, the offsets have to be recalculated again.
-      calcTextOffset (lineIndex, childBaseAllocation.width);
+      // text, the offsets have to be recalculated again. However, if
+      // the allocation width is greater than the line break width,
+      // due to wide unbreakable lines (large image etc.), use the
+      // original line break width.
+      calcTextOffset (lineIndex,
+                      misc::min (childBaseAllocation.width, lineBreakWidth));
 
       line = lines->getRef (lineIndex);
       xCursor = line->textOffset;
