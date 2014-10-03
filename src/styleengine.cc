@@ -653,6 +653,9 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             if (attrs->margin.top < 0) // \todo fix negative margins in dw/*
                attrs->margin.top = 0;
             break;
+         case CSS_PROPERTY_OVERFLOW:
+            attrs->overflow = (Overflow) p->value.intVal;
+            break;
          case CSS_PROPERTY_PADDING_TOP:
             computeValue (&attrs->padding.top, p->value.intVal, attrs->font);
             break;

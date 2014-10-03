@@ -76,6 +76,7 @@ void StyleAttrs::initValues ()
    minWidth = maxWidth = minHeight = maxHeight = LENGTH_AUTO;
    vloat = FLOAT_NONE;
    clear = CLEAR_NONE;
+   overflow = OVERFLOW_VISIBLE;
    position = POSITION_STATIC;
    top = bottom = left = right = LENGTH_AUTO;
    textIndent = 0;
@@ -106,6 +107,7 @@ void StyleAttrs::resetValues ()
    textAlignChar = '.';
    vloat = FLOAT_NONE; /** \todo Correct? Check specification. */
    clear = CLEAR_NONE; /** \todo Correct? Check specification. */
+   overflow = OVERFLOW_VISIBLE;
    position = POSITION_STATIC; /** \todo Correct? Check specification. */
    top = bottom = left = right = LENGTH_AUTO; /** \todo Correct? Check
                                                   specification. */
@@ -167,6 +169,7 @@ bool StyleAttrs::equals (object::Object *other) {
        textTransform == otherAttrs->textTransform &&
        vloat == otherAttrs->vloat &&
        clear == otherAttrs->clear &&
+       overflow == otherAttrs->overflow &&
        position == otherAttrs->position &&
        top == otherAttrs->top &&
        bottom == otherAttrs->bottom &&
@@ -223,6 +226,7 @@ int StyleAttrs::hashValue () {
       textTransform +
       vloat +
       clear +
+      overflow +
       position +
       top +
       bottom +
@@ -349,6 +353,7 @@ void Style::copyAttrs (StyleAttrs *attrs)
    textTransform = attrs->textTransform;
    vloat = attrs->vloat;
    clear = attrs->clear;
+   overflow = attrs->overflow;
    position = attrs->position;
    top = attrs->top;
    bottom = attrs->bottom;
