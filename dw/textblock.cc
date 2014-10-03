@@ -916,6 +916,9 @@ bool Textblock::isContainingBlock (Widget *widget)
        !widget->getParent()->instanceOf (Textblock::CLASS_ID) ||
        // Inline blocks are containing blocks, too.
        widget->getStyle()->display == core::style::DISPLAY_INLINE_BLOCK ||
+       // Same for blocks with 'overview' set to another value than
+       // (the default value) 'visible'.
+       widget->getStyle()->overflow != core::style::OVERFLOW_VISIBLE ||
        // Finally, "out of flow" in a narrower sense: floats and
        // absolute positions.
        OutOfFlowMgr::isWidgetOutOfFlow (widget));
