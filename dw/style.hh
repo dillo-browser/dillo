@@ -333,6 +333,13 @@ enum FontVariant {
    FONT_VARIANT_SMALL_CAPS
 };
 
+enum Overflow {
+   OVERFLOW_VISIBLE,
+   OVERFLOW_HIDDEN,
+   OVERFLOW_SCROLL,
+   OVERFLOW_AUTO
+};
+
 enum Position {
    POSITION_STATIC,
    POSITION_RELATIVE,
@@ -539,6 +546,8 @@ public:
 
    FloatType vloat; /* "float" is a keyword. */
    ClearType clear;
+
+   Overflow overflow;
 
    Position position;
    Length top, bottom, left, right;

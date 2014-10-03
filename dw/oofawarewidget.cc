@@ -91,6 +91,9 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
                  ->isPossibleContainerParent (OOFM_FLOATS)) ||
            // Inline blocks are containing blocks, too.
            widget->getStyle()->display == core::style::DISPLAY_INLINE_BLOCK ||
+           // Same for blocks with 'overview' set to another value than
+           // (the default value) 'visible'.
+           widget->getStyle()->overflow != core::style::OVERFLOW_VISIBLE ||
            // Finally, "out of flow" in a narrower sense: floats;
            // absolutely and fixedly positioned elements; furthermore,
            // relatively positioned elements must already be
@@ -102,16 +105,8 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
       // Only the toplevel widget (as for all) as well as absolutely,
       // relatively, and fixedly positioned elements constitute the
       // containing block for absolutely positioned elements, but
-      // neither floats nor other elements like table cells.
-      //
-      // (Notice that relative positions are not yet supported, but
-      // only tested to get the correct containing block. Furthermore,
-      // it seems that this test would be incorrect for floats.)
-      // 
-      // We also test whether this widget is a textblock: is this
-      // necessary? (What about other absolutely widgets containing
-      // children, like tables? TODO: Check CSS spec.)
-
+      // neither floats nor other elements like table cells, or
+      // elements with 'overview' set to another value than 'visible'.
       return widget->instanceOf (OOFAwareWidget::CLASS_ID) &&
          (widget->getParent() == NULL || testWidgetPositioned (widget));
       

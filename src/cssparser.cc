@@ -129,6 +129,10 @@ static const char *const Css_list_style_type_enum_vals[] = {
    "katakana-iroha", "none", NULL
 };
 
+static const char *const Css_overflow_enum_vals[] = {
+   "visible", "hidden", "scroll", "auto", NULL
+};
+
 static const char *const Css_position_enum_vals[] = {
    "static", "relative", "absolute", "fixed", NULL
 };
@@ -250,7 +254,7 @@ const CssPropertyInfo Css_property_info[CSS_PROPERTY_LAST] = {
    {"outline-color", {CSS_TYPE_UNUSED}, NULL},
    {"outline-style", {CSS_TYPE_UNUSED}, NULL},
    {"outline-width", {CSS_TYPE_UNUSED}, NULL},
-   {"overflow", {CSS_TYPE_UNUSED}, NULL},
+   {"overflow", {CSS_TYPE_ENUM, CSS_TYPE_UNUSED}, Css_overflow_enum_vals},
    {"padding-bottom", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"padding-left", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},
    {"padding-right", {CSS_TYPE_LENGTH, CSS_TYPE_UNUSED}, NULL},

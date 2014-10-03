@@ -608,9 +608,6 @@ int Widget::getAvailWidth (bool forceValue)
       DBG_OBJ_MSG_END ();
    }
 
-   if (width != -1)
-      width = misc::max (width, getMinWidth (NULL, forceValue));
-
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_LEAVE ();
 
@@ -1552,9 +1549,6 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
          DBG_OBJ_MSG_END ();
       }
    }
-
-   if (width != -1)
-      width = misc::max (width, child->getMinWidth (NULL, forceValue));
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_LEAVE ();
