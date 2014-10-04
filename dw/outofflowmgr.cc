@@ -2273,12 +2273,20 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
       } else {
          Float *vloat = list->get(i);
          assert (vloat->generatingBlock != tb);
-         ensureFloatSize (vloat);
-         pos = vloat->yReal + vloat->size.ascent + vloat->size.descent -
-            getAllocation(tb)->y;
-         DBG_OBJ_MSGF ("resize.oofm", 1, "float %p => %d + (%d + %d) - %d",
-                       vloat->getWidget (), vloat->yReal, vloat->size.ascent,
-                       vloat->size.descent, getAllocation(tb)->y);
+         if (!wasAllocated (vloat->generatingBlock))
+            pos = 0; // See above.
+         else {
+            ensureFloatSize (vloat);
+            pos = getAllocation(vloat->generatingBlock)->y + vloat->yReal
+               + vloat->size.ascent + vloat->size.descent
+               - getAllocation(tb)->y;
+            DBG_OBJ_MSGF ("resize.oofm", 1,
+                          "float %p => %d + %d + (%d + %d) - %d",
+                          vloat->getWidget (),
+                          getAllocation(vloat->generatingBlock)->y,
+                          vloat->yReal, vloat->size.ascent, vloat->size.descent,
+                          getAllocation(tb)->y);
+         }
       }
    }
 
