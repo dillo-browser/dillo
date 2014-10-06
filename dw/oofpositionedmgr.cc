@@ -285,6 +285,11 @@ void OOFPositionedMgr::getSize (Requisition *containerReq, int *oofWidth,
    DBG_OBJ_LEAVE ();
 }
 
+bool OOFPositionedMgr::containerMustAdjustExtraSpace ()
+{
+   return true;
+}
+
 void OOFPositionedMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
                                     int *oofMaxWidth)
 {

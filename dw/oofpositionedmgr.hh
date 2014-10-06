@@ -81,6 +81,7 @@ public:
 
    void getSize (core::Requisition *containerReq, int *oofWidth,
                  int *oofHeight);
+   bool containerMustAdjustExtraSpace ();
    void getExtremes (core::Extremes *containerExtr,
                      int *oofMinWidth, int *oofMaxWidth);
 

@@ -358,6 +358,7 @@ public:
    void tellPosition (core::Widget *widget, int x, int y);
 
    void getSize (core::Requisition *cbReq, int *oofWidth, int *oofHeight);
+   bool containerMustAdjustExtraSpace ();
    void getExtremes (core::Extremes *cbExtr,
                      int *oofMinWidth, int *oofMaxWidth);
 

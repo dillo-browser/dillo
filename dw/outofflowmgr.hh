@@ -42,6 +42,7 @@ public:
    
    virtual void getSize (core::Requisition *containerReq, int *oofWidth,
                          int *oofHeight) = 0;
+   virtual bool containerMustAdjustExtraSpace ()= 0;
    virtual void getExtremes (core::Extremes *containerExtr, int *oofMinWidth,
                              int *oofMaxWidth) = 0;
 

@@ -183,17 +183,25 @@ void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition,
          outOfFlowMgr[i]->getSize (requisition, &oofWidth, &oofHeight);
 
          if (oofWidth > requisition->width) {
-            if (adjustExtraSpaceWhenCorrectingRequisitionByOOF ())
+            if (outOfFlowMgr[i]->containerMustAdjustExtraSpace () &&
+                adjustExtraSpaceWhenCorrectingRequisitionByOOF ()) {
                extraSpace.right = max (extraSpace.right,
                                        oofWidth - requisition->width);
+               DBG_OBJ_SET_NUM ("extraSpace.right", extraSpace.right);
+            }
+
             requisition->width = oofWidth;
          }
 
          if (oofHeight > requisition->ascent + requisition->descent) {
-            if (adjustExtraSpaceWhenCorrectingRequisitionByOOF ())
+            if (outOfFlowMgr[i]->containerMustAdjustExtraSpace () &&
+                adjustExtraSpaceWhenCorrectingRequisitionByOOF ()) {
                extraSpace.bottom = max (extraSpace.bottom,
                                         oofHeight - (requisition->ascent +
                                                      requisition->descent));
+               DBG_OBJ_SET_NUM ("extraSpace.bottom", extraSpace.bottom);
+            }
+   
             splitHeightFun (oofHeight,
                             &requisition->ascent, &requisition->descent);
          }

@@ -1803,6 +1803,11 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
    DBG_OBJ_LEAVE ();
 }
 
+bool OOFFloatsMgr::containerMustAdjustExtraSpace ()
+{
+   return false;
+}
+
 void OOFFloatsMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
                                 int *oofMaxWidth)
 {
