@@ -347,6 +347,11 @@ void OOFAwareWidget::borderChanged (int y, Widget *vloat)
    assertNotReached ();
 }
 
+void OOFAwareWidget::clearPositionChanged ()
+{
+   assertNotReached ();
+}
+
 void OOFAwareWidget::oofSizeChanged (bool extremesChanged)
 {
    DBG_OBJ_ENTER ("resize", 0, "oofSizeChanged", "%s",

@@ -838,6 +838,7 @@ public:
                          bool includeFirstSpace, bool includeLastSpace);
 
    void borderChanged (int y, core::Widget *vloat);
+   void clearPositionChanged ();
    void oofSizeChanged (bool extremesChanged);
    int getLineBreakWidth ();
    bool isPossibleContainer (int oofmIndex);

@@ -191,6 +191,7 @@ public:
    ~OOFAwareWidget ();
 
    virtual void borderChanged (int y, core::Widget *vloat);
+   virtual void clearPositionChanged ();
    virtual void oofSizeChanged (bool extremesChanged);
    virtual int getLineBreakWidth (); // Should perhaps be renamed.
    virtual bool isPossibleContainer (int oofmIndex);
