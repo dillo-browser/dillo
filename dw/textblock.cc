@@ -265,9 +265,6 @@ Textblock::Textblock (bool limitTextWidth)
    lineBreakWidth = -1;
    DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
 
-   clearPosition = 0;
-   DBG_OBJ_SET_NUM ("clearPosition", clearPosition);
-
    this->limitTextWidth = limitTextWidth;
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
@@ -694,6 +691,14 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 void Textblock::calcExtraSpaceImpl ()
 {
    OOFAwareWidget::calcExtraSpaceImpl ();
+
+   int clearPosition = 0;
+   for (int i = 0; i < NUM_OOFM; i++)
+      if (searchOutOfFlowMgr(i))
+         clearPosition =
+            misc::max (clearPosition,
+                       searchOutOfFlowMgr(i)->getClearPosition (this));
+   
    extraSpace.top = misc::max (extraSpace.top, clearPosition);
 }
 
@@ -2838,20 +2843,6 @@ void Textblock::queueDrawRange (int index1, int index2)
               line2->contentDescent - y;
 
       queueDrawArea (0, y, allocation.width, h);
-   }
-
-   DBG_OBJ_LEAVE ();
-}
-
-void Textblock::setClearPosition (int clearPosition)
-{
-   DBG_OBJ_ENTER ("resize", 0, "setClearPosition", "%d", clearPosition);
-
-   if (this->clearPosition != clearPosition) {
-      this->clearPosition = clearPosition;
-      DBG_OBJ_SET_NUM ("clearPosition", clearPosition);
-      mustQueueResize = true;
-      queueDraw (); // Could perhaps be optimized.
    }
 
    DBG_OBJ_LEAVE ();

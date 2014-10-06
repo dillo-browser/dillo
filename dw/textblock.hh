@@ -522,10 +522,6 @@ protected:
    /* This value is (currently) set by setAscent(). */
    int lineBreakWidth;
 
-   // Vertical offset at the top, used for the "clear" attribute. Goes
-   // into "extraSpace".
-   int clearPosition;
-
    int wrapRefLines, wrapRefParagraphs;  /* 0-based. Important: Both
                                             are the line numbers, not
                                             the value stored in
@@ -573,7 +569,6 @@ protected:
    void calcBorders (int lastOofRef, int height);
    void showMissingLines ();
    void removeTemporaryLines ();
-   void setClearPosition (int clearPosition);
 
    void decorateText (core::View *view, core::style::Style *style,
                       core::style::Color::Shading shading,

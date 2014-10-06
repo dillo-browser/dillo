@@ -1935,21 +1935,6 @@ void Textblock::initNewLine ()
 {
    DBG_OBJ_ENTER0 ("construct.line", 0, "initNewLine");
 
-   // At the very beginning, in Textblock::Textblock, where this
-   // method is called, containingBlock is not yet defined.
-
-   if (lines->size () == 0) {
-      int clearPosition = 0;
-      
-      for (int i = 0; i < NUM_OOFM; i++)
-         if (searchOutOfFlowMgr(i))
-            clearPosition =
-               misc::max (clearPosition,
-                          searchOutOfFlowMgr(i)->getClearPosition (this));
-
-      setClearPosition (misc::max (clearPosition, 0));
-   }
-
    calcBorders (lines->size() > 0 ?
                 lines->getLastRef()->lastOofRefPositionedBeforeThisLine : -1,
                 1);
