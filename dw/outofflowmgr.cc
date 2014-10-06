@@ -474,6 +474,7 @@ OutOfFlowMgr::TBInfo::TBInfo (OutOfFlowMgr *oofm, Textblock *textblock,
 
    wasAllocated = getWidget()->wasAllocated ();
    allocation = *(getWidget()->getAllocation ());
+   clearPosition = 0;
 }
 
 OutOfFlowMgr::TBInfo::~TBInfo ()
@@ -603,6 +604,17 @@ void OutOfFlowMgr::sizeAllocateEnd (Textblock *caller)
       // Allocate all floats "before" this textblock.
       sizeAllocateFloats (LEFT, leftFloatsCB->findFloatIndex (caller, -1));
       sizeAllocateFloats (RIGHT, rightFloatsCB->findFloatIndex (caller, -1));
+   }
+
+   // The checks below do not cover "clear position" in all cases, so
+   // this is done here separately. This position is stored in TBInfo
+   // and calculated at this points; changes will be noticed to the
+   // textblock.
+   TBInfo *tbInfo = getTextblock (caller);
+   int newClearPosition = calcClearPosition (caller);
+   if (newClearPosition != tbInfo->clearPosition) {
+      tbInfo->clearPosition = newClearPosition;
+      caller->clearPositionChanged ();
    }
 
    if (caller == containingBlock) {
@@ -2225,6 +2237,11 @@ int OutOfFlowMgr::getFloatHeight (Textblock *textblock, Side side, int y, int h,
  */
 int OutOfFlowMgr::getClearPosition (Textblock *tb)
 {
+   return getTextblock(tb)->clearPosition;
+}
+
+int OutOfFlowMgr::calcClearPosition (Textblock *tb)
+{
    DBG_OBJ_ENTER ("resize.oofm", 0, "getClearPosition", "%p", tb);
 
    int pos;
@@ -2239,8 +2256,8 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb)
       default: assertNotReached ();
       }
 
-      pos = max (left ? getClearPosition (tb, LEFT) : 0,
-                 right ? getClearPosition (tb, RIGHT) : 0);
+      pos = max (left ? calcClearPosition (tb, LEFT) : 0,
+                 right ? calcClearPosition (tb, RIGHT) : 0);
    } else
       pos = 0;
 
@@ -2250,7 +2267,7 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb)
    return pos;
 }
 
-int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
+int OutOfFlowMgr::calcClearPosition (Textblock *tb, Side side)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "getClearPosition", "%p, %s",
                   tb, side == LEFT ? "LEFT" : "RIGHT");
@@ -2277,11 +2294,12 @@ int OutOfFlowMgr::getClearPosition (Textblock *tb, Side side)
             pos = 0; // See above.
          else {
             ensureFloatSize (vloat);
-            pos = getAllocation(vloat->generatingBlock)->y + vloat->yReal
-               + vloat->size.ascent + vloat->size.descent
-               - getAllocation(tb)->y;
+            pos = max (getAllocation(vloat->generatingBlock)->y + vloat->yReal
+                       + vloat->size.ascent + vloat->size.descent
+                       - getAllocation(tb)->y,
+                       0);
             DBG_OBJ_MSGF ("resize.oofm", 1,
-                          "float %p => %d + %d + (%d + %d) - %d",
+                          "float %p => max (%d + %d + (%d + %d) - %d, 0)",
                           vloat->getWidget (),
                           getAllocation(vloat->generatingBlock)->y,
                           vloat->yReal, vloat->size.ascent, vloat->size.descent,

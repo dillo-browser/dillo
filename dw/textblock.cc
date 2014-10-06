@@ -3068,6 +3068,15 @@ void Textblock::borderChanged (int y, Widget *vloat)
    DBG_OBJ_LEAVE ();
 }
 
+void Textblock::clearPositionChanged ()
+{
+   DBG_OBJ_ENTER0 ("resize", 0, "clearPositionChanged");
+   // Not very efficient (actually, a rewrapping could be easily
+   // avoided), but this case should not occur very often.
+   queueResize (0, false);
+   DBG_OBJ_LEAVE ();
+}
+
 void Textblock::oofSizeChanged (bool extremesChanged)
 {
    DBG_OBJ_ENTER ("resize", 0, "oofSizeChanged", "%s",
