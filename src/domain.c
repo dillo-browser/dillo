@@ -129,7 +129,7 @@ bool_t a_Domain_permit(const DilloUrl *source, const DilloUrl *dest)
       ret = source_host[0] == '\0' ||
             !dStrAsciiCasecmp(URL_SCHEME(dest), "data");
       if (ret == FALSE)
-         MSG("Domain: DENIED from %s to %s.\n", source_host, URL_STR(dest));
+         MSG("Domain: DENIED %s -> %s.\n", source_host, URL_STR(dest));
       return ret;
    }
 
@@ -151,7 +151,7 @@ bool_t a_Domain_permit(const DilloUrl *source, const DilloUrl *dest)
    if (ret == FALSE) {
       const char *src = source_host[0] ? source_host : URL_STR(source);
 
-      MSG("Domain: DENIED from %s to %s.\n", src, dest_host);
+      MSG("Domain: DENIED %s -> %s.\n", src, dest_host);
    }
    return ret;
 }
