@@ -870,7 +870,8 @@ static void Cache_finish_msg(CacheEntry_t *entry)
       if (eol) {
          char *status_line = dStrndup(entry->Header->str,
                                       eol - entry->Header->str);
-         MSG_HTTP("Body was empty. Server sent status: %s\n", status_line);
+         MSG_HTTP("Body of %s was empty. Server sent status: %s\n",
+                  URL_STR_(entry->Url), status_line);
          dFree(status_line);
       }
    }
