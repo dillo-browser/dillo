@@ -1452,8 +1452,8 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
    DBG_OBJ_MSGF ("draw", 1, "line from %d to %d (%d words), at (%d, %d)",
                  line->firstWord, line->lastWord, words->size (),
                  xWidget, yWidgetBase);
-   DBG_MSG_WORD ("draw", 0, "<i>line starts with: </i>", line->firstWord, "");
-   DBG_MSG_WORD ("draw", 0, "<i>line ends with: </i>", line->lastWord, "");
+   DBG_MSG_WORD ("draw", 1, "<i>line starts with: </i>", line->firstWord, "");
+   DBG_MSG_WORD ("draw", 1, "<i>line ends with: </i>", line->lastWord, "");
 
    for (int wordIndex = line->firstWord;
         wordIndex <= line->lastWord && xWidget < area->x + area->width;

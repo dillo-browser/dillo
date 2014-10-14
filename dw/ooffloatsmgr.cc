@@ -1277,7 +1277,6 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
    return x;
 }
 
-
 void OOFFloatsMgr::draw (View *view, Rectangle *area)
 {
    DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",

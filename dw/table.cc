@@ -358,6 +358,9 @@ bool Table::isBlockLevel ()
 
 void Table::draw (core::View *view, core::Rectangle *area)
 {
+   DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
+                  area->x, area->y, area->width, area->height);
+
    // Can be optimized, by iterating on the lines in area.
    drawWidgetBox (view, area, false);
 
@@ -389,6 +392,8 @@ void Table::draw (core::View *view, core::Rectangle *area)
    }
 
    drawOOF (view, area);
+
+   DBG_OBJ_LEAVE ();
 }
 
 void Table::removeChild (Widget *child)

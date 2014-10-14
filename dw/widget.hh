@@ -196,10 +196,19 @@ protected:
    style::Box extraSpace;
 
    /**
-    * \brief Set iff this widget constitutes a stacking context, as
-    *    defined by CSS.
+    * \brief Set iff this widget constitutes a stacking context, as defined by
+    *    CSS.
     */
    StackingContextMgr *stackingContextMgr;
+
+   /**
+    * \brief The bottom-most ancestor (or this) for which stackingContextMgr is
+    *    set.
+    */
+   Widget *stackingContextWidget;
+
+   inline StackingContextMgr *getNextStackingContextMgr ()
+   { return stackingContextWidget->stackingContextMgr; }
 
    /*inline void printFlags () {
       DBG_IF_RTFL {
@@ -261,7 +270,6 @@ protected:
    { flags = (Flags)(flags | f); printFlag (f); }
    inline void unsetFlags (Flags f)
    { flags = (Flags)(flags & ~f); printFlag (f); }
-
 
    inline void queueDraw ()
    { queueDrawArea (0, 0, allocation.width, getHeight()); }

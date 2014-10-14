@@ -31,30 +31,33 @@ namespace core {
 StackingContextMgr::StackingContextMgr (Widget *widget)
 {
    DBG_OBJ_CREATE ("dw::core::StackingContextMgr");
-   scWidgets = new Vector<Widget> (1, false);
-   DBG_OBJ_SET_NUM ("scWidgets.size", scWidgets->size());
+
+   this->widget = widget;
+
+   childSCWidgets = new Vector<Widget> (1, false);
+   DBG_OBJ_SET_NUM ("childSCWidgets.size", childSCWidgets->size());
 
    minZIndex = maxZIndex = 0; // Just to have some defined values.
 }
 
 StackingContextMgr::~StackingContextMgr ()
 {
-   delete scWidgets;
+   delete childSCWidgets;
    DBG_OBJ_DELETE ();
 }
 
 void StackingContextMgr::addChildSCWidget (Widget *widget)
 {
-   if (scWidgets->size () == 0)
+   if (childSCWidgets->size () == 0)
       minZIndex = maxZIndex = widget->getStyle()->zIndex;
    else {
       minZIndex = min (minZIndex, widget->getStyle()->zIndex);
       maxZIndex = max (maxZIndex, widget->getStyle()->zIndex);
    }
 
-   scWidgets->put (widget);
-   DBG_OBJ_SET_NUM ("scWidgets.size", scWidgets->size());
-   DBG_OBJ_ARRSET_PTR ("scWidgets", scWidgets->size() - 1, widget);
+   childSCWidgets->put (widget);
+   DBG_OBJ_SET_NUM ("childSCWidgets.size", childSCWidgets->size());
+   DBG_OBJ_ARRSET_PTR ("childSCWidgets", childSCWidgets->size() - 1, widget);
 }
 
 void StackingContextMgr::drawBottom (View *view, Rectangle *area)
@@ -85,8 +88,8 @@ void StackingContextMgr::draw (View *view, Rectangle *area, int startZIndex,
       DBG_OBJ_MSGF ("draw", 1, "drawing zIndex = %d", zIndex);
       DBG_OBJ_MSG_START ();
 
-      for (int i = 0; i < scWidgets->size (); i++) {
-         Widget *child = scWidgets->get (i);
+      for (int i = 0; i < childSCWidgets->size (); i++) {
+         Widget *child = childSCWidgets->get (i);
          DBG_OBJ_MSGF ("draw", 2, "widget %p has zIndex = %d",
                        child, child->getStyle()->zIndex);
          Rectangle childArea;
@@ -132,12 +135,13 @@ Widget *StackingContextMgr::getWidgetAtPoint (int x, int y, int startZIndex,
       DBG_OBJ_MSGF ("events", 1, "searching zIndex = %d", zIndex);
       DBG_OBJ_MSG_START ();
 
-      for (int i = 0; i < scWidgets->size () && widgetAtPoint == NULL; i++) {
-         Widget *child = scWidgets->get (i);
+      for (int i = 0; i < childSCWidgets->size () && widgetAtPoint == NULL;
+           i++) {
+         Widget *child = childSCWidgets->get (i);
          DBG_OBJ_MSGF ("events", 2, "widget %p has zIndex = %d",
                        child, child->getStyle()->zIndex);
          if (child->getStyle()->zIndex == zIndex && child->wasAllocated ())
-            widgetAtPoint = scWidgets->get(i)->getWidgetAtPoint (x, y);
+            widgetAtPoint = childSCWidgets->get(i)->getWidgetAtPoint (x, y);
       }
 
       DBG_OBJ_MSG_END ();
@@ -147,7 +151,6 @@ Widget *StackingContextMgr::getWidgetAtPoint (int x, int y, int startZIndex,
    DBG_OBJ_LEAVE ();
    return widgetAtPoint;
 }
-
 
 } // namespace core
 

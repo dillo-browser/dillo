@@ -314,7 +314,12 @@ public:
 
    /* View */
 
-   inline void expose (View *view, Rectangle *area) { draw (view, area); }
+   inline void expose (View *view, Rectangle *area) {
+      DBG_OBJ_ENTER ("draw", 0, "expose", "%d, %d, %d * %d",
+                     area->x, area->y, area->width, area->height);
+      draw (view, area);
+      DBG_OBJ_LEAVE ();
+   }
 
    /**
     * \brief This function is called by a view, to delegate a button press

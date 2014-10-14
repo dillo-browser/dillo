@@ -184,7 +184,6 @@ void OOFPositionedMgr::draw (View *view, Rectangle *area)
    DBG_OBJ_LEAVE ();
 }
 
-
 void OOFPositionedMgr::addWidgetInFlow (OOFAwareWidget *widget,
                                         OOFAwareWidget *parent,
                                         int externalIndex)

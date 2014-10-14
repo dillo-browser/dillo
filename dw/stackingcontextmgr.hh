@@ -13,15 +13,14 @@ namespace dw {
 
 namespace core {
 
-class OOFAwareWidget;
-
 /**
  * \brief See \ref dw-stacking-context.
  */
 class StackingContextMgr
 {
 private:
-   lout::container::typed::Vector<Widget> *scWidgets;
+   Widget *widget;
+   lout::container::typed::Vector<Widget> *childSCWidgets;
    int minZIndex, maxZIndex;
 
    void draw (View *view, Rectangle *area, int startZIndex, int endZIndex);

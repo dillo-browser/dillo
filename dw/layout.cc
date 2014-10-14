@@ -379,6 +379,7 @@ void Layout::addWidget (Widget *widget)
    if (widget->stackingContextMgr == NULL) {
       widget->stackingContextMgr = new StackingContextMgr (widget);
       DBG_OBJ_ASSOC (widget, widget->stackingContextMgr);
+      widget->stackingContextWidget = widget;
    }
 
    topLevel = widget;
@@ -661,6 +662,9 @@ bool Layout::calcScrollInto (int requestedValue, int requestedSize,
 
 void Layout::draw (View *view, Rectangle *area)
 {
+   DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
+                  area->x, area->y, area->width, area->height);
+
    Rectangle widgetArea, intersection, widgetDrawArea;
 
    // First of all, draw background image. (Unlike background *color*,
@@ -705,6 +709,8 @@ void Layout::draw (View *view, Rectangle *area)
          view->finishDrawing (&intersection);
       }
    }
+
+   DBG_OBJ_LEAVE ();
 }
 
 int Layout::currHScrollbarThickness()

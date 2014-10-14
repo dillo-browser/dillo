@@ -346,8 +346,6 @@ public:
    void markExtremesChange (int ref);
    core::Widget *getWidgetAtPoint (int x, int y);
 
-   static bool _isWidgetOutOfFlow (core::Widget *widget);
-   static bool _isWidgetHandledByOOFM (core::Widget *widget);
    void addWidgetInFlow (OOFAwareWidget *textblock, OOFAwareWidget *parentBlock,
                          int externalIndex);
    int addWidgetOOF (core::Widget *widget, OOFAwareWidget *generatingBlock,

@@ -130,6 +130,10 @@ Widget::~Widget ()
  */
 bool Widget::intersects (Rectangle *area, Rectangle *intersection)
 {
+   DBG_OBJ_ENTER ("draw", 0, "intersects", "%d, %d, %d * %d",
+                  area->x, area->y, area->width, area->height);
+   bool r;
+
    if (wasAllocated ()) {
       Rectangle parentArea, childArea;
       
@@ -137,19 +141,42 @@ bool Widget::intersects (Rectangle *area, Rectangle *intersection)
       parentArea.x += parent->allocation.x;
       parentArea.y += parent->allocation.y;
       
+      DBG_OBJ_MSGF ("draw", 2, "parentArea: %d, %d, %d * %d",
+                    parentArea.x, parentArea.y, parentArea.width,
+                    parentArea.height);
+
       childArea.x = allocation.x;
       childArea.y = allocation.y;
       childArea.width = allocation.width;
       childArea.height = getHeight ();
+
+      DBG_OBJ_MSGF ("draw", 2, "childArea: %d, %d, %d * %d",
+                    childArea.x, childArea.y, childArea.width,
+                    childArea.height);
       
       if (parentArea.intersectsWith (&childArea, intersection)) {
+         DBG_OBJ_MSGF ("draw", 2, "intersection: %d, %d, %d * %d",
+                       intersection->x, intersection->y, intersection->width,
+                       intersection->height);
+
          intersection->x -= allocation.x;
          intersection->y -= allocation.y;
-         return true;
-      } else
-         return false;
-   } else
-      return false;
+         r = true;
+
+         DBG_OBJ_MSGF ("draw", 1, "=> %d, %d, %d * %d",
+                       intersection->x, intersection->y, intersection->width,
+                       intersection->height);
+      } else {
+         r = false;
+         DBG_OBJ_MSG ("draw", 1, "=> no intersection");
+      }
+   } else {
+      r = false;
+      DBG_OBJ_MSG ("draw", 1, "=> not allocated");
+   }
+
+   DBG_OBJ_LEAVE ();
+   return r;
 }
 
 void Widget::setParent (Widget *parent)
@@ -187,7 +214,8 @@ void Widget::setParent (Widget *parent)
          stackingContextWidget = stackingContextWidget->parent;
       assert (stackingContextWidget);
       stackingContextWidget->stackingContextMgr->addChildSCWidget (this);
-   }
+   } else
+      stackingContextWidget = parent->stackingContextWidget;
 
    notifySetParent();
 }
@@ -1122,6 +1150,7 @@ void Widget::setStyle (style::Style *style)
        StackingContextMgr::isEstablishingStackingContext (this)) {
       stackingContextMgr = new StackingContextMgr (this);
       DBG_OBJ_ASSOC_CHILD (stackingContextMgr);
+      stackingContextWidget = this;
    }
 
    if (sizeChanged)
