@@ -629,7 +629,6 @@ protected:
    void justifyLine (Line *line, int diff);
    Line *addLine (int firstWord, int lastWord, int newLastOofPos,
                   bool temporary, int minHeight);
-   void calcWidgetSize (core::Widget *widget, core::Requisition *size);
    void rewrap ();
    void fillParagraphs ();
    void initNewLine ();

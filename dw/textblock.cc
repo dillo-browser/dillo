@@ -1213,26 +1213,6 @@ core::Iterator *Textblock::iterator (core::Content::Type mask, bool atEnd)
    return new TextblockIterator (this, mask, atEnd);
 }
 
-/**
- * Calculate the size of a widget within the page.
- */
-void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
-{
-   DBG_OBJ_ENTER ("resize", 0, "calcWidgetSize", "%p, ...", widget);
-
-   widget->sizeRequest (size);
-
-   // Ascent and descent in words do not contain margins.
-   // TODO: Re-evaluate (GROWS)!
-   //core::style::Style *wstyle = widget->getStyle();
-   //size->ascent -= wstyle->margin.top;
-   //size->descent -= wstyle->margin.bottom;
-
-   DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
-                 size->width, size->ascent, size->descent);
-   DBG_OBJ_LEAVE ();
-}
-
 /*
  * Draw the decorations on a word.
  */
@@ -2398,7 +2378,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
                                                          this, words->size ());
 
       core::Requisition size;
-      calcWidgetSize (widget, &size);
+      widget->sizeRequest (&size);
       Word *word = addWord (size.width, size.ascent, size.descent, 0, style);
       word->content.type = core::Content::WIDGET_IN_FLOW;
       word->content.widget = widget;

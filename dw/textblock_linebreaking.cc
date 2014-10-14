@@ -1828,7 +1828,7 @@ void Textblock::rewrap ()
          Word *word = words->getRef (i);
 
          if (word->content.type == core::Content::WIDGET_IN_FLOW)
-            calcWidgetSize (word->content.widget, &word->size);
+            word->content.widget->sizeRequest (&word->size);
 
          wordWrap (i, false);
 
