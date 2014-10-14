@@ -21,6 +21,7 @@ dillo-3.1 [not released yet]
  - New dillorc options 'adjust_min_width' and 'adjust_table_min_width'.
  - Make building of test/ files more robust.
  - Fix Makefile to pick up LIBJPEG_CPPFLAGS.
+ - Work on collapsing spaces: more cases supported.
    Patches: Sebastian Geerken
 +- Image buffer/cache improvements.
    Patch: Jorge Arellano Cid

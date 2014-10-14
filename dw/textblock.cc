@@ -83,7 +83,7 @@ void Textblock::WordImgRenderer::getBgArea (int *x, int *y, int *width,
    *x = textblock->allocation.x + this->xWordWidget;
    *y = textblock->lineYOffsetCanvas (line);
    *width = textblock->words->getRef(wordNo)->size.width;
-   *height = line->boxAscent + line->boxDescent;
+   *height = line->borderAscent + line->borderDescent;
 }
 
 void Textblock::WordImgRenderer::getRefArea (int *xRef, int *yRef,
@@ -342,39 +342,40 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    showMissingLines ();
 
    if (lines->size () > 0) {
-      Line *lastLine = lines->getRef (lines->size () - 1);
-      requisition->width = lastLine->maxLineWidth;
+      Line *firstLine = lines->getRef(0), *lastLine = lines->getLastRef ();
 
-      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->maxLineWidth = %d",
-                    lines->size () - 1, lastLine->maxLineWidth);
+      // Note: the breakSpace of the last line is ignored, so breaks
+      // at the end of a textblock are not visible.
 
-      DBG_OBJ_MSGF ("resize", 1, "lines[0]->boxAscent = %d",
-                    lines->getRef(0)->boxAscent);
-      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->top = %d",
-                    lines->size () - 1, lastLine->top);
-      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->boxAscent = %d",
-                    lines->size () - 1, lastLine->boxAscent);
-      DBG_OBJ_MSGF ("resize", 1, "lines[%d]->boxDescent = %d",
-                    lines->size () - 1, lastLine->boxDescent);
+      requisition->width = lastLine->maxLineWidth + leftInnerPadding
+         + getStyle()->boxDiffWidth ();
 
-      /* Note: the breakSpace of the last line is ignored, so breaks
-         at the end of a textblock are not visible. */
-      requisition->ascent = lines->getRef(0)->boxAscent;
-      requisition->descent = lastLine->top
-         + lastLine->boxAscent + lastLine->boxDescent -
-         lines->getRef(0)->boxAscent;
+      // Also regard collapsing of this widget top margin and the top
+      // margin of the first line box:
+      requisition->ascent = calcVerticalBorder (getStyle()->padding.top,
+                                                getStyle()->borderWidth.top,
+                                                getStyle()->margin.top,
+                                                firstLine->borderAscent,
+                                                firstLine->marginAscent);
+
+      // And here, regard collapsing of this widget bottom margin and the
+      // bottom margin of the last line box:
+      requisition->descent =
+         // (BTW, this line:
+         lastLine->top - firstLine->borderAscent + lastLine->borderAscent +
+         // ... is 0 for a block with one line, so special handling
+         // for this case is not necessary.)
+         calcVerticalBorder (getStyle()->padding.bottom,
+                             getStyle()->borderWidth.bottom,
+                             getStyle()->margin.bottom,
+                             lastLine->borderDescent, lastLine->marginDescent);
    } else {
-      requisition->width = 0; // before: lastLineWidth;
-      requisition->ascent = 0;
-      requisition->descent = 0;
+      requisition->width = leftInnerPadding + getStyle()->boxDiffWidth ();
+      requisition->ascent = getStyle()->boxOffsetY ();
+      requisition->descent = getStyle()->boxRestHeight ();;
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "left inner padding = %d, boxDiffWidth = %d",
-                 leftInnerPadding, getStyle()->boxDiffWidth ());
-
-   requisition->width += leftInnerPadding + getStyle()->boxDiffWidth ();
-   requisition->ascent += verticalOffset + getStyle()->boxOffsetY ();
-   requisition->descent += getStyle()->boxRestHeight ();
+   requisition->ascent += verticalOffset;
 
    if (mustBeWidenedToAvailWidth ()) {
       DBG_OBJ_MSGF ("resize", 1,
@@ -429,6 +430,30 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSGF ("resize", 1, "final: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
    DBG_OBJ_LEAVE ();
+}
+
+int Textblock::calcVerticalBorder (int widgetPadding, int widgetBorder,
+                                   int widgetMargin, int lineBorderTotal,
+                                   int lineMarginTotal)
+{
+   DBG_OBJ_ENTER ("resize", 0, "calcVerticalBorder", "%d, %d, %d, %d, %d",
+                  widgetPadding, widgetBorder, widgetMargin, lineBorderTotal,
+                  lineMarginTotal);
+   
+   int result;
+   
+   if (widgetPadding == 0 && widgetBorder == 0) {
+      if (lineMarginTotal - lineBorderTotal >= widgetMargin)
+         result = lineMarginTotal;
+      else
+         result = widgetMargin + lineBorderTotal;
+   } else
+      result = lineMarginTotal + widgetPadding + widgetBorder + widgetMargin;
+
+   DBG_OBJ_MSGF ("resize", 0, "=> %d", result);
+   DBG_OBJ_LEAVE ();
+
+   return result;
 }
 
 /**
@@ -567,8 +592,13 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       misc::max (allocation->ascent,
                  // Reconstruct the initial size; see
                  // Textblock::sizeRequestImpl.
-                 (lines->size () > 0 ? lines->getRef(0)->boxAscent : 0)
-                 + verticalOffset + getStyle()->boxOffsetY ());
+                 (lines->size () > 0 ?
+                  calcVerticalBorder (getStyle()->padding.top,
+                                      getStyle()->borderWidth.top,
+                                      getStyle()->margin.top,
+                                      lines->getRef(0)->borderAscent,
+                                      lines->getRef(0)->marginAscent) :
+                  getStyle()->boxOffsetY ()) + verticalOffset);
    childBaseAllocation.descent =
       allocation->ascent + allocation->descent - childBaseAllocation.ascent;
 
@@ -637,22 +667,18 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             /* Commented lines break the n2 and n3 test cases at
              * http://www.dillo.org/test/img/ */
             childAllocation.y = lineYOffsetCanvas (line)
-               + (line->boxAscent - word->size.ascent)
-               - word->content.widget->getStyle()->margin.top;
+               + (line->borderAscent - word->size.ascent);
 
             DBG_OBJ_MSGF ("resize", 1,
-                          "childAllocation.y = %d + (%d - %d) - %d = %d",
+                          "childAllocation.y = %d + (%d - %d) = %d",
                           lineYOffsetCanvas (line),
-                          line->boxAscent, word->size.ascent,
-                          word->content.widget->getStyle()->margin.top,
+                          line->borderAscent, word->size.ascent,
                           childAllocation.y);
 
             childAllocation.width = word->size.width;
-            childAllocation.ascent = word->size.ascent
-               + word->content.widget->getStyle()->margin.top;
-            childAllocation.descent = word->size.descent
-               + word->content.widget->getStyle()->margin.bottom;
-
+            childAllocation.ascent = word->size.ascent;
+            childAllocation.descent = word->size.descent;
+ 
             oldChildAllocation = word->content.widget->getAllocation();
 
             if (childAllocation.x != oldChildAllocation->x ||
@@ -1050,8 +1076,8 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
    } else {
       Line *lastLine = lines->getRef (lines->size () - 1);
       int yFirst = lineYOffsetCanvasI (0);
-      int yLast = lineYOffsetCanvas (lastLine) + lastLine->boxAscent +
-                  lastLine->boxDescent;
+      int yLast = lineYOffsetCanvas (lastLine) + lastLine->borderAscent +
+                  lastLine->borderDescent;
       if (event->yCanvas < yFirst) {
          // Above the first line: take the first word.
          wordIndex = 0;
@@ -1064,8 +1090,8 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
             lines->getRef (findLineIndexWhenAllocated (event->yWidget));
 
          // Pointer within the break space?
-         if (event->yWidget >
-             (lineYOffsetWidget (line) + line->boxAscent + line->boxDescent)) {
+         if (event->yWidget > (lineYOffsetWidget (line) +
+                               line->borderAscent + line->borderDescent)) {
             // Choose this break.
             wordIndex = line->lastWord;
             charPos = core::SelectionState::END_OF_WORD;
@@ -1086,7 +1112,8 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
                if (event->xWidget >= wordStartX &&
                    event->xWidget < nextWordStartX) {
                   // We have found the word.
-                  int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
+                  int yWidgetBase =
+                     lineYOffsetWidget (line) + line->borderAscent;
 
                   if (event->xWidget >= nextWordStartX  - word->effSpace) {
                      charPos = core::SelectionState::END_OF_WORD;
@@ -1197,9 +1224,9 @@ void Textblock::calcWidgetSize (core::Widget *widget, core::Requisition *size)
 
    // Ascent and descent in words do not contain margins.
    // TODO: Re-evaluate (GROWS)!
-   core::style::Style *wstyle = widget->getStyle();
-   size->ascent -= wstyle->margin.top;
-   size->descent -= wstyle->margin.bottom;
+   //core::style::Style *wstyle = widget->getStyle();
+   //size->ascent -= wstyle->margin.top;
+   //size->descent -= wstyle->margin.bottom;
 
    DBG_OBJ_MSGF ("resize", 1, "result: %d * (%d + %d)",
                  size->width, size->ascent, size->descent);
@@ -1319,8 +1346,8 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
       for (int i = wordIndex1; i <= wordIndex2; i++)
          w += words->getRef(i)->size.width;
       w += words->getRef(wordIndex2)->hyphenWidth;
-      drawBox (view, style, area, xWidget, yWidgetBase - line->boxAscent,
-               w, line->boxAscent + line->boxDescent, false);
+      drawBox (view, style, area, xWidget, yWidgetBase - line->borderAscent,
+               w, line->borderAscent + line->borderDescent, false);
    }
 
    if (wordIndex1 == wordIndex2 && !drawHyphen) {
@@ -1519,7 +1546,7 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                   area->x, area->y, area->width, area->height);
 
    int xWidget = line->textOffset;
-   int yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
+   int yWidgetBase = lineYOffsetWidget (line) + line->borderAscent;
 
    DBG_OBJ_MSGF ("draw", 1, "line from %d to %d (%d words), at (%d, %d)",
                  line->firstWord, line->lastWord, words->size (),
@@ -1569,8 +1596,8 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                if (word->spaceStyle->hasBackground ())
                   drawBox (view, word->spaceStyle, area,
                            xWidget + wordSize,
-                           yWidgetBase - line->boxAscent, word->effSpace,
-                           line->boxAscent + line->boxDescent, false);
+                           yWidgetBase - line->borderAscent, word->effSpace,
+                           line->borderAscent + line->borderDescent, false);
                drawSpace(wordIndex, view, area, xWidget + wordSize,
                          yWidgetBase);
             }
@@ -1598,9 +1625,12 @@ int Textblock::findLineIndexWhenNotAllocated (int y)
    if (lines->size() == 0)
       return -1;
    else
-      return findLineIndex (y,
-                            lines->getRef(0)->boxAscent + verticalOffset +
-                            getStyle()->boxOffsetY());
+      return
+         findLineIndex (y, calcVerticalBorder (getStyle()->padding.top,
+                                               getStyle()->borderWidth.top,
+                                               getStyle()->margin.top,
+                                               lines->getRef(0)->borderAscent,
+                                               lines->getRef(0)->marginAscent));
 }
 
 int Textblock::findLineIndexWhenAllocated (int y)
@@ -1713,8 +1743,8 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
    if ((lineIndex = findLineIndexWhenAllocated (y)) >= lines->size ())
       return NULL;
    line = lines->getRef (lineIndex);
-   yWidgetBase = lineYOffsetWidget (line) + line->boxAscent;
-   if (yWidgetBase + line->boxDescent <= y)
+   yWidgetBase = lineYOffsetWidget (line) + line->borderAscent;
+   if (yWidgetBase + line->borderDescent <= y)
       return NULL;
 
    xCursor = line->textOffset;
@@ -2646,7 +2676,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
          misc::max (word->content.breakSpace, space);
       lastLine->breakSpace =
          misc::max (word->content.breakSpace,
-                    lastLine->marginDescent - lastLine->boxDescent,
+                    lastLine->marginDescent - lastLine->borderDescent,
                     lastLine->breakSpace);
       return;
    }
@@ -2869,7 +2899,7 @@ void Textblock::changeLinkColor (int link, int newColor)
       }
       if (changed)
          queueDrawArea (0, lineYOffsetWidget(line), allocation.width,
-                        line->boxAscent + line->boxDescent);
+                        line->borderAscent + line->borderDescent);
    }
 }
 
@@ -2894,9 +2924,9 @@ void Textblock::queueDrawRange (int index1, int index2)
    if (line1idx >= 0 && line2idx >= 0) {
       Line *line1 = lines->getRef (line1idx),
            *line2 = lines->getRef (line2idx);
-      int y = lineYOffsetWidget (line1) + line1->boxAscent -
+      int y = lineYOffsetWidget (line1) + line1->borderAscent -
               line1->contentAscent;
-      int h = lineYOffsetWidget (line2) + line2->boxAscent +
+      int h = lineYOffsetWidget (line2) + line2->borderAscent +
               line2->contentDescent - y;
 
       queueDrawArea (0, y, allocation.width, h);
@@ -3136,74 +3166,42 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
 /**
  * Includes margin, border, and padding.
  */
-int Textblock::yOffsetOfPossiblyMissingLine (int lineNo)
+int Textblock::yOffsetOfLineToBeCreated ()
 {
-   DBG_OBJ_ENTER ("line.yoffset", 0, "yOffsetOfPossiblyMissingLine",
-                  "%d <i>of %d</i>", lineNo, lines->size());
+   // This method does not return an exact result: the position of the
+   // new line, which does not yet exist, cannot be calculated, since
+   // the top margin of the new line (which collapses either with the
+   // top margin of the textblock widget, or the bottom margin of the
+   // last line) must be taken into account. However, this method is
+   // only called for positioning floats; here, a slight incorrectness
+   // does not cause real harm.
+
+   // (Similar applies to the line *height*, which calculated in an
+   // iterative way; see wrapWordInFlow. Using the same approach for
+   // the *position* is possible, but not worth the increased
+   // complexity.)
+
+   DBG_OBJ_ENTER0 ("line.yoffset", 0, "yOffsetOfLineToBeCreated");
 
    int result;
 
-   if (lineNo == 0) {
-      result = verticalOffset + getStyle()->boxOffsetY();
-      DBG_OBJ_MSGF ("line.yoffset", 1, "first line: %d + %d = %d",
-                    verticalOffset, getStyle()->boxOffsetY(), result);
+   if (lines->size () == 0) {
+      result = verticalOffset + calcVerticalBorder (getStyle()->padding.top,
+                                                    getStyle()->borderWidth.top,
+                                                    getStyle()->margin.top,
+                                                    0, 0);
+      DBG_OBJ_MSGF ("line.yoffset", 1, "first line: ... = %d", result);
    } else {
-      Line *prevLine = lines->getRef (lineNo - 1);
-      result = verticalOffset + getStyle()->boxOffsetY() +
-         prevLine->top + prevLine->boxAscent + prevLine->boxDescent +
-         prevLine->breakSpace;
-      DBG_OBJ_MSGF ("line.yoffset", 1,
-                    "other line: %d + %d + %d + (%d + %d) + %d = %d",
-                    verticalOffset, getStyle()->boxOffsetY(),
-                    prevLine->top, prevLine->boxAscent, prevLine->boxDescent,
-                    prevLine->breakSpace, result);
+      Line *firstLine = lines->getRef (0), *lastLine = lines->getLastRef ();
+      result = verticalOffset + calcVerticalBorder (getStyle()->padding.top,
+                                                    getStyle()->borderWidth.top,
+                                                    getStyle()->margin.top,
+                                                    firstLine->borderAscent,
+                                                    firstLine->marginAscent)
+         - firstLine->borderAscent + lastLine->top + lastLine->totalHeight (0);
+      DBG_OBJ_MSGF ("line.yoffset", 1, "other line: ... = %d", result);
    }
 
-   DBG_OBJ_LEAVE ();
-
-   return result;
-}
-
-int Textblock::heightOfPossiblyMissingLine (int lineNo)
-{
-   DBG_OBJ_ENTER ("line.height", 0, "heightOfPossiblyMissingLine",
-                  "%d <i>of %d</i>", lineNo, lines->size());
-
-   int result;
-
-   if (lineNo < lines->size()) {
-      // An existing line.
-
-      Line *line = lines->getRef (lineNo);
-
-      // This is sometimes called within addLine, so that the
-      // condition above is true, but line->boxAscent and
-      // line->boxDescent are not set appropriately. We have to
-      // accumulate the heights then.
-
-      if (line->finished) {
-         DBG_OBJ_MSGF ("line.height", 1,
-                       "exists and is finished; height = %d + %d = %d",
-                       line->boxAscent, line->boxDescent,
-                       line->boxAscent + line->boxDescent);
-         result = line->boxAscent + line->boxDescent;
-      } else {
-         DBG_OBJ_MSG ("line.height", 1, "exist but is not finished");
-         result = misc::max (1, newLineAscent + newLineDescent);
-      }
-   } else if (lineNo == lines->size()) {
-      // The line to be constructed: some words exist, but not the
-      // line. Accumulate the word heights.
-
-      // Old comment: Furthermore, this is in some cases incomplete:
-      // see doc/dw-out-of-flow.doc. -- Still the case?
-
-      DBG_OBJ_MSG ("line.height", 1, "does not exist");
-      result = misc::max (1, newLineAscent + newLineDescent);
-   } else
-      result = 1;
-
-   DBG_OBJ_MSGF ("line.height", 0, "result = %d", result);
    DBG_OBJ_LEAVE ();
 
    return result;

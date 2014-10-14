@@ -303,7 +303,7 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
                                                 && word->content.text[start]
                                                 == 0);
       }
-      allocation->y = textblock->lineYOffsetCanvas (line) + line->boxAscent -
+      allocation->y = textblock->lineYOffsetCanvas (line) + line->borderAscent -
          word->size.ascent;
 
       allocation->width = word->size.width;

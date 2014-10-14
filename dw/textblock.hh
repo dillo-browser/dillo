@@ -38,6 +38,11 @@ namespace dw {
  *
  * <h3>Collapsing Spaces</h3>
  *
+ * <div style="border: 2px solid #ffff00; margin-top: 0.5em;
+ * margin-bottom: 0.5em; padding: 0.5em 1em; background-color:
+ * #ffffe0"><b>Info:</b> Collapsing spaces are deprecated, in favor of
+ * collapsing margins (see below).</div>
+ *
  * The idea behind this is that every paragraph has a specific vertical
  * space around and that they are combined to one space, according to
  * rules stated below. A paragraph consists either of the lines between
@@ -88,16 +93,55 @@ namespace dw {
  * <h3>Collapsing Margins</h3>
  *
  * Collapsing margins, as defined in the CSS2 specification, are,
- * supported in addition to collapsing spaces. Also, spaces and margins
- * collapse themselves. I.e., the space between two paragraphs is the
- * maximum of the space calculated as described in "Collapsing Spaces"
- * and the space calculated according to the rules for collapsing margins.
+ * supported in addition to collapsing spaces. Also, spaces and
+ * margins collapse themselves. I.&nbsp;e., the space between two
+ * paragraphs is the maximum of the space calculated as described in
+ * "Collapsing Spaces" and the space calculated according to the rules
+ * for collapsing margins.
  *
  * (This is an intermediate hybrid state, collapsing spaces are used in
  * the current version of dillo, while I implemented collapsing margins
  * for the CSS prototype and integrated it already into the main trunk. For
  * a pure CSS-based dillo, collapsing spaces will not be needed anymore, and
  * may be removed for simplicity.)
+ *
+ * Currently implemented cases:
+ *
+ * - The top margin of of the textblock widget and the top margin of
+ *   the first line box (based on widgets in the first line) collapse.
+ *
+ * - The bottom margin of of the textblock widget and the bottom
+ *   margin of the last line box collapse.
+ *
+ * - The bottom margin of a line box and the top margin of the
+ *   following line collapse. Here, the break space is regarded, too.
+ *
+ * Open issues:
+ *
+ * - Only the value of Style::margin is regarded, not the result of
+ *   the collapsing itself. For the widgets A, B (child of A), and C
+ *   (child of B), the effective margin of A is the maximum of the
+ *   *style* margins of A and B, while the effective margin of B (the
+ *   collapsed margin of B and C) is ignored here. This could be
+ *   solved by introducing an additional "effective" ("calculated",
+ *   "collapsed") margin as an attribute of Widget.
+ *
+ * - For similar reasons, backgrounds to not work exactly. Usage of
+ *   Widget::extraSpace should fix this, but it is only fully working
+ *   in the GROWS branch (<http://flpsed.org/hgweb/dillo_grows>).
+ *
+ * - Do margins of inline blocks and tables collapse? Check CSS
+ *   spec. (They do currently; if not, ignoring them is simple.)
+ *
+ * - Lines which only contain a BREAK should be skipped for collapsing
+ *   margins, or at least all three should collapse: the previous
+ *   margin, the break, and the following margin. (Compare this with
+ *   the CSS spec.)
+ *
+ * - Related to this: adding breaks should be revised.
+ *   Textblock::addLinebreak and Textblock::addParbreak work quite
+ *   differently, and Textblock::addParbreak seems much to complex for
+ *   our needs, even when spaces of lines are kept.
  *
  *
  * <h3>Some Internals</h3>
@@ -329,20 +373,36 @@ protected:
       int top;                  /* "top" is always relative to the top
                                    of the first line, i.e.
                                    page->lines[0].top is always 0. */
-      int boxAscent;            /* Maximum of all ascents of the words
-                                   in this line. This is the actual
-                                   ascent of the line.  */
-      int boxDescent;           /* Maximum of all decents of the words
-                                   in this line. This is the actual
-                                   descent of the line. */
-      int contentAscent;        /* ??? */
-      int contentDescent;       /* ??? */
+      int marginAscent;         /* Maximum of all total ascents
+                                   (including margin: hence the name)
+                                   of the words in this line. */
+      int marginDescent;        /* Maximum of all total decents
+                                   (including margin: hence the name)
+                                   of the words in this line. */
+      int borderAscent;         /* Maximum of all ascents minus margin
+                                   (but including padding and border:
+                                   hence the name) of the words in
+                                   this line. */
+      int borderDescent;        /* Maximum of all descents minus margin
+                                   (but including padding and border:
+                                   hence the name) of the words in
+                                   this line. */
+      int contentAscent;        /* ??? (depricated?) */
+      int contentDescent;       /* ??? (depricated?) */
       int breakSpace;           /* Space between this line and the next one. */
-      int textOffset;           /* ??? */
+      int textOffset;           /* ??? (to be documented) */
 
-      /* This is similar to descent, but includes the bottom margins of the
-       * widgets within this line. */
-      int marginDescent;
+      /**
+       * \brief Returns the difference between two vertical lines
+       *    positions: height of this line plus space below this
+       *    line. The margin of the next line (marginAscent -
+       *    borderAscent) must be passed seperately.
+       */
+      inline int totalHeight (int marginNextLine)
+      { return borderAscent + borderDescent
+            // Collapsing of the margins of adjacent lines is done here:
+            + lout::misc::max (marginDescent - borderDescent, marginNextLine,
+                               breakSpace); }
 
       /* Maximum of all line widths, including this line. Does not
        * include the last space, but the last hyphen width. Please
@@ -350,11 +410,6 @@ protected:
        * changed line breaking), the values were accumulated up to the
        * last line, not this line.*/
       int maxLineWidth;
-
-      /* Set to false at the beginning of addLine(), and to true at
-       * the end. Should be checked by some methods which are called
-       * by addLine(). */
-      bool finished;
 
       /* The word index of the last OOF reference (most importantly:
        * float) whic is positioned before this line, or -1, if there
@@ -567,6 +622,9 @@ protected:
    int hoverLink;  /* The link under the mouse pointer */
 
    void queueDrawRange (int index1, int index2);
+   int calcVerticalBorder (int widgetPadding, int widgetBorder,
+                           int widgetMargin, int lineBorderTotal,
+                           int lineMarginTotal);   
    void getWordExtremes (Word *word, core::Extremes *extremes);
    void justifyLine (Line *line, int diff);
    Line *addLine (int firstWord, int lastWord, int newLastOofPos,
@@ -643,7 +701,7 @@ protected:
    inline int _lineYOffsetWidgetAllocation (Line *line,
                                             core::Allocation *allocation)
    {
-      return line->top + (allocation->ascent - lines->getRef(0)->boxAscent);
+      return line->top + (allocation->ascent - lines->getRef(0)->borderAscent);
    }
 
    inline int lineYOffsetWidget (Line *line)
@@ -656,7 +714,7 @@ protected:
     * outside of lineYOffsetCanvas.
     */
    inline int _lineYOffsetCanvasAllocation (Line *line,
-                                           core::Allocation *allocation)
+                                            core::Allocation *allocation)
    {
       return allocation->y + _lineYOffsetWidgetAllocation (line, allocation);
    }
@@ -666,7 +724,7 @@ protected:
     */
    inline int lineYOffsetCanvas (Line *line)
    {
-      return _lineYOffsetCanvasAllocation(line, &childBaseAllocation);
+      return _lineYOffsetCanvasAllocation (line, &childBaseAllocation);
    }
 
    inline int lineYOffsetWidgetI (int lineIndex)
@@ -707,8 +765,7 @@ protected:
    Textblock *getTextblockForLine (int firstWord, int lastWord);
    void printBorderChangedErrorAndAbort (int y, Widget *vloat,
                                          int wrapLineIndex);
-   int yOffsetOfPossiblyMissingLine (int lineNo);
-   int heightOfPossiblyMissingLine (int lineNo);
+   int yOffsetOfLineToBeCreated ();
 
    bool sendSelectionEvent (core::SelectionState::EventType eventType,
                             core::MousePositionEvent *event);

@@ -400,11 +400,11 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "firstWord", line->firstWord);
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "lastWord", line->lastWord);
 
-   line->boxAscent = line->contentAscent = 0;
-   line->boxDescent = line->contentDescent = 0;
+   line->borderAscent = line->contentAscent = 0;
+   line->borderDescent = line->contentDescent = 0;
+   line->marginAscent = 0;
    line->marginDescent = 0;
    line->breakSpace = 0;
-   line->finished = false;
 
    bool regardBorder = mustBorderBeRegarded (line);
    line->leftOffset = misc::max (regardBorder ? newLineLeftBorder : 0,
@@ -430,13 +430,10 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
    if (lines->size () == 1) {
       // first line
-      line->top = 0;
       line->maxLineWidth = lineWidth;
       line->lastOofRefPositionedBeforeThisLine = -1;
    } else {
       Line *prevLine = lines->getRef (lines->size () - 2);
-      line->top = prevLine->top + prevLine->boxAscent +
-         prevLine->boxDescent + prevLine->breakSpace;
       line->maxLineWidth = misc::max (lineWidth, prevLine->maxLineWidth);
       line->lastOofRefPositionedBeforeThisLine =
          prevLine->lastOofRefPositionedBeforeThisLine;
@@ -449,14 +446,31 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    for(int i = line->firstWord; i <= line->lastWord; i++)
       accumulateWordForLine (lineIndex, i);
 
+   if (lines->size () == 1)
+      line->top = 0;
+   else {
+      // See comment in Line::totalHeight for collapsing of the
+      // margins of adjacent lines.
+      Line *prevLine = lines->getRef (lines->size () - 2);
+      line->top = prevLine->top
+         + prevLine->totalHeight (line->marginAscent - line->borderAscent);
+   }
+
    // Especially empty lines (possible when there are floats) have
    // zero height, which may cause endless loops. For this reasons,
    // the height should be positive (assuming the caller passed
    // minHeight > 0).
-   line->boxAscent = misc::max (line->boxAscent, minHeight);
+   line->borderAscent = misc::max (line->borderAscent, minHeight);
+   line->marginAscent = misc::max (line->marginAscent, minHeight);
 
-   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "boxAscent", line->boxAscent);
-   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "boxDescent", line->boxDescent);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "borderAscent",
+                           line->borderAscent);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "borderDescent",
+                           line->borderDescent);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "marginAscent",
+                           line->marginAscent);
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "marginDescent",
+                           line->marginDescent);
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "contentAscent",
                            line->contentAscent);
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "contentDescent",
@@ -481,7 +495,6 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       xWidget += word->size.width + word->effSpace;
    }
 
-   line->finished = true;
    line->lastOofRefPositionedBeforeThisLine =
       misc::max (line->lastOofRefPositionedBeforeThisLine, newLastOofPos);
    DBG_OBJ_SET_NUM ("lastLine.lastOofRefPositionedBeforeThisLine",
@@ -715,7 +728,7 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                                    &breakPos);
 
          bool floatHandled;
-         int yNewLine = yOffsetOfPossiblyMissingLine (lines->size ());
+         int yNewLine = yOffsetOfLineToBeCreated ();
 
          do {
             DBG_OBJ_MSG ("construct.word", 1, "<i>floatHandled loop cycle</i>");
@@ -1456,18 +1469,12 @@ void Textblock::moveWordIndices (int wordIndex, int num, int *addIndex1)
 
 void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
 {
+   DBG_OBJ_ENTER ("construct.line", 1, "accumulateWordForLine", "%d, %d",
+                  lineIndex, wordIndex);
+   DBG_MSG_WORD ("construct.line", 2, "<i>word:</i> ", wordIndex, "");
+
    Line *line = lines->getRef (lineIndex);
    Word *word = words->getRef (wordIndex);
-
-   PRINTF ("[%p] ACCUMULATE_WORD_FOR_LINE (%d, %d): %d + %d / %d + %d\n",
-           this, lineIndex, wordIndex, line->boxAscent, line->boxDescent,
-           word->size.ascent, word->size.descent);
-   //printf ("   ");
-   //printWord (word);
-   //printf ("\n");
-
-   line->boxAscent = misc::max (line->boxAscent, word->size.ascent);
-   line->boxDescent = misc::max (line->boxDescent, word->size.descent);
 
    int len = word->style->font->ascent;
    if (word->style->valign == core::style::VALIGN_SUPER)
@@ -1479,42 +1486,42 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
       len += word->style->font->ascent / 3;
    line->contentDescent = misc::max (line->contentDescent, len);
 
+   int borderAscent, borderDescent, marginAscent, marginDescent;
+
+   DBG_OBJ_MSGF ("construct.line", 2, "size.ascent = %d, size.descent = %d",
+                 word->size.ascent, word->size.descent);
+
    if (word->content.type == core::Content::WIDGET_IN_FLOW) {
-      int collapseMarginTop = 0;
-
-      line->marginDescent =
-         misc::max (line->marginDescent,
-                    word->size.descent +
-                    word->content.widget->getStyle()->margin.bottom);
-
-      if (lines->size () == 1 &&
-          word->content.widget->isBlockLevel () &&
-          getStyle ()->borderWidth.top == 0 &&
-          getStyle ()->padding.top == 0) {
-         // collapse top margins of parent element and its first child
-         // see: http://www.w3.org/TR/CSS21/box.html#collapsing-margins
-         collapseMarginTop = getStyle ()->margin.top;
-      }
-
-      line->boxAscent =
-            misc::max (line->boxAscent,
-                       word->size.ascent,
-                       word->size.ascent
-                       + word->content.widget->getStyle()->margin.top
-                       - collapseMarginTop);
+      // TODO Consider extraSpace?
+      marginAscent = word->size.ascent;
+      marginDescent = word->size.descent;
+      borderAscent =
+         marginAscent - word->content.widget->getStyle()->margin.top;
+      borderDescent =
+         marginDescent - word->content.widget->getStyle()->margin.bottom;
 
       word->content.widget->parentRef =
          OutOfFlowMgr::createRefNormalFlow (lineIndex);
    } else {
-      line->marginDescent =
-         misc::max (line->marginDescent, line->boxDescent);
+      borderAscent = marginAscent = word->size.ascent;
+      borderDescent = marginDescent = word->size.descent;
 
       if (word->content.type == core::Content::BREAK)
          line->breakSpace =
-            misc::max (word->content.breakSpace,
-                       line->marginDescent - line->boxDescent,
-                       line->breakSpace);
+            misc::max (word->content.breakSpace, line->breakSpace);
    }
+
+   DBG_OBJ_MSGF ("construct.line", 2,
+                 "borderAscent = %d, borderDescent = %d, marginAscent = %d, "
+                 "marginDescent = %d",
+                 borderAscent, borderDescent, marginAscent, marginDescent);
+
+   line->borderAscent = misc::max (line->borderAscent, borderAscent);
+   line->borderDescent = misc::max (line->borderDescent, borderDescent);
+   line->marginAscent = misc::max (line->marginAscent, marginAscent);
+   line->marginDescent = misc::max (line->marginDescent, marginDescent);
+
+   DBG_OBJ_LEAVE ();
 }
 
 void Textblock::accumulateWordData (int wordIndex)
@@ -1972,7 +1979,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
          lines->getLastRef()->lastWord + 1 : 0;
       int effOofRef = misc::max (lastOofRef, firstWordOfLine - 1);
 
-      int y = yOffsetOfPossiblyMissingLine (lines->size ());
+      int y = yOffsetOfLineToBeCreated ();
 
       newLineHasFloatLeft =
          containingBlock->outOfFlowMgr->hasFloatLeft (this, y, height, this,
