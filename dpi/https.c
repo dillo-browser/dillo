@@ -156,11 +156,12 @@ static void yes_ssl_support(void)
       }
    }
 
-   /* Do not use the obsolete insecure SSLv2 protocol, and everyone disabled
-    * TLS compression when the CRIME exploit became widely known in 2012.
+   /* SSL2 has been known to be insecure forever, disabling SSL3 is in response
+    * to POODLE, and disabling compression is in response to CRIME.
     */
    if (exit_error == 0){
-      SSL_CTX_set_options(ssl_context, SSL_OP_NO_SSLv2|SSL_OP_NO_COMPRESSION);
+      SSL_CTX_set_options(ssl_context,
+                        SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_COMPRESSION);
    }
 
    /*Set directory to load certificates from*/
