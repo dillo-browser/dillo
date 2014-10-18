@@ -1447,10 +1447,16 @@ void Textblock::drawSpace(int wordIndex, core::View *view,
  * - area is used always (ev. set it to event->area)
  * - event is only used when is_expose
  */
-void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
+core::Widget *Textblock::drawLine (Line *line, core::View *view,
+                                   core::Rectangle *area,
+                                   lout::container::untyped::Stack *iterator)
 {
    DBG_OBJ_ENTER ("draw", 0, "drawLine", "..., %d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
+  
+   OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
+
+   Widget *retWidget = NULL;
 
    int xWidget = line->textOffset;
    int yWidgetBase = lineYOffsetWidget (line) + line->borderAscent;
@@ -1461,10 +1467,13 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
    DBG_MSG_WORD ("draw", 1, "<i>line starts with: </i>", line->firstWord, "");
    DBG_MSG_WORD ("draw", 1, "<i>line ends with: </i>", line->lastWord, "");
 
-   for (int wordIndex = line->firstWord;
-        wordIndex <= line->lastWord && xWidget < area->x + area->width;
-        wordIndex++) {
-      Word *word = words->getRef(wordIndex);
+   if (osi->index < line->firstWord)
+      osi->index = line->firstWord;
+
+   for (; retWidget == NULL && osi->index <= line->lastWord
+           && xWidget < area->x + area->width;
+        osi->index++) {
+      Word *word = words->getRef (osi->index);
       int wordSize = word->size.width;
 
       if (xWidget + wordSize + word->hyphenWidth + word->effSpace >= area->x) {
@@ -1478,36 +1487,36 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
                   if (!core::StackingContextMgr::handledByStackingContextMgr
                           (child) &&
                       child->intersects (area, &childArea))
-                     child->draw (view, &childArea);
+                     retWidget = child->drawTotal (view, &childArea, iterator);
                } else {
-                  int wordIndex2 = wordIndex;
+                  int wordIndex2 = osi->index;
                   while (wordIndex2 < line->lastWord &&
                          (words->getRef(wordIndex2)->flags
                           & Word::DRAW_AS_ONE_TEXT) &&
                          word->style == words->getRef(wordIndex2 + 1)->style)
                      wordIndex2++;
 
-                  drawWord(line, wordIndex, wordIndex2, view, area,
+                  drawWord(line, osi->index, wordIndex2, view, area,
                            xWidget, yWidgetBase);
                   wordSize = 0;
-                  for (int i = wordIndex; i <= wordIndex2; i++)
+                  for (int i = osi->index; i <= wordIndex2; i++)
                      wordSize += words->getRef(i)->size.width;
 
-                  wordIndex = wordIndex2;
-                  word = words->getRef(wordIndex);
+                  osi->index = wordIndex2;
+                  word = words->getRef (osi->index);
                }
             }
 
-            if (word->effSpace > 0 && wordIndex < line->lastWord &&
-                words->getRef(wordIndex + 1)->content.type !=
+            if (word->effSpace > 0 && osi->index < line->lastWord &&
+                words->getRef(osi->index + 1)->content.type !=
                                                         core::Content::BREAK) {
                if (word->spaceStyle->hasBackground ())
                   drawBox (view, word->spaceStyle, area,
                            xWidget + wordSize,
                            yWidgetBase - line->borderAscent, word->effSpace,
                            line->borderAscent + line->borderDescent, false);
-               drawSpace(wordIndex, view, area, xWidget + wordSize,
-                         yWidgetBase);
+               drawSpace (osi->index, view, area, xWidget + wordSize,
+                          yWidgetBase);
             }
 
          }
@@ -1515,7 +1524,9 @@ void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area)
       xWidget += wordSize + word->effSpace;
    }
 
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
    DBG_OBJ_LEAVE ();
+   return retWidget;
 }
 
 /**
@@ -1683,36 +1694,42 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
    return NULL;
 }
 
-void Textblock::draw (core::View *view, core::Rectangle *area)
+core::Widget *Textblock::drawLevel (core::View *view, core::Rectangle *area,
+                                    lout::container::untyped::Stack *iterator,
+                                    int majorLevel)
 {
-   DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
-                  area->x, area->y, area->width, area->height);
+   DBG_OBJ_ENTER ("draw", 0, "Textblock/drawLevel", "(%d, %d, %d * %d), %s",
+                  area->x, area->y, area->width, area->height,
+                  OOFStackIterator::majorLevelText (majorLevel));
 
-   int lineIndex;
-   Line *line;
+   Widget *retWidget = NULL;
 
-   drawWidgetBox (view, area, false);
+   switch (majorLevel) {
+   case OOFStackIterator::IN_FLOW:
+      // Osi->index (word index) is regarded in drawLine. 
+      for (int lineIndex = findLineIndexWhenAllocated (area->y);
+           retWidget == NULL && lineIndex < lines->size (); lineIndex++) {
+         Line *line = lines->getRef (lineIndex);
+         if (lineYOffsetWidget (line) >= area->y + area->height)
+            break;
+         
+         DBG_OBJ_MSGF ("draw", 0, "line %d (of %d)", lineIndex, lines->size ());
+         retWidget = drawLine (line, view, area, iterator);
+      }
+      break;
 
-   if (stackingContextMgr)
-      stackingContextMgr->drawBottom (view, area);
+   case OOFStackIterator::OOF_REF:
+      // TODO
+      break;
 
-   lineIndex = findLineIndexWhenAllocated (area->y);
-
-   for (; lineIndex < lines->size (); lineIndex++) {
-      line = lines->getRef (lineIndex);
-      if (lineYOffsetWidget (line) >= area->y + area->height)
-         break;
-
-      DBG_OBJ_MSGF ("draw", 0, "line %d (of %d)", lineIndex, lines->size ());
-      drawLine (line, view, area);
+   default:
+      retWidget = OOFAwareWidget::drawLevel (view, area, iterator, majorLevel);
+      break;
    }
 
-   drawOOF (view, area);
-
-   if (stackingContextMgr)
-      stackingContextMgr->drawTop (view, area);
-
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
    DBG_OBJ_LEAVE ();
+   return retWidget;
 }
 
 /**

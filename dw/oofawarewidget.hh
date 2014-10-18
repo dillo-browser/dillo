@@ -105,6 +105,16 @@ protected:
       void print ();
    };
 
+   class OOFStackIterator: public lout::object::Object
+   {
+   public:
+      enum { START, BACKGROUND, SC_BOTTOM, IN_FLOW, OOF_REF, OOF_CONT, SC_TOP,
+             END } ;
+      int majorLevel, minorLevel, index;
+
+      static const char *majorLevelText (int majorLevel4);
+   };
+
    inline bool isParentRefOOF (int parentRef)
    { return parentRef != -1 && (parentRef & PARENT_REF_OOFM_MASK); }
 
@@ -169,8 +179,12 @@ protected:
    void sizeAllocateStart (core::Allocation *allocation);
    void sizeAllocateEnd ();
    void containerSizeChangedForChildrenOOF ();
-   void drawOOF (core::View *view, core::Rectangle *area);
-   core::Widget *getWidgetOOFAtPoint (int x, int y);
+   virtual Widget *drawLevel (core::View *view, core::Rectangle *area,
+                              lout::container::untyped::Stack *iterator,
+                              int majorLevel);
+   Widget *drawOOF (core::View *view, core::Rectangle *area,
+                    lout::container::untyped::Stack *iterator);
+   Widget *getWidgetOOFAtPoint (int x, int y);
 
    static bool isOOFContainer (Widget *widget, int oofmIndex);
 
@@ -189,6 +203,10 @@ public:
 
    OOFAwareWidget ();
    ~OOFAwareWidget ();
+
+   Widget *draw (core::View *view, core::Rectangle *area,
+                 lout::container::untyped::Stack *iterator);
+   lout::object::Object *stackingIterator (bool atEnd);
 
    virtual void borderChanged (int y, core::Widget *vloat);
    virtual void clearPositionChanged ();

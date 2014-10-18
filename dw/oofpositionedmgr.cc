@@ -168,20 +168,26 @@ bool OOFPositionedMgr::haveExtremesChanged ()
 }
 
 
-void OOFPositionedMgr::draw (View *view, Rectangle *area)
+Widget *OOFPositionedMgr::draw (View *view, Rectangle *area,
+                                lout::container::untyped::Stack *iterator,
+                                int *index)
 {
-   DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
-                  area->x, area->y, area->width, area->height);
+   DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d]",
+                  area->x, area->y, area->width, area->height, *index);
 
-   for (int i = 0; i < children->size(); i++) {
-      Widget *childWidget = children->get(i)->widget;
+   Widget *retWidget = NULL;
+
+   for (; retWidget == NULL && *index < children->size(); (*index)++) {
+      Widget *childWidget = children->get(*index)->widget;
       Rectangle childArea;
       if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
           childWidget->intersects (area, &childArea))
-         childWidget->draw (view, &childArea);
+         retWidget = childWidget->drawTotal (view, &childArea, iterator);
    }
 
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
    DBG_OBJ_LEAVE ();
+   return retWidget;
 }
 
 void OOFPositionedMgr::addWidgetInFlow (OOFAwareWidget *widget,

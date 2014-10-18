@@ -277,6 +277,8 @@ protected:
    inline void queueResize (int ref, bool extremesChanged)
    { queueResize (ref, extremesChanged, false); }
 
+   virtual void draw (View *view, Rectangle *area);
+
    /**
     * \brief See \ref dw-widget-sizes.
     */
@@ -468,8 +470,11 @@ public:
 
    bool intersects (Rectangle *area, Rectangle *intersection);
 
-   /** Area is given in widget coordinates. */
-   virtual void draw (View *view, Rectangle *area) = 0;
+   virtual Widget *draw (View *view, Rectangle *area,
+                         lout::container::untyped::Stack *iterator);
+   Widget *drawTotal (View *view, Rectangle *area,
+                      lout::container::untyped::Stack *iterator);
+   void drawToplevel (View *view, Rectangle *area);
 
    bool buttonPress (EventButton *event);
    bool buttonRelease (EventButton *event);
@@ -523,6 +528,14 @@ public:
     * dw::core::Iterator::prev in this case.
     */
    virtual Iterator *iterator (Content::Type mask, bool atEnd) = 0;
+
+   /**
+    * \brief ...
+    *
+    * May return NULL.
+    */
+   virtual lout::object::Object *stackingIterator (bool atEnd);
+
    virtual void removeChild (Widget *child);
 };
 

@@ -642,7 +642,8 @@ protected:
                    core::Rectangle *area, int xWidget, int yWidgetBase);
    void drawSpace (int wordIndex, core::View *view, core::Rectangle *area,
                    int xWidget, int yWidgetBase);
-   void drawLine (Line *line, core::View *view, core::Rectangle *area);
+   Widget *drawLine (Line *line, core::View *view, core::Rectangle *area,
+                     lout::container::untyped::Stack *iterator);
    int findLineIndex (int y);
    int findLineIndexWhenNotAllocated (int y);
    int findLineIndexWhenAllocated (int y);
@@ -797,6 +798,10 @@ protected:
    void alignLine (int lineIndex);
    void calcTextOffset (int lineIndex, int totalWidth);
 
+   Widget *drawLevel (core::View *view, core::Rectangle *area,
+                      lout::container::untyped::Stack *iterator,
+                      int majorLevel);
+
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
@@ -815,8 +820,6 @@ protected:
    void markExtremesChange (int ref);
 
    bool isBlockLevel ();
-
-   void draw (core::View *view, core::Rectangle *area);
 
    bool buttonPressImpl (core::EventButton *event);
    bool buttonReleaseImpl (core::EventButton *event);

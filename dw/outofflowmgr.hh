@@ -25,7 +25,9 @@ public:
                                    core::Allocation *allocation) = 0;
    virtual void sizeAllocateEnd (OOFAwareWidget *caller) = 0;
    virtual void containerSizeChangedForChildren () = 0;
-   virtual void draw (core::View *view, core::Rectangle *area) = 0;
+   virtual core::Widget *draw (core::View *view, core::Rectangle *area,
+                               lout::container::untyped::Stack *iterator,
+                               int *index) = 0;
 
    virtual void markSizeChange (int ref) = 0;
    virtual void markExtremesChange (int ref) = 0;

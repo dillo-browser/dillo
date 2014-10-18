@@ -284,8 +284,10 @@ private:
    bool doFloatsExceedCB (Side side);
    bool haveExtremesChanged (Side side);
 
-   void drawFloats (SortedFloatsVector *list, core::View *view,
-                    core::Rectangle *area);
+   core::Widget *drawFloats (SortedFloatsVector *list, core::View *view,
+                             core::Rectangle *area,
+                             lout::container::untyped::Stack *iterator,
+                             int *index, int startIndex);
    core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y);
 
    bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal);
@@ -340,7 +342,8 @@ public:
                            core::Allocation *allocation);
    void sizeAllocateEnd (OOFAwareWidget *caller);
    void containerSizeChangedForChildren ();
-   void draw (core::View *view, core::Rectangle *area);
+   core::Widget *draw (core::View *view, core::Rectangle *area,
+                       lout::container::untyped::Stack *iterator, int *index);
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);

@@ -23,7 +23,9 @@ private:
    lout::container::typed::Vector<Widget> *childSCWidgets;
    int minZIndex, maxZIndex;
 
-   void draw (View *view, Rectangle *area, int startZIndex, int endZIndex);
+   Widget *draw (View *view, Rectangle *area,
+                 lout::container::untyped::Stack *iterator,
+                 int *index, int startZIndex, int endZIndex);
 
    Widget *getWidgetAtPoint (int x, int y, int startZIndex, int endZIndex);
 public:
@@ -45,8 +47,12 @@ public:
 
    void addChildSCWidget (Widget *widget);
 
-   void drawBottom (View *view, Rectangle *area);
-   void drawTop (View *view, Rectangle *area);
+   Widget *drawBottom (View *view, Rectangle *area,
+                       lout::container::untyped::Stack *iterator,
+                       int *index);
+   Widget *drawTop (View *view, Rectangle *area,
+                    lout::container::untyped::Stack *iterator,
+                    int *index);
 
    Widget *getTopWidgetAtPoint (int x, int y);
    Widget *getBottomWidgetAtPoint (int x, int y);

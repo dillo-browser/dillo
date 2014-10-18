@@ -179,6 +179,66 @@ bool Widget::intersects (Rectangle *area, Rectangle *intersection)
    return r;
 }
 
+/** Area is given in widget coordinates. */
+void Widget::draw (View *view, Rectangle *area)
+{
+   DBG_OBJ_MSG ("draw", 0, "<b>Widget::draw not implemented</b>");
+   misc::assertNotReached ();
+}
+
+/** Area is given in widget coordinates. */
+Widget *Widget::draw (View *view, Rectangle *area,
+                      lout::container::untyped::Stack *iterator)
+{
+   // Suitable for widgets without children.
+   draw (view, area);
+   return NULL;
+}
+
+Widget *Widget::drawTotal (View *view, Rectangle *area,
+                           lout::container::untyped::Stack *iterator)
+{
+   DBG_OBJ_ENTER ("draw", 0, "drawTotal", "%d, %d, %d * %d",
+                  area->x, area->y, area->width, area->height);
+
+   Object *si = stackingIterator (false);
+   if (si) {
+      iterator->push (si);
+      DBG_OBJ_MSGF ("draw", 1, "pushing on iterator; now %d element(s)",
+                    iterator->size ());
+   } else
+      DBG_OBJ_MSGF ("draw", 1, "nothing on iterator; %d element(s)",
+                    iterator->size ());
+        
+
+   Widget *retWidget = draw (view, area, iterator);
+
+   // A return value other than NULL indicates a widget with a complex
+   // drawing process, for which stackIterator() must return something
+   // non-NULL, so that the interrupted drawing process can be
+   // continued.
+
+   assert (retWidget == NULL || si != NULL);
+
+   if (retWidget == NULL && si != NULL)
+      iterator->pop ();
+
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   DBG_OBJ_LEAVE ();
+   return retWidget;
+}
+
+void Widget::drawToplevel (View *view, Rectangle *area)
+{
+   assert (parent == NULL);
+
+   lout::container::untyped::Stack iterator (true);
+   Widget *retWidget = drawTotal (view, area, &iterator);
+
+   // Everything should be finished at this point.
+   assert (retWidget == NULL);
+}
+
 void Widget::setParent (Widget *parent)
 {
    this->parent = parent;
@@ -1833,6 +1893,11 @@ void Widget::leaveNotifyImpl (EventCrossing *)
 
    if (tooltip)
       tooltip->onLeave();
+}
+
+lout::object::Object *Widget::stackingIterator (bool atEnd)
+{
+   return NULL;
 }
 
 void Widget::removeChild (Widget *child)

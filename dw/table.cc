@@ -356,21 +356,24 @@ bool Table::isBlockLevel ()
    return true;
 }
 
-void Table::draw (core::View *view, core::Rectangle *area)
+core::Widget *Table::drawLevel (core::View *view, core::Rectangle *area,
+                                lout::container::untyped::Stack *iterator,
+                                int majorLevel)
 {
-   DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
-                  area->x, area->y, area->width, area->height);
+   DBG_OBJ_ENTER ("draw", 0, "Table/drawLevel", "(%d, %d, %d * %d), %s",
+                  area->x, area->y, area->width, area->height,
+                  OOFStackIterator::majorLevelText (majorLevel));
 
-   // Can be optimized, by iterating on the lines in area.
-   drawWidgetBox (view, area, false);
+   Widget *retWidget = NULL;
 
 #if 0
+   // This old code belongs perhaps to the background. Check when reactivated.
    int offx = getStyle()->boxOffsetX () + getStyle()->hBorderSpacing;
    int offy = getStyle()->boxOffsetY () + getStyle()->vBorderSpacing;
    int width = getContentWidth ();
-
+   
    // This part seems unnecessary. It also segfaulted sometimes when
-   // cumHeight size was less than numRows. --jcid
+      // cumHeight size was less than numRows. --jcid
    for (int row = 0; row < numRows; row++) {
       if (rowStyle->get (row))
          drawBox (view, rowStyle->get (row), area,
@@ -381,19 +384,27 @@ void Table::draw (core::View *view, core::Rectangle *area)
    }
 #endif
 
-   for (int i = 0; i < children->size (); i++) {
-      if (childDefined (i)) {
-         Widget *child = children->get(i)->cell.widget;
-         core::Rectangle childArea;
-         if (!core::StackingContextMgr::handledByStackingContextMgr (child) &&
-             child->intersects (area, &childArea))
-            child->draw (view, &childArea);
+   switch (majorLevel) {
+   case OOFStackIterator::IN_FLOW:
+      for (int i = 0; retWidget == NULL && i < children->size (); i++) {
+         if (childDefined (i)) {
+            Widget *child = children->get(i)->cell.widget;
+            core::Rectangle childArea;
+            if (!core::StackingContextMgr::handledByStackingContextMgr (child)
+                && child->intersects (area, &childArea))
+               retWidget = child->drawTotal (view, &childArea, iterator);
+         }
       }
+      break;
+
+   default:
+      retWidget = OOFAwareWidget::drawLevel (view, area, iterator, majorLevel);
+      break;
    }
 
-   drawOOF (view, area);
-
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
    DBG_OBJ_LEAVE ();
+   return retWidget;
 }
 
 void Table::removeChild (Widget *child)

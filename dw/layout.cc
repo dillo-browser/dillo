@@ -704,7 +704,7 @@ void Layout::draw (View *view, Rectangle *area)
          widgetDrawArea.width = intersection.width;
          widgetDrawArea.height = intersection.height;
 
-         topLevel->draw (view, &widgetDrawArea);
+         topLevel->drawToplevel (view, &widgetDrawArea);
 
          view->finishDrawing (&intersection);
       }

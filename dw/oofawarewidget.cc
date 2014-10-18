@@ -24,11 +24,29 @@
 
 using namespace dw;
 using namespace dw::core;
+using namespace dw::core::style;
+using namespace lout::object;
+using namespace lout::container::untyped;
 using namespace lout::misc;
 
 namespace dw {
 
 namespace oof {
+
+const char *OOFAwareWidget::OOFStackIterator::majorLevelText (int majorLevel)
+{
+   switch (majorLevel) {
+   case START:      return "START";
+   case BACKGROUND: return "BACKGROUND";
+   case SC_BOTTOM:  return "SC_BOTTOM";
+   case IN_FLOW:    return "IN_FLOW";
+   case OOF_REF:    return "OOF_REF";
+   case OOF_CONT:   return "OOF_CONT";
+   case SC_TOP:     return "SC_TOP";
+   case END:        return "END";
+   default:         return "???";
+   }
+}
 
 int OOFAwareWidget::CLASS_ID = -1;
 
@@ -59,7 +77,7 @@ OOFAwareWidget::~OOFAwareWidget ()
    DBG_OBJ_DELETE ();
 }
 
-void OOFAwareWidget::notifySetAsTopLevel()
+void OOFAwareWidget::notifySetAsTopLevel ()
 {
    oofContainer[OOFM_FLOATS] = oofContainer[OOFM_ABSOLUTE]
       = oofContainer[OOFM_FIXED] = this;
@@ -90,10 +108,10 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
              ((OOFAwareWidget*)widget->getParent())
                  ->isPossibleContainerParent (OOFM_FLOATS)) ||
            // Inline blocks are containing blocks, too.
-           widget->getStyle()->display == core::style::DISPLAY_INLINE_BLOCK ||
+           widget->getStyle()->display == DISPLAY_INLINE_BLOCK ||
            // Same for blocks with 'overview' set to another value than
            // (the default value) 'visible'.
-           widget->getStyle()->overflow != core::style::OVERFLOW_VISIBLE ||
+           widget->getStyle()->overflow != OVERFLOW_VISIBLE ||
            // Finally, "out of flow" in a narrower sense: floats;
            // absolutely and fixedly positioned elements; furthermore,
            // relatively positioned elements must already be
@@ -229,7 +247,7 @@ void OOFAwareWidget::correctExtremesByOOF (Extremes *extremes)
    }
 }
 
-void OOFAwareWidget::sizeAllocateStart (core::Allocation *allocation)
+void OOFAwareWidget::sizeAllocateStart (Allocation *allocation)
 {
 
    for (int i = 0; i < NUM_OOFM; i++)
@@ -251,11 +269,101 @@ void OOFAwareWidget::containerSizeChangedForChildrenOOF ()
          outOfFlowMgr[i]->containerSizeChangedForChildren ();
 }
 
-void OOFAwareWidget::drawOOF (View *view, Rectangle *area)
+Widget *OOFAwareWidget::draw (View *view, Rectangle *area, Stack *iterator)
 {
-   for (int i = 0; i < NUM_OOFM; i++)
-      if(outOfFlowMgr[i])
-         outOfFlowMgr[i]->draw(view, area);
+   DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
+                  area->x, area->y, area->width, area->height);
+
+   OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
+   Widget *retWidget = NULL;
+
+   while (retWidget == NULL && osi->majorLevel < OOFStackIterator::END) {
+      retWidget = drawLevel (view, area, iterator, osi->majorLevel);
+
+      if (retWidget == NULL) {
+         osi->majorLevel++;
+         osi->minorLevel = osi->index = 0;
+      }
+   }
+
+
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   DBG_OBJ_LEAVE ();
+   return retWidget;
+}
+
+Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area, Stack *iterator,
+                                   int majorLevel)
+{
+   DBG_OBJ_ENTER ("draw", 0, "OOFAwareWidget/drawLevel",
+                  "(%d, %d, %d * %d), %s",
+                  area->x, area->y, area->width, area->height,
+                  OOFStackIterator::majorLevelText (majorLevel));
+
+   Widget *retWidget = NULL;
+
+   switch (majorLevel) {
+   case OOFStackIterator::START:
+      break;
+
+   case OOFStackIterator::BACKGROUND:
+      drawWidgetBox (view, area, false);
+      break;
+
+   case OOFStackIterator::SC_BOTTOM:
+      if (stackingContextMgr) {
+         OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
+         retWidget = stackingContextMgr->drawBottom (view, area, iterator,
+                                                     &osi->index);
+      }
+      break;
+
+   case OOFStackIterator::IN_FLOW:
+      // Should be implemented in the sub class.
+      break;
+
+   case OOFStackIterator::OOF_REF:
+      // Should be implemented in the sub class (when references are hold).
+      break;
+
+   case OOFStackIterator::OOF_CONT:
+      retWidget = drawOOF (view, area, iterator);
+      break;
+
+   case OOFStackIterator::SC_TOP:
+      if (stackingContextMgr) {
+         OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
+         retWidget = stackingContextMgr->drawTop (view, area, iterator,
+                                                  &osi->index);
+      }
+      break;
+
+   case OOFStackIterator::END:
+      break;
+   }
+
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   DBG_OBJ_LEAVE ();
+   return retWidget;
+}
+
+Widget *OOFAwareWidget::drawOOF (View *view, Rectangle *area,
+                                 lout::container::untyped::Stack *iterator)
+{
+   OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
+   assert (osi->majorLevel == OOFStackIterator::OOF_CONT);
+
+   Widget *retWidget = NULL;
+
+   for (; retWidget == NULL && osi->minorLevel < NUM_OOFM; osi->minorLevel++) {
+      if(outOfFlowMgr[osi->minorLevel])
+         retWidget = outOfFlowMgr[osi->minorLevel]->draw (view, area, iterator,
+                                                          &(osi->index));
+      if (retWidget == NULL)
+         osi->index = 0;
+   }
+   
+   return retWidget;
 }
 
 Widget *OOFAwareWidget::getWidgetOOFAtPoint (int x, int y)
@@ -302,7 +410,7 @@ void OOFAwareWidget::removeChild (Widget *child)
    assert (isWidgetOOF (child));
 }
 
-core::Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y)
+Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y)
 {
    if (x >= allocation.x &&
        y >= allocation.y &&
@@ -321,7 +429,7 @@ core::Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y)
          return oofWidget;
 
       Widget *childAtPoint = NULL;
-      Iterator *it =
+      core::Iterator *it =
          iterator ((Content::Type)
                    (Content::WIDGET_IN_FLOW | Content::WIDGET_OOF_CONT),
                    false);
@@ -348,6 +456,16 @@ core::Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y)
       return this;
    } else
       return NULL;
+}
+
+
+Object *OOFAwareWidget::stackingIterator (bool atEnd)
+{
+   OOFStackIterator *osi = new OOFStackIterator ();
+   // TODO Consider atEnd.
+   osi->majorLevel = OOFStackIterator::BACKGROUND;
+   osi->minorLevel = osi->index = 0;
+   return osi;
 }
 
 void OOFAwareWidget::borderChanged (int y, Widget *vloat)

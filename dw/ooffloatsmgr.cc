@@ -1277,30 +1277,47 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
    return x;
 }
 
-void OOFFloatsMgr::draw (View *view, Rectangle *area)
+Widget *OOFFloatsMgr::draw (View *view, Rectangle *area,
+                            lout::container::untyped::Stack *iterator,
+                            int *index)
 {
-   DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
-                  area->x, area->y, area->width, area->height);
+   DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d]",
+                  area->x, area->y, area->width, area->height, *index);
 
-   drawFloats (leftFloatsCB, view, area);
-   drawFloats (rightFloatsCB, view, area);
+   Widget *retWidget = NULL;
 
+   if (*index < leftFloatsCB->size ())
+      retWidget = drawFloats (leftFloatsCB, view, area, iterator, index, 0);
+
+   if (retWidget == NULL)
+      retWidget = drawFloats (rightFloatsCB, view, area, iterator, index,
+                              leftFloatsCB->size ());
+
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
    DBG_OBJ_LEAVE ();
+   return retWidget;
 }
 
-void OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
-                               Rectangle *area)
+Widget *OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
+                                  Rectangle *area,
+                                  lout::container::untyped::Stack *iterator,
+                                  int *index, int startIndex)
 {
    // This could be improved, since the list is sorted: search the
    // first float fitting into the area, and iterate until one is
    // found below the area.
-   for (int i = 0; i < list->size(); i++) {
-      Widget *childWidget = list->get(i)->getWidget ();
+
+   Widget *retWidget = NULL;
+
+   for (; retWidget == NULL && *index - startIndex < list->size(); (*index)++) {
+      Widget *childWidget = list->get(*index - startIndex)->getWidget ();
       Rectangle childArea;
       if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
           childWidget->intersects (area, &childArea))
-         childWidget->draw (view, &childArea);
+         retWidget = childWidget->drawTotal (view, &childArea, iterator);
    }
+
+   return retWidget;
 }
 
 void OOFFloatsMgr::addWidgetInFlow (OOFAwareWidget *textblock,
