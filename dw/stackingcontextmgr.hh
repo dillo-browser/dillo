@@ -25,9 +25,9 @@ private:
 
    Widget *draw (View *view, Rectangle *area,
                  lout::container::untyped::Stack *iterator,
-                 int *index, int startZIndex, int endZIndex);
-
+                 int *zIndexOffset, int startZIndex, int endZIndex, int *index);
    Widget *getWidgetAtPoint (int x, int y, int startZIndex, int endZIndex);
+
 public:
    StackingContextMgr (Widget *widget);
    ~StackingContextMgr ();
@@ -49,10 +49,10 @@ public:
 
    Widget *drawBottom (View *view, Rectangle *area,
                        lout::container::untyped::Stack *iterator,
-                       int *index);
+                       int *zIndexOffset, int *index);
    Widget *drawTop (View *view, Rectangle *area,
                     lout::container::untyped::Stack *iterator,
-                    int *index);
+                    int *zIndexOffset, int *index);
 
    Widget *getTopWidgetAtPoint (int x, int y);
    Widget *getBottomWidgetAtPoint (int x, int y);

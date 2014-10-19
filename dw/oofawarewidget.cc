@@ -313,8 +313,9 @@ Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area, Stack *iterator,
    case OOFStackIterator::SC_BOTTOM:
       if (stackingContextMgr) {
          OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
-         retWidget = stackingContextMgr->drawBottom (view, area, iterator,
-                                                     &osi->index);
+         retWidget =
+            stackingContextMgr->drawBottom (view, area, iterator,
+                                            &osi->minorLevel, &osi->index);
       }
       break;
 
@@ -333,8 +334,9 @@ Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area, Stack *iterator,
    case OOFStackIterator::SC_TOP:
       if (stackingContextMgr) {
          OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
-         retWidget = stackingContextMgr->drawTop (view, area, iterator,
-                                                  &osi->index);
+         retWidget =
+            stackingContextMgr->drawTop (view, area, iterator,
+                                         &osi->minorLevel, &osi->index);
       }
       break;
 
