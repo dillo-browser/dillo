@@ -102,7 +102,6 @@ protected:
 
       bool next ();
       bool prev ();
-      void print ();
    };
 
    class OOFStackIterator: public lout::object::Object
