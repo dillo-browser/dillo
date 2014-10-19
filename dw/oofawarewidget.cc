@@ -113,11 +113,12 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
            // (the default value) 'visible'.
            widget->getStyle()->overflow != OVERFLOW_VISIBLE ||
            // Finally, "out of flow" in a narrower sense: floats;
-           // absolutely and fixedly positioned elements; furthermore,
-           // relatively positioned elements must already be
-           // considered here, since they may constitute a stacking
-           // context.
-           testWidgetOutOfFlow (widget) || testWidgetPositioned (widget)));
+           // absolutely and fixedly positioned elements. (No
+           // relatively positioned elements; since the latters
+           // constitute a stacking context, drawing of floats gets
+           // somewhat more complicated; see "interrupting the drawing
+           // process" in "dw-stacking-context.doc".
+           testWidgetOutOfFlow (widget)));
       
    case OOFM_ABSOLUTE:
       // Only the toplevel widget (as for all) as well as absolutely,
