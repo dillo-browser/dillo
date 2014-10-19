@@ -385,81 +385,80 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    int safe = 0, ret = 0, use_cache = 0;
 
    /* web->requester is NULL if the action is initiated by user */
-   if (!(a_Capi_get_flags(web->url) & CAPI_IsCached ||
-         web->requester == NULL ||
-         a_Domain_permit(web->requester, web->url))) {
-      return 0;
-   }
+   if (a_Capi_get_flags(web->url) & CAPI_IsCached ||
+       web->requester == NULL ||
+       a_Domain_permit(web->requester, web->url)) {
 
-   /* reload test */
-   reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||
-             (URL_FLAGS(web->url) & URL_E2EQuery));
+      /* reload test */
+      reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||
+                (URL_FLAGS(web->url) & URL_E2EQuery));
 
-   if (web->flags & WEB_Download) {
-     /* download request: if cached save from cache, else
-      * for http, ftp or https, use the downloads dpi */
-     if (a_Capi_get_flags_with_redirection(web->url) & CAPI_IsCached) {
-        if (web->filename) {
-           if ((web->stream = fopen(web->filename, "w"))) {
-              use_cache = 1;
-           } else {
-              MSG_WARN("Cannot open \"%s\" for writing.\n", web->filename);
+      if (web->flags & WEB_Download) {
+         /* download request: if cached save from cache, else
+          * for http, ftp or https, use the downloads dpi */
+        if (a_Capi_get_flags_with_redirection(web->url) & CAPI_IsCached) {
+           if (web->filename) {
+              if ((web->stream = fopen(web->filename, "w"))) {
+                 use_cache = 1;
+              } else {
+                 MSG_WARN("Cannot open \"%s\" for writing.\n", web->filename);
+              }
            }
+        } else if (a_Cache_download_enabled(web->url)) {
+           server = "downloads";
+           cmd = Capi_dpi_build_cmd(web, server);
+           a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
+           dFree(cmd);
+        } else {
+           MSG_WARN("Ignoring download request for '%s': "
+                    "not in cache and not downloadable.\n",
+                    URL_STR(web->url));
         }
-     } else if (a_Cache_download_enabled(web->url)) {
-        server = "downloads";
-        cmd = Capi_dpi_build_cmd(web, server);
-        a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
-        dFree(cmd);
-     } else {
-        MSG_WARN("Ignoring download request for '%s': "
-                 "not in cache and not downloadable.\n",
-                 URL_STR(web->url));
-     }
 
-   } else if (Capi_url_uses_dpi(web->url, &server)) {
-      /* dpi request */
-      if ((safe = a_Capi_dpi_verify_request(web->bw, web->url))) {
-         if (dStrAsciiCasecmp(scheme, "dpi") == 0) {
-            if (strcmp(server, "vsource") == 0) {
-               /* allow "view source" reload upon user request */
-            } else {
-               /* make the other "dpi:/" prefixed urls always reload. */
-               a_Url_set_flags(web->url, URL_FLAGS(web->url) | URL_E2EQuery);
-               reload = 1;
+      } else if (Capi_url_uses_dpi(web->url, &server)) {
+         /* dpi request */
+         if ((safe = a_Capi_dpi_verify_request(web->bw, web->url))) {
+            if (dStrAsciiCasecmp(scheme, "dpi") == 0) {
+               if (strcmp(server, "vsource") == 0) {
+                  /* allow "view source" reload upon user request */
+               } else {
+                  /* make the other "dpi:/" prefixed urls always reload. */
+                  a_Url_set_flags(web->url, URL_FLAGS(web->url) |URL_E2EQuery);
+                  reload = 1;
+               }
             }
+            if (reload) {
+               a_Capi_conn_abort_by_url(web->url);
+               /* Send dpip command */
+               _MSG("a_Capi_open_url, reload url='%s'\n", URL_STR(web->url));
+               cmd = Capi_dpi_build_cmd(web, server);
+               a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
+               dFree(cmd);
+               if (strcmp(server, "vsource") == 0) {
+                  Capi_dpi_send_source(web->bw, web->url);
+               }
+            }
+            use_cache = 1;
          }
+         dFree(server);
+
+      } else if (!dStrAsciiCasecmp(scheme, "http")) {
+         /* http request */
          if (reload) {
             a_Capi_conn_abort_by_url(web->url);
-            /* Send dpip command */
-            _MSG("a_Capi_open_url, reload url='%s'\n", URL_STR(web->url));
-            cmd = Capi_dpi_build_cmd(web, server);
-            a_Capi_dpi_send_cmd(web->url, web->bw, cmd, server, 1);
-            dFree(cmd);
-            if (strcmp(server, "vsource") == 0) {
-               Capi_dpi_send_source(web->bw, web->url);
-            }
+            /* create a new connection and start the CCC operations */
+            conn = Capi_conn_new(web->url, web->bw, "http", "none");
+            /* start the reception branch before the query one because the DNS
+             * may callback immediately. This may avoid a race condition. */
+            a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), conn, "http");
+            a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, web);
          }
          use_cache = 1;
-      }
-      dFree(server);
 
-   } else if (!dStrAsciiCasecmp(scheme, "http")) {
-      /* http request */
-      if (reload) {
-         a_Capi_conn_abort_by_url(web->url);
-         /* create a new connection and start the CCC operations */
-         conn = Capi_conn_new(web->url, web->bw, "http", "none");
-         /* start the reception branch before the query one because the DNS
-          * may callback immediately. This may avoid a race condition. */
-         a_Capi_ccc(OpStart, 2, BCK, a_Chain_new(), conn, "http");
-         a_Capi_ccc(OpStart, 1, BCK, a_Chain_new(), conn, web);
+      } else if (!dStrAsciiCasecmp(scheme, "about")) {
+         /* internal request */
+         use_cache = 1;
       }
-      use_cache = 1;
-
-   } else if (!dStrAsciiCasecmp(scheme, "about")) {
-      /* internal request */
-      use_cache = 1;
    }
 
    if (use_cache) {
