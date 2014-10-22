@@ -880,17 +880,17 @@ int main()
    path();
 
    /* LEADING/TRAILING DOTS AND A LITTLE PUBLIC SUFFIX */
-   a_Cookies_set("name=val; domain=co.uk", "www.co.uk", "/", NULL);
-   expect(__LINE__, "", "http", "www.co.uk", "/");
+   a_Cookies_set("name=val; domain=co.il", "www.co.il", "/", NULL);
+   expect(__LINE__, "", "http", "www.co.il", "/");
 
-   a_Cookies_set("name=val; domain=.co.uk", "www.co.uk", "/", NULL);
-   expect(__LINE__, "", "http", "www.co.uk", "/");
+   a_Cookies_set("name=val; domain=.co.il", "www.co.il", "/", NULL);
+   expect(__LINE__, "", "http", "www.co.il", "/");
 
-   a_Cookies_set("name=val; domain=co.uk.", "www.co.uk.", "/", NULL);
-   expect(__LINE__, "", "http", "www.co.uk.", "/");
+   a_Cookies_set("name=val; domain=co.il.", "www.co.il.", "/", NULL);
+   expect(__LINE__, "", "http", "www.co.il.", "/");
 
-   a_Cookies_set("name=val; domain=.co.uk.", "www.co.uk.", "/", NULL);
-   expect(__LINE__, "", "http", ".www.co.uk.", "/");
+   a_Cookies_set("name=val; domain=.co.il.", "www.co.il.", "/", NULL);
+   expect(__LINE__, "", "http", ".www.co.il.", "/");
 
    a_Cookies_set("name=val; domain=co.org", "www.co.org", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "www.co.org", "/");
