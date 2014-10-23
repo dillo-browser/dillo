@@ -27,10 +27,47 @@ using namespace dw::core;
 using namespace dw::core::style;
 using namespace lout::object;
 using namespace lout::misc;
+using namespace lout::container::typed;
 
 namespace dw {
 
 namespace oof {
+
+OOFAwareWidget::OOFStackingIterator::OOFStackingIterator (bool atEnd)
+{
+   // TODO Consider atEnd.
+   majorLevel = OOFStackingIterator::BACKGROUND;
+   minorLevel = index = 0;
+
+   widgetsDrawnAfterInterruption = NULL;
+}
+
+OOFAwareWidget::OOFStackingIterator::~OOFStackingIterator ()
+{
+   if (widgetsDrawnAfterInterruption)
+      delete widgetsDrawnAfterInterruption;
+}
+
+void OOFAwareWidget::OOFStackingIterator::registerWidgetDrawnAfterInterruption
+   (Widget *widget)
+{
+   if (widgetsDrawnAfterInterruption == NULL)
+      widgetsDrawnAfterInterruption = new HashSet<TypedPointer<Widget> > (true);
+
+   TypedPointer<Widget> *p = new TypedPointer<Widget> (widget);
+   assert (!widgetsDrawnAfterInterruption->contains (p));
+   widgetsDrawnAfterInterruption->put (p);
+}
+
+bool OOFAwareWidget::OOFStackingIterator::hasWidgetBeenDrawnAfterInterruption
+   (Widget *widget)
+{
+   if (widgetsDrawnAfterInterruption) {
+      TypedPointer<Widget> p (widget);
+      return widgetsDrawnAfterInterruption->contains (&p);
+   } else
+      return false;
+}
 
 const char *OOFAwareWidget::OOFStackingIterator::majorLevelText (int majorLevel)
 {
@@ -294,23 +331,6 @@ void OOFAwareWidget::containerSizeChangedForChildrenOOF ()
          outOfFlowMgr[i]->containerSizeChangedForChildren ();
 }
 
-bool OOFAwareWidget::doesWidgetOOFInterruptDrawing (Widget *widget,
-                                                    OOFAwareWidget *generator,
-                                                    OOFAwareWidget *container)
-{
-   DBG_OBJ_ENTER_O ("draw", 0, (void*)NULL, "doesWidgetOOFInterruptDrawing",
-                    "%p, %p, %p", widget, generator, container);
-
-   int cl = container->stackingContextWidget->getLevel (),
-      gl = generator->stackingContextWidget->getLevel ();
-
-   DBG_OBJ_MSGF_O ("draw", 1, (void*)NULL, "%d < %d => %s",
-                   cl, gl, cl < gl ? "true" : "false");
-   
-   DBG_OBJ_LEAVE_O ((void*)NULL);
-   return cl < gl;
-}
-
 bool OOFAwareWidget::doesWidgetOOFInterruptDrawing (Widget *widget)
 {
    DBG_OBJ_ENTER ("draw", 0, "doesWidgetOOFInterruptDrawing", "%p", widget);
@@ -319,12 +339,14 @@ bool OOFAwareWidget::doesWidgetOOFInterruptDrawing (Widget *widget)
    int oofmIndex = getOOFMIndex (widget);
    DBG_OBJ_MSGF ("draw", 1, "oofmIndex = %d", oofmIndex);
 
-   bool b =
-      doesWidgetOOFInterruptDrawing (widget, this, oofContainer[oofmIndex]);
-   DBG_OBJ_MSGF ("draw", 1, "=> %s", b ? "true" : "false");
+   int cl = oofContainer[oofmIndex]->stackingContextWidget->getLevel (),
+      gl = stackingContextWidget->getLevel ();
+
+   DBG_OBJ_MSGF_O ("draw", 1, (void*)NULL, "%d < %d => %s",
+                   cl, gl, cl < gl ? "true" : "false");
 
    DBG_OBJ_LEAVE ();
-   return b;
+   return cl < gl;
 }
 
 Widget *OOFAwareWidget::draw (View *view, Rectangle *area,
@@ -358,6 +380,8 @@ Widget *OOFAwareWidget::draw (View *view, Rectangle *area,
                   retWidget->drawTotal (view, &retWidgetArea, &iteratorStack2);
                assert (retWidget2 == NULL);
             }
+
+            osi->registerWidgetDrawnAfterInterruption (retWidget);
 
             retWidget = NULL; // Continue with the current state of "iterator".
             DBG_OBJ_MSG ("draw", 1, "done with interruption");
@@ -551,11 +575,7 @@ Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y)
 
 Object *OOFAwareWidget::stackingIterator (bool atEnd)
 {
-   OOFStackingIterator *osi = new OOFStackingIterator ();
-   // TODO Consider atEnd.
-   osi->majorLevel = OOFStackingIterator::BACKGROUND;
-   osi->minorLevel = osi->index = 0;
-   return osi;
+   return new OOFStackingIterator (atEnd);
 }
 
 void OOFAwareWidget::borderChanged (int y, Widget *vloat)

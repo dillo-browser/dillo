@@ -1307,21 +1307,21 @@ Widget *OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
    // first float fitting into the area, and iterate until one is
    // found below the area.
 
+   OOFAwareWidget::OOFStackingIterator *osi =
+      (OOFAwareWidget::OOFStackingIterator*)iteratorStack->getTop ();
    Widget *retWidget = NULL;
 
    while (retWidget == NULL && *index - startIndex < list->size()) {
       Float *vloat = list->get(*index - startIndex);
       Widget *childWidget = vloat->getWidget ();
      
-      if (!OOFAwareWidget:: doesWidgetOOFInterruptDrawing
-          (childWidget, vloat->generatingBlock, container)) {
-         Rectangle childArea;
-         if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
-             childWidget->intersects (area, &childArea))
-            retWidget =
-               childWidget->drawTotal (view, &childArea, iteratorStack);
-      }
-
+      Rectangle childArea;
+      if (!osi->hasWidgetBeenDrawnAfterInterruption (childWidget) &&
+         !StackingContextMgr::handledByStackingContextMgr (childWidget) &&
+          childWidget->intersects (area, &childArea))
+         retWidget =
+            childWidget->drawTotal (view, &childArea, iteratorStack);
+      
       if (retWidget == NULL)
          (*index)++;
    }

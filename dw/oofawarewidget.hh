@@ -104,18 +104,6 @@ protected:
       bool prev ();
    };
 
-   class OOFStackingIterator: public lout::object::Object
-   {
-   public:
-      enum { START, BACKGROUND, SC_BOTTOM, IN_FLOW, OOF_REF, OOF_CONT, SC_TOP,
-             END } ;
-      int majorLevel, minorLevel, index;
-
-      void intoStringBuffer(lout::misc::StringBuffer *sb);
-
-      static const char *majorLevelText (int majorLevel4);
-   };
-
    inline bool isParentRefOOF (int parentRef)
    { return parentRef != -1 && (parentRef & PARENT_REF_OOFM_MASK); }
 
@@ -205,12 +193,31 @@ protected:
 public:
    static int CLASS_ID;
 
+   class OOFStackingIterator: public lout::object::Object
+   {
+   private:
+      lout::container::typed::HashSet<lout::object::TypedPointer<Widget> >
+         *widgetsDrawnAfterInterruption;
+
+   public:
+      enum { START, BACKGROUND, SC_BOTTOM, IN_FLOW, OOF_REF, OOF_CONT, SC_TOP,
+             END } ;
+      int majorLevel, minorLevel, index;
+
+      static const char *majorLevelText (int majorLevel);
+
+      OOFStackingIterator (bool atEnd);
+      ~OOFStackingIterator ();
+
+      void intoStringBuffer(lout::misc::StringBuffer *sb);
+
+      void registerWidgetDrawnAfterInterruption (Widget *widget);
+      bool hasWidgetBeenDrawnAfterInterruption (Widget *widget);
+   };
+
    OOFAwareWidget ();
    ~OOFAwareWidget ();
 
-   static bool doesWidgetOOFInterruptDrawing (Widget *widget,
-                                              OOFAwareWidget *generator,
-                                              OOFAwareWidget *container);
    bool doesWidgetOOFInterruptDrawing (Widget *widget);
 
    Widget *draw (core::View *view, core::Rectangle *area,

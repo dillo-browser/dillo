@@ -175,19 +175,19 @@ Widget *OOFPositionedMgr::draw (View *view, Rectangle *area,
    DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d]",
                   area->x, area->y, area->width, area->height, *index);
 
+   OOFAwareWidget::OOFStackingIterator *osi =
+      (OOFAwareWidget::OOFStackingIterator*)iteratorStack->getTop ();
    Widget *retWidget = NULL;
 
    while (retWidget == NULL && *index < children->size()) {
       Child *child = children->get(*index);
 
-      if (!OOFAwareWidget:: doesWidgetOOFInterruptDrawing
-          (child->widget, child->generator, container)) {
-         Rectangle childArea;
-         if (!StackingContextMgr::handledByStackingContextMgr (child->widget) &&
-             child->widget->intersects (area, &childArea))
-            retWidget =
-               child->widget->drawTotal (view, &childArea, iteratorStack);
-      }
+      Rectangle childArea;
+      if (!osi->hasWidgetBeenDrawnAfterInterruption (child->widget) &&
+          !StackingContextMgr::handledByStackingContextMgr (child->widget) &&
+          child->widget->intersects (area, &childArea))
+         retWidget =
+            child->widget->drawTotal (view, &childArea, iteratorStack);
 
       if (retWidget == NULL)
          (*index)++;
