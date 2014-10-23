@@ -404,8 +404,9 @@ bool Image::buttonReleaseImpl (core::EventButton *event)
    return false;
 }
 
-core::Widget *Image::draw (core::View *view, core::Rectangle *area,
-                           core::StackingIteratorStack *iteratorStack)
+void Image::draw (core::View *view, core::Rectangle *area,
+                  core::StackingIteratorStack *iteratorStack,
+                  Widget **interruptedWidget)
 {
    int dx, dy;
    core::Rectangle content, intersection;
@@ -469,8 +470,6 @@ core::Widget *Image::draw (core::View *view, core::Rectangle *area,
    }
 
    /** TODO: draw selection */
-
-   return NULL;
 }
 
 core::Iterator *Image::iterator (core::Content::Type mask, bool atEnd)

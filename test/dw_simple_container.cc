@@ -205,17 +205,14 @@ namespace dw {
       }
    }
 
-core::Widget *SimpleContainer::draw (View *view, Rectangle *area,
-                                     StackingIteratorStack *iteratorStack)
+void SimpleContainer::draw (View *view, Rectangle *area,
+                            StackingIteratorStack *iteratorStack,
+                            Widget **interruptedWidget)
 {
-   Widget *retWidget = NULL;
-
    drawWidgetBox (view, area, false);
    Rectangle childArea;
    if (child && child->intersects (area, &childArea))
-      retWidget = child->drawTotal (view, &childArea, iteratorStack);
-   
-   return retWidget;
+      child->drawTotal (view, &childArea, iteratorStack, interruptedWidget);
 }
 
 Iterator *SimpleContainer::iterator (Content::Type mask, bool atEnd)

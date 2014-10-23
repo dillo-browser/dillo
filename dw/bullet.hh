@@ -17,8 +17,9 @@ protected:
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);
    void containerSizeChangedForChildren ();
-   Widget *draw (core::View *view, core::Rectangle *area,
-                 core::StackingIteratorStack *iteratorStack);
+   void draw (core::View *view, core::Rectangle *area,
+              core::StackingIteratorStack *iteratorStack,
+              Widget **interruptedWidget);
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 
 public:

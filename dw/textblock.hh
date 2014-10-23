@@ -642,10 +642,12 @@ protected:
                    core::Rectangle *area, int xWidget, int yWidgetBase);
    void drawSpace (int wordIndex, core::View *view, core::Rectangle *area,
                    int xWidget, int yWidgetBase);
-   Widget *drawLine (Line *line, core::View *view, core::Rectangle *area,
-                     core::StackingIteratorStack *iteratorStack);
-   Widget *drawOOFReferences (core::View *view, core::Rectangle *area,
-                              core::StackingIteratorStack *iteratorStack);
+   void drawLine (Line *line, core::View *view, core::Rectangle *area,
+                  core::StackingIteratorStack *iteratorStack,
+                  Widget **interruptedWidget);
+   void drawOOFReferences (core::View *view, core::Rectangle *area,
+                           core::StackingIteratorStack *iteratorStack,
+                           Widget **interruptedWidget);
 
    int findLineIndex (int y);
    int findLineIndexWhenNotAllocated (int y);
@@ -801,9 +803,9 @@ protected:
    void alignLine (int lineIndex);
    void calcTextOffset (int lineIndex, int totalWidth);
 
-   Widget *drawLevel (core::View *view, core::Rectangle *area,
-                      core::StackingIteratorStack *iteratorStack,
-                      int majorLevel);
+   void drawLevel (core::View *view, core::Rectangle *area,
+                   core::StackingIteratorStack *iteratorStack,
+                   Widget **interruptedWidget, int majorLevel);
 
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);

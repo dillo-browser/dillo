@@ -179,8 +179,9 @@ bool Widget::intersects (Rectangle *area, Rectangle *intersection)
    return r;
 }
 
-Widget *Widget::drawTotal (View *view, Rectangle *area,
-                           StackingIteratorStack *iteratorStack)
+void Widget::drawTotal (View *view, Rectangle *area,
+                        StackingIteratorStack *iteratorStack,
+                        Widget **interruptedWidget)
 {
    DBG_OBJ_ENTER ("draw", 0, "drawTotal", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
@@ -208,8 +209,8 @@ Widget *Widget::drawTotal (View *view, Rectangle *area,
                     sb.getChars ());
    }
 
-   Widget *retWidget = draw (view, area, iteratorStack);
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   draw (view, area, iteratorStack, interruptedWidget);
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
 
    DBG_IF_RTFL {
       misc::StringBuffer sb;
@@ -218,15 +219,15 @@ Widget *Widget::drawTotal (View *view, Rectangle *area,
                     sb.getChars ());
    }
 
-   // A return value other than NULL indicates a widget with a complex
-   // drawing process, for which stackIterator() must return something
-   // non-NULL, so that the interrupted drawing process can be
-   // continued. (TODO: Not quite correct when forward() was called
-   // instead of push().)
+   // A value for *interruptedWidget other than NULL indicates a
+   // widget with a complex drawing process, for which stackIterator()
+   // must return something non-NULL, so that the interrupted drawing
+   // process can be continued. (TODO: Not quite correct when
+   // forward() was called instead of push().)
 
-   // assert (retWidget == NULL || si != NULL);
+   // assert (*interruptedWidget == NULL || si != NULL);
 
-   if (retWidget == NULL) {
+   if (*interruptedWidget == NULL) {
       if (si)
          iteratorStack->pop ();
    } else
@@ -239,7 +240,6 @@ Widget *Widget::drawTotal (View *view, Rectangle *area,
    }
 
    DBG_OBJ_LEAVE ();
-   return retWidget;
 }
 
 void Widget::drawToplevel (View *view, Rectangle *area)
@@ -247,10 +247,11 @@ void Widget::drawToplevel (View *view, Rectangle *area)
    assert (parent == NULL);
 
    StackingIteratorStack iteratorStack;
-   Widget *retWidget = drawTotal (view, area, &iteratorStack);
+   Widget *interruptedWidget = NULL;
+   drawTotal (view, area, &iteratorStack, &interruptedWidget);
 
    // Everything should be finished at this point.
-   assert (retWidget == NULL);
+   assert (interruptedWidget == NULL);
 }
 
 void Widget::setParent (Widget *parent)

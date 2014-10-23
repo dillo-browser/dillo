@@ -1277,31 +1277,30 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
    return x;
 }
 
-Widget *OOFFloatsMgr::draw (View *view, Rectangle *area,
-                            StackingIteratorStack *iteratorStack, int *index)
+void OOFFloatsMgr::draw (View *view, Rectangle *area,
+                         StackingIteratorStack *iteratorStack,
+                         Widget **interruptedWidget, int *index)
 {
    DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d]",
                   area->x, area->y, area->width, area->height, *index);
 
-   Widget *retWidget = NULL;
-
    if (*index < leftFloatsCB->size ())
-      retWidget =
-         drawFloats (leftFloatsCB, view, area, iteratorStack, index, 0);
+      drawFloats (leftFloatsCB, view, area, iteratorStack, interruptedWidget,
+                  index, 0);
 
-   if (retWidget == NULL)
-      retWidget = drawFloats (rightFloatsCB, view, area, iteratorStack, index,
-                              leftFloatsCB->size ());
+   if (*interruptedWidget == NULL)
+      drawFloats (rightFloatsCB, view, area, iteratorStack, interruptedWidget,
+                  index, leftFloatsCB->size ());
 
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
    DBG_OBJ_LEAVE ();
-   return retWidget;
 }
 
-Widget *OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
-                                  Rectangle *area,
-                                  StackingIteratorStack *iteratorStack,
-                                  int *index, int startIndex)
+void OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
+                               Rectangle *area,
+                               StackingIteratorStack *iteratorStack,
+                               Widget **interruptedWidget, int *index,
+                               int startIndex)
 {
    // This could be improved, since the list is sorted: search the
    // first float fitting into the area, and iterate until one is
@@ -1309,9 +1308,8 @@ Widget *OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
 
    OOFAwareWidget::OOFStackingIterator *osi =
       (OOFAwareWidget::OOFStackingIterator*)iteratorStack->getTop ();
-   Widget *retWidget = NULL;
 
-   while (retWidget == NULL && *index - startIndex < list->size()) {
+   while (*interruptedWidget == NULL && *index - startIndex < list->size()) {
       Float *vloat = list->get(*index - startIndex);
       Widget *childWidget = vloat->getWidget ();
      
@@ -1319,14 +1317,12 @@ Widget *OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
       if (!osi->hasWidgetBeenDrawnAfterInterruption (childWidget) &&
          !StackingContextMgr::handledByStackingContextMgr (childWidget) &&
           childWidget->intersects (area, &childArea))
-         retWidget =
-            childWidget->drawTotal (view, &childArea, iteratorStack);
+         childWidget->drawTotal (view, &childArea, iteratorStack,
+                                 interruptedWidget);
       
-      if (retWidget == NULL)
+      if (*interruptedWidget == NULL)
          (*index)++;
    }
-
-   return retWidget;
 }
 
 void OOFFloatsMgr::addWidgetInFlow (OOFAwareWidget *textblock,

@@ -171,11 +171,12 @@ protected:
    void sizeAllocateEnd ();
    void containerSizeChangedForChildrenOOF ();
 
-   virtual Widget *drawLevel (core::View *view, core::Rectangle *area,
-                              core::StackingIteratorStack *iteratorStack,
-                              int majorLevel);
-   Widget *drawOOF (core::View *view, core::Rectangle *area,
-                    core::StackingIteratorStack *iteratorStack);
+   virtual void drawLevel (core::View *view, core::Rectangle *area,
+                           core::StackingIteratorStack *iteratorStack,
+                           Widget **interruptedWidget, int majorLevel);
+   void drawOOF (core::View *view, core::Rectangle *area,
+                 core::StackingIteratorStack *iteratorStack,
+                 Widget **interruptedWidget);
    Widget *getWidgetOOFAtPoint (int x, int y);
 
    static bool isOOFContainer (Widget *widget, int oofmIndex);
@@ -220,8 +221,9 @@ public:
 
    bool doesWidgetOOFInterruptDrawing (Widget *widget);
 
-   Widget *draw (core::View *view, core::Rectangle *area,
-                 core::StackingIteratorStack *iteratorStack);
+   void draw (core::View *view, core::Rectangle *area,
+              core::StackingIteratorStack *iteratorStack,
+              Widget **interruptedWidget);
    lout::object::Object *stackingIterator (bool atEnd);
 
    virtual void borderChanged (int y, core::Widget *vloat);

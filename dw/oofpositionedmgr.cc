@@ -168,34 +168,32 @@ bool OOFPositionedMgr::haveExtremesChanged ()
 }
 
 
-Widget *OOFPositionedMgr::draw (View *view, Rectangle *area,
-                                StackingIteratorStack *iteratorStack,
-                                int *index)
+void OOFPositionedMgr::draw (View *view, Rectangle *area,
+                             StackingIteratorStack *iteratorStack,
+                             Widget **interruptedWidget, int *index)
 {
    DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d]",
                   area->x, area->y, area->width, area->height, *index);
 
    OOFAwareWidget::OOFStackingIterator *osi =
       (OOFAwareWidget::OOFStackingIterator*)iteratorStack->getTop ();
-   Widget *retWidget = NULL;
 
-   while (retWidget == NULL && *index < children->size()) {
+   while (*interruptedWidget == NULL && *index < children->size()) {
       Child *child = children->get(*index);
 
       Rectangle childArea;
       if (!osi->hasWidgetBeenDrawnAfterInterruption (child->widget) &&
           !StackingContextMgr::handledByStackingContextMgr (child->widget) &&
           child->widget->intersects (area, &childArea))
-         retWidget =
-            child->widget->drawTotal (view, &childArea, iteratorStack);
+         child->widget->drawTotal (view, &childArea, iteratorStack,
+                                   interruptedWidget);
 
-      if (retWidget == NULL)
+      if (*interruptedWidget == NULL)
          (*index)++;
    }
 
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
    DBG_OBJ_LEAVE ();
-   return retWidget;
 }
 
 void OOFPositionedMgr::addWidgetInFlow (OOFAwareWidget *widget,

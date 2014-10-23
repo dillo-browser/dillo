@@ -135,8 +135,9 @@ protected:
    void sizeAllocateImpl (core::Allocation *allocation);
    void containerSizeChangedForChildren ();
    
-   Widget *draw (core::View *view, core::Rectangle *area,
-                 core::StackingIteratorStack *iteratorStack);
+   void draw (core::View *view, core::Rectangle *area,
+              core::StackingIteratorStack *iteratorStack,
+              Widget **interruptedWidget);
 
    bool buttonPressImpl (core::EventButton *event);
    bool buttonReleaseImpl (core::EventButton *event);

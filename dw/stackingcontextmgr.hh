@@ -23,9 +23,9 @@ private:
    lout::container::typed::Vector<Widget> *childSCWidgets;
    int minZIndex, maxZIndex;
 
-   Widget *draw (View *view, Rectangle *area,
-                 StackingIteratorStack *iteratorStack, int *zIndexOffset,
-                 int startZIndex, int endZIndex, int *index);
+   void draw (View *view, Rectangle *area,
+              StackingIteratorStack *iteratorStack, Widget **interruptedWidget,
+              int *zIndexOffset, int startZIndex, int endZIndex, int *index);
    Widget *getWidgetAtPoint (int x, int y, int startZIndex, int endZIndex);
 
 public:
@@ -47,12 +47,12 @@ public:
 
    void addChildSCWidget (Widget *widget);
 
-   Widget *drawBottom (View *view, Rectangle *area,
-                       StackingIteratorStack *iteratorStack, int *zIndexOffset,
-                       int *index);
-   Widget *drawTop (View *view, Rectangle *area,
-                    StackingIteratorStack *iteratorStack, int *zIndexOffset,
-                    int *index);
+   void drawBottom (View *view, Rectangle *area,
+                    StackingIteratorStack *iteratorStack,
+                    Widget **interruptedWidget, int *zIndexOffset, int *index);
+   void drawTop (View *view, Rectangle *area,
+                 StackingIteratorStack *iteratorStack,
+                 Widget **interruptedWidget, int *zIndexOffset, int *index);
 
    Widget *getTopWidgetAtPoint (int x, int y);
    Widget *getBottomWidgetAtPoint (int x, int y);

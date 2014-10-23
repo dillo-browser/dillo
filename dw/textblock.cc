@@ -1447,16 +1447,14 @@ void Textblock::drawSpace(int wordIndex, core::View *view,
  * - area is used always (ev. set it to event->area)
  * - event is only used when is_expose
  */
-core::Widget *Textblock::drawLine (Line *line, core::View *view,
-                                   core::Rectangle *area,
-                                   core::StackingIteratorStack *iteratorStack)
+void Textblock::drawLine (Line *line, core::View *view, core::Rectangle *area,
+                          core::StackingIteratorStack *iteratorStack,
+                          Widget **interruptedWidget)
 {
    DBG_OBJ_ENTER ("draw", 0, "drawLine", "..., %d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
   
    OOFStackingIterator *osi = (OOFStackingIterator*)iteratorStack->getTop ();
-
-   Widget *retWidget = NULL;
 
    int xWidget = line->textOffset;
    int yWidgetBase = lineYOffsetWidget (line) + line->borderAscent;
@@ -1470,7 +1468,7 @@ core::Widget *Textblock::drawLine (Line *line, core::View *view,
    if (osi->index < line->firstWord)
       osi->index = line->firstWord;
 
-   while (retWidget == NULL && osi->index <= line->lastWord
+   while (*interruptedWidget == NULL && osi->index <= line->lastWord
           && xWidget < area->x + area->width) {
       Word *word = words->getRef (osi->index);
       int wordSize = word->size.width;
@@ -1486,8 +1484,8 @@ core::Widget *Textblock::drawLine (Line *line, core::View *view,
                   if (!core::StackingContextMgr::handledByStackingContextMgr
                           (child) &&
                       child->intersects (area, &childArea))
-                     retWidget =
-                        child->drawTotal (view, &childArea, iteratorStack);
+                     child->drawTotal (view, &childArea, iteratorStack,
+                                       interruptedWidget);
                } else {
                   int wordIndex2 = osi->index;
                   while (wordIndex2 < line->lastWord &&
@@ -1523,13 +1521,12 @@ core::Widget *Textblock::drawLine (Line *line, core::View *view,
       }
       xWidget += wordSize + word->effSpace;
 
-      if (retWidget == NULL)
+      if (*interruptedWidget == NULL)
          osi->index++;
    }
 
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
    DBG_OBJ_LEAVE ();
-   return retWidget;
 }
 
 /**
@@ -1697,49 +1694,46 @@ Textblock::Word *Textblock::findWord (int x, int y, bool *inSpace)
    return NULL;
 }
 
-core::Widget *Textblock::drawLevel (core::View *view, core::Rectangle *area,
-                                    core::StackingIteratorStack *iteratorStack,
-                                    int majorLevel)
+void Textblock::drawLevel (core::View *view, core::Rectangle *area,
+                           core::StackingIteratorStack *iteratorStack,
+                           Widget **interruptedWidget, int majorLevel)
 {
    DBG_OBJ_ENTER ("draw", 0, "Textblock/drawLevel", "(%d, %d, %d * %d), %s",
                   area->x, area->y, area->width, area->height,
                   OOFStackingIterator::majorLevelText (majorLevel));
 
-   Widget *retWidget = NULL;
-
    switch (majorLevel) {
    case OOFStackingIterator::IN_FLOW:
       // Osi->index (word index) is regarded in drawLine. 
       for (int lineIndex = findLineIndexWhenAllocated (area->y);
-           retWidget == NULL && lineIndex < lines->size (); lineIndex++) {
+           *interruptedWidget == NULL && lineIndex < lines->size ();
+           lineIndex++) {
          Line *line = lines->getRef (lineIndex);
          if (lineYOffsetWidget (line) >= area->y + area->height)
             break;
          
          DBG_OBJ_MSGF ("draw", 0, "line %d (of %d)", lineIndex, lines->size ());
-         retWidget = drawLine (line, view, area, iteratorStack);
+         drawLine (line, view, area, iteratorStack, interruptedWidget);
       }
       break;
 
    case OOFStackingIterator::OOF_REF:
-      retWidget = drawOOFReferences (view, area, iteratorStack);
+      drawOOFReferences (view, area, iteratorStack, interruptedWidget);
       break;
 
    default:
-      retWidget =
-         OOFAwareWidget::drawLevel (view, area, iteratorStack, majorLevel);
+      OOFAwareWidget::drawLevel (view, area, iteratorStack, interruptedWidget,
+                                 majorLevel);
       break;
    }
 
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
    DBG_OBJ_LEAVE ();
-   return retWidget;
 }
 
-core::Widget *Textblock::drawOOFReferences (core::View *view,
-                                            core::Rectangle *area,
-                                            core::StackingIteratorStack
-                                            *iteratorStack)
+void Textblock::drawOOFReferences (core::View *view, core::Rectangle *area,
+                                   core::StackingIteratorStack *iteratorStack,
+                                   Widget **interruptedWidget)
 {
    DBG_OBJ_ENTER ("draw", 0, "Textblock/drawOOFReferences", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
@@ -1749,30 +1743,27 @@ core::Widget *Textblock::drawOOFReferences (core::View *view,
    OOFStackingIterator *osi = (OOFStackingIterator*)iteratorStack->getTop ();
    assert (osi->majorLevel == OOFStackingIterator::OOF_REF);
 
-   Widget *retWidget = NULL;
-
-   while (retWidget == NULL && osi->minorLevel < NUM_OOFM) {
-      while (retWidget == NULL && osi->index < words->size ()) {
+   while (*interruptedWidget == NULL && osi->minorLevel < NUM_OOFM) {
+      while (*interruptedWidget == NULL && osi->index < words->size ()) {
          Word *word = words->getRef (osi->index);
          if (word->content.type == core::Content::WIDGET_OOF_REF &&
              getOOFMIndex (word->content.widget) == osi->minorLevel &&
              doesWidgetOOFInterruptDrawing (word->content.widget))
-            retWidget = word->content.widget;
+            *interruptedWidget = word->content.widget;
 
          // The index is increased in any case: the iterator must
          // point to the next element.
          osi->index++;
       }
       
-      if (retWidget == NULL) {
+      if (*interruptedWidget == NULL) {
          osi->minorLevel++;
          osi->index = 0;
       }
    }
    
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
    DBG_OBJ_LEAVE ();
-   return retWidget;
 }
 
 /**

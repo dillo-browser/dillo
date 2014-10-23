@@ -469,10 +469,12 @@ public:
    bool intersects (Rectangle *area, Rectangle *intersection);
 
    /** Area is given in widget coordinates. */
-   virtual Widget *draw (View *view, Rectangle *area,
-                         StackingIteratorStack *iteratorStack) = 0;
-   Widget *drawTotal (View *view, Rectangle *area,
-                      StackingIteratorStack *iteratorStack);
+   virtual void draw (View *view, Rectangle *area,
+                      StackingIteratorStack *iteratorStack,
+                      Widget **interruptedWidget) = 0;
+   void drawTotal (View *view, Rectangle *area,
+                   StackingIteratorStack *iteratorStack,
+                   Widget **interruptedWidget);
    void drawToplevel (View *view, Rectangle *area);
 
    bool buttonPress (EventButton *event);

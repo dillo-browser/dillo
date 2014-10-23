@@ -253,8 +253,8 @@ public:
 
    void setDisplayed (bool displayed);
    void setEnabled (bool enabled);
-   Widget *draw (View *view, Rectangle *area,
-                 StackingIteratorStack *iteratorStack);
+   void draw (View *view, Rectangle *area, StackingIteratorStack *iteratorStack,
+              Widget **interruptedWidget);
    Iterator *iterator (Content::Type mask, bool atEnd);
    void setStyle (style::Style *style);
 

@@ -62,11 +62,11 @@ bool Ruler::usesAvailWidth ()
    return true;
 }
 
-core::Widget *Ruler::draw (core::View *view, core::Rectangle *area,
-                           core::StackingIteratorStack *iteratorStack)
+void Ruler::draw (core::View *view, core::Rectangle *area,
+                  core::StackingIteratorStack *iteratorStack,
+                  Widget **interruptedWidget)
 {
    drawWidgetBox (view, area, false);
-   return NULL;
 }
 
 core::Iterator *Ruler::iterator (core::Content::Type mask, bool atEnd)

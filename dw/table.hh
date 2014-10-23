@@ -471,9 +471,9 @@ protected:
 
    bool isBlockLevel ();
 
-   Widget *drawLevel (core::View *view, core::Rectangle *area,
-                      core::StackingIteratorStack *iteratorStack,
-                      int majorLevel);
+   void drawLevel (core::View *view, core::Rectangle *area,
+                   core::StackingIteratorStack *iteratorStack,
+                   Widget **interruptedWidget, int majorLevel);
 
    //bool buttonPressImpl (core::EventButton *event);
    //bool buttonReleaseImpl (core::EventButton *event);
