@@ -128,10 +128,12 @@ void Embed::setEnabled (bool enabled)
    resource->setEnabled (enabled);
 }
 
-void Embed::draw (View *view, Rectangle *area)
+Widget *Embed::draw (View *view, Rectangle *area,
+                     StackingIteratorStack *iteratorStack)
 {
    drawWidgetBox (view, area, false);
    resource->draw (view, area);
+   return NULL;
 }
 
 Iterator *Embed::iterator (Content::Type mask, bool atEnd)
