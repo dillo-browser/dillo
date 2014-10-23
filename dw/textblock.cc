@@ -1454,7 +1454,7 @@ core::Widget *Textblock::drawLine (Line *line, core::View *view,
    DBG_OBJ_ENTER ("draw", 0, "drawLine", "..., %d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
   
-   OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
+   OOFStackingIterator *osi = (OOFStackingIterator*)iteratorStack->getTop ();
 
    Widget *retWidget = NULL;
 
@@ -1703,12 +1703,12 @@ core::Widget *Textblock::drawLevel (core::View *view, core::Rectangle *area,
 {
    DBG_OBJ_ENTER ("draw", 0, "Textblock/drawLevel", "(%d, %d, %d * %d), %s",
                   area->x, area->y, area->width, area->height,
-                  OOFStackIterator::majorLevelText (majorLevel));
+                  OOFStackingIterator::majorLevelText (majorLevel));
 
    Widget *retWidget = NULL;
 
    switch (majorLevel) {
-   case OOFStackIterator::IN_FLOW:
+   case OOFStackingIterator::IN_FLOW:
       // Osi->index (word index) is regarded in drawLine. 
       for (int lineIndex = findLineIndexWhenAllocated (area->y);
            retWidget == NULL && lineIndex < lines->size (); lineIndex++) {
@@ -1721,7 +1721,7 @@ core::Widget *Textblock::drawLevel (core::View *view, core::Rectangle *area,
       }
       break;
 
-   case OOFStackIterator::OOF_REF:
+   case OOFStackingIterator::OOF_REF:
       retWidget = drawOOFReferences (view, area, iteratorStack);
       break;
 
@@ -1746,8 +1746,8 @@ core::Widget *Textblock::drawOOFReferences (core::View *view,
 
    // TODO Inefficient. Store Widgets OOF references in seperate list?
 
-   OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
-   assert (osi->majorLevel == OOFStackIterator::OOF_REF);
+   OOFStackingIterator *osi = (OOFStackingIterator*)iteratorStack->getTop ();
+   assert (osi->majorLevel == OOFStackingIterator::OOF_REF);
 
    Widget *retWidget = NULL;
 

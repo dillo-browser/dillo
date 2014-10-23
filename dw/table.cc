@@ -362,7 +362,7 @@ core::Widget *Table::drawLevel (core::View *view, core::Rectangle *area,
 {
    DBG_OBJ_ENTER ("draw", 0, "Table/drawLevel", "(%d, %d, %d * %d), %s",
                   area->x, area->y, area->width, area->height,
-                  OOFStackIterator::majorLevelText (majorLevel));
+                  OOFStackingIterator::majorLevelText (majorLevel));
 
    Widget *retWidget = NULL;
 
@@ -385,9 +385,10 @@ core::Widget *Table::drawLevel (core::View *view, core::Rectangle *area,
 #endif
 
    switch (majorLevel) {
-   case OOFStackIterator::IN_FLOW:
+   case OOFStackingIterator::IN_FLOW:
       {
-         OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
+         OOFStackingIterator *osi =
+            (OOFStackingIterator*)iteratorStack->getTop ();
 
          while (retWidget == NULL && osi->index < children->size ()) {
             if (childDefined (osi->index)) {

@@ -32,7 +32,7 @@ namespace dw {
 
 namespace oof {
 
-const char *OOFAwareWidget::OOFStackIterator::majorLevelText (int majorLevel)
+const char *OOFAwareWidget::OOFStackingIterator::majorLevelText (int majorLevel)
 {
    switch (majorLevel) {
    case START:      return "START";
@@ -47,7 +47,7 @@ const char *OOFAwareWidget::OOFStackIterator::majorLevelText (int majorLevel)
    }
 }
 
-void OOFAwareWidget::OOFStackIterator::intoStringBuffer(StringBuffer *sb)
+void OOFAwareWidget::OOFStackingIterator::intoStringBuffer(StringBuffer *sb)
 {
    sb->append ("(");
    sb->append (majorLevelText (majorLevel));
@@ -333,10 +333,10 @@ Widget *OOFAwareWidget::draw (View *view, Rectangle *area,
    DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
 
-   OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
+   OOFStackingIterator *osi = (OOFStackingIterator*)iteratorStack->getTop ();
    Widget *retWidget = NULL;
 
-   while (retWidget == NULL && osi->majorLevel < OOFStackIterator::END) {
+   while (retWidget == NULL && osi->majorLevel < OOFStackingIterator::END) {
       retWidget = drawLevel (view, area, iteratorStack, osi->majorLevel);
 
       if (retWidget) {
@@ -381,49 +381,51 @@ Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area,
    DBG_OBJ_ENTER ("draw", 0, "OOFAwareWidget/drawLevel",
                   "(%d, %d, %d * %d), %s",
                   area->x, area->y, area->width, area->height,
-                  OOFStackIterator::majorLevelText (majorLevel));
+                  OOFStackingIterator::majorLevelText (majorLevel));
 
    Widget *retWidget = NULL;
 
    switch (majorLevel) {
-   case OOFStackIterator::START:
+   case OOFStackingIterator::START:
       break;
 
-   case OOFStackIterator::BACKGROUND:
+   case OOFStackingIterator::BACKGROUND:
       drawWidgetBox (view, area, false);
       break;
 
-   case OOFStackIterator::SC_BOTTOM:
+   case OOFStackingIterator::SC_BOTTOM:
       if (stackingContextMgr) {
-         OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
+         OOFStackingIterator *osi =
+            (OOFStackingIterator*)iteratorStack->getTop ();
          retWidget =
             stackingContextMgr->drawBottom (view, area, iteratorStack,
                                             &osi->minorLevel, &osi->index);
       }
       break;
 
-   case OOFStackIterator::IN_FLOW:
+   case OOFStackingIterator::IN_FLOW:
       // Should be implemented in the sub class.
       break;
 
-   case OOFStackIterator::OOF_REF:
+   case OOFStackingIterator::OOF_REF:
       // Should be implemented in the sub class (when references are hold).
       break;
 
-   case OOFStackIterator::OOF_CONT:
+   case OOFStackingIterator::OOF_CONT:
       retWidget = drawOOF (view, area, iteratorStack);
       break;
 
-   case OOFStackIterator::SC_TOP:
+   case OOFStackingIterator::SC_TOP:
       if (stackingContextMgr) {
-         OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
+         OOFStackingIterator *osi =
+            (OOFStackingIterator*)iteratorStack->getTop ();
          retWidget =
             stackingContextMgr->drawTop (view, area, iteratorStack,
                                          &osi->minorLevel, &osi->index);
       }
       break;
 
-   case OOFStackIterator::END:
+   case OOFStackingIterator::END:
       break;
    }
 
@@ -435,8 +437,8 @@ Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area,
 Widget *OOFAwareWidget::drawOOF (View *view, Rectangle *area,
                                  StackingIteratorStack *iteratorStack)
 {
-   OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
-   assert (osi->majorLevel == OOFStackIterator::OOF_CONT);
+   OOFStackingIterator *osi = (OOFStackingIterator*)iteratorStack->getTop ();
+   assert (osi->majorLevel == OOFStackingIterator::OOF_CONT);
 
    Widget *retWidget = NULL;
 
@@ -549,9 +551,9 @@ Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y)
 
 Object *OOFAwareWidget::stackingIterator (bool atEnd)
 {
-   OOFStackIterator *osi = new OOFStackIterator ();
+   OOFStackingIterator *osi = new OOFStackingIterator ();
    // TODO Consider atEnd.
-   osi->majorLevel = OOFStackIterator::BACKGROUND;
+   osi->majorLevel = OOFStackingIterator::BACKGROUND;
    osi->minorLevel = osi->index = 0;
    return osi;
 }

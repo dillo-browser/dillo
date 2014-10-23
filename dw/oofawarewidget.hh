@@ -104,7 +104,7 @@ protected:
       bool prev ();
    };
 
-   class OOFStackIterator: public lout::object::Object
+   class OOFStackingIterator: public lout::object::Object
    {
    public:
       enum { START, BACKGROUND, SC_BOTTOM, IN_FLOW, OOF_REF, OOF_CONT, SC_TOP,
