@@ -355,12 +355,15 @@ Widget *OOFAwareWidget::draw (View *view, Rectangle *area,
    DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
 
-   OOFStackingIterator *osi = (OOFStackingIterator*)iteratorStack->getTop ();
    Widget *retWidget = NULL;
 
-   while (retWidget == NULL && osi->majorLevel < OOFStackingIterator::END) {
-      retWidget = drawLevel (view, area, iteratorStack, osi->majorLevel);
-
+   while (retWidget == NULL &&
+          ((OOFStackingIterator*)iteratorStack->getTop())->majorLevel
+          < OOFStackingIterator::END) {
+      retWidget = drawLevel (view, area, iteratorStack,
+                             ((OOFStackingIterator*)iteratorStack->getTop())
+                                ->majorLevel);
+      
       if (retWidget) {
          if (retWidget->getParent () == this) {
             DBG_OBJ_MSGF ("draw", 1, "interrupted at %p, drawing seperately",
@@ -381,12 +384,15 @@ Widget *OOFAwareWidget::draw (View *view, Rectangle *area,
                assert (retWidget2 == NULL);
             }
 
-            osi->registerWidgetDrawnAfterInterruption (retWidget);
+            ((OOFStackingIterator*)iteratorStack->getTop())
+               ->registerWidgetDrawnAfterInterruption (retWidget);
 
             retWidget = NULL; // Continue with the current state of "iterator".
             DBG_OBJ_MSG ("draw", 1, "done with interruption");
          }
       } else {
+         OOFStackingIterator* osi =
+            (OOFStackingIterator*)iteratorStack->getTop();
          osi->majorLevel++;
          osi->minorLevel = osi->index = 0;
       }
