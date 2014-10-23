@@ -20,7 +20,8 @@ protected:
    void getExtremesImpl (core::Extremes *extremes);
    void containerSizeChangedForChildren ();
    bool usesAvailWidth ();
-   void draw (core::View *view, core::Rectangle *area);
+   Widget *draw (core::View *view, core::Rectangle *area,
+                 core::StackingIteratorStack *iteratorStack);
 
 public:
    Ruler ();

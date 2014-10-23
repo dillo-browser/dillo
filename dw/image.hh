@@ -134,8 +134,9 @@ protected:
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
    void containerSizeChangedForChildren ();
-
-   void draw (core::View *view, core::Rectangle *area);
+   
+   Widget *draw (core::View *view, core::Rectangle *area,
+                 core::StackingIteratorStack *iteratorStack);
 
    bool buttonPressImpl (core::EventButton *event);
    bool buttonReleaseImpl (core::EventButton *event);

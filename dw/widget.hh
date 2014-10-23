@@ -277,8 +277,6 @@ protected:
    inline void queueResize (int ref, bool extremesChanged)
    { queueResize (ref, extremesChanged, false); }
 
-   virtual void draw (View *view, Rectangle *area);
-
    /**
     * \brief See \ref dw-widget-sizes.
     */
@@ -470,8 +468,9 @@ public:
 
    bool intersects (Rectangle *area, Rectangle *intersection);
 
+   /** Area is given in widget coordinates. */
    virtual Widget *draw (View *view, Rectangle *area,
-                         StackingIteratorStack *iteratorStack);
+                         StackingIteratorStack *iteratorStack) = 0;
    Widget *drawTotal (View *view, Rectangle *area,
                       StackingIteratorStack *iteratorStack);
    void drawToplevel (View *view, Rectangle *area);

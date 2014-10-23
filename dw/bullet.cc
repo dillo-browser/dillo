@@ -57,7 +57,8 @@ void Bullet::containerSizeChangedForChildren ()
    DBG_OBJ_LEAVE ();
 }
 
-void Bullet::draw (core::View *view, core::Rectangle *area)
+core::Widget *Bullet::draw (core::View *view, core::Rectangle *area,
+                            core::StackingIteratorStack *iteratorStack)
 {
    int x, y, l;
    bool filled = true;
@@ -80,6 +81,8 @@ void Bullet::draw (core::View *view, core::Rectangle *area)
       view->drawArc (getStyle()->color, core::style::Color::SHADING_NORMAL,
                      filled, x + l/2, y + l/2, l, l, 0, 360);
    }
+
+   return NULL;
 }
 
 core::Iterator *Bullet::iterator (core::Content::Type mask, bool atEnd)

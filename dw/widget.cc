@@ -179,22 +179,6 @@ bool Widget::intersects (Rectangle *area, Rectangle *intersection)
    return r;
 }
 
-/** Area is given in widget coordinates. */
-void Widget::draw (View *view, Rectangle *area)
-{
-   DBG_OBJ_MSG ("draw", 0, "<b>Widget::draw not implemented</b>");
-   misc::assertNotReached ();
-}
-
-/** Area is given in widget coordinates. */
-Widget *Widget::draw (View *view, Rectangle *area,
-                      StackingIteratorStack *iteratorStack)
-{
-   // Suitable for widgets without children.
-   draw (view, area);
-   return NULL;
-}
-
 Widget *Widget::drawTotal (View *view, Rectangle *area,
                            StackingIteratorStack *iteratorStack)
 {
