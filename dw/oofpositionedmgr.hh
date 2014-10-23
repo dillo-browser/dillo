@@ -13,10 +13,11 @@ protected:
    class Child: public lout::object::Object
    {
    public:
-      core::Widget *widget, *generator;
+      core::Widget *widget;
+      OOFAwareWidget *generator;
       int x, y;
 
-      inline Child (core::Widget *widget, core::Widget *generator)
+      inline Child (core::Widget *widget, OOFAwareWidget *generator)
       { this->widget = widget; this->generator = generator; x = y = 0; }  
    };
 
@@ -65,7 +66,7 @@ public:
    void sizeAllocateEnd (OOFAwareWidget *caller);
    void containerSizeChangedForChildren ();
    core::Widget *draw (core::View *view, core::Rectangle *area,
-                       lout::container::untyped::Stack *iterator, int *index);
+                       core::StackingIteratorStack *iteratorStack, int *index);
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);

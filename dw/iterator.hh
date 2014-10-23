@@ -263,6 +263,30 @@ public:
                             hpos, vpos); }
 };
 
+/**
+ * \brief Some completely different kind of iterator: ...
+ */
+class StackingIteratorStack
+{
+private:
+   lout::container::untyped::Vector *vector;
+   int topPos;
+   
+public:
+   StackingIteratorStack ();
+   ~StackingIteratorStack ();
+
+   void intoStringBuffer(lout::misc::StringBuffer *sb);
+
+   inline bool atRealTop () { return topPos == vector->size () - 1; }
+   inline lout::object::Object *getTop () { return vector->get (topPos); }
+
+   void push (lout::object::Object *object);
+   void pop ();
+   void forward ();
+   void backward ();
+};
+
 } // namespace core
 } // namespace dw
 

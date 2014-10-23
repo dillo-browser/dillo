@@ -472,7 +472,7 @@ protected:
    bool isBlockLevel ();
 
    Widget *drawLevel (core::View *view, core::Rectangle *area,
-                      lout::container::untyped::Stack *iterator,
+                      core::StackingIteratorStack *iteratorStack,
                       int majorLevel);
 
    //bool buttonPressImpl (core::EventButton *event);

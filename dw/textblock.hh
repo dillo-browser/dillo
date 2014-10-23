@@ -643,7 +643,10 @@ protected:
    void drawSpace (int wordIndex, core::View *view, core::Rectangle *area,
                    int xWidget, int yWidgetBase);
    Widget *drawLine (Line *line, core::View *view, core::Rectangle *area,
-                     lout::container::untyped::Stack *iterator);
+                     core::StackingIteratorStack *iteratorStack);
+   Widget *drawOOFReferences (core::View *view, core::Rectangle *area,
+                              core::StackingIteratorStack *iteratorStack);
+
    int findLineIndex (int y);
    int findLineIndexWhenNotAllocated (int y);
    int findLineIndexWhenAllocated (int y);
@@ -799,7 +802,7 @@ protected:
    void calcTextOffset (int lineIndex, int totalWidth);
 
    Widget *drawLevel (core::View *view, core::Rectangle *area,
-                      lout::container::untyped::Stack *iterator,
+                      core::StackingIteratorStack *iteratorStack,
                       int majorLevel);
 
    void sizeRequestImpl (core::Requisition *requisition);

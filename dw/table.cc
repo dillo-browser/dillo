@@ -357,7 +357,7 @@ bool Table::isBlockLevel ()
 }
 
 core::Widget *Table::drawLevel (core::View *view, core::Rectangle *area,
-                                lout::container::untyped::Stack *iterator,
+                                core::StackingIteratorStack *iteratorStack,
                                 int majorLevel)
 {
    DBG_OBJ_ENTER ("draw", 0, "Table/drawLevel", "(%d, %d, %d * %d), %s",
@@ -386,19 +386,29 @@ core::Widget *Table::drawLevel (core::View *view, core::Rectangle *area,
 
    switch (majorLevel) {
    case OOFStackIterator::IN_FLOW:
-      for (int i = 0; retWidget == NULL && i < children->size (); i++) {
-         if (childDefined (i)) {
-            Widget *child = children->get(i)->cell.widget;
-            core::Rectangle childArea;
-            if (!core::StackingContextMgr::handledByStackingContextMgr (child)
-                && child->intersects (area, &childArea))
-               retWidget = child->drawTotal (view, &childArea, iterator);
+      {
+         OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
+
+         while (retWidget == NULL && osi->index < children->size ()) {
+            if (childDefined (osi->index)) {
+               Widget *child = children->get(osi->index)->cell.widget;
+               core::Rectangle childArea;
+               if (!core::StackingContextMgr::handledByStackingContextMgr
+                   (child)
+                   && child->intersects (area, &childArea))
+                  retWidget =
+                     child->drawTotal (view, &childArea, iteratorStack);
+            }
+  
+            if (retWidget == NULL)
+               osi->index++;
          }
       }
       break;
 
    default:
-      retWidget = OOFAwareWidget::drawLevel (view, area, iterator, majorLevel);
+      retWidget =
+         OOFAwareWidget::drawLevel (view, area, iteratorStack, majorLevel);
       break;
    }
 

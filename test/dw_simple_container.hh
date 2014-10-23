@@ -45,7 +45,7 @@ public:
    ~SimpleContainer ();
 
    Widget *draw (core::View *view, core::Rectangle *area,
-                 lout::container::untyped::Stack *iterator);
+                 core::StackingIteratorStack *iteratorStack);
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);
    void removeChild (Widget *child);
 

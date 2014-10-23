@@ -169,7 +169,7 @@ bool OOFPositionedMgr::haveExtremesChanged ()
 
 
 Widget *OOFPositionedMgr::draw (View *view, Rectangle *area,
-                                lout::container::untyped::Stack *iterator,
+                                StackingIteratorStack *iteratorStack,
                                 int *index)
 {
    DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d]",
@@ -177,12 +177,20 @@ Widget *OOFPositionedMgr::draw (View *view, Rectangle *area,
 
    Widget *retWidget = NULL;
 
-   for (; retWidget == NULL && *index < children->size(); (*index)++) {
-      Widget *childWidget = children->get(*index)->widget;
-      Rectangle childArea;
-      if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
-          childWidget->intersects (area, &childArea))
-         retWidget = childWidget->drawTotal (view, &childArea, iterator);
+   while (retWidget == NULL && *index < children->size()) {
+      Child *child = children->get(*index);
+
+      if (!OOFAwareWidget:: doesWidgetOOFInterruptDrawing
+          (child->widget, child->generator, container)) {
+         Rectangle childArea;
+         if (!StackingContextMgr::handledByStackingContextMgr (child->widget) &&
+             child->widget->intersects (area, &childArea))
+            retWidget =
+               child->widget->drawTotal (view, &childArea, iteratorStack);
+      }
+
+      if (retWidget == NULL)
+         (*index)++;
    }
 
    DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);

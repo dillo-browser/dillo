@@ -471,9 +471,9 @@ public:
    bool intersects (Rectangle *area, Rectangle *intersection);
 
    virtual Widget *draw (View *view, Rectangle *area,
-                         lout::container::untyped::Stack *iterator);
+                         StackingIteratorStack *iteratorStack);
    Widget *drawTotal (View *view, Rectangle *area,
-                      lout::container::untyped::Stack *iterator);
+                      StackingIteratorStack *iteratorStack);
    void drawToplevel (View *view, Rectangle *area);
 
    bool buttonPress (EventButton *event);

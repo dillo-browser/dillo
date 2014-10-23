@@ -1278,8 +1278,7 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
 }
 
 Widget *OOFFloatsMgr::draw (View *view, Rectangle *area,
-                            lout::container::untyped::Stack *iterator,
-                            int *index)
+                            StackingIteratorStack *iteratorStack, int *index)
 {
    DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d]",
                   area->x, area->y, area->width, area->height, *index);
@@ -1287,10 +1286,11 @@ Widget *OOFFloatsMgr::draw (View *view, Rectangle *area,
    Widget *retWidget = NULL;
 
    if (*index < leftFloatsCB->size ())
-      retWidget = drawFloats (leftFloatsCB, view, area, iterator, index, 0);
+      retWidget =
+         drawFloats (leftFloatsCB, view, area, iteratorStack, index, 0);
 
    if (retWidget == NULL)
-      retWidget = drawFloats (rightFloatsCB, view, area, iterator, index,
+      retWidget = drawFloats (rightFloatsCB, view, area, iteratorStack, index,
                               leftFloatsCB->size ());
 
    DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
@@ -1300,7 +1300,7 @@ Widget *OOFFloatsMgr::draw (View *view, Rectangle *area,
 
 Widget *OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
                                   Rectangle *area,
-                                  lout::container::untyped::Stack *iterator,
+                                  StackingIteratorStack *iteratorStack,
                                   int *index, int startIndex)
 {
    // This could be improved, since the list is sorted: search the
@@ -1309,12 +1309,21 @@ Widget *OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
 
    Widget *retWidget = NULL;
 
-   for (; retWidget == NULL && *index - startIndex < list->size(); (*index)++) {
-      Widget *childWidget = list->get(*index - startIndex)->getWidget ();
-      Rectangle childArea;
-      if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
-          childWidget->intersects (area, &childArea))
-         retWidget = childWidget->drawTotal (view, &childArea, iterator);
+   while (retWidget == NULL && *index - startIndex < list->size()) {
+      Float *vloat = list->get(*index - startIndex);
+      Widget *childWidget = vloat->getWidget ();
+     
+      if (!OOFAwareWidget:: doesWidgetOOFInterruptDrawing
+          (childWidget, vloat->generatingBlock, container)) {
+         Rectangle childArea;
+         if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
+             childWidget->intersects (area, &childArea))
+            retWidget =
+               childWidget->drawTotal (view, &childArea, iteratorStack);
+      }
+
+      if (retWidget == NULL)
+         (*index)++;
    }
 
    return retWidget;

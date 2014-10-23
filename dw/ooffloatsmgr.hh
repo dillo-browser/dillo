@@ -286,7 +286,7 @@ private:
 
    core::Widget *drawFloats (SortedFloatsVector *list, core::View *view,
                              core::Rectangle *area,
-                             lout::container::untyped::Stack *iterator,
+                             core::StackingIteratorStack *iteratorStack,
                              int *index, int startIndex);
    core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y);
 
@@ -343,7 +343,7 @@ public:
    void sizeAllocateEnd (OOFAwareWidget *caller);
    void containerSizeChangedForChildren ();
    core::Widget *draw (core::View *view, core::Rectangle *area,
-                       lout::container::untyped::Stack *iterator, int *index);
+                       core::StackingIteratorStack *iteratorStack, int *index);
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);

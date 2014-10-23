@@ -188,7 +188,7 @@ void Widget::draw (View *view, Rectangle *area)
 
 /** Area is given in widget coordinates. */
 Widget *Widget::draw (View *view, Rectangle *area,
-                      lout::container::untyped::Stack *iterator)
+                      StackingIteratorStack *iteratorStack)
 {
    // Suitable for widgets without children.
    draw (view, area);
@@ -196,34 +196,64 @@ Widget *Widget::draw (View *view, Rectangle *area,
 }
 
 Widget *Widget::drawTotal (View *view, Rectangle *area,
-                           lout::container::untyped::Stack *iterator)
+                           StackingIteratorStack *iteratorStack)
 {
    DBG_OBJ_ENTER ("draw", 0, "drawTotal", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
 
-   Object *si = stackingIterator (false);
-   if (si) {
-      iterator->push (si);
-      DBG_OBJ_MSGF ("draw", 1, "pushing on iterator; now %d element(s)",
-                    iterator->size ());
-   } else
-      DBG_OBJ_MSGF ("draw", 1, "nothing on iterator; %d element(s)",
-                    iterator->size ());
-        
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      iteratorStack->intoStringBuffer (&sb);
+      DBG_OBJ_MSGF ("draw", 2, "initial iteratorStack: %s", sb.getChars ());
+   }
 
-   Widget *retWidget = draw (view, area, iterator);
+   Object *si = NULL;
+
+   if (iteratorStack->atRealTop ()) {
+      si = stackingIterator (false);
+      if (si) {
+         iteratorStack->push (si);
+      }
+   } else
+      iteratorStack->forward ();
+
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      iteratorStack->intoStringBuffer (&sb);
+      DBG_OBJ_MSGF ("draw", 2, "iteratorStack before drawing: %s",
+                    sb.getChars ());
+   }
+
+   Widget *retWidget = draw (view, area, iteratorStack);
+   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      iteratorStack->intoStringBuffer (&sb);
+      DBG_OBJ_MSGF ("draw", 2, "iteratorStack after drawing: %s",
+                    sb.getChars ());
+   }
 
    // A return value other than NULL indicates a widget with a complex
    // drawing process, for which stackIterator() must return something
    // non-NULL, so that the interrupted drawing process can be
-   // continued.
+   // continued. (TODO: Not quite correct when forward() was called
+   // instead of push().)
 
-   assert (retWidget == NULL || si != NULL);
+   // assert (retWidget == NULL || si != NULL);
 
-   if (retWidget == NULL && si != NULL)
-      iterator->pop ();
+   if (retWidget == NULL) {
+      if (si)
+         iteratorStack->pop ();
+   } else
+      iteratorStack->backward ();
 
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", retWidget);
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      iteratorStack->intoStringBuffer (&sb);
+      DBG_OBJ_MSGF ("draw", 2, "final iteratorStack: %s", sb.getChars ());
+   }
+
    DBG_OBJ_LEAVE ();
    return retWidget;
 }
@@ -232,8 +262,8 @@ void Widget::drawToplevel (View *view, Rectangle *area)
 {
    assert (parent == NULL);
 
-   lout::container::untyped::Stack iterator (true);
-   Widget *retWidget = drawTotal (view, area, &iterator);
+   StackingIteratorStack iteratorStack;
+   Widget *retWidget = drawTotal (view, area, &iteratorStack);
 
    // Everything should be finished at this point.
    assert (retWidget == NULL);

@@ -111,6 +111,8 @@ protected:
              END } ;
       int majorLevel, minorLevel, index;
 
+      void intoStringBuffer(lout::misc::StringBuffer *sb);
+
       static const char *majorLevelText (int majorLevel4);
    };
 
@@ -171,6 +173,8 @@ protected:
    static inline bool testWidgetRelativelyPositioned (Widget *widget)
    { return widget->getStyle()->position == core::style::POSITION_RELATIVE; }
 
+   static bool getOOFMIndex (Widget *widget);
+
    void initOutOfFlowMgrs ();
    void correctRequisitionByOOF (core::Requisition *requisition,
                                  void (*splitHeightFun) (int, int*, int*));
@@ -178,11 +182,12 @@ protected:
    void sizeAllocateStart (core::Allocation *allocation);
    void sizeAllocateEnd ();
    void containerSizeChangedForChildrenOOF ();
+
    virtual Widget *drawLevel (core::View *view, core::Rectangle *area,
-                              lout::container::untyped::Stack *iterator,
+                              core::StackingIteratorStack *iteratorStack,
                               int majorLevel);
    Widget *drawOOF (core::View *view, core::Rectangle *area,
-                    lout::container::untyped::Stack *iterator);
+                    core::StackingIteratorStack *iteratorStack);
    Widget *getWidgetOOFAtPoint (int x, int y);
 
    static bool isOOFContainer (Widget *widget, int oofmIndex);
@@ -203,8 +208,13 @@ public:
    OOFAwareWidget ();
    ~OOFAwareWidget ();
 
+   static bool doesWidgetOOFInterruptDrawing (Widget *widget,
+                                              OOFAwareWidget *generator,
+                                              OOFAwareWidget *container);
+   bool doesWidgetOOFInterruptDrawing (Widget *widget);
+
    Widget *draw (core::View *view, core::Rectangle *area,
-                 lout::container::untyped::Stack *iterator);
+                 core::StackingIteratorStack *iteratorStack);
    lout::object::Object *stackingIterator (bool atEnd);
 
    virtual void borderChanged (int y, core::Widget *vloat);

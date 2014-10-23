@@ -61,34 +61,33 @@ void StackingContextMgr::addChildSCWidget (Widget *widget)
 }
 
 Widget *StackingContextMgr::drawBottom (View *view, Rectangle *area,
-                                        lout::container::untyped::Stack
-                                        *iterator,
+                                        StackingIteratorStack *iteratorStack,
                                         int *zIndexOffset, int *index)
 {
    DBG_OBJ_ENTER ("draw", 0, "drawBottom", "(%d, %d, %d * %d), [%d], [%d]",
                   area->x, area->y, area->width, area->height, *zIndexOffset,
                   *index);
    Widget *retWidget =
-      draw (view, area, iterator, index, INT_MIN, -1, zIndexOffset);
+      draw (view, area, iteratorStack, index, INT_MIN, -1, zIndexOffset);
    DBG_OBJ_LEAVE ();
    return retWidget;
 }
 
 Widget *StackingContextMgr::drawTop (View *view, Rectangle *area,
-                                     lout::container::untyped::Stack *iterator,
+                                     StackingIteratorStack *iteratorStack,
                                      int *zIndexOffset, int *index)
 {
    DBG_OBJ_ENTER ("draw", 0, "drawTop", "(%d, %d, %d * %d), [%d], [%d]",
                   area->x, area->y, area->width, area->height, *zIndexOffset,
                   *index);
    Widget *retWidget =
-      draw (view, area, iterator, index, 0, INT_MAX, zIndexOffset);
+      draw (view, area, iteratorStack, index, 0, INT_MAX, zIndexOffset);
    DBG_OBJ_LEAVE ();
    return retWidget;
 }
 
 Widget *StackingContextMgr::draw (View *view, Rectangle *area,
-                                  lout::container::untyped::Stack *iterator,
+                                  StackingIteratorStack *iteratorStack,
                                   int *zIndexOffset, int startZIndex,
                                   int endZIndex, int *index)
 {
@@ -102,23 +101,26 @@ Widget *StackingContextMgr::draw (View *view, Rectangle *area,
    Widget *retWidget = NULL;
    int startZIndexEff = max (minZIndex, startZIndex),
       endZIndexEff = min (maxZIndex, endZIndex);
-   for (; retWidget == NULL && *zIndexOffset + startZIndexEff <= endZIndexEff;
-        (*zIndexOffset)++) {
+   while (retWidget == NULL && *zIndexOffset + startZIndexEff <= endZIndexEff) {
       DBG_OBJ_MSGF ("draw", 1, "drawing zIndex = %d + %d",
                     *zIndexOffset, startZIndexEff);
       DBG_OBJ_MSG_START ();
 
-      // TODO This is wrong.
-      for (; retWidget == NULL && *index < childSCWidgets->size ();
-           (*index)++) {
+      while (retWidget == NULL && *index < childSCWidgets->size ()) {
          Widget *child = childSCWidgets->get (*index);
          DBG_OBJ_MSGF ("draw", 2, "widget %p has zIndex = %d",
                        child, child->getStyle()->zIndex);
          Rectangle childArea;
          if (child->getStyle()->zIndex == *zIndexOffset + startZIndexEff &&
              child->intersects (area, &childArea))
-            retWidget = child->drawTotal (view, &childArea, iterator);
+            retWidget = child->drawTotal (view, &childArea, iteratorStack);
+
+         if (retWidget == NULL)
+            (*index)++;
       }
+
+      if (retWidget == NULL)
+         (*zIndexOffset)++;
 
       DBG_OBJ_MSG_END ();
    }

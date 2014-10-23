@@ -26,7 +26,6 @@ using namespace dw;
 using namespace dw::core;
 using namespace dw::core::style;
 using namespace lout::object;
-using namespace lout::container::untyped;
 using namespace lout::misc;
 
 namespace dw {
@@ -46,6 +45,17 @@ const char *OOFAwareWidget::OOFStackIterator::majorLevelText (int majorLevel)
    case END:        return "END";
    default:         return "???";
    }
+}
+
+void OOFAwareWidget::OOFStackIterator::intoStringBuffer(StringBuffer *sb)
+{
+   sb->append ("(");
+   sb->append (majorLevelText (majorLevel));
+   sb->append (", ");
+   sb->appendInt (minorLevel);
+   sb->append (", ");
+   sb->appendInt (index);
+   sb->append (")");
 }
 
 int OOFAwareWidget::CLASS_ID = -1;
@@ -81,6 +91,20 @@ void OOFAwareWidget::notifySetAsTopLevel ()
 {
    oofContainer[OOFM_FLOATS] = oofContainer[OOFM_ABSOLUTE]
       = oofContainer[OOFM_FIXED] = this;
+}
+
+bool OOFAwareWidget::getOOFMIndex (Widget *widget)
+{
+   if (testWidgetFloat (widget))
+      return OOFM_FLOATS;
+   else if (testWidgetAbsolutelyPositioned (widget))
+      return OOFM_ABSOLUTE;
+   else if (testWidgetFixedlyPositioned (widget))
+      return OOFM_FIXED;
+   else {
+      lout::misc::assertNotReached ();
+      return -1;
+   }
 }
 
 bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
@@ -270,18 +294,75 @@ void OOFAwareWidget::containerSizeChangedForChildrenOOF ()
          outOfFlowMgr[i]->containerSizeChangedForChildren ();
 }
 
-Widget *OOFAwareWidget::draw (View *view, Rectangle *area, Stack *iterator)
+bool OOFAwareWidget::doesWidgetOOFInterruptDrawing (Widget *widget,
+                                                    OOFAwareWidget *generator,
+                                                    OOFAwareWidget *container)
+{
+   DBG_OBJ_ENTER_O ("draw", 0, (void*)NULL, "doesWidgetOOFInterruptDrawing",
+                    "%p, %p, %p", widget, generator, container);
+
+   int cl = container->stackingContextWidget->getLevel (),
+      gl = generator->stackingContextWidget->getLevel ();
+
+   DBG_OBJ_MSGF_O ("draw", 1, (void*)NULL, "%d < %d => %s",
+                   cl, gl, cl < gl ? "true" : "false");
+   
+   DBG_OBJ_LEAVE_O ((void*)NULL);
+   return cl < gl;
+}
+
+bool OOFAwareWidget::doesWidgetOOFInterruptDrawing (Widget *widget)
+{
+   DBG_OBJ_ENTER ("draw", 0, "doesWidgetOOFInterruptDrawing", "%p", widget);
+
+   // This is the generator of the widget.
+   int oofmIndex = getOOFMIndex (widget);
+   DBG_OBJ_MSGF ("draw", 1, "oofmIndex = %d", oofmIndex);
+
+   bool b =
+      doesWidgetOOFInterruptDrawing (widget, this, oofContainer[oofmIndex]);
+   DBG_OBJ_MSGF ("draw", 1, "=> %s", b ? "true" : "false");
+
+   DBG_OBJ_LEAVE ();
+   return b;
+}
+
+Widget *OOFAwareWidget::draw (View *view, Rectangle *area,
+                              StackingIteratorStack *iteratorStack)
 {
    DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
 
-   OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
+   OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
    Widget *retWidget = NULL;
 
    while (retWidget == NULL && osi->majorLevel < OOFStackIterator::END) {
-      retWidget = drawLevel (view, area, iterator, osi->majorLevel);
+      retWidget = drawLevel (view, area, iteratorStack, osi->majorLevel);
 
-      if (retWidget == NULL) {
+      if (retWidget) {
+         if (retWidget->getParent () == this) {
+            DBG_OBJ_MSGF ("draw", 1, "interrupted at %p, drawing seperately",
+                          retWidget);
+            DBG_IF_RTFL {
+               StringBuffer sb;
+               iteratorStack->intoStringBuffer (&sb);
+               DBG_OBJ_MSGF ("draw", 2, "iteratorStack: %s", sb.getChars ());
+            }
+
+            core::Rectangle retWidgetArea;
+            if (retWidget->intersects (area, &retWidgetArea)) {
+               // Similar to Widget::drawToplevel. Nested
+               // interruptions are not allowed.
+               StackingIteratorStack iteratorStack2;
+               Widget *retWidget2 =
+                  retWidget->drawTotal (view, &retWidgetArea, &iteratorStack2);
+               assert (retWidget2 == NULL);
+            }
+
+            retWidget = NULL; // Continue with the current state of "iterator".
+            DBG_OBJ_MSG ("draw", 1, "done with interruption");
+         }
+      } else {
          osi->majorLevel++;
          osi->minorLevel = osi->index = 0;
       }
@@ -293,7 +374,8 @@ Widget *OOFAwareWidget::draw (View *view, Rectangle *area, Stack *iterator)
    return retWidget;
 }
 
-Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area, Stack *iterator,
+Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area,
+                                   StackingIteratorStack *iteratorStack,
                                    int majorLevel)
 {
    DBG_OBJ_ENTER ("draw", 0, "OOFAwareWidget/drawLevel",
@@ -313,9 +395,9 @@ Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area, Stack *iterator,
 
    case OOFStackIterator::SC_BOTTOM:
       if (stackingContextMgr) {
-         OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
+         OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
          retWidget =
-            stackingContextMgr->drawBottom (view, area, iterator,
+            stackingContextMgr->drawBottom (view, area, iteratorStack,
                                             &osi->minorLevel, &osi->index);
       }
       break;
@@ -329,14 +411,14 @@ Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area, Stack *iterator,
       break;
 
    case OOFStackIterator::OOF_CONT:
-      retWidget = drawOOF (view, area, iterator);
+      retWidget = drawOOF (view, area, iteratorStack);
       break;
 
    case OOFStackIterator::SC_TOP:
       if (stackingContextMgr) {
-         OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
+         OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
          retWidget =
-            stackingContextMgr->drawTop (view, area, iterator,
+            stackingContextMgr->drawTop (view, area, iteratorStack,
                                          &osi->minorLevel, &osi->index);
       }
       break;
@@ -351,19 +433,22 @@ Widget *OOFAwareWidget::drawLevel (View *view, Rectangle *area, Stack *iterator,
 }
 
 Widget *OOFAwareWidget::drawOOF (View *view, Rectangle *area,
-                                 lout::container::untyped::Stack *iterator)
+                                 StackingIteratorStack *iteratorStack)
 {
-   OOFStackIterator *osi = (OOFStackIterator*)iterator->getTop ();
+   OOFStackIterator *osi = (OOFStackIterator*)iteratorStack->getTop ();
    assert (osi->majorLevel == OOFStackIterator::OOF_CONT);
 
    Widget *retWidget = NULL;
 
-   for (; retWidget == NULL && osi->minorLevel < NUM_OOFM; osi->minorLevel++) {
+   while (retWidget == NULL && osi->minorLevel < NUM_OOFM) {
       if(outOfFlowMgr[osi->minorLevel])
-         retWidget = outOfFlowMgr[osi->minorLevel]->draw (view, area, iterator,
-                                                          &(osi->index));
-      if (retWidget == NULL)
+         retWidget =
+            outOfFlowMgr[osi->minorLevel]->draw (view, area, iteratorStack,
+                                                 &(osi->index));
+      if (retWidget == NULL) {
+         osi->minorLevel++;
          osi->index = 0;
+      }
    }
    
    return retWidget;
