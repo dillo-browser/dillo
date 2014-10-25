@@ -285,6 +285,7 @@ public:
    void pop ();
    void forward ();
    void backward ();
+   void cleanup ();
 };
 
 } // namespace core

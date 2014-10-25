@@ -532,6 +532,24 @@ Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y,
                // Continue with the current state of "iterator".
                *interruptedWidget = NULL;
                DBG_OBJ_MSG ("events", 1, "done with interruption");
+
+               // The interrupted widget may have returned non-NULL. In this
+               // case, the stack must be cleaned up explicitly, which would
+               // otherwise be done implicitly during the further search.
+               // (Since drawing is never quit completely, this problem only
+               // applies to searching.)
+               if (widgetAtPoint) {
+                  iteratorStack->cleanup ();
+
+                  DBG_IF_RTFL {
+                     StringBuffer sb;
+                     iteratorStack->intoStringBuffer (&sb);
+                     DBG_OBJ_MSGF ("events", 2,
+                                   "iteratorStack after cleanup: %s",
+                                   sb.getChars ());
+               }
+               }
+                  
             }
          } else {
             OOFStackingIterator* osi =

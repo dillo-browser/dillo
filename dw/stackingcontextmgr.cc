@@ -172,7 +172,7 @@ Widget *StackingContextMgr::getWidgetAtPoint (int x, int y,
                                               int startZIndex, int endZIndex,
                                               int *index)
 {
-   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPointBottom", "%d, %d", x, y);
+   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPoint", "%d, %d", x, y);
 
    Widget *widgetAtPoint = NULL;
 

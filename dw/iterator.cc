@@ -955,5 +955,11 @@ void StackingIteratorStack::backward ()
    topPos--;
 }
 
+void StackingIteratorStack::cleanup ()
+{
+   while (!atRealTop ())
+      vector->remove (vector->size () - 1);
+}
+
 } // namespace core
 } // namespace dw
