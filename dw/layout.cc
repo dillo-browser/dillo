@@ -1110,7 +1110,7 @@ Widget *Layout::getWidgetAtPoint (int x, int y)
    Widget *widget;
 
    if (topLevel && topLevel->wasAllocated ())
-      widget = topLevel->getWidgetAtPoint (x, y);
+      widget = topLevel->getWidgetAtPointToplevel (x, y);
    else
       widget = NULL;
 
@@ -1126,12 +1126,16 @@ Widget *Layout::getWidgetAtPoint (int x, int y)
  */
 void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
 {
+   DBG_OBJ_ENTER ("events", 0, "moveToWidget", "%p, %d",
+                  newWidgetAtPoint, state);
+
    Widget *ancestor, *w;
    Widget **track;
    int trackLen, i, i_a;
    EventCrossing crossingEvent;
 
-   _MSG("moveToWidget: wap=%p nwap=%p\n",widgetAtPoint,newWidgetAtPoint);
+   DBG_OBJ_MSGF ("events", 1, "(old) widgetAtPoint = %p", widgetAtPoint);
+
    if (newWidgetAtPoint != widgetAtPoint) {
       // The mouse pointer has been moved into another widget.
       if (newWidgetAtPoint && widgetAtPoint)
@@ -1201,6 +1205,8 @@ void Layout::moveToWidget (Widget *newWidgetAtPoint, ButtonState state)
       widgetAtPoint = newWidgetAtPoint;
       updateCursor ();
    }
+
+   DBG_OBJ_LEAVE ();
 }
 
 /**

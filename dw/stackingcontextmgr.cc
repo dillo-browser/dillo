@@ -100,8 +100,11 @@ void StackingContextMgr::draw (View *view, Rectangle *area,
 
    int startZIndexEff = max (minZIndex, startZIndex),
       endZIndexEff = min (maxZIndex, endZIndex);
+   // Make sure *zIndexOffset starts at 0, for zIndex = startZIndexEff,
+   // so *zIndexOffset = zIndex - startZIndexEff, and
+   // zIndex = *zIndexOffset + startZIndexEff.
    while (*interruptedWidget == NULL &&
-          *zIndexOffset + startZIndexEff <= endZIndexEff) {
+          *zIndexOffset <= endZIndexEff - startZIndexEff) {
       DBG_OBJ_MSGF ("draw", 1, "drawing zIndex = %d + %d",
                     *zIndexOffset, startZIndexEff);
       DBG_OBJ_MSG_START ();
@@ -132,50 +135,78 @@ void StackingContextMgr::draw (View *view, Rectangle *area,
    DBG_OBJ_LEAVE ();
 }
 
-Widget *StackingContextMgr::getTopWidgetAtPoint (int x, int y)
+Widget *StackingContextMgr::getTopWidgetAtPoint (int x, int y,
+                                                 core::StackingIteratorStack
+                                                 *iteratorStack,
+                                                 Widget **interruptedWidget,
+                                                 int *zIndexOffset, int *index)
 {
    DBG_OBJ_ENTER ("events", 0, "getWidgetAtPointTop", "%d, %d", x, y);
-   Widget *widget = getWidgetAtPoint (x, y, 0, INT_MAX);
-   DBG_OBJ_MSGF ("events", 0, "=> %p", widget);
+   Widget *widget = getWidgetAtPoint (x, y, iteratorStack, interruptedWidget,
+                                      zIndexOffset, 0, INT_MAX, index);
+   DBG_OBJ_MSGF ("events", 0, "=> %p (i: %p)", widget, *interruptedWidget);
    DBG_OBJ_LEAVE ();
    return widget;
 }
 
-Widget *StackingContextMgr::getBottomWidgetAtPoint (int x, int y)
+Widget *StackingContextMgr::getBottomWidgetAtPoint (int x, int y,
+                                                    core::StackingIteratorStack
+                                                    *iteratorStack,
+                                                    Widget **interruptedWidget,
+                                                    int *zIndexOffset,
+                                                    int *index)
 {
    DBG_OBJ_ENTER ("events", 0, "getWidgetAtPointBottom", "%d, %d", x, y);
-   Widget *widget = getWidgetAtPoint (x, y, INT_MIN, -1);
-   DBG_OBJ_MSGF ("events", 0, "=> %p", widget);
+   Widget *widget = getWidgetAtPoint (x, y, iteratorStack, interruptedWidget,
+                                      zIndexOffset, INT_MIN, -1, index);
+   DBG_OBJ_MSGF ("events", 0, "=> %p (i: %p)", widget, *interruptedWidget);
    DBG_OBJ_LEAVE ();
    return widget;
 }
 
-Widget *StackingContextMgr::getWidgetAtPoint (int x, int y, int startZIndex,
-                                              int endZIndex)
+Widget *StackingContextMgr::getWidgetAtPoint (int x, int y,
+                                              StackingIteratorStack
+                                              *iteratorStack,
+                                              Widget **interruptedWidget,
+                                              int *zIndexOffset,
+                                              int startZIndex, int endZIndex,
+                                              int *index)
 {
    DBG_OBJ_ENTER ("events", 0, "getWidgetAtPointBottom", "%d, %d", x, y);
 
    Widget *widgetAtPoint = NULL;
 
-   for (int zIndex = min (maxZIndex, endZIndex);
-        zIndex >= max (minZIndex, startZIndex) && widgetAtPoint == NULL;
-        zIndex--) {
-      DBG_OBJ_MSGF ("events", 1, "searching zIndex = %d", zIndex);
+   // For *zIndexOffset, see draw(). Actually, we start at the end and iterate
+   // to the start (naming is somewhat confusing).
+   int startZIndexEff = max (minZIndex, startZIndex);
+   while (*interruptedWidget == NULL && widgetAtPoint == NULL &&
+          *zIndexOffset >= 0) {
+      DBG_OBJ_MSGF ("events", 1, "searching zIndex = %d + %d",
+                    *zIndexOffset, startZIndexEff);
       DBG_OBJ_MSG_START ();
 
-      for (int i = 0; i < childSCWidgets->size () && widgetAtPoint == NULL;
-           i++) {
-         Widget *child = childSCWidgets->get (i);
+      while (*interruptedWidget == NULL && widgetAtPoint == NULL &&
+             *index >= 0) {
+         Widget *child = childSCWidgets->get (*index);
          DBG_OBJ_MSGF ("events", 2, "widget %p has zIndex = %d",
                        child, child->getStyle()->zIndex);
-         if (child->getStyle()->zIndex == zIndex && child->wasAllocated ())
-            widgetAtPoint = childSCWidgets->get(i)->getWidgetAtPoint (x, y);
+         if (child->getStyle()->zIndex == *zIndexOffset + startZIndexEff)
+            widgetAtPoint =
+               child->getWidgetAtPointTotal (x, y, iteratorStack,
+                                             interruptedWidget);
+
+         if (*interruptedWidget == NULL)
+            (*index)--;
       }
+
+      if (*interruptedWidget == NULL)
+         (*zIndexOffset)--;
 
       DBG_OBJ_MSG_END ();
    }
 
-   DBG_OBJ_MSGF ("events", 0, "=> %p", widgetAtPoint);
+   DBG_OBJ_MSGF ("events", 0, "=> %p (i: %p)",
+                 widgetAtPoint, *interruptedWidget);
    DBG_OBJ_LEAVE ();
    return widgetAtPoint;
 }

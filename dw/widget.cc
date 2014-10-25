@@ -205,7 +205,7 @@ void Widget::drawTotal (View *view, Rectangle *area,
    DBG_IF_RTFL {
       misc::StringBuffer sb;
       iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("draw", 2, "iteratorStack before drawing: %s",
+      DBG_OBJ_MSGF ("draw", 2, "iteratorStack before: %s",
                     sb.getChars ());
    }
 
@@ -215,15 +215,15 @@ void Widget::drawTotal (View *view, Rectangle *area,
    DBG_IF_RTFL {
       misc::StringBuffer sb;
       iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("draw", 2, "iteratorStack after drawing: %s",
+      DBG_OBJ_MSGF ("draw", 2, "iteratorStack after: %s",
                     sb.getChars ());
    }
 
    // A value for *interruptedWidget other than NULL indicates a
-   // widget with a complex drawing process, for which stackIterator()
-   // must return something non-NULL, so that the interrupted drawing
-   // process can be continued. (TODO: Not quite correct when
-   // forward() was called instead of push().)
+   // widget with a complex drawing process, for which
+   // stackingIterator() must return something non-NULL, so that the
+   // interrupted drawing process can be continued. (TODO: Not quite
+   // correct when forward() was called instead of push().)
 
    // assert (*interruptedWidget == NULL || si != NULL);
 
@@ -253,6 +253,94 @@ void Widget::drawToplevel (View *view, Rectangle *area)
    // Everything should be finished at this point.
    assert (interruptedWidget == NULL);
 }
+
+Widget *Widget::getWidgetAtPoint (int x, int y,
+                                  StackingIteratorStack *iteratorStack,
+                                  Widget **interruptedWidget)
+{
+   // Suitable for simple widgets, without children.
+
+   if (wasAllocated () && x >= allocation.x && y >= allocation.y &&
+       x <= allocation.x + allocation.width && y <= allocation.y + getHeight ())
+      return this;
+   else
+      return NULL;
+}
+
+Widget *Widget::getWidgetAtPointTotal (int x, int y,
+                                       StackingIteratorStack *iteratorStack,
+                                       Widget **interruptedWidget)
+{
+   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPointTotal", "%d, %d", x, y);
+
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      iteratorStack->intoStringBuffer (&sb);
+      DBG_OBJ_MSGF ("events", 2, "initial iteratorStack: %s", sb.getChars ());
+   }
+
+   Object *si = NULL;
+
+   if (iteratorStack->atRealTop ()) {
+      si = stackingIterator (true);
+      if (si) {
+         iteratorStack->push (si);
+      }
+   } else
+      iteratorStack->forward ();
+
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      iteratorStack->intoStringBuffer (&sb);
+      DBG_OBJ_MSGF ("events", 2, "iteratorStack before: %s",
+                    sb.getChars ());
+   }
+
+   Widget *widget = getWidgetAtPoint (x, y, iteratorStack, interruptedWidget);
+   DBG_OBJ_MSGF ("events", 1, "=> %p (i: %p)", widget, *interruptedWidget);
+
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      iteratorStack->intoStringBuffer (&sb);
+      DBG_OBJ_MSGF ("events", 2, "iteratorStack after: %s",
+                    sb.getChars ());
+   }
+
+   // See comment in drawTotal().
+
+   // assert (*interruptedWidget == NULL || si != NULL);
+
+   if (*interruptedWidget == NULL) {
+      if (si)
+         iteratorStack->pop ();
+   } else
+      iteratorStack->backward ();
+
+   DBG_IF_RTFL {
+      misc::StringBuffer sb;
+      iteratorStack->intoStringBuffer (&sb);
+      DBG_OBJ_MSGF ("events", 2, "final iteratorStack: %s", sb.getChars ());
+   }
+
+   DBG_OBJ_LEAVE ();
+   return widget;
+}
+
+Widget *Widget::getWidgetAtPointToplevel (int x, int y)
+{
+   assert (parent == NULL);
+
+   StackingIteratorStack iteratorStack;
+   Widget *interruptedWidget = NULL;
+   Widget *widget =
+      getWidgetAtPointTotal (x, y, &iteratorStack, &interruptedWidget);
+
+   // Everything should be finished at this point.
+   assert (interruptedWidget == NULL);
+
+   return widget;
+}
+
 
 void Widget::setParent (Widget *parent)
 {
@@ -1483,61 +1571,6 @@ Widget *Widget::getNearestCommonAncestor (Widget *otherWidget)
 
    return widget1;
 }
-
-
-/**
- * \brief Search recursively through widget.
- *
- * Used by dw::core::Layout:getWidgetAtPoint.
- */
-Widget *Widget::getWidgetAtPoint (int x, int y)
-{
-   if (x >= allocation.x &&
-       y >= allocation.y &&
-       x <= allocation.x + allocation.width &&
-       y <= allocation.y + getHeight ()) {
-
-      if (stackingContextMgr) {
-         Widget *scmWidget =
-            stackingContextMgr->getTopWidgetAtPoint (x, y);
-         if (scmWidget)
-            return scmWidget;
-      }
-
-      // Iterate over the children of this widget. Test recursively, whether
-      // the point is within the child (or one of its children...). If there
-      // is such a child, it is returned. Otherwise, this widget is returned.
-
-      Widget *childAtPoint = NULL;
-      Iterator *it =
-         iterator ((Content::Type)
-                   (Content::WIDGET_IN_FLOW | Content::WIDGET_OOF_CONT),
-                   false);
-
-      while (childAtPoint == NULL && it->next ()) {
-         Widget *child = it->getContent()->widget;
-         if (!StackingContextMgr::handledByStackingContextMgr (child) &&
-             child->wasAllocated ())
-            childAtPoint = child->getWidgetAtPoint (x, y);
-      }
-
-      it->unref ();
-
-      if (childAtPoint)
-         return childAtPoint;
-
-      if (stackingContextMgr) {
-         Widget *scmWidget =
-            stackingContextMgr->getBottomWidgetAtPoint (x, y);
-         if (scmWidget)
-            return scmWidget;
-      }
-       
-      return this;
-   } else
-      return NULL;
-}
-
 
 void Widget::scrollTo (HPosition hpos, VPosition vpos,
                int x, int y, int width, int height)

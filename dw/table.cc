@@ -415,6 +415,64 @@ void Table::drawLevel (core::View *view, core::Rectangle *area,
    DBG_OBJ_LEAVE ();
 }
 
+core::Widget *Table::getWidgetAtPointLevel (int x, int y,
+                                            core::StackingIteratorStack
+                                            *iteratorStack,
+                                            Widget **interruptedWidget,
+                                            int majorLevel)
+{
+   DBG_OBJ_ENTER ("events", 0, "Table/getWidgetAtPointLevel", "%d, %d, %s",
+                  x, y, OOFStackingIterator::majorLevelText (majorLevel));
+
+   Widget *widgetAtPoint = NULL;
+
+   switch (majorLevel) {
+   case OOFStackingIterator::IN_FLOW:
+      {
+         OOFStackingIterator *osi =
+            (OOFStackingIterator*)iteratorStack->getTop ();
+
+         while (widgetAtPoint == NULL && *interruptedWidget == NULL &&
+                osi->index >= 0) {
+            if (childDefined (osi->index)) {
+               Widget *child = children->get(osi->index)->cell.widget;
+               if (!core::StackingContextMgr::handledByStackingContextMgr
+                   (child))
+                  widgetAtPoint =
+                     child->getWidgetAtPointTotal (x, y, iteratorStack,
+                                                   interruptedWidget);
+            }
+  
+            if (*interruptedWidget == NULL)
+               osi->index--;
+         }
+      }
+      break;
+
+   default:
+      widgetAtPoint =
+         OOFAwareWidget::getWidgetAtPointLevel (x, y, iteratorStack,
+                                                interruptedWidget, majorLevel);
+      break;
+   }
+
+   DBG_OBJ_MSGF ("events", 1, "=> %p (i: %p)",
+                 widgetAtPoint, *interruptedWidget);
+   DBG_OBJ_LEAVE ();
+   return widgetAtPoint;
+}
+
+int Table::getLastLevelIndex (int majorLevel, int minorLevel)
+{
+   switch (majorLevel) {
+   case OOFStackingIterator::IN_FLOW:
+      return children->size () - 1;
+
+   default:
+      return OOFAwareWidget::getLastLevelIndex (majorLevel, minorLevel);
+   }   
+}
+
 void Table::removeChild (Widget *child)
 {
    /** \bug Not implemented. */

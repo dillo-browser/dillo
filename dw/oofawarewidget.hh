@@ -177,7 +177,21 @@ protected:
    void drawOOF (core::View *view, core::Rectangle *area,
                  core::StackingIteratorStack *iteratorStack,
                  Widget **interruptedWidget);
-   Widget *getWidgetOOFAtPoint (int x, int y);
+
+   Widget *getWidgetAtPoint (int x, int y,
+                             core::StackingIteratorStack *iteratorStack,
+                             Widget **interruptedWidget);
+   virtual Widget *getWidgetAtPointLevel (int x, int y,
+                                          core::StackingIteratorStack
+                                          *iteratorStack,
+                                          Widget **interruptedWidget,
+                                          int majorLevel);
+   Widget *getWidgetOOFAtPoint (int x, int y,
+                                core::StackingIteratorStack *iteratorStack,
+                                Widget **interruptedWidget);
+
+   virtual int getLastMinorLevel (int majorLevel);
+   virtual int getLastLevelIndex (int majorLevel, int minorLevel);
 
    static bool isOOFContainer (Widget *widget, int oofmIndex);
 
@@ -189,7 +203,6 @@ protected:
 
    void removeChild (Widget *child);
 
-   core::Widget *getWidgetAtPoint (int x, int y);
 
 public:
    static int CLASS_ID;
@@ -207,7 +220,7 @@ public:
 
       static const char *majorLevelText (int majorLevel);
 
-      OOFStackingIterator (bool atEnd);
+      OOFStackingIterator (OOFAwareWidget *widget, bool atEnd);
       ~OOFStackingIterator ();
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);

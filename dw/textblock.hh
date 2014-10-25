@@ -645,9 +645,8 @@ protected:
    void drawLine (Line *line, core::View *view, core::Rectangle *area,
                   core::StackingIteratorStack *iteratorStack,
                   Widget **interruptedWidget);
-   void drawOOFReferences (core::View *view, core::Rectangle *area,
-                           core::StackingIteratorStack *iteratorStack,
-                           Widget **interruptedWidget);
+   void handleOOFReferences (core::StackingIteratorStack *iteratorStack,
+                             Widget **interruptedWidget, bool backwards);
 
    int findLineIndex (int y);
    int findLineIndexWhenNotAllocated (int y);
@@ -807,6 +806,11 @@ protected:
                    core::StackingIteratorStack *iteratorStack,
                    Widget **interruptedWidget, int majorLevel);
 
+   Widget *getWidgetAtPointLevel (int x, int y,
+                                  core::StackingIteratorStack *iteratorStack,
+                                  Widget **interruptedWidget, int majorLevel);
+   int getLastLevelIndex (int majorLevel, int minorLevel);
+
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
@@ -890,7 +894,6 @@ public:
    void addParbreak (int space, core::style::Style *style);
    void addLinebreak (core::style::Style *style);
 
-   core::Widget *getWidgetAtPoint (int x, int y);
    void handOverBreak (core::style::Style *style);
    void changeLinkColor (int link, int newColor);
    void changeWordStyle (int from, int to, core::style::Style *style,

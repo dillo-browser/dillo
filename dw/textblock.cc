@@ -1718,7 +1718,7 @@ void Textblock::drawLevel (core::View *view, core::Rectangle *area,
       break;
 
    case OOFStackingIterator::OOF_REF:
-      drawOOFReferences (view, area, iteratorStack, interruptedWidget);
+      handleOOFReferences (iteratorStack, interruptedWidget, false);
       break;
 
    default:
@@ -1731,20 +1731,34 @@ void Textblock::drawLevel (core::View *view, core::Rectangle *area,
    DBG_OBJ_LEAVE ();
 }
 
-void Textblock::drawOOFReferences (core::View *view, core::Rectangle *area,
-                                   core::StackingIteratorStack *iteratorStack,
-                                   Widget **interruptedWidget)
+/**
+ * \brief Used both for drawing and getting the widget at a point,
+ *    since this method only interrupts, but does not do actual
+ *    drawing or searching, respectively.
+ */
+void Textblock::handleOOFReferences (core::StackingIteratorStack *iteratorStack,
+                                     Widget **interruptedWidget, bool backwards)
 {
-   DBG_OBJ_ENTER ("draw", 0, "Textblock/drawOOFReferences", "%d, %d, %d * %d",
-                  area->x, area->y, area->width, area->height);
-
    // TODO Inefficient. Store Widgets OOF references in seperate list?
+
+   DBG_OBJ_ENTER ("common", 0, "Textblock/handleOOFReferences", "..., %s",
+                  backwards ? "true [backwards]" : "false [forwards]");
 
    OOFStackingIterator *osi = (OOFStackingIterator*)iteratorStack->getTop ();
    assert (osi->majorLevel == OOFStackingIterator::OOF_REF);
 
-   while (*interruptedWidget == NULL && osi->minorLevel < NUM_OOFM) {
-      while (*interruptedWidget == NULL && osi->index < words->size ()) {
+   while (*interruptedWidget == NULL && 
+          (backwards ? (osi->minorLevel >= 0) : (osi->minorLevel < NUM_OOFM))) {
+      while (*interruptedWidget == NULL && 
+             (backwards ? (osi->index >= 0) : (osi->index < words->size ()))) {
+
+         //DBG_IF_RTFL {
+         //   misc::StringBuffer sb;
+         //   osi->intoStringBuffer (&sb);
+         //   DBG_OBJ_MSGF ("common", 2, "osi = %s",
+         //                 sb.getChars ());
+         //}
+         
          Word *word = words->getRef (osi->index);
          if (word->content.type == core::Content::WIDGET_OOF_REF &&
              getOOFMIndex (word->content.widget) == osi->minorLevel &&
@@ -1753,16 +1767,24 @@ void Textblock::drawOOFReferences (core::View *view, core::Rectangle *area,
 
          // The index is increased in any case: the iterator must
          // point to the next element.
-         osi->index++;
+         if (backwards)
+            osi->index--;
+         else
+            osi->index++;
       }
       
       if (*interruptedWidget == NULL) {
-         osi->minorLevel++;
-         osi->index = 0;
+         if (backwards) {
+            osi->minorLevel--;
+            osi->index = words->size () - 1;
+         } else {
+            osi->minorLevel++;
+            osi->index = 0;
+         }
       }
    }
    
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
+   DBG_OBJ_MSGF ("common", 1, "=> %p", *interruptedWidget);
    DBG_OBJ_LEAVE ();
 }
 
@@ -2713,66 +2735,74 @@ void Textblock::breakAdded ()
          words->getRef(words->size () - 2)->effSpace = 0;
 }
 
-/**
- * \brief Search recursively through widget.
- *
- * This is an optimized version of the general
- * dw::core::Widget::getWidgetAtPoint method.
- */
-core::Widget *Textblock::getWidgetAtPoint (int x, int y)
+core::Widget *Textblock::getWidgetAtPointLevel (int x, int y,
+                                                core::StackingIteratorStack
+                                                *iteratorStack,
+                                                Widget **interruptedWidget,
+                                                int majorLevel)
 {
-   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPoint", "%d, %d", x, y);
-   Widget *childAtPoint = NULL;
+   DBG_OBJ_ENTER ("events", 0, "Textblock/getWidgetAtPointLevel", "%d, %d, %s",
+                  x, y, OOFStackingIterator::majorLevelText (majorLevel));
 
-   if (x < allocation.x ||
-       y < allocation.y ||
-       x > allocation.x + allocation.width ||
-       y > allocation.y + getHeight ()) {
-      DBG_OBJ_MSG ("events", 1, "outside allocation");
-   } else {
-      // First, ...
-      if (childAtPoint == NULL && stackingContextMgr)
-         childAtPoint = stackingContextMgr->getTopWidgetAtPoint (x, y);
- 
-      // Then, search for widgets out of flow, notably floats, since
-      // there are cases where they overlap child textblocks.
-      if (childAtPoint == NULL)
-         childAtPoint = getWidgetOOFAtPoint (x, y);
+   Widget *widgetAtPoint = NULL;
 
-      if (childAtPoint == NULL) {
+   switch (majorLevel) {
+   case OOFStackingIterator::IN_FLOW:
+      {
+         OOFStackingIterator *osi =
+            (OOFStackingIterator*)iteratorStack->getTop ();
+
          int lineIndex = findLineIndexWhenAllocated (y - allocation.y);
       
-         if (lineIndex < 0 || lineIndex >= lines->size ())
-            childAtPoint = this;
-         else {
+         if (lineIndex >= 0 || lineIndex < lines->size ()) {
             Line *line = lines->getRef (lineIndex);
-            
-            for (int wordIndex = line->firstWord;
-                 wordIndex <= line->lastWord && childAtPoint == NULL;
-                 wordIndex++) {
-               Word *word =  words->getRef (wordIndex);
-               if (word->content.type == core::Content::WIDGET_IN_FLOW) {
-                  core::Widget * child = word->content.widget;
-                  if (!core::StackingContextMgr::handledByStackingContextMgr
-                          (child) &&
-                      child->wasAllocated ()) {
-                     childAtPoint = child->getWidgetAtPoint (x, y);
-                  }
-               }
+            if (osi->index > line->lastWord)
+               osi->index = line->lastWord;
+
+            while (widgetAtPoint == NULL && *interruptedWidget == NULL &&
+                   osi->index >= 0) {
+               Word *word =  words->getRef (osi->index);
+               if (word->content.type == core::Content::WIDGET_IN_FLOW &&
+                   !core::StackingContextMgr::handledByStackingContextMgr
+                   (word->content.widget))
+                   widgetAtPoint = word->content.widget
+                      ->getWidgetAtPointTotal (x, y, iteratorStack,
+                                               interruptedWidget);
+               if (*interruptedWidget == NULL)
+                  osi->index--;
             }
          }
       }
+      break;
 
-      if (childAtPoint == NULL && stackingContextMgr)
-         childAtPoint = stackingContextMgr->getBottomWidgetAtPoint (x, y);
+   case OOFStackingIterator::OOF_REF:
+      handleOOFReferences (iteratorStack, interruptedWidget, true);
+      // No searching, only interruption.
+      break;
 
-      if (childAtPoint == NULL)
-         childAtPoint = this;
+   default:
+      widgetAtPoint =
+         OOFAwareWidget::getWidgetAtPointLevel (x, y, iteratorStack,
+                                                interruptedWidget, majorLevel);
+      break;
    }
 
-   DBG_OBJ_MSGF ("events", 0, "=> %p", childAtPoint);
+   DBG_OBJ_MSGF ("events", 1, "=> %p (i: %p)",
+                 widgetAtPoint, *interruptedWidget);
    DBG_OBJ_LEAVE ();
-   return childAtPoint;
+   return widgetAtPoint;
+}
+
+int Textblock::getLastLevelIndex (int majorLevel, int minorLevel)
+{
+   switch (majorLevel) {
+   case OOFStackingIterator::IN_FLOW:
+   case OOFStackingIterator::OOF_REF:
+      return words->size () - 1;
+
+   default:
+      return OOFAwareWidget::getLastLevelIndex (majorLevel, minorLevel);
+   }   
 }
 
 

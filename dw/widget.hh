@@ -477,6 +477,14 @@ public:
                    Widget **interruptedWidget);
    void drawToplevel (View *view, Rectangle *area);
 
+   virtual Widget *getWidgetAtPoint (int x, int y,
+                                     StackingIteratorStack *iteratorStack,
+                                     Widget **interruptedWidget);
+   Widget *getWidgetAtPointTotal (int x, int y,
+                                  StackingIteratorStack *iteratorStack,
+                                  Widget **interruptedWidget);
+   Widget *getWidgetAtPointToplevel (int x, int y);
+
    bool buttonPress (EventButton *event);
    bool buttonRelease (EventButton *event);
    bool motionNotify (EventMotion *event);
@@ -505,8 +513,6 @@ public:
    inline Widget *getGenerator () { return generator ? generator : parent; }
 
    inline Layout *getLayout () { return layout; }
-
-   virtual Widget *getWidgetAtPoint (int x, int y);
 
    void scrollTo (HPosition hpos, VPosition vpos,
                   int x, int y, int width, int height);

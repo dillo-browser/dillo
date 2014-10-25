@@ -237,22 +237,34 @@ void OOFPositionedMgr::markExtremesChange (int ref)
 {
 }
 
-Widget *OOFPositionedMgr::getWidgetAtPoint (int x, int y)
+Widget *OOFPositionedMgr::getWidgetAtPoint (int x, int y,
+                                            StackingIteratorStack
+                                            *iteratorStack,
+                                            Widget **interruptedWidget,
+                                            int *index)
 {
    DBG_OBJ_ENTER ("events", 0, "getWidgetAtPoint", "%d, %d", x, y);
-   Widget *childAtPoint = NULL;
 
-   for (int i = 0; i < children->size() && childAtPoint == NULL; i++) {
-      Widget *childWidget = children->get(i)->widget;
-      if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
-          childWidget->wasAllocated ()) {
-         childAtPoint = childWidget->getWidgetAtPoint (x, y);
-      }
+   Widget *widgetAtPoint = NULL;
+   OOFAwareWidget::OOFStackingIterator *osi =
+      (OOFAwareWidget::OOFStackingIterator*)iteratorStack->getTop ();
+   
+   while (widgetAtPoint == NULL && *interruptedWidget == NULL && *index >= 0) {
+      Widget *childWidget = children->get(*index)->widget;
+      if (!osi->hasWidgetBeenDrawnAfterInterruption (childWidget) &&
+          !StackingContextMgr::handledByStackingContextMgr (childWidget))
+         widgetAtPoint =
+            childWidget->getWidgetAtPointTotal (x, y, iteratorStack,
+                                                interruptedWidget);
+      
+      if (*interruptedWidget == NULL)
+         (*index)--;
    }
 
-   DBG_OBJ_MSGF ("events", 0, "=> %p", childAtPoint);
+   DBG_OBJ_MSGF ("events", 0, "=> %p (i: %p)",
+                 widgetAtPoint, *interruptedWidget);
    DBG_OBJ_LEAVE ();
-   return childAtPoint;
+   return widgetAtPoint;
 }
 
 void OOFPositionedMgr::tellPosition (Widget *widget, int x, int y)

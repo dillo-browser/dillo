@@ -1284,10 +1284,8 @@ void OOFFloatsMgr::draw (View *view, Rectangle *area,
    DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d]",
                   area->x, area->y, area->width, area->height, *index);
 
-   if (*index < leftFloatsCB->size ())
-      drawFloats (leftFloatsCB, view, area, iteratorStack, interruptedWidget,
-                  index, 0);
-
+   drawFloats (leftFloatsCB, view, area, iteratorStack, interruptedWidget,
+               index, 0);
    if (*interruptedWidget == NULL)
       drawFloats (rightFloatsCB, view, area, iteratorStack, interruptedWidget,
                   index, leftFloatsCB->size ());
@@ -1491,29 +1489,51 @@ void OOFFloatsMgr::markExtremesChange (int ref)
    // Nothing to do here.
 }
 
-Widget *OOFFloatsMgr::getWidgetAtPoint (int x, int y)
+Widget *OOFFloatsMgr::getWidgetAtPoint (int x, int y,
+                                        core::StackingIteratorStack
+                                        *iteratorStack,
+                                        core::Widget **interruptedWidget,
+                                        int *index)
 {
-   Widget *childAtPoint = getFloatWidgetAtPoint (leftFloatsCB, x, y);
-   if (childAtPoint == NULL)
-      childAtPoint = getFloatWidgetAtPoint (rightFloatsCB, x, y);
-   return childAtPoint;
+   Widget *widgetAtPoint = NULL;
+
+   widgetAtPoint =
+      getFloatWidgetAtPoint (rightFloatsCB, x, y, iteratorStack,
+                             interruptedWidget, index,
+                             leftFloatsCB->size ());
+   if (widgetAtPoint == NULL && *interruptedWidget == NULL)
+      widgetAtPoint =
+         getFloatWidgetAtPoint (leftFloatsCB, x, y, iteratorStack,
+                                interruptedWidget, index, 0);
+   return widgetAtPoint;
 }
 
 Widget *OOFFloatsMgr::getFloatWidgetAtPoint (SortedFloatsVector *list, int x,
-                                             int y)
+                                             int y,
+                                             StackingIteratorStack
+                                             *iteratorStack,
+                                             Widget **interruptedWidget,
+                                             int *index, int startIndex)
 {
-   for (int i = 0; i < list->size(); i++) {
-      // Could use binary search to be faster.
-      Widget *childWidget = list->get(i)->getWidget ();
-      if (!StackingContextMgr::handledByStackingContextMgr (childWidget) &&
-          childWidget->wasAllocated ()) {
-         Widget *childAtPoint = childWidget->getWidgetAtPoint (x, y);
-         if (childAtPoint)
-            return childAtPoint;
-      }
+   // Could use binary search to be faster (similar to drawing).
+   Widget *widgetAtPoint = NULL;
+   OOFAwareWidget::OOFStackingIterator *osi =
+      (OOFAwareWidget::OOFStackingIterator*)iteratorStack->getTop ();
+   
+   while (widgetAtPoint == NULL && *interruptedWidget == NULL &&
+          *index - startIndex >= 0) {
+      Widget *childWidget = list->get(*index)->getWidget ();
+      if (!osi->hasWidgetBeenDrawnAfterInterruption (childWidget) &&
+          !StackingContextMgr::handledByStackingContextMgr (childWidget))
+         widgetAtPoint =
+            childWidget->getWidgetAtPointTotal (x, y, iteratorStack,
+                                                interruptedWidget);
+
+      if (*interruptedWidget == NULL)
+         (*index)--;
    }
 
-   return NULL;
+   return widgetAtPoint;
 }
 
 void OOFFloatsMgr::tellPosition (Widget *widget, int x, int y)

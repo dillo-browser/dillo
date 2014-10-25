@@ -475,6 +475,11 @@ protected:
                    core::StackingIteratorStack *iteratorStack,
                    Widget **interruptedWidget, int majorLevel);
 
+   Widget *getWidgetAtPointLevel (int x, int y,
+                                  core::StackingIteratorStack *iteratorStack,
+                                  Widget **interruptedWidget, int majorLevel);
+   int getLastLevelIndex (int majorLevel, int minorLevel);
+
    //bool buttonPressImpl (core::EventButton *event);
    //bool buttonReleaseImpl (core::EventButton *event);
    //bool motionNotifyImpl (core::EventMotion *event);

@@ -26,7 +26,9 @@ private:
    void draw (View *view, Rectangle *area,
               StackingIteratorStack *iteratorStack, Widget **interruptedWidget,
               int *zIndexOffset, int startZIndex, int endZIndex, int *index);
-   Widget *getWidgetAtPoint (int x, int y, int startZIndex, int endZIndex);
+   Widget *getWidgetAtPoint (int x, int y, StackingIteratorStack *iteratorStack,
+                             Widget **interruptedWidget, int *zIndexOffset,
+                             int startZIndex, int endZIndex, int *index);
 
 public:
    StackingContextMgr (Widget *widget);
@@ -47,6 +49,10 @@ public:
 
    void addChildSCWidget (Widget *widget);
 
+   inline int getMinZIndex () { return minZIndex; }
+   inline int getMaxZIndex () { return maxZIndex; }
+   inline int getNumChildSCWidgets () { return childSCWidgets->size (); }
+
    void drawBottom (View *view, Rectangle *area,
                     StackingIteratorStack *iteratorStack,
                     Widget **interruptedWidget, int *zIndexOffset, int *index);
@@ -54,8 +60,14 @@ public:
                  StackingIteratorStack *iteratorStack,
                  Widget **interruptedWidget, int *zIndexOffset, int *index);
 
-   Widget *getTopWidgetAtPoint (int x, int y);
-   Widget *getBottomWidgetAtPoint (int x, int y);
+   Widget *getTopWidgetAtPoint (int x, int y,
+                                core::StackingIteratorStack *iteratorStack,
+                                Widget **interruptedWidget,
+                                int *zIndexOffset, int *index);
+   Widget *getBottomWidgetAtPoint (int x, int y,
+                                   core::StackingIteratorStack *iteratorStack,
+                                   Widget **interruptedWidget,
+                                   int *zIndexOffset, int *index);
 };
 
 } // namespace core

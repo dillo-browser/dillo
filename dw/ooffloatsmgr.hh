@@ -289,7 +289,11 @@ private:
                     core::StackingIteratorStack *iteratorStack,
                     core::Widget **interruptedWidget, int *index,
                     int startIndex);
-   core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y);
+   core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y,
+                                        core::StackingIteratorStack
+                                        *iteratorStack,
+                                        core::Widget **interruptedWidget,
+                                        int *index, int startIndex);
 
    bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal);
    bool collidesH (Float *vloat, Float *other, SFVType type);
@@ -349,7 +353,10 @@ public:
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
-   core::Widget *getWidgetAtPoint (int x, int y);
+   core::Widget *getWidgetAtPoint (int x, int y,
+                                   core::StackingIteratorStack *iteratorStack,
+                                   core::Widget **interruptedWidget,
+                                   int *index);
 
    void addWidgetInFlow (OOFAwareWidget *textblock, OOFAwareWidget *parentBlock,
                          int externalIndex);
