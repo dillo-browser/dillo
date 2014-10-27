@@ -1204,18 +1204,26 @@ void drawBorder (View *view, Layout *layout, Rectangle *area,
  *
  * Otherwise, the caller should not try to increase the performance by
  * doing some tests before; this is all done in this method.
+ * 
+ * "bgColor" is passes implicitly. For non-inversed drawing,
+ * style->backgroundColor may simply used. However, when drawing is
+ * inversed, and style->backgroundColor is undefined (NULL), a
+ * background color defined higher in the hierarchy (which is not
+ * accessable here) must be used.
+ *
+ * (Background *images* are never drawn inverse.)
  */
 void drawBackground (View *view, Layout *layout, Rectangle *area,
                      int x, int y, int width, int height,
                      int xRef, int yRef, int widthRef, int heightRef,
-                     Style *style, bool inverse, bool atTop)
+                     Style *style, Color *bgColor, bool inverse, bool atTop)
 {
-   bool bgColor = style->backgroundColor != NULL &&
+   bool hasBgColor = bgColor != NULL &&
       // The test for background colors is rather simple, since only the color
       // has to be compared, ...
-      (!atTop || layout->getBgColor () != style->backgroundColor);
-   bool bgImage = (style->backgroundImage != NULL &&
-                   style->backgroundImage->getImgbufSrc() != NULL) &&
+      (!atTop || layout->getBgColor () != bgColor);
+   bool hasBgImage = (style->backgroundImage != NULL &&
+                      style->backgroundImage->getImgbufSrc() != NULL) &&
       // ... but for backgrounds, it would be rather complicated. To handle the
       // two cases (normal HTML in a viewport, where the layout background
       // image is set, and contents of <button> within a flat view, where the
@@ -1229,7 +1237,7 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
    // necessary to draw the background if background color and image
    // are not set (NULL), i. e. shining through.
 
-   if (bgColor || bgImage) {
+   if (hasBgColor || hasBgImage) {
       Rectangle bgArea, intersection;
       bgArea.x = x;
       bgArea.y = y;
@@ -1237,14 +1245,14 @@ void drawBackground (View *view, Layout *layout, Rectangle *area,
       bgArea.height = height;
 
       if (area->intersectsWith (&bgArea, &intersection)) {
-         if (bgColor)
-            view->drawRectangle (style->backgroundColor,
+         if (hasBgColor)
+            view->drawRectangle (bgColor,
                                  inverse ?
                                  Color::SHADING_INVERSE : Color::SHADING_NORMAL,
                                  true, intersection.x, intersection.y,
                                  intersection.width, intersection.height);
 
-         if (bgImage)
+         if (hasBgImage)
             drawBackgroundImage (view, style->backgroundImage,
                                  style->backgroundRepeat,
                                  style->backgroundAttachment,

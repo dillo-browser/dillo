@@ -1181,6 +1181,10 @@ void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
    // does not define what here is called "reference area". To make it look
    // smoothly, the widget padding box is used.
 
+   // TODO Handle inverse drawing the same way as in drawWidgetBox?
+   // Maybe this method (drawBox) is anyway obsolete when extraSpace
+   // is fully supported (as in the "dillo_grows" repository).
+
    int xPad, yPad, widthPad, heightPad;
    getPaddingArea (&xPad, &yPad, &widthPad, &heightPad);
    style::drawBackground
@@ -1191,7 +1195,8 @@ void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
        - style->margin.right - style->borderWidth.right,
        height - style->margin.top - style->borderWidth.top
        - style->margin.bottom - style->borderWidth.bottom,
-       xPad, yPad, widthPad, heightPad, style, inverse, false);
+       xPad, yPad, widthPad, heightPad, style, style->backgroundColor,
+       inverse, false);
 }
 
 /**
@@ -1213,10 +1218,26 @@ void Widget::drawWidgetBox (View *view, Rectangle *area, bool inverse)
 
    int xPad, yPad, widthPad, heightPad;
    getPaddingArea (&xPad, &yPad, &widthPad, &heightPad);
+
+   style::Color *bgColor;
+   if (inverse && style->backgroundColor == NULL) {
+      // See style::drawBackground: for inverse drawing, we need a
+      // defined background color. Search through ancestors.
+      Widget *w = this;
+      while (w != NULL && w->style->backgroundColor == NULL)
+         w = w->parent;
+      
+      if (w != NULL && w->style->backgroundColor != NULL)
+         bgColor = w->style->backgroundColor;
+      else
+         bgColor = layout->getBgColor ();
+   } else
+      bgColor = style->backgroundColor;
+
    style::drawBackground (view, layout, &canvasArea,
                           xPad, yPad, widthPad, heightPad,
                           xPad, yPad, widthPad, heightPad,
-                          style, inverse, parent == NULL);
+                          style, bgColor, inverse, parent == NULL);
 }
 
 /*
