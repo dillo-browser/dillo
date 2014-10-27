@@ -120,6 +120,11 @@ Vector::~Vector()
    DBG_OBJ_DELETE ();
 }
 
+int Vector::size ()
+{
+   return numElements;
+}
+
 void Vector::put(Object *newElement, int newPos)
 {
    if (newPos == -1)
@@ -296,6 +301,32 @@ List::~List()
    clear();
 }
 
+int List::size ()
+{
+   return numElements;
+}
+
+bool List::equals(Object *other)
+{
+   List *otherList = (List*)other;
+   Node *node1 = first, *node2 = otherList->first;
+   while (node1 != NULL && node2 != NULL ) {
+      if (!node1->object->equals (node2->object))
+         return false;
+      node1 = node1->next;
+      node2 = node2->next;
+   }
+   return node1 == NULL && node2 == NULL;
+}
+
+int List::hashValue()
+{
+   int h = 0;
+   for (Node *node = first; node; node = node->next)
+      h = h ^ node->object->hashValue ();
+   return h;
+}
+
 void List::clear()
 {
    while (first) {
@@ -325,6 +356,28 @@ void List::append(Object *element)
    numElements++;
 }
 
+bool List::insertBefore(object::Object *beforeThis, object::Object *neew)
+{
+   Node *beforeCur, *cur;
+
+   for (beforeCur = NULL, cur = first; cur; beforeCur = cur, cur = cur->next) {
+      if (cur->object == beforeThis) {
+         Node *newNode = new Node;
+         newNode->next = cur;
+         newNode->object = neew;
+         
+         if (beforeCur)
+            beforeCur->next = newNode;
+         else
+            first = newNode;
+
+         numElements++;
+         return true;
+      }
+   }
+
+   return false;
+}
 
 bool List::remove0(Object *element, bool compare, bool doNotDeleteAtAll)
 {
@@ -392,6 +445,8 @@ HashSet::HashSet(bool ownerOfObjects, int tableSize)
    table = new Node*[tableSize];
    for (int i = 0; i < tableSize; i++)
       table[i] = NULL;
+
+   numElements = 0;
 }
 
 HashSet::~HashSet()
@@ -417,6 +472,11 @@ HashSet::~HashSet()
    }
 
    delete[] table;
+}
+
+int HashSet::size ()
+{
+   return numElements;
 }
 
 HashSet::Node *HashSet::createNode()
@@ -447,13 +507,15 @@ HashSet::Node *HashSet::insertNode(Object *object)
 {
    // Look whether object is already contained.
    Node *node = findNode(object);
-   if (node)
+   if (node) {
       clearNode(node);
-   else {
+      numElements--;
+   } else {
       int h = calcHashValue(object);
       node = createNode ();
       node->next = table[h];
       table[h] = node;
+      numElements++;
    }
 
    node->object = object;
@@ -491,6 +553,7 @@ bool HashSet::remove(Object *object)
 
          clearNode (cur);
          delete cur;
+         numElements--;
 
          return true;
       }
@@ -660,6 +723,11 @@ Stack::~Stack()
 {
    while (top)
       pop ();
+}
+
+int Stack::size ()
+{
+   return numElements;
 }
 
 void Stack::push (object::Object *object)
