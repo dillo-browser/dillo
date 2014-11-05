@@ -215,19 +215,19 @@ inline void rtfl_print (const char *version, const char *file, int line,
    DBG_OBJ_ARRSET_NUM_O (this, var, ind, val)
 
 #define DBG_OBJ_ARRSET_NUM_O(obj, var, ind, val) \
-   RTFL_OBJ_PRINT ("set", "p:s.d:s", obj, var, ind, val)
+   RTFL_OBJ_PRINT ("set", "p:s.d:d", obj, var, ind, val)
 
 #define DBG_OBJ_ARRSET_SYM(var, ind, val) \
    DBG_OBJ_ARRSET_SYM_O (this, var, ind, val)
 
 #define DBG_OBJ_ARRSET_SYM_O(obj, var, ind, val) \
-   RTFL_OBJ_PRINT ("set", "p:s.d:d", obj, var, ind, val)
+   RTFL_OBJ_PRINT ("set", "p:s.d:s", obj, var, ind, val)
 
 #define DBG_OBJ_ARRSET_BOOL(var, ind, val) \
    DBG_OBJ_ARRSET_BOOL_O (this, var, ind, val)
 
 #define DBG_OBJ_ARRSET_BOOL_O(obj, var, ind, val) \
-   RTFL_OBJ_PRINT ("set", "p:s.d:d", obj, var, ind, (val) ? "true" : "false")
+   RTFL_OBJ_PRINT ("set", "p:s.d:s", obj, var, ind, (val) ? "true" : "false")
 
 #define DBG_OBJ_ARRSET_STR(var, ind, val) \
    DBG_OBJ_ARRSET_STR_O (this, var, ind, val)
