@@ -284,14 +284,52 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
       *allocation =
          *(textblock->outOfFlowMgr->getWidget(index)->getAllocation());
    } else {
-      int lineIndex = textblock->findLineOfWord (index);
-      Line *line = textblock->lines->getRef (lineIndex);
       Word *word = textblock->words->getRef (index);
+      int firstWordOfLine, textOffset, lineYOffsetCanvas, lineBorderAscent;
 
-      allocation->x =
-         textblock->allocation.x + line->textOffset;
+      int lineIndex = textblock->findLineOfWord (index);
 
-      for (int i = line->firstWord; i < index; i++) {
+      // It may be that the line does not exist yet.
+      if (lineIndex != -1) {
+         // Line exists: simple.
+         Line *line = textblock->lines->getRef (lineIndex);
+         firstWordOfLine = line->firstWord;
+         textOffset = line->textOffset;
+         lineYOffsetCanvas = textblock->lineYOffsetCanvas (line);
+         lineBorderAscent = line->borderAscent;
+      } else {        
+         // Line does not exist. Calculate the values in a similar way as in
+         // Textblock::addLine().
+         Line *prevLine = textblock->lines->size () > 0 ?
+            textblock->lines->getLastRef () : NULL;
+         firstWordOfLine = prevLine ? prevLine->lastWord + 1 : 0;
+
+         // The variable textOffset, defined below, is what Line::leftOffset
+         // will be for the next line; Line::textOffset itself cannot be
+         // calculated before the line is complete.
+         bool regardBorder =
+             textblock->mustBorderBeRegarded (textblock->lines->size ());
+         textOffset =
+            misc::max (regardBorder ?  textblock->newLineLeftBorder : 0,
+                       textblock->boxOffsetX () +  textblock->leftInnerPadding
+                       + (textblock->lines->size () == 0 ?
+                             textblock->line1OffsetEff : 0));
+
+         lineYOffsetCanvas = textblock->yOffsetOfLineToBeCreated ();
+
+         lineBorderAscent = 0;
+         for (int i = firstWordOfLine; i < textblock->words->size (); i++) {
+            Word *w = textblock->words->getRef (i);
+            int borderAscent =
+               w->content.type == core::Content::WIDGET_IN_FLOW ?
+               w->size.ascent - w->content.widget->getStyle()->margin.top :
+               w->size.ascent;
+            lineBorderAscent = misc::max (lineBorderAscent, borderAscent);
+         }
+      }
+
+      allocation->x = textblock->allocation.x + textOffset;
+      for (int i = firstWordOfLine; i < index; i++) {
          Word *w = textblock->words->getRef(i);
          allocation->x += w->size.width + w->effSpace;
       }
@@ -303,8 +341,7 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
                                                 && word->content.text[start]
                                                 == 0);
       }
-      allocation->y = textblock->lineYOffsetCanvas (line) + line->borderAscent -
-         word->size.ascent;
+      allocation->y = lineYOffsetCanvas + lineBorderAscent - word->size.ascent;
 
       allocation->width = word->size.width;
       if (word->content.type == core::Content::TEXT) {

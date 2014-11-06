@@ -3108,7 +3108,8 @@ Textblock *Textblock::getTextblockForLine (Line *line)
 
 Textblock *Textblock::getTextblockForLine (int lineNo)
 {
-   int firstWord = lineNo == 0 ? 0 :lines->getRef(lineNo - 1)->lastWord + 1;
+   // Can also be used for a line not yet existing.
+   int firstWord = lineNo == 0 ? 0 : lines->getRef(lineNo - 1)->lastWord + 1;
    int lastWord = lineNo < lines->size() ?
       lines->getRef(lineNo)->lastWord : words->size() - 1;
    return getTextblockForLine (firstWord, lastWord);
