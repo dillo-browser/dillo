@@ -493,16 +493,6 @@ void OutOfFlowMgr::TBInfo::updateAllocation ()
    DBG_OBJ_LEAVE_O (getWidget ());
 }
 
-OutOfFlowMgr::AbsolutelyPositioned::AbsolutelyPositioned (OutOfFlowMgr *oofm,
-                                                          Widget *widget,
-                                                          Textblock
-                                                          *generatingBlock,
-                                                          int externalIndex)
-{
-   this->widget = widget;
-   dirty = true;
-}
-
 OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
 {
    DBG_OBJ_CREATE ("dw::OutOfFlowMgr");
@@ -530,8 +520,6 @@ OutOfFlowMgr::OutOfFlowMgr (Textblock *containingBlock)
    leftFloatsMark = rightFloatsMark = 0;
    lastLeftTBIndex = lastRightTBIndex = 0;
 
-   absolutelyPositioned = new Vector<AbsolutelyPositioned> (1, true);
-
    containingBlockWasAllocated = containingBlock->wasAllocated ();
    containingBlockAllocation = *(containingBlock->getAllocation());
 
@@ -557,8 +545,6 @@ OutOfFlowMgr::~OutOfFlowMgr ()
    // last.
    delete leftFloatsAll;
    delete rightFloatsAll;
-
-   delete absolutelyPositioned;
 
    DBG_OBJ_DELETE ();
 }
@@ -692,8 +678,6 @@ void OutOfFlowMgr::containerSizeChangedForChildren ()
       leftFloatsAll->get(i)->getWidget()->containerSizeChanged ();
    for (int i = 0; i < rightFloatsAll->size (); i++)
       rightFloatsAll->get(i)->getWidget()->containerSizeChanged ();
-   for (int i = 0; i < absolutelyPositioned->size(); i++)
-      absolutelyPositioned->get(i)->widget->containerSizeChanged ();
 
    DBG_OBJ_LEAVE ();
 }
@@ -1294,7 +1278,6 @@ void OutOfFlowMgr::draw (View *view, Rectangle *area)
 {
    drawFloats (leftFloatsCB, view, area);
    drawFloats (rightFloatsCB, view, area);
-   drawAbsolutelyPositioned (view, area);
 }
 
 void OutOfFlowMgr::drawFloats (SortedFloatsVector *list, View *view,
@@ -1308,16 +1291,6 @@ void OutOfFlowMgr::drawFloats (SortedFloatsVector *list, View *view,
       Rectangle childArea;
       if (vloat->getWidget()->intersects (area, &childArea))
          vloat->getWidget()->draw (view, &childArea);
-   }
-}
-
-void OutOfFlowMgr::drawAbsolutelyPositioned (View *view, Rectangle *area)
-{
-   for (int i = 0; i < absolutelyPositioned->size(); i++) {
-      AbsolutelyPositioned *abspos = absolutelyPositioned->get(i);
-      Rectangle childArea;
-      if (abspos->widget->intersects (area, &childArea))
-         abspos->widget->draw (view, &childArea);
    }
 }
 
@@ -1340,9 +1313,7 @@ bool OutOfFlowMgr::isWidgetOutOfFlow (Widget *widget)
 
 bool OutOfFlowMgr::isWidgetHandledByOOFM (Widget *widget)
 {
-   // May be extended for fixed (and relative?) positions.
    return isWidgetFloat (widget);
-   // TODO temporary disabled: || isWidgetAbsolutelyPositioned (widget);
 }
 
 void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock,
@@ -1447,13 +1418,6 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
          leftFloatsAll->size() + rightFloatsAll->size() - 1;
 
       floatsByWidget->put (new TypedPointer<Widget> (widget), vloat);
-   } else if (isWidgetAbsolutelyPositioned (widget)) {
-      AbsolutelyPositioned *abspos =
-         new AbsolutelyPositioned (this, widget, generatingBlock,
-                                   externalIndex);
-      absolutelyPositioned->put (abspos);
-      widget->parentRef =
-         createRefAbsolutelyPositioned (absolutelyPositioned->size() - 1);
    } else
       // May be extended.
       assertNotReached();
@@ -1523,9 +1487,6 @@ void OutOfFlowMgr::markSizeChange (int ref)
       // sizeAllocateEnd.) Could be faster (cf. hasRelationChanged, which
       // differentiates many special cases), but the size is not known yet,
       vloat->generatingBlock->borderChanged (vloat->yReal, vloat->getWidget ());
-   } else if (isRefAbsolutelyPositioned (ref)) {
-      int i = getAbsolutelyPositionedIndexFromRef (ref);
-      absolutelyPositioned->get(i)->dirty = true;
    } else
       assertNotReached();
 
@@ -1543,8 +1504,6 @@ Widget *OutOfFlowMgr::getWidgetAtPoint (int x, int y, int level)
    Widget *childAtPoint = getFloatWidgetAtPoint (leftFloatsCB, x, y, level);
    if (childAtPoint == NULL)
       childAtPoint = getFloatWidgetAtPoint (rightFloatsCB, x, y, level);
-   if (childAtPoint == NULL)
-      childAtPoint = getAbsolutelyPositionedWidgetAtPoint (x, y, level);
    return childAtPoint;
 }
 
@@ -1557,22 +1516,6 @@ Widget *OutOfFlowMgr::getFloatWidgetAtPoint (SortedFloatsVector *list,
       if (vloat->getWidget()->wasAllocated ()) {
          Widget *childAtPoint =
             vloat->getWidget()->getWidgetAtPoint (x, y, level + 1);
-         if (childAtPoint)
-            return childAtPoint;
-      }
-   }
-
-   return NULL;
-}
-
-Widget *OutOfFlowMgr::getAbsolutelyPositionedWidgetAtPoint (int x, int y,
-                                                            int level)
-{
-   for (int i = 0; i < absolutelyPositioned->size(); i++) {
-      AbsolutelyPositioned *abspos = absolutelyPositioned->get(i);
-      if (abspos->widget->wasAllocated ()) {
-         Widget *childAtPoint =
-            abspos->widget->getWidgetAtPoint (x, y, level + 1);
          if (childAtPoint)
             return childAtPoint;
       }
@@ -1825,20 +1768,17 @@ void OutOfFlowMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
 {
    DBG_OBJ_ENTER0 ("resize.oofm", 0, "getSize");
 
-   int oofWidthAbsPos, oofHeightAbsPos;
-   getAbsolutelyPositionedSize (cbReq, &oofWidthAbsPos, &oofHeightAbsPos);
-
    int oofWidthtLeft, oofWidthRight, oofHeightLeft, oofHeightRight;
    getFloatsSize (cbReq, LEFT, &oofWidthtLeft, &oofHeightLeft);
    getFloatsSize (cbReq, RIGHT, &oofWidthRight, &oofHeightRight);
 
-   *oofWidth = max (oofWidthtLeft, oofWidthRight, oofWidthAbsPos);
-   *oofHeight = max (oofHeightLeft, oofHeightRight, oofHeightAbsPos);
+   *oofWidth = max (oofWidthtLeft, oofWidthRight);
+   *oofHeight = max (oofHeightLeft, oofHeightRight);
 
    DBG_OBJ_MSGF ("resize.oofm", 1,
-                 "=> (a: %d, l: %d, r: %d => %d) * (a: %d, l: %d, r: %d => %d)",
-                 oofWidthAbsPos, oofWidthtLeft, oofWidthRight, *oofWidth,
-                 oofHeightAbsPos, oofHeightLeft, oofHeightRight, *oofHeight);
+                 "=> (l: %d, r: %d => %d) * (l: %d, r: %d => %d)",
+                 oofWidthtLeft, oofWidthRight, *oofWidth,
+                 oofHeightLeft, oofHeightRight, *oofHeight);
    DBG_OBJ_LEAVE ();
 }
 
@@ -1900,22 +1840,17 @@ void OutOfFlowMgr::getExtremes (Extremes *cbExtr, int *oofMinWidth,
    DBG_OBJ_ENTER ("resize.oofm", 0, "getExtremes", "(%d / %d), ...",
                   cbExtr->minWidth, cbExtr->maxWidth);
 
-   int oofMinWidthAbsPos, oofMaxWidthAbsPos;
-   getAbsolutelyPositionedExtremes (cbExtr, &oofMinWidthAbsPos,
-                                    &oofMaxWidthAbsPos);
-
    int oofMinWidthtLeft, oofMinWidthRight, oofMaxWidthLeft, oofMaxWidthRight;
    getFloatsExtremes (cbExtr, LEFT, &oofMinWidthtLeft, &oofMaxWidthLeft);
    getFloatsExtremes (cbExtr, RIGHT, &oofMinWidthRight, &oofMaxWidthRight);
 
-   *oofMinWidth = max (oofMinWidthtLeft, oofMinWidthRight, oofMinWidthAbsPos);
-   *oofMaxWidth = max (oofMaxWidthLeft, oofMaxWidthRight, oofMaxWidthAbsPos);
+   *oofMinWidth = max (oofMinWidthtLeft, oofMinWidthRight);
+   *oofMaxWidth = max (oofMaxWidthLeft, oofMaxWidthRight);
 
    DBG_OBJ_MSGF ("resize.oofm", 1,
-                 "=> (a: %d, l: %d, r: %d => %d) / (a: %d, l: %d, r: %d => %d)",
-                 oofMinWidthAbsPos, oofMinWidthtLeft, oofMinWidthRight,
-                 *oofMinWidth, oofMaxWidthAbsPos, oofMaxWidthLeft,
-                 oofMaxWidthRight, *oofMaxWidth);
+                 "=> (l: %d, r: %d => %d) / (l: %d, r: %d => %d)",
+                 oofMinWidthtLeft, oofMinWidthRight, *oofMinWidth,
+                 oofMaxWidthLeft, oofMaxWidthRight, *oofMaxWidth);
    DBG_OBJ_LEAVE ();
 }
 
@@ -2345,65 +2280,6 @@ void OutOfFlowMgr::ensureFloatSize (Float *vloat)
    }
 
    DBG_OBJ_LEAVE ();
-}
-
-void OutOfFlowMgr::getAbsolutelyPositionedSize (Requisition *cbReq, int *width,
-                                                int *height)
-{
-   // TODO
-   *width = *height = 0;
-}
-
-void OutOfFlowMgr::getAbsolutelyPositionedExtremes (Extremes *cbExtr,
-                                                    int *minWidth,
-                                                    int *maxWidth)
-{
-   // TODO
-   *minWidth = *maxWidth = 0;
-}
-
-void OutOfFlowMgr::ensureAbsolutelyPositionedSizeAndPosition
-   (AbsolutelyPositioned *abspos)
-{
-   // TODO
-   assertNotReached ();
-}
-
-int OutOfFlowMgr::calcValueForAbsolutelyPositioned
-   (AbsolutelyPositioned *abspos, Length styleLen, int refLen)
-{
-   assert (styleLen != LENGTH_AUTO);
-   if (isAbsLength (styleLen))
-      return absLengthVal (styleLen);
-   else if (isPerLength (styleLen))
-      return multiplyWithPerLength (refLen, styleLen);
-   else {
-      assertNotReached ();
-      return 0; // compiler happiness
-   }
-}
-
-void OutOfFlowMgr::sizeAllocateAbsolutelyPositioned ()
-{
-   for (int i = 0; i < absolutelyPositioned->size(); i++) {
-      Allocation *cbAllocation = getAllocation (containingBlock);
-      AbsolutelyPositioned *abspos = absolutelyPositioned->get (i);
-      ensureAbsolutelyPositionedSizeAndPosition (abspos);
-
-      Allocation childAllocation;
-      childAllocation.x = cbAllocation->x + abspos->xCB;
-      childAllocation.y = cbAllocation->y + abspos->yCB;
-      childAllocation.width = abspos->width;
-      childAllocation.ascent = abspos->height;
-      childAllocation.descent = 0; // TODO
-
-      abspos->widget->sizeAllocate (&childAllocation);
-
-      printf ("[%p] allocating child %p at: (%d, %d), %d x (%d + %d)\n",
-              containingBlock, abspos->widget, childAllocation.x,
-              childAllocation.y, childAllocation.width, childAllocation.ascent,
-              childAllocation.descent);
-   }
 }
 
 } // namespace dw

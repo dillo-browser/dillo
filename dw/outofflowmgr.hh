@@ -215,18 +215,6 @@ private:
       inline Textblock *getTextblock () { return (Textblock*)getWidget (); }
    };
 
-   class AbsolutelyPositioned: public lout::object::Object
-   {
-   public:
-      core::Widget *widget;
-      int xCB, yCB; // relative to the containing block
-      int width, height;
-      bool dirty;
-
-      AbsolutelyPositioned (OutOfFlowMgr *oofm, core::Widget *widget,
-                            Textblock *generatingBlock, int externalIndex);
-   };
-
    // These two lists store all floats, in the order in which they are
    // defined. Only used for iterators.
    lout::container::typed::Vector<Float> *leftFloatsAll, *rightFloatsAll;
@@ -245,8 +233,6 @@ private:
    lout::container::typed::Vector<TBInfo> *tbInfos;
    lout::container::typed::HashTable<lout::object::TypedPointer <Textblock>,
                                      TBInfo> *tbInfosByTextblock;
-
-   lout::container::typed::Vector<AbsolutelyPositioned> *absolutelyPositioned;
 
    int lastLeftTBIndex, lastRightTBIndex, leftFloatsMark, rightFloatsMark;
 
@@ -294,10 +280,8 @@ private:
 
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area);
-   void drawAbsolutelyPositioned (core::View *view, core::Rectangle *area);
    core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y,
                                         int level);
-   core::Widget *getAbsolutelyPositionedWidgetAtPoint (int x, int y, int level);
 
    bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal);
    bool collidesH (Float *vloat, Float *other, SFVType type);
@@ -329,21 +313,8 @@ private:
 
    void tellFloatPosition (core::Widget *widget, int yReq);
 
-   void getAbsolutelyPositionedSize (core::Requisition *cbReq, int *width,
-                                     int *height);
-   void getAbsolutelyPositionedExtremes (core::Extremes *cbExtr, int *minWidth,
-                                         int *maxWidth);
-   void ensureAbsolutelyPositionedSizeAndPosition (AbsolutelyPositioned
-                                                   *abspos);
-   int calcValueForAbsolutelyPositioned (AbsolutelyPositioned *abspos,
-                                         core::style::Length styleLen,
-                                         int refLen);
-   void sizeAllocateAbsolutelyPositioned ();
-
    static inline bool isWidgetFloat (core::Widget *widget)
    { return widget->getStyle()->vloat != core::style::FLOAT_NONE; }
-   static inline bool isWidgetAbsolutelyPositioned (core::Widget *widget)
-   { return widget->getStyle()->position == core::style::POSITION_ABSOLUTE; }
 
    /*
     * Format for parent ref (see also below for isRefOutOfFlow,
@@ -367,11 +338,8 @@ private:
     *    |         right float index         | 1 | 0 | 1 |
     *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
     *
-    * Absolutely positioned blocks:
-    *
-    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-    *    |                 index                 | 1 | 1 |
-    *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
+    * Absolutely positioned blocks: solved differently in the
+    * "dillo_grows" repository.
     */
 
    inline static bool isRefFloat (int ref)
@@ -380,20 +348,14 @@ private:
    { return ref != -1 && (ref & 7) == 1; }
    inline static bool isRefRightFloat (int ref)
    { return ref != -1 && (ref & 7) == 5; }
-   inline static bool isRefAbsolutelyPositioned (int ref)
-   { return ref != -1 && (ref & 3) == 3; }
 
    inline static int createRefLeftFloat (int index)
    { return (index << 3) | 1; }
    inline static int createRefRightFloat (int index)
    { return (index << 3) | 5; }
-   inline static int createRefAbsolutelyPositioned (int index)
-   { return (index << 2) | 3; }
 
    inline static int getFloatIndexFromRef (int ref)
    { return ref == -1 ? ref : (ref >> 3); }
-   inline static int getAbsolutelyPositionedIndexFromRef (int ref)
-   { return ref == -1 ? ref : (ref >> 2); }
 
 public:
    OutOfFlowMgr (Textblock *containingBlock);
@@ -447,18 +409,14 @@ public:
    { return ref == -1 ? ref : (ref >> 1); }
 
    // for iterators
-   inline int getNumWidgets () {
-      return leftFloatsAll->size() + rightFloatsAll->size() +
-         absolutelyPositioned->size(); }
+   inline int getNumWidgets ()
+   { return leftFloatsAll->size() + rightFloatsAll->size(); }
 
    inline core::Widget *getWidget (int i) {
       if (i < leftFloatsAll->size())
          return leftFloatsAll->get(i)->getWidget ();
-      else if (i < leftFloatsAll->size() + rightFloatsAll->size())
-         return rightFloatsAll->get(i - leftFloatsAll->size())->getWidget ();
       else
-         return absolutelyPositioned->get(i - (leftFloatsAll->size() +
-                                               rightFloatsAll->size()))->widget;
+         return rightFloatsAll->get(i - leftFloatsAll->size())->getWidget ();
    }
 
    inline bool affectsLeftBorder (core::Widget *widget) {
