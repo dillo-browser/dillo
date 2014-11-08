@@ -2188,6 +2188,8 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
    dw::Image *dw = new dw::Image(alt_ptr);
    image =
       a_Image_new(html->dw->getLayout(), (void*)(dw::core::ImgRenderer*)dw, 0);
+   
+   a_Image_ref(image);
 
    if (HT2TB(html)->getBgColor())
       image->bg_color = HT2TB(html)->getBgColor()->getColor();
@@ -2204,10 +2206,10 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
    if (load_now && Html_load_image(html->bw, url, html->page_url, image)) {
       // hi->image is NULL if dillo tries to load the image immediately
       hi->image = NULL;
+      a_Image_unref(image);
    } else {
       // otherwise a reference is kept in html->images
       hi->image = image;
-      a_Image_ref(image);
    }
 
    dFree(alt_ptr);
