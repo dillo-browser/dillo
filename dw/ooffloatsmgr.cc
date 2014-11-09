@@ -157,7 +157,9 @@ bool OOFFloatsMgr::Float::covers (OOFAwareWidget *textblock, int y, int h)
                       reqyGB, flyGB, size.ascent, size.descent, flh,
                       b ? "true" : "false");
    } else {
-      assert (getOOFFloatsMgr()->wasAllocated (generatingBlock));
+      // (If the textblock were not allocated, the GB list would have
+      // been choosen instead of the CB list, and so this else-branch
+      // would not have been not executed.)
       assert (getOOFFloatsMgr()->wasAllocated (textblock));
 
       if (!getWidget()->wasAllocated ()) {
@@ -166,7 +168,6 @@ bool OOFFloatsMgr::Float::covers (OOFAwareWidget *textblock, int y, int h)
          b = false;
       } else {
          Allocation *tba = getOOFFloatsMgr()->getAllocation(textblock),
-            //*gba = getOOFFloatsMgr()->getAllocation(generatingBlock),
             *fla = getWidget()->getAllocation ();
          int reqyCanv = tba->y + y;
          int flyCanv = fla->y;
@@ -202,19 +203,19 @@ int OOFFloatsMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
       DBG_OBJ_MSG_O ("border", 2, oofm, "refTB is not generating both floats");
       DBG_OBJ_MSG_START_O (oofm);
 
-      assert (oofm->wasAllocated (fl1->generatingBlock));
-      assert (oofm->wasAllocated (fl2->generatingBlock));
-
       DBG_OBJ_MSGF_O ("border", 2, oofm, "generators are %p and %p",
                       fl1->generatingBlock, fl2->generatingBlock);
 
-      // (i) Floats may not yet been allocated (although the
-      // generators are). Non-allocated floats do not have an effect
-      // yet, they are considered "at the end" of the list.
+      // (i) Floats may not yet been allocated. Non-allocated floats
+      // do not have an effect yet, they are considered "at the end"
+      // of the list.
 
-      // (ii) Float::widget for the key used for binary search. In
-      // this case, Float::yReal is used instead (which is set in
-      // SortedFloatsVector::find).
+      // (ii) Float::widget is NULL for the key used for binary
+      // search. In this case, Float::yReal is used instead (which is
+      // set in SortedFloatsVector::find, too). The generator is the
+      // textblock, and should be allocated. (If not, the GB list
+      // would have been choosen instead of the CB list, and so this
+      // else-branch would not have been not executed.)
 
       bool a1 = fl1->getWidget () ? fl1->getWidget()->wasAllocated () : true;
       bool a2 = fl2->getWidget () ? fl2->getWidget()->wasAllocated () : true;
@@ -230,7 +231,8 @@ int OOFFloatsMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
          if (fl1->getWidget()) {
             fly1 = fl1->getWidget()->getAllocation()->y;
             DBG_OBJ_MSGF_O ("border", 2, oofm, "fly1 = %d", fly1);
-         } else {            
+         } else {
+            assert (oofm->wasAllocated (fl1->generatingBlock));
             fly1 = oofm->getAllocation(fl1->generatingBlock)->y + fl1->yReal;
             DBG_OBJ_MSGF_O ("border", 2, oofm, "fly1 = %d + %d = %d",
                             oofm->getAllocation(fl1->generatingBlock)->y,
@@ -241,6 +243,7 @@ int OOFFloatsMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
             fly2 = fl2->getWidget()->getAllocation()->y;
             DBG_OBJ_MSGF_O ("border", 2, oofm, "fly2 = %d", fly2);
          } else {
+            assert (oofm->wasAllocated (fl2->generatingBlock));
             fly2 = oofm->getAllocation(fl2->generatingBlock)->y + fl2->yReal;
             DBG_OBJ_MSGF_O ("border", 2, oofm, "fly2 = %d + %d = %d",
                             oofm->getAllocation(fl2->generatingBlock)->y,
@@ -1650,14 +1653,12 @@ bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, SFVType type,
       } else
          result = false;
    } else {
-      assert (wasAllocated (vloat->generatingBlock));
-      assert (wasAllocated (other->generatingBlock));
-
       // If the other float is not allocated, there is no collision. The
       // allocation of this float (vloat) is not used at all.
       if (!other->getWidget()->wasAllocated ())
          result = false;
       else {
+         assert (wasAllocated (vloat->generatingBlock));
          Allocation *gba = getAllocation (vloat->generatingBlock),
             *flaOther = other->getWidget()->getAllocation ();
          int otherBottomGB =
@@ -1698,15 +1699,13 @@ bool OOFFloatsMgr::collidesH (Float *vloat, Float *other, SFVType type)
          + vloat->generatingBlock->boxDiffWidth()
          > vloat->generatingBlock->getLineBreakWidth();
    else {
-      assert (wasAllocated (vloat->generatingBlock));
-      assert (wasAllocated (other->generatingBlock));
-
       // Again, if the other float is not allocated, there is no
       // collision. Compare to collidesV. (But vloat->size is used
       // here.)
       if (!other->getWidget()->wasAllocated ())
          collidesH = false;
       else {
+         assert (wasAllocated (vloat->generatingBlock));
          Allocation *gba = getAllocation (vloat->generatingBlock);
          int vloatX =
             calcFloatX (vloat,
