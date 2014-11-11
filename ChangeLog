@@ -22,6 +22,7 @@ dillo-3.1 [not released yet]
  - Make building of test/ files more robust.
  - Fix Makefile to pick up LIBJPEG_CPPFLAGS.
  - Work on collapsing spaces: more cases supported.
+ - Fix crash that's possible searching for text while page still being built.
    Patches: Sebastian Geerken
 +- Image buffer/cache improvements.
    Patch: Jorge Arellano Cid
