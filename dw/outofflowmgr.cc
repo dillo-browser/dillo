@@ -672,10 +672,8 @@ void OutOfFlowMgr::containerSizeChangedForChildren ()
 {
    DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
 
-   DBG_OBJ_MSGF ("resize", 0,
-                 "%d left floats, %d right floats %d abspos",
-                 leftFloatsAll->size (), rightFloatsAll->size (),
-                 absolutelyPositioned->size());
+   DBG_OBJ_MSGF ("resize", 0, "%d left floats, %d right floats",
+                 leftFloatsAll->size (), rightFloatsAll->size ());
 
    for (int i = 0; i < leftFloatsAll->size (); i++)
       leftFloatsAll->get(i)->getWidget()->containerSizeChanged ();
