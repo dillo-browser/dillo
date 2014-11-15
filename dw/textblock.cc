@@ -626,6 +626,9 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    DBG_OBJ_MSG_START ();
 
    for (lineIndex = 0; lineIndex < lines->size (); lineIndex++) {
+      DBG_OBJ_MSGF ("resize", 1, "line %d", lineIndex);
+      DBG_OBJ_MSG_START ();
+
       // Especially for floats, allocation->width may be different
       // from the line break width, so that for centered and right
       // text, the offsets have to be recalculated again. However, if
@@ -637,6 +640,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
       line = lines->getRef (lineIndex);
       xCursor = line->textOffset;
+
+      DBG_OBJ_MSGF ("resize", 1, "xCursor = %d (initially)", xCursor);
 
       for (wordIndex = line->firstWord; wordIndex <= line->lastWord;
            wordIndex++) {
@@ -732,7 +737,12 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
          }
 
          xCursor += (word->size.width + word->effSpace);
+         DBG_OBJ_MSGF ("resize", 1, "xCursor = %d (after word %d)",
+                       xCursor, wordIndex);
+         DBG_MSG_WORD("resize", 1, "<i>that is:</i> ", wordIndex, "");
       }
+
+      DBG_OBJ_MSG_END ();
    }
 
    DBG_OBJ_MSG_END ();
@@ -3117,31 +3127,40 @@ Textblock *Textblock::getTextblockForLine (int lineNo)
 
 Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
 {
+   DBG_OBJ_ENTER ("resize", 0, "getTextblockForLine", "%d, %d",
+                  firstWord, lastWord);
+   DBG_OBJ_MSGF ("resize", 1, "words.size = %d", words->size ());
+
+   Textblock *textblock = NULL;
+
    if (firstWord < words->size ()) {
-      //printf ("[%p] GET_TEXTBLOCK_FOR_LINE (%d, %d)\n",
-      //        this, firstWord, lastWord);
+      DBG_MSG_WORD ("resize", 1, "<i>first word:</i> ", firstWord, "");
 
       // A textblock is always between two line breaks, and so the
       // first word of the line.
       Word *word = words->getRef (firstWord);
 
-      if (word->content.type == core::Content::WIDGET_IN_FLOW &&
-          word->content.widget->instanceOf (Textblock::CLASS_ID) &&
-          // Exclude inline blocks (see definition of float container).
-          (word->content.widget->getStyle()->display
-              == core::style::DISPLAY_BLOCK ||
-           word->content.widget->getStyle()->display
-           == core::style::DISPLAY_LIST_ITEM)) {
-         //printf ("   word %d: ", firstWord);
-         //printWordShort (word);
-         //printf ("\n");
+      DBG_MSG_WORD ("resize", 1, "<i>first word:</i> ", firstWord, "");
 
-         return (Textblock*)word->content.widget;
+      if (word->content.type == core::Content::WIDGET_IN_FLOW) {
+         Widget *widget = word->content.widget;
+         if (widget->instanceOf (Textblock::CLASS_ID) &&
+             // Exclude some cases where a textblock constitutes a new
+             // container (see definition of float container in
+             // Textblock::isContainingBlock).
+             widget->getStyle()->display != core::style::DISPLAY_BLOCK &&
+             widget->getStyle()->overflow == core::style::OVERFLOW_VISIBLE)
+            textblock = (Textblock*)widget;
+
+         // (TODO: It would look nicer if there is one common place
+         // for such definitions. Will be fixed in "dillo_grows", not
+         // here.)
       }
    }
 
-   //printf ("   nothing\n");
-   return NULL;
+   DBG_OBJ_MSGF ("resize", 1, "=> %p", textblock);
+   DBG_OBJ_LEAVE ();
+   return textblock;
 }
 
 /**

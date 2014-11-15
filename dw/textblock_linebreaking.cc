@@ -389,7 +389,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
          nonTemporaryLines = lines->size ();
    }
 
-   PRINTF ("nonTemporaryLines = %d\n", nonTemporaryLines);
+   DBG_OBJ_MSGF ("construct.line", 1, "nonTemporaryLines = %d",
+                 nonTemporaryLines);
 
    int lineIndex = lines->size () - 1;
    Line *line = lines->getRef (lineIndex);
@@ -412,6 +413,12 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                                  + (lineIndex == 0 ? line1OffsetEff : 0));
    line->rightOffset = misc::max (regardBorder ? newLineRightBorder : 0,
                                   boxRestWidth ());
+
+   DBG_OBJ_MSGF ("construct.line", 1,
+                 "regardBorder = %s, newLineLeftBorder = %d, "
+                 "newLineRightBorder = %d",
+                 regardBorder ? "true" : "false", newLineLeftBorder,
+                 newLineRightBorder);
 
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "leftOffset", line->leftOffset);
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "rightOffset",

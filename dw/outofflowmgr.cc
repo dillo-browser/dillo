@@ -1230,7 +1230,7 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
       // Left floats are always aligned on the left side of the
       // generator (content, not allocation) ...
       x = gbX + vloat->generatingBlock->getStyle()->boxOffsetX();
-      DBG_OBJ_MSGF ("resize.oofm", 1, "left: x = %d + %d = %d",
+      DBG_OBJ_MSGF ("resize.common", 1, "left: x = %d + %d = %d",
                     gbX, vloat->generatingBlock->getStyle()->boxOffsetX(), x);
       // ... but when the float exceeds the line break width of the
       // container, it is corrected (but not left of the container).
@@ -1795,6 +1795,11 @@ void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
 
+      DBG_OBJ_MSGF ("resize.oofm", 1,
+                    "float %p has generator %p (container is %p)",
+                    vloat->getWidget (), vloat->generatingBlock,
+                    containingBlock);
+                    
       if (vloat->generatingBlock == containingBlock ||
           wasAllocated (vloat->generatingBlock)) {
          ensureFloatSize (vloat);
