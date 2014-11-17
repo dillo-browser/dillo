@@ -446,7 +446,6 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
          prevLine->lastOofRefPositionedBeforeThisLine;
    }
 
-   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "top", line->top);
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "maxLineWidth",
                            line->maxLineWidth);
 
@@ -462,6 +461,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       line->top = prevLine->top
          + prevLine->totalHeight (line->marginAscent - line->borderAscent);
    }
+
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "top", line->top);
 
    // Especially empty lines (possible when there are floats) have
    // zero height, which may cause endless loops. For this reasons,
