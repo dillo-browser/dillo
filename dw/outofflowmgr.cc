@@ -1356,6 +1356,7 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
                                  "widget", vloat->getWidget ());
 
          widget->parentRef = createRefLeftFloat (leftFloatsAll->size() - 1);
+         DBG_OBJ_SET_NUM_O (widget, "parentRef", widget->parentRef);
          tbInfo->leftFloatsGB->put (vloat);
 
          if (wasAllocated (generatingBlock)) {
@@ -1384,6 +1385,7 @@ void OutOfFlowMgr::addWidgetOOF (Widget *widget, Textblock *generatingBlock,
                                  "widget", vloat->getWidget ());
 
          widget->parentRef = createRefRightFloat (rightFloatsAll->size() - 1);
+         DBG_OBJ_SET_NUM_O (widget, "parentRef", widget->parentRef);
          tbInfo->rightFloatsGB->put (vloat);
 
          if (wasAllocated (generatingBlock)) {

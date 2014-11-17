@@ -842,9 +842,8 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
       if (wordIndex >= firstWordWithoutLine) {
          word->content.widget->parentRef =
             OutOfFlowMgr::createRefNormalFlow (lines->size ());
-         PRINTF ("The %s %p is assigned parentRef = %d.\n",
-                 word->content.widget->getClassName(), word->content.widget,
-                 word->content.widget->parentRef);
+         DBG_OBJ_SET_NUM_O (word->content.widget, "parentRef",
+                            word->content.widget->parentRef);
       }
    }
 
@@ -1509,6 +1508,8 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
 
       word->content.widget->parentRef =
          OutOfFlowMgr::createRefNormalFlow (lineIndex);
+      DBG_OBJ_SET_NUM_O (word->content.widget, "parentRef",
+                         word->content.widget->parentRef);
    } else {
       borderAscent = marginAscent = word->size.ascent;
       borderDescent = marginDescent = word->size.descent;

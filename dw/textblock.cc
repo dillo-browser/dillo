@@ -2352,6 +2352,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
     * (parent_ref is actually undefined, but likely has the value 0.) At the,
     * end of this function, the correct value is assigned. */
    widget->parentRef = -1;
+   DBG_OBJ_SET_NUM_O (widget, "parentRef", widget->parentRef);
 
    widget->setStyle (style);
 

@@ -480,12 +480,6 @@ void Widget::sizeRequest (Requisition *requisition)
 
    enterSizeRequest ();
 
-   //printf ("The %stop-level %s %p with parentRef = %d: needsResize: %s, "
-   //        "resizeQueued = %s\n",
-   //        parent ? "non-" : "", getClassName(), this, parentRef,
-   //        needsResize () ? "true" : "false",
-   //        resizeQueued () ? "true" : "false");
-
    if (resizeQueued ()) {
       // This method is called outside of Layout::resizeIdle.
       setFlags (NEEDS_RESIZE);
@@ -506,9 +500,6 @@ void Widget::sizeRequest (Requisition *requisition)
       DBG_OBJ_SET_NUM ("requisition.descent", requisition->descent);
    } else
       *requisition = this->requisition;
-
-   //printf ("   ==> Result: %d x (%d + %d)\n",
-   //        requisition->width, requisition->ascent, requisition->descent);
 
    leaveSizeRequest ();
 
