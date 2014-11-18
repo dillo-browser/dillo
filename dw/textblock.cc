@@ -3149,7 +3149,7 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
              // Exclude some cases where a textblock constitutes a new
              // container (see definition of float container in
              // Textblock::isContainingBlock).
-             widget->getStyle()->display != core::style::DISPLAY_BLOCK &&
+             widget->getStyle()->display != core::style::DISPLAY_INLINE_BLOCK &&
              widget->getStyle()->overflow == core::style::OVERFLOW_VISIBLE)
             textblock = (Textblock*)widget;
 
