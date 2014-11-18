@@ -3167,16 +3167,10 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
       if (word->content.type == core::Content::WIDGET_IN_FLOW) {
          Widget *widget = word->content.widget;
          if (widget->instanceOf (Textblock::CLASS_ID) &&
-             // Exclude some cases where a textblock constitutes a new
-             // container (see definition of float container in
-             // Textblock::isContainingBlock).
-             widget->getStyle()->display != core::style::DISPLAY_INLINE_BLOCK &&
-             widget->getStyle()->overflow == core::style::OVERFLOW_VISIBLE)
+             // Exclude cases where a textblock constitutes a new floats
+             // container.
+             !isOOFContainer (widget, OOFM_FLOATS))
             textblock = (Textblock*)widget;
-
-         // (TODO: It would look nicer if there is one common place
-         // for such definitions. Will be fixed in "dillo_grows", not
-         // here.)
       }
    }
 
