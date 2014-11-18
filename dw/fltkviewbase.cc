@@ -69,7 +69,7 @@ FltkViewBase::FltkViewBase (int x, int y, int w, int h, const char *label):
    canvasHeight = 1;
    bgColor = FL_WHITE;
    mouse_x = mouse_y = 0;
-   // focused_child = NULL;
+   focused_child = NULL;
    exposeArea = NULL;
    if (backBuffer == NULL) {
       backBuffer = new BackBuffer ();
@@ -355,8 +355,6 @@ int FltkViewBase::handle (int event)
    case FL_LEAVE:
       theLayout->leaveNotify (this, getDwButtonState ());
       break;
-#if 0
-   // BUG: starting with fltk-1.3.3, we can't use fl_oldfocus.
    case FL_FOCUS:
       if (focused_child && find(focused_child) < children()) {
          /* strangely, find() == children() if the child is not found */
@@ -364,9 +362,11 @@ int FltkViewBase::handle (int event)
       }
       return 1;
    case FL_UNFOCUS:
-      focused_child = fl_oldfocus;
+      // was: focused_child = fl_oldfocus;
+      for (Fl_Widget *p = this; p; p = p->parent())
+        focused_child = p;
+
       return 0;
-#endif
    case FL_KEYBOARD:
       if (Fl::event_key() == FL_Tab)
          return manageTabToFocus();

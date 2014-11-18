@@ -56,7 +56,7 @@ protected:
    core::Layout *theLayout;
    int canvasWidth, canvasHeight;
    int mouse_x, mouse_y;
-   // Fl_Widget *focused_child;
+   Fl_Widget *focused_child;
 
    virtual int translateViewXToCanvasX (int x) = 0;
    virtual int translateViewYToCanvasY (int y) = 0;
