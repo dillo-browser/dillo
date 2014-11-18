@@ -1807,6 +1807,10 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
    for (int i = 0; i < list->size(); i++) {
       Float *vloat = list->get(i);
 
+      DBG_OBJ_MSGF ("resize.oofm", 1,
+                    "float %p has generator %p (container is %p)",
+                    vloat->getWidget (), vloat->generatingBlock, container);
+
       if (vloat->generatingBlock == container ||
           wasAllocated (vloat->generatingBlock)) {
          ensureFloatSize (vloat);

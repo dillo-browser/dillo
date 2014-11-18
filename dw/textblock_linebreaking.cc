@@ -389,7 +389,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
          nonTemporaryLines = lines->size ();
    }
 
-   PRINTF ("nonTemporaryLines = %d\n", nonTemporaryLines);
+   DBG_OBJ_MSGF ("construct.line", 1, "nonTemporaryLines = %d",
+                 nonTemporaryLines);
 
    int lineIndex = lines->size () - 1;
    Line *line = lines->getRef (lineIndex);
@@ -412,6 +413,12 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                                  + (lineIndex == 0 ? line1OffsetEff : 0));
    line->rightOffset = misc::max (regardBorder ? newLineRightBorder : 0,
                                   boxRestWidth ());
+
+   DBG_OBJ_MSGF ("construct.line", 1,
+                 "regardBorder = %s, newLineLeftBorder = %d, "
+                 "newLineRightBorder = %d",
+                 regardBorder ? "true" : "false", newLineLeftBorder,
+                 newLineRightBorder);
 
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "leftOffset", line->leftOffset);
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "rightOffset",
@@ -439,7 +446,6 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
          prevLine->lastOofRefPositionedBeforeThisLine;
    }
 
-   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "top", line->top);
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "maxLineWidth",
                            line->maxLineWidth);
 
@@ -455,6 +461,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       line->top = prevLine->top
          + prevLine->totalHeight (line->marginAscent - line->borderAscent);
    }
+
+   DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "top", line->top);
 
    // Especially empty lines (possible when there are floats) have
    // zero height, which may cause endless loops. For this reasons,
@@ -842,9 +850,8 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 
       if (wordIndex >= firstWordWithoutLine) {
          word->content.widget->parentRef = makeParentRefInFlow (lines->size ());
-         PRINTF ("The %s %p is assigned parentRef = %d.\n",
-                 word->content.widget->getClassName(), word->content.widget,
-                 word->content.widget->parentRef);
+         DBG_OBJ_SET_NUM_O (word->content.widget, "parentRef",
+                            word->content.widget->parentRef);
       }
    }
 
@@ -1532,6 +1539,8 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
          marginDescent - word->content.widget->getStyle()->margin.bottom;
 
       word->content.widget->parentRef = makeParentRefInFlow (lineIndex);
+      DBG_OBJ_SET_NUM_O (word->content.widget, "parentRef",
+                         word->content.widget->parentRef);
    } else {
       borderAscent = marginAscent = word->size.ascent;
       borderDescent = marginDescent = word->size.descent;

@@ -1,5 +1,5 @@
 #ifndef __DW_SIMPLE_CONTAINER_HH__
-#define __DWR_SIMPLE_CONTAINER_HH__
+#define __DW_SIMPLE_CONTAINER_HH__
 
 #include "dw/core.hh"
 

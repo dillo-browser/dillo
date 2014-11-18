@@ -432,9 +432,9 @@ public:
    { ((untyped::Vector*)this->base)->put(newElement, newPos); }
    inline void insert(T *newElement, int pos)
    { ((untyped::Vector*)this->base)->insert(newElement, pos); }
-   inline bool insertSorted(T *newElement,
-                            object::Comparator *comparator =
-                            &object::standardComparator)
+   inline int insertSorted(T *newElement,
+                           object::Comparator *comparator =
+                           &object::standardComparator)
    { return ((untyped::Vector*)this->base)->insertSorted(newElement,
                                                          comparator); }
    inline void remove(int pos) { ((untyped::Vector*)this->base)->remove(pos); }
