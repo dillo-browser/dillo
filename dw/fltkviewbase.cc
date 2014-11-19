@@ -362,10 +362,9 @@ int FltkViewBase::handle (int event)
       }
       return 1;
    case FL_UNFOCUS:
-      // was: focused_child = fl_oldfocus;
-      for (Fl_Widget *p = this; p; p = p->parent())
-        focused_child = p;
-
+      // FLTK delivers UNFOCUS to the previously focused widget
+      if (find(Fl::focus()) < children())
+         focused_child = Fl::focus(); // remember the focused child!
       return 0;
    case FL_KEYBOARD:
       if (Fl::event_key() == FL_Tab)
