@@ -1706,7 +1706,7 @@ void Textblock::alignLine (int lineIndex)
          this->lineBreakWidth - (line->leftOffset + line->rightOffset);
 
       for (int i = line->firstWord; i < line->lastWord; i++)
-         words->getRef(i)->origSpace = words->getRef(i)->effSpace;
+         words->getRef(i)->effSpace = words->getRef(i)->origSpace;
 
       if (firstWord->content.type != core::Content::BREAK) {
          switch (firstWord->style->textAlign) {

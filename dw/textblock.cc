@@ -2536,7 +2536,7 @@ void Textblock::fillSpace (int wordNo, core::style::Style *style)
       setBreakOption (word, style, 0, 0, false);
 
       word->content.space = true;
-      word->effSpace = word->origSpace =
+      word->origSpace = word->effSpace =
          style->font->spaceWidth + style->wordSpacing;
 
       removeSpaceImgRenderer (wordNo);
