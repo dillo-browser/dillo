@@ -3135,8 +3135,6 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
    Textblock *textblock = NULL;
 
    if (firstWord < words->size ()) {
-      DBG_MSG_WORD ("resize", 1, "<i>first word:</i> ", firstWord, "");
-
       // A textblock is always between two line breaks, and so the
       // first word of the line.
       Word *word = words->getRef (firstWord);
