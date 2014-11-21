@@ -374,6 +374,11 @@ static void Html_add_textblock(DilloHtml *html, bool addBreaks, int breakSpace)
       S_TOP(html)->hand_over_break = true;
 }
 
+static bool Html_will_textblock_be_out_of_flow(DilloHtml *html)
+{
+   return HT2TB(html)->isStyleOutOfFlow (html->style ());
+}
+
 /*
  * Create and initialize a new DilloHtml class
  */
@@ -3859,8 +3864,7 @@ static void Html_check_html5_obsolete(DilloHtml *html, int ni)
 
 static void Html_display_block(DilloHtml *html)
 {
-   //HT2TB(html)->addParbreak (5, html->styleEngine->wordStyle ());
-   Html_add_textblock(html, true, 0);
+   Html_add_textblock(html, !Html_will_textblock_be_out_of_flow (html), 0);
 }
 
 static void Html_display_inline_block(DilloHtml *html)

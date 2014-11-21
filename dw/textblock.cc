@@ -2364,7 +2364,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       DBG_OBJ_ASSOC (containingBlock, containingBlock->outOfFlowMgr);
    }
 
-   if (OutOfFlowMgr::isWidgetHandledByOOFM (widget)) {
+   if (OutOfFlowMgr::isWidgetOutOfFlow (widget)) {
       PRINTF ("   -> out of flow.\n");
 
       widget->setParent (containingBlock);

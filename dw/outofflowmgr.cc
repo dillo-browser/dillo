@@ -1295,28 +1295,6 @@ void OutOfFlowMgr::drawFloats (SortedFloatsVector *list, View *view,
    }
 }
 
-/**
- * This method consideres also the attributes not yet considered by
- * dillo, so that the containing block is determined correctly, which
- * leads sometimes to a cleaner rendering.
- */
-bool OutOfFlowMgr::isWidgetOutOfFlow (Widget *widget)
-{
-   // This is only half-baked, will perhaps be reactivated:
-   //
-   //return
-   //   widget->getStyle()->vloat != FLOAT_NONE ||
-   //   widget->getStyle()->position == POSITION_ABSOLUTE ||
-   //   widget->getStyle()->position == POSITION_FIXED;
-
-   return isWidgetHandledByOOFM (widget);
-}
-
-bool OutOfFlowMgr::isWidgetHandledByOOFM (Widget *widget)
-{
-   return isWidgetFloat (widget);
-}
-
 void OutOfFlowMgr::addWidgetInFlow (Textblock *textblock,
                                     Textblock *parentBlock, int externalIndex)
 {

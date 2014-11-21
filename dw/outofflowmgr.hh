@@ -313,8 +313,10 @@ private:
 
    void tellFloatPosition (core::Widget *widget, int yReq);
 
+   static inline bool isStyleFloat (core::style::Style *style)
+   { return style->vloat != core::style::FLOAT_NONE; }
    static inline bool isWidgetFloat (core::Widget *widget)
-   { return widget->getStyle()->vloat != core::style::FLOAT_NONE; }
+   { return isStyleFloat (widget->getStyle()); }
 
    /*
     * Format for parent ref (see also below for isRefOutOfFlow,
@@ -370,8 +372,11 @@ public:
    void markExtremesChange (int ref);
    core::Widget *getWidgetAtPoint (int x, int y, int level);
 
-   static bool isWidgetOutOfFlow (core::Widget *widget);
-   static bool isWidgetHandledByOOFM (core::Widget *widget);
+   static bool isStyleOutOfFlow (core::style::Style *style)
+   { return isStyleFloat (style); }
+   static inline bool isWidgetOutOfFlow (core::Widget *widget)
+   { return isStyleOutOfFlow (widget->getStyle()); }
+
    void addWidgetInFlow (Textblock *textblock, Textblock *parentBlock,
                          int externalIndex);
    void addWidgetOOF (core::Widget *widget, Textblock *generatingBlock,
