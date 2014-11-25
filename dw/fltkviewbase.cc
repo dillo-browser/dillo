@@ -27,8 +27,6 @@
 #include <stdio.h>
 #include "../lout/msg.h"
 
-extern Fl_Widget* fl_oldfocus;
-
 using namespace lout::object;
 using namespace lout::container::typed;
 
@@ -364,7 +362,9 @@ int FltkViewBase::handle (int event)
       }
       return 1;
    case FL_UNFOCUS:
-      focused_child = fl_oldfocus;
+      // FLTK delivers UNFOCUS to the previously focused widget
+      if (find(Fl::focus()) < children())
+         focused_child = Fl::focus(); // remember the focused child!
       return 0;
    case FL_KEYBOARD:
       if (Fl::event_key() == FL_Tab)
