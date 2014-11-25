@@ -6,6 +6,16 @@ Here we list changes that are relatively significant and/or visible to the
 user. For a history of changes in full detail, see our Mercurial repository
 at http://hg.dillo.org/dillo
 
+dillo-3.0.4.1 [not released yet]
+
++- Fix linking problem with fltk-1.3.3 and fl_oldfocus.
+   Patch: Jorge Arellano Cid
++- Don't load background images in --local mode.
+   Patch: Johannes Hofmann
++- Remove Fl_Printer stub that always gave problems compiling under OSX.
+   Patch: corvid
+
+-----------------------------------------------------------------------------
 
 dillo-3.0.4 [April 09, 2014]
 
