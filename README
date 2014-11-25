@@ -42,8 +42,8 @@ FLTK-1.3
 
   and build it like:
 
-     tar zxvf fltk-1.3.2-source.tar.gz      [or latest 1.3.x version]
-     cd fltk-1.3.2
+     tar zxvf fltk-1.3.3-source.tar.gz      [or latest 1.3.x version]
+     cd fltk-1.3.3
      less README.Unix.txt
      make
      sudo make install
@@ -53,8 +53,8 @@ FLTK-1.3
 Dillo3
 ------
 
-     tar jxvf dillo-3.0.4.tar.bz2
-     cd dillo-3.0.4
+     tar jxvf dillo-3.0.4.1.tar.bz2
+     cd dillo-3.0.4.1
      ./configure; make
      sudo make install-strip
 
