@@ -245,7 +245,7 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # "plastic" "is inspired by the Aqua user interface on Mac OS X".
 # "gtk+" "is inspired by the Red Hat Bluecurve theme".
 #
-# Once fltk-1.3.3 is released, you will be able to specify "gleam", which
+# If you have fltk-1.3.3 or newer, you can specify "gleam", which
 # is "a sort of Clearlooks Glossy scheme".  ("fltk-config --version")
 #theme=none
 # theme=gtk+
