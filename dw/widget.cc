@@ -1117,6 +1117,12 @@ void Widget::setStyle (style::Style *style)
    DBG_OBJ_SET_NUM ("style.height (raw)", style->height);
    DBG_OBJ_SET_NUM ("style.min-height (raw)", style->minHeight);
    DBG_OBJ_SET_NUM ("style.max-height (raw)", style->maxHeight);
+
+   if (style->backgroundColor)
+      DBG_OBJ_SET_COL ("style.background-color",
+                       style->backgroundColor->getColor ());
+   else
+      DBG_OBJ_SET_SYM ("style.background-color", "transparent");
 }
 
 /**
