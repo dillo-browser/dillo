@@ -607,7 +607,7 @@ protected:
    lout::misc::NotSoSimpleVector <Word> *words;
    lout::misc::SimpleVector <Anchor> *anchors;
 
-   struct {int index, nChar;}
+   struct { int index, nChar; }
       hlStart[core::HIGHLIGHT_NUM_LAYERS], hlEnd[core::HIGHLIGHT_NUM_LAYERS];
 
    int hoverLink;  /* The link under the mouse pointer */
@@ -884,9 +884,7 @@ public:
 
    void addText (const char *text, size_t len, core::style::Style *style);
    inline void addText (const char *text, core::style::Style *style)
-   {
-      addText (text, strlen(text), style);
-   }
+   { addText (text, strlen(text), style); }
    void addWidget (core::Widget *widget, core::style::Style *style);
    bool addAnchor (const char *name, core::style::Style *style);
    void addSpace (core::style::Style *style);

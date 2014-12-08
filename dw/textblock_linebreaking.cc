@@ -1735,7 +1735,7 @@ void Textblock::alignLine (int lineIndex)
          this->lineBreakWidth - (line->leftOffset + line->rightOffset);
 
       for (int i = line->firstWord; i < line->lastWord; i++)
-         words->getRef(i)->origSpace = words->getRef(i)->effSpace;
+         words->getRef(i)->effSpace = words->getRef(i)->origSpace;
 
       if (firstWord->content.type != core::Content::BREAK) {
          switch (firstWord->style->textAlign) {
@@ -2130,8 +2130,23 @@ void Textblock::showMissingLines ()
 
 void Textblock::removeTemporaryLines ()
 {
-   lines->setSize (nonTemporaryLines);
-   DBG_OBJ_SET_NUM ("lines.size", lines->size ());
+   DBG_OBJ_ENTER0 ("construct.line", 0, "removeTemporaryLines");
+
+   if (nonTemporaryLines < lines->size ()) {
+      lines->setSize (nonTemporaryLines);
+      DBG_OBJ_SET_NUM ("lines.size", lines->size ());
+
+      // For words which will be added, the values calculated before in
+      // accumulateWordData() are wrong, so it is called again. (Actually, the
+      // words from the first temporary line are correct, but for simplicity,
+      // we re-calculate all.)
+      int firstWord =
+         lines->size () > 0 ? lines->getLastRef()->lastWord + 1 : 0;
+      for (int i = firstWord; i < words->size (); i++)
+         accumulateWordData (i);
+   }
+
+   DBG_OBJ_LEAVE ();
 }
 
 int Textblock::getSpaceShrinkability(struct Word *word)

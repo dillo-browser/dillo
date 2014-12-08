@@ -144,23 +144,6 @@ protected:
    { return oofContainer[oofmIndex] ?
          oofContainer[oofmIndex]->outOfFlowMgr[oofmIndex] : NULL; }
 
-   static inline bool testWidgetFloat (Widget *widget)
-   { return widget->getStyle()->vloat != core::style::FLOAT_NONE; }
-   static inline bool testWidgetAbsolutelyPositioned (Widget *widget)
-   { return widget->getStyle()->position == core::style::POSITION_ABSOLUTE; }
-   static inline bool testWidgetFixedlyPositioned (Widget *widget)
-   { return widget->getStyle()->position == core::style::POSITION_FIXED; }
-   static inline bool testWidgetPositioned (Widget *widget)
-   { return testWidgetAbsolutelyPositioned (widget) ||
-         testWidgetRelativelyPositioned (widget) ||
-         testWidgetFixedlyPositioned (widget); }
-   static inline bool testWidgetOutOfFlow (Widget *widget)
-   { return testWidgetFloat (widget) || testWidgetAbsolutelyPositioned (widget)
-         || testWidgetFixedlyPositioned (widget); }
-
-   static inline bool testWidgetRelativelyPositioned (Widget *widget)
-   { return widget->getStyle()->position == core::style::POSITION_RELATIVE; }
-
    static bool getOOFMIndex (Widget *widget);
 
    void initOutOfFlowMgrs ();
@@ -231,6 +214,41 @@ public:
 
    OOFAwareWidget ();
    ~OOFAwareWidget ();
+
+   static inline bool testStyleFloat (core::style::Style *style)
+   { return style->vloat != core::style::FLOAT_NONE; }
+
+   static inline bool testStyleAbsolutelyPositioned (core::style::Style *style)
+   { return style->position == core::style::POSITION_ABSOLUTE; }
+   static inline bool testStyleFixedlyPositioned (core::style::Style *style)
+   { return style->position == core::style::POSITION_FIXED; }
+   static inline bool testStyleRelativelyPositioned (core::style::Style *style)
+   { return style->position == core::style::POSITION_RELATIVE; }
+
+   static inline bool testStylePositioned (core::style::Style *style)
+   { return testStyleAbsolutelyPositioned (style) ||
+         testStyleRelativelyPositioned (style) ||
+         testStyleFixedlyPositioned (style); }
+
+   static inline bool testStyleOutOfFlow (core::style::Style *style)
+   { return testStyleFloat (style) || testStyleAbsolutelyPositioned (style)
+         || testStyleFixedlyPositioned (style); }
+
+   static inline bool testWidgetFloat (Widget *widget)
+   { return testStyleFloat (widget->getStyle ()); }
+
+   static inline bool testWidgetAbsolutelyPositioned (Widget *widget)
+   { return testStyleAbsolutelyPositioned (widget->getStyle ()); }
+   static inline bool testWidgetFixedlyPositioned (Widget *widget)
+   { return testStyleFixedlyPositioned (widget->getStyle ()); }
+   static inline bool testWidgetRelativelyPositioned (Widget *widget)
+   { return testStyleRelativelyPositioned (widget->getStyle ()); }
+
+   static inline bool testWidgetPositioned (Widget *widget)
+   { return testStylePositioned (widget->getStyle ()); }
+
+   static inline bool testWidgetOutOfFlow (Widget *widget)
+   { return testStyleOutOfFlow (widget->getStyle ()); }
 
    bool doesWidgetOOFInterruptDrawing (Widget *widget);
 

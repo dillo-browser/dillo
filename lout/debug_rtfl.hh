@@ -37,9 +37,10 @@
 
 // Prints an RTFL message to stdout. "fmt" contains simple format
 // characters how to deal with the additional arguments (no "%"
-// preceeding, as in printf), or other characters, which are simply
-// printed. No quoting: this function cannot be used to print the
-// characters "d", "p", and "s" directly.
+// preceeding, as in printf), or "c" (short for "#%06x" and used for
+// colors), or other characters, which are simply printed. No quoting:
+// this function cannot be used to print the characters "d", "p", and
+// "s" directly.
 
 inline void rtfl_print (const char *version, const char *file, int line,
                         const char *fmt, ...)
@@ -74,6 +75,11 @@ inline void rtfl_print (const char *version, const char *file, int line,
                putchar ('\\');
             putchar (s[j]);
          }
+         break;
+
+      case 'c':
+         n = va_arg(args, int);
+         printf ("#06x", n);
          break;
 
       default:
@@ -211,6 +217,12 @@ inline void rtfl_print (const char *version, const char *file, int line,
 #define DBG_OBJ_SET_PTR_O(obj, var, val) \
    RTFL_OBJ_PRINT ("set", "p:s:p", obj, var, val)
 
+#define DBG_OBJ_SET_COL(var, val) \
+   DBG_OBJ_SET_COL_O (this, var, val)
+
+#define DBG_OBJ_SET_COL_O(obj, var, val) \
+   RTFL_OBJ_PRINT ("set", "p:s:c", obj, var, val)
+
 #define DBG_OBJ_ARRSET_NUM(var, ind, val) \
    DBG_OBJ_ARRSET_NUM_O (this, var, ind, val)
 
@@ -240,6 +252,12 @@ inline void rtfl_print (const char *version, const char *file, int line,
 
 #define DBG_OBJ_ARRSET_PTR_O(obj, var, ind, val) \
    RTFL_OBJ_PRINT ("set", "p:s.d:p", obj, var, ind, val)
+
+#define DBG_OBJ_ARRSET_COL(var, ind, val) \
+   DBG_OBJ_ARRSET_COL_O (this, var, ind, val)
+
+#define DBG_OBJ_ARRSET_COL_O(obj, var, ind, val) \
+   RTFL_OBJ_PRINT ("set", "p:s.d:c", obj, var, ind, val)
 
 #define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val) \
    DBG_OBJ_ARRATTRSET_NUM_O (this, var, ind, attr, val)
@@ -271,6 +289,12 @@ inline void rtfl_print (const char *version, const char *file, int line,
 
 #define DBG_OBJ_ARRATTRSET_PTR_O(obj, var, ind, attr, val) \
    RTFL_OBJ_PRINT ("set", "p:s.d.s:p", obj, var, ind, attr, val)
+
+#define DBG_OBJ_ARRATTRSET_COL(var, ind, attr, val) \
+   DBG_OBJ_ARRATTRSET_COL_O (this, var, ind, attr, val)
+
+#define DBG_OBJ_ARRATTRSET_COL_O(obj, var, ind, attr, val) \
+   RTFL_OBJ_PRINT ("set", "p:s.d.s:c", obj, var, ind, attr, val)
 
 #define DBG_OBJ_CLASS_COLOR(klass, color) \
    RTFL_OBJ_PRINT ("class-color", "s:s", klass, color)
@@ -313,6 +337,8 @@ inline void rtfl_print (const char *version, const char *file, int line,
 #define DBG_OBJ_SET_STR_O(obj, var, val)                       STMT_NOP
 #define DBG_OBJ_SET_PTR(var, val)                              STMT_NOP
 #define DBG_OBJ_SET_PTR_O(obj, var, val)                       STMT_NOP
+#define DBG_OBJ_SET_COL(var, val)                              STMT_NOP
+#define DBG_OBJ_SET_COL_O(obj, var, val)                       STMT_NOP
 #define DBG_OBJ_ARRSET_NUM(var, ind, val)                      STMT_NOP
 #define DBG_OBJ_ARRSET_NUM_O(obj, var, ind, val)               STMT_NOP
 #define DBG_OBJ_ARRSET_SYM(var, ind, val)                      STMT_NOP
@@ -323,6 +349,8 @@ inline void rtfl_print (const char *version, const char *file, int line,
 #define DBG_OBJ_ARRSET_STR_O(obj, var, ind, val)               STMT_NOP
 #define DBG_OBJ_ARRSET_PTR(var, ind, val)                      STMT_NOP
 #define DBG_OBJ_ARRSET_PTR_O(obj, var, ind, val)               STMT_NOP
+#define DBG_OBJ_ARRSET_COL(var, ind, val)                      STMT_NOP
+#define DBG_OBJ_ARRSET_COL_O(obj, var, ind, val)               STMT_NOP
 #define DBG_OBJ_ARRATTRSET_NUM(var, ind, attr, val)            STMT_NOP
 #define DBG_OBJ_ARRATTRSET_NUM_O(obj, var, ind, attr, val)     STMT_NOP
 #define DBG_OBJ_ARRATTRSET_SYM(var, ind, attr, val)            STMT_NOP
@@ -333,6 +361,8 @@ inline void rtfl_print (const char *version, const char *file, int line,
 #define DBG_OBJ_ARRATTRSET_STR_O(obj, var, ind, attr, val)     STMT_NOP
 #define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val)            STMT_NOP
 #define DBG_OBJ_ARRATTRSET_PTR_O(obj, var, ind, attr, val)     STMT_NOP
+#define DBG_OBJ_ARRATTRSET_COL(var, ind, attr, val)            STMT_NOP
+#define DBG_OBJ_ARRATTRSET_COL_O(obj, var, ind, attr, val)     STMT_NOP
 #define DBG_OBJ_CLASS_COLOR(klass, color)                      STMT_NOP
 
 #endif /* DBG_RTFL */
