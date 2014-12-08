@@ -79,7 +79,7 @@ inline void rtfl_print (const char *version, const char *file, int line,
 
       case 'c':
          n = va_arg(args, int);
-         printf ("#06x", n);
+         printf ("#%06x", n);
          break;
 
       default:
