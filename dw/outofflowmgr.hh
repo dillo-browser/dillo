@@ -283,7 +283,8 @@ private:
    core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y,
                                         int level);
 
-   bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal);
+   bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal,
+                   bool useAllocation);
    bool collidesH (Float *vloat, Float *other, SFVType type);
 
    void getFloatsListsAndSide (Float *vloat, SortedFloatsVector **listSame,
