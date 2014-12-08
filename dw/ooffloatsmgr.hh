@@ -295,7 +295,8 @@ private:
                                         core::Widget **interruptedWidget,
                                         int *index, int startIndex);
 
-   bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal);
+   bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal,
+                   bool useAllocation);
    bool collidesH (Float *vloat, Float *other, SFVType type);
 
    void getFloatsListsAndSide (Float *vloat, SortedFloatsVector **listSame,

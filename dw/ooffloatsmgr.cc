@@ -968,7 +968,7 @@ void OOFFloatsMgr::checkAllocatedFloatCollisions (Side side)
 
          if (vloat->generatingBlock != other->generatingBlock) {
             int yRealNewSame;
-            if (collidesV (vloat, other, CB, &yRealNewSame)) {
+            if (collidesV (vloat, other, CB, &yRealNewSame, true)) {
                DBG_OBJ_MSGF ("resize.oofm", 1,
                              "=> collides, new yReal = %d (old: %d)",
                              yRealNewSame, vloat->yReal);
@@ -999,7 +999,7 @@ void OOFFloatsMgr::checkAllocatedFloatCollisions (Side side)
             for (bool foundColl = false;
                  !foundColl && oppIndexTmp >= 0 &&
                     collidesV (vloat, oppList->get (oppIndexTmp), CB,
-                               &yRealNewOpp);
+                               &yRealNewOpp, true);
                  oppIndexTmp--) {
                DBG_OBJ_MSGF ("resize.oofm", 1,
                              "opposite side (after collision (v) test): "
@@ -1567,7 +1567,7 @@ void OOFFloatsMgr::tellPosition (Widget *widget, int x, int y)
    int index = vloat->getIndex (listSame->type), yRealNew;
    if (index >= 1 &&
        collidesV (vloat, listSame->get (index - 1), listSame->type,
-                  &yRealNew)) {
+                  &yRealNew, false)) {
       vloat->yReal = yRealNew;
       DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
    }
@@ -1605,7 +1605,7 @@ void OOFFloatsMgr::tellPosition (Widget *widget, int x, int y)
    for (bool foundColl = false;
         !foundColl && oppFloatIndex >= 0 &&
            collidesV (vloat, listOpp->get (oppFloatIndex), listSame->type,
-                      &yRealNew);
+                      &yRealNew, false);
         oppFloatIndex--) {
       // ... but stop the loop as soon as the horizontal dimensions
       // test is positive.
@@ -1623,7 +1623,7 @@ void OOFFloatsMgr::tellPosition (Widget *widget, int x, int y)
 }
 
 bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, SFVType type,
-                              int *yReal)
+                              int *yReal, bool useAllocation)
 {
    // Only checks vertical (possible) collisions, and only refers to
    // vloat->yReal; never to vloat->allocation->y, even when the GBs are
@@ -1661,13 +1661,38 @@ bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, SFVType type,
          assert (wasAllocated (vloat->generatingBlock));
          Allocation *gba = getAllocation (vloat->generatingBlock),
             *flaOther = other->getWidget()->getAllocation ();
+
+         // We distinguish two cases (by different values of useAllocation):
+         // (i) within tellPosition, GB allocation + yReal is used for the
+         // y position of the other float, while (ii) in checkAllocatedFloat-
+         // Collisions, the float allocation is used. The latter is necessary
+         // by the definition of this method, the former increases performance,
+         // as compared to using the float allocation, in some cases, as in
+         // this:
+         //
+         // When '<div><div style="float:left">[Some text]</div></div>' is
+         // repeated n times, the resize idle function (Layout::resizeIdle)
+         // would be repeated roughly n times, when also in case (i) the float
+         // allocation is used, since for the collision test of float n with
+         // float n - 1, the allocation of float n - 1 does not yet reflect the
+         // collision test between n - 1 and n - 2, but yReal does for n - 1.
+         //
+         // On the other hand, the GB allocations will most likely more stable
+         // than the float allocations.
+         //
+         // Cases where this is incorrect will hopefully be rare, and, in any
+         // case, corrected in sizeAllocateEnd, either because hasRelation-
+         // Changed returns true, or in checkAllocatedFloatCollisions.
+
+         int otherFloatY = useAllocation ? flaOther->y : 
+            getAllocation(other->generatingBlock)->y + other->yReal;
          int otherBottomGB =
-            flaOther->y + flaOther->ascent + flaOther->descent - gba->y;
+            otherFloatY + flaOther->ascent + flaOther->descent - gba->y;
 
          DBG_OBJ_MSGF ("resize.oofm", 1,
                        "different generators: "
                        "otherBottomGB = %d + (%d + %d) - %d = %d",
-                       flaOther->y, flaOther->ascent, flaOther->descent, gba->y,
+                       otherFloatY, flaOther->ascent, flaOther->descent, gba->y,
                        otherBottomGB);
 
          if (vloat->yReal <  otherBottomGB) {
