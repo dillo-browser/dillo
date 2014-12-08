@@ -1652,6 +1652,9 @@ bool OutOfFlowMgr::collidesV (Float *vloat, Float *other, SFVType type,
          // float n - 1, the allocation of float n - 1 does not yet reflect the
          // collision test between n - 1 and n - 2, but yReal does for n - 1.
          //
+         // On the other hand, the GB allocations will most likely more stable
+         // than the float allocations.
+         //
          // Cases where this is incorrect will hopefully be rare, and, in any
          // case, corrected in sizeAllocateEnd, either because hasRelation-
          // Changed returns true, or in checkAllocatedFloatCollisions.
