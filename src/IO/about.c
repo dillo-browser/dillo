@@ -241,6 +241,7 @@ const char *const AboutSplash=
 "<ul>\n"
 "<li> An important fix for linking with the recently-released fltk-1.3.3\n"
 " (we don't use <tt>fl_oldfocus</tt> anymore).\n"
+"<li> A change to make sure that windows are resizable with fltk-1.3.3.\n"
 "<li> A security fix not to load background images in <tt>--local</tt> mode.\n"
 "<li> Another fix to permit linking on OS X (remove our <tt>Fl_Printer</tt>\n"
 "stub).\n"
