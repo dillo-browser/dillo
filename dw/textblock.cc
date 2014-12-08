@@ -2765,7 +2765,7 @@ core::Widget *Textblock::getWidgetAtPointLevel (int x, int y,
 
          int lineIndex = findLineIndexWhenAllocated (y - allocation.y);
       
-         if (lineIndex >= 0 || lineIndex < lines->size ()) {
+         if (lineIndex >= 0 && lineIndex < lines->size ()) {
             Line *line = lines->getRef (lineIndex);
             if (osi->index > line->lastWord)
                osi->index = line->lastWord;
