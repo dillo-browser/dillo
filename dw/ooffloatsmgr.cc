@@ -1524,8 +1524,10 @@ Widget *OOFFloatsMgr::getFloatWidgetAtPoint (SortedFloatsVector *list, int x,
       (OOFAwareWidget::OOFStackingIterator*)iteratorStack->getTop ();
    
    while (widgetAtPoint == NULL && *interruptedWidget == NULL &&
-          *index - startIndex >= 0) {
-      Widget *childWidget = list->get(*index)->getWidget ();
+          *index - startIndex >= 0 &&
+          // In case the list is empty:
+          *index - startIndex < list->size()) {
+      Widget *childWidget = list->get(*index - startIndex)->getWidget ();
       if (!osi->hasWidgetBeenDrawnAfterInterruption (childWidget) &&
           !StackingContextMgr::handledByStackingContextMgr (childWidget))
          widgetAtPoint =
