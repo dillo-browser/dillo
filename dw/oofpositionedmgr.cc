@@ -528,7 +528,8 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
                  left, right, *width, widthDefined ? "true" : "false");
 
    if (left == -1 && right == -1)
-      *x = child->generator->getAllocation()->x + child->x;
+      *x = child->x + (child->generator->getAllocation()->x
+                       - (containerAllocation.x + containerBoxOffsetX ()));
    else if (left == -1 && right != -1)
       *x = refWidth - *width - right;
    else if (left != -1 && right == -1)
@@ -572,7 +573,8 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
                  heightDefined ? "true" : "false");
 
    if (top == -1 && bottom == -1)
-      *y = child->generator->getAllocation()->y + child->y;
+      *y = child->y + (child->generator->getAllocation()->y
+                       - (containerAllocation.y + containerBoxOffsetY ()));
    else if (top == -1 && bottom != -1)
       *y = refHeight - (*ascent + *descent) - bottom;
    else if (top != -1 && bottom == -1)

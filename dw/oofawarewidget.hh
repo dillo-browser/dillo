@@ -66,6 +66,7 @@ class OOFAwareWidget: public core::Widget
 {
 protected:
    enum { OOFM_FLOATS, OOFM_ABSOLUTE, OOFM_FIXED, NUM_OOFM };
+   static const char *OOFM_NAME[NUM_OOFM];
    enum { PARENT_REF_OOFM_BITS = 2,
           PARENT_REF_OOFM_MASK = (1 << PARENT_REF_OOFM_BITS) - 1 };
 

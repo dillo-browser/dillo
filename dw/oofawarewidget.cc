@@ -33,6 +33,10 @@ namespace dw {
 
 namespace oof {
 
+const char *OOFAwareWidget::OOFM_NAME[NUM_OOFM] = {
+   "FLOATS", "ABSOLUTE", "FIXED"
+};
+
 OOFAwareWidget::OOFStackingIterator::OOFStackingIterator
    (OOFAwareWidget *widget, bool atEnd)
 {
@@ -110,6 +114,7 @@ OOFAwareWidget::OOFAwareWidget ()
 
    for (int i = 0; i < NUM_OOFM; i++) {
       oofContainer[i] = NULL;
+      DBG_OBJ_ARRSET_PTR ("oofContainer", i, oofContainer[i]);
       outOfFlowMgr[i] = NULL;
    }
 }
@@ -132,8 +137,10 @@ OOFAwareWidget::~OOFAwareWidget ()
 
 void OOFAwareWidget::notifySetAsTopLevel ()
 {
-   oofContainer[OOFM_FLOATS] = oofContainer[OOFM_ABSOLUTE]
-      = oofContainer[OOFM_FIXED] = this;
+   for (int i = 0; i < NUM_OOFM; i++) {
+      oofContainer[i] = this;
+      DBG_OBJ_ARRSET_PTR ("oofContainer", i, oofContainer[i]);
+   }
 }
 
 bool OOFAwareWidget::getOOFMIndex (Widget *widget)
@@ -258,15 +265,19 @@ void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition,
                                               void (*splitHeightFun) (int, int*,
                                                                       int*))
 {
+   DBG_OBJ_ENTER ("resize", 0, "correctRequisitionByOOF", "%d * (%d + %d), ...",
+                  requisition->width, requisition->ascent,
+                  requisition->descent);
+
    for (int i = 0; i < NUM_OOFM; i++) {
       if (outOfFlowMgr[i]) {
+         DBG_OBJ_MSGF ("resize", 1, "OOFM for %s", OOFM_NAME[i]);
+         DBG_OBJ_MSG_START ();
+
          int oofWidth, oofHeight;
-         DBG_OBJ_MSGF ("resize", 1,
-                       "before considering widgets by OOFM #%d: %d * (%d + %d)",
-                       i, requisition->width, requisition->ascent,
-                       requisition->descent);
 
          outOfFlowMgr[i]->getSize (requisition, &oofWidth, &oofHeight);
+         DBG_OBJ_MSGF ("resize", 1, "result: %d * %d", oofWidth, oofHeight);
 
          if (oofWidth > requisition->width) {
             if (outOfFlowMgr[i]->containerMustAdjustExtraSpace () &&
@@ -291,19 +302,33 @@ void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition,
             splitHeightFun (oofHeight,
                             &requisition->ascent, &requisition->descent);
          }
-      }
+
+         DBG_OBJ_MSGF ("resize", 1, "after correction: %d * (%d + %d)",
+                       requisition->width, requisition->ascent,
+                       requisition->descent);
+         DBG_OBJ_MSG_END ();
+      } else
+         DBG_OBJ_MSGF ("resize", 1, "no OOFM for %s", OOFM_NAME[i]);
    }
+
+   DBG_OBJ_LEAVE ();
 }
 
 void OOFAwareWidget::correctExtremesByOOF (Extremes *extremes)
 {
+   DBG_OBJ_ENTER ("resize", 0, "correctExtremesByOOF", "%d (%d) / %d (%d)",
+                  extremes->minWidth, extremes->minWidthIntrinsic,
+                  extremes->maxWidth, extremes->maxWidthIntrinsic);
+
    for (int i = 0; i < NUM_OOFM; i++) {
       if (outOfFlowMgr[i]) {
+         DBG_OBJ_MSGF ("resize", 1, "OOFM for %s", OOFM_NAME[i]);
+         DBG_OBJ_MSG_START ();
+
          int oofMinWidth, oofMaxWidth;
          outOfFlowMgr[i]->getExtremes (extremes, &oofMinWidth, &oofMaxWidth);
-         
-         DBG_OBJ_MSGF ("resize", 1, "OOFM (#%d) correction: %d / %d",
-                       i, oofMinWidth, oofMaxWidth);
+         DBG_OBJ_MSGF ("resize", 1, "result: %d / %d",
+                       oofMinWidth, oofMaxWidth);
 
          extremes->minWidth = max (extremes->minWidth, oofMinWidth);
          extremes->minWidthIntrinsic = max (extremes->minWidthIntrinsic,
@@ -311,8 +336,16 @@ void OOFAwareWidget::correctExtremesByOOF (Extremes *extremes)
          extremes->maxWidth = max (extremes->maxWidth, oofMaxWidth);
          extremes->maxWidthIntrinsic = max (extremes->maxWidthIntrinsic,
                                             oofMinWidth);
-      }
+
+         DBG_OBJ_MSGF ("resize", 1, "after correction: %d (%d) / %d (%d)",
+                       extremes->minWidth, extremes->minWidthIntrinsic,
+                       extremes->maxWidth, extremes->maxWidthIntrinsic);
+         DBG_OBJ_MSG_END ();
+      } else
+         DBG_OBJ_MSGF ("resize", 1, "no OOFM for %s", OOFM_NAME[i]);
    }
+
+   DBG_OBJ_LEAVE ();
 }
 
 void OOFAwareWidget::sizeAllocateStart (Allocation *allocation)
