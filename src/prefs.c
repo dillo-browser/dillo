@@ -18,7 +18,7 @@
 #define PREFS_FONT_CURSIVE    "URW Chancery L"
 #define PREFS_FONT_FANTASY    "DejaVu Sans" /* TODO: find good default */
 #define PREFS_FONT_MONOSPACE  "DejaVu Sans Mono"
-#define PREFS_SEARCH_URL      "http://duckduckgo.com/lite/?kp=-1&q=%s"
+#define PREFS_SEARCH_URL      "dd http://duckduckgo.com/lite/?kp=-1&q=%s"
 #define PREFS_NO_PROXY        "localhost 127.0.0.1"
 #define PREFS_SAVE_DIR        "/tmp/"
 #define PREFS_HTTP_REFERER    "host"
@@ -79,7 +79,6 @@ void a_Prefs_init(void)
    prefs.save_dir = dStrdup(PREFS_SAVE_DIR);
    prefs.search_urls = dList_new(16);
    dList_append(prefs.search_urls, dStrdup(PREFS_SEARCH_URL));
-   dList_append(prefs.search_urls, NULL); /* flags a default search URL */
    prefs.search_url_idx = 0;
    prefs.show_back = TRUE;
    prefs.show_bookmarks = TRUE;

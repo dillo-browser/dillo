@@ -8,6 +8,8 @@ at http://hg.dillo.org/dillo
 
 dillo-3.0.4.1 [not released yet]
 
++- Avoid a corner case segfault when no search URL is found in dillorc.
+   Patch: Sebastian Geerken, Jorge Arellano
 +- Fix linking problem with fltk-1.3.3 and fl_oldfocus.
    Patch: Jorge Arellano Cid
 +- Don't load background images in --local mode.

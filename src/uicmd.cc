@@ -669,7 +669,7 @@ static char *UIcmd_find_search_str(const char *str)
       for (p = 0; p < dList_length(prefs.search_urls); p++) {
          const char *search =
             (const char *)dList_nth_data(prefs.search_urls, p);
-         if (strncasecmp(str, search, len) == 0) {
+         if (search && strncasecmp(str, search, len) == 0) {
             prefs.search_url_idx = p;
             url = UIcmd_make_search_str(str + len + 1);
             break;
@@ -920,7 +920,7 @@ static int UIcmd_save_file_check(const char *name)
       int ch;
       ds = dStr_sized_new(128);
       dStr_sprintf(ds,
-                   "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
+                  "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                    name, (int)ss.st_size);
       ch = a_Dialog_choice("Dillo Save: File exists!", ds->str,
                            "Abort", "Continue", "Rename", NULL);
