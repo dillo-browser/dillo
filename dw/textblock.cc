@@ -793,8 +793,8 @@ int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
        !mustBeWidenedToAvailWidth ()) {
       core::Extremes extremes;
       getExtremes (&extremes);
-      if (width > extremes.maxWidth)
-         width = extremes.maxWidth;
+      if (width > extremes.maxWidth - boxDiffWidth () - leftInnerPadding)
+         width = extremes.maxWidth - boxDiffWidth () - leftInnerPadding;
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
