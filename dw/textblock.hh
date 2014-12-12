@@ -23,10 +23,9 @@ namespace dw {
  *
  * <div style="border: 2px solid #ffff00; margin-top: 0.5em;
  * margin-bottom: 0.5em; padding: 0.5em 1em; background-color:
- * #ffffe0"><b>Info:</b> The recent changes (line breaking and
- * hyphenation on one hand, floats on the other hand) have not yet
- * been incorporated into this documentation. See \ref
- * dw-line-breaking and \ref dw-out-of-flow.</div>
+ * #ffffe0"><b>Info:</b> Some (not so) recent changes, line breaking
+ * and hyphenation, have not yet been incorporated into this
+ * documentation. See \ref dw-line-breaking.</div>
  *
  * <h3>Signals</h3>
  *
@@ -163,7 +162,7 @@ namespace dw {
  * Anchors associate the anchor name with the index of the next word at
  * the point of the anchor.
  *
- * <h4>Incremental Resizing</h4>
+ * <h3>Incremental Resizing</h3>
  *
  * dw::Textblock makes use of incremental resizing as described in \ref
  * dw-widget-sizes. The parentRef is, for children of a dw::Textblock, simply
@@ -194,6 +193,12 @@ namespace dw {
  * dw::Textblock, which has the value -1 if no rewrapping of lines
  * necessary, or otherwise the line from which a rewrap is necessary.
  *
+ * <h3>Widgets Ouf Of Flow</h3>
+ *
+ * See
+ *
+ * - dw::oof::OOFAwareWidget (base class) and
+ * - \ref dw-out-of-flow.
  */
 class Textblock: public oof::OOFAwareWidget
 {

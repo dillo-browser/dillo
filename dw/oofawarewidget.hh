@@ -15,6 +15,8 @@ namespace oof {
  * (Perhaps it should be diffenciated between the two roles, container
  * and generator, but this would make multiple inheritance necessary.)
  *
+ * See \ref dw-out-of-flow for an overview.
+ *
  * Requirements for sub classes (in most cases refer to dw::Textblock
  * as a good example):
  *

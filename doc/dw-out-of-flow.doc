@@ -1,9 +1,5 @@
 /** \page dw-out-of-flow Handling Elements Out Of Flow
 
-<div style="border: 2px solid #ffff00; margin-bottom: 0.5em;
-padding: 0.5em 1em; background-color: #ffffe0"><b>Info:</b>
-Should be incorporated into dw::Textblock.</div>
-
 <div style="border: 2px solid #ff4040; margin-bottom: 0.5em;
 padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
 Not up to date; incorporate these two changes: (i) there are different
