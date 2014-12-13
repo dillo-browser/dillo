@@ -159,7 +159,7 @@ void StackingContextMgr::draw (View *view, Rectangle *area,
                  *index, childSCWidgets->size ());
 
    while (*interruptedWidget == NULL &&
-          *zIndexIndex <= numZIndices) {
+          *zIndexIndex < numZIndices) {
       // Wrong region of z-indices (top or bottom) is simply ignored
       // (as well as non-defined zIndices).
       if (zIndices != NULL && zIndices[*zIndexIndex] >= startZIndex &&
