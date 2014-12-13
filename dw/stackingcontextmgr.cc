@@ -38,6 +38,8 @@ StackingContextMgr::StackingContextMgr (Widget *widget)
    DBG_OBJ_SET_NUM ("childSCWidgets.size", childSCWidgets->size());
 
    minZIndex = maxZIndex = 0; // Just to have some defined values.
+   DBG_OBJ_SET_NUM ("minZIndex", minZIndex);
+   DBG_OBJ_SET_NUM ("maxZIndex", maxZIndex);
 }
 
 StackingContextMgr::~StackingContextMgr ()
@@ -54,6 +56,9 @@ void StackingContextMgr::addChildSCWidget (Widget *widget)
       minZIndex = min (minZIndex, widget->getStyle()->zIndex);
       maxZIndex = max (maxZIndex, widget->getStyle()->zIndex);
    }
+
+   DBG_OBJ_SET_NUM ("minZIndex", minZIndex);
+   DBG_OBJ_SET_NUM ("maxZIndex", maxZIndex);
 
    childSCWidgets->put (widget);
    DBG_OBJ_SET_NUM ("childSCWidgets.size", childSCWidgets->size());
@@ -123,8 +128,10 @@ void StackingContextMgr::draw (View *view, Rectangle *area,
             (*index)++;
       }
 
-      if (*interruptedWidget == NULL)
+      if (*interruptedWidget == NULL) {
          (*zIndexOffset)++;
+         *index = 0;
+      }
 
       DBG_OBJ_MSG_END ();
    }
@@ -199,8 +206,10 @@ Widget *StackingContextMgr::getWidgetAtPoint (int x, int y,
             (*index)--;
       }
 
-      if (*interruptedWidget == NULL)
+      if (*interruptedWidget == NULL) {
          (*zIndexOffset)--;
+         *index = childSCWidgets->size () - 1;
+      }
 
       DBG_OBJ_MSG_END ();
    }
