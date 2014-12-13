@@ -58,15 +58,14 @@ void StackingContextMgr::addChildSCWidget (Widget *widget)
    int pos = findZIndex (widget->getStyle()->zIndex, true);
    DBG_OBJ_MSGF ("common.scm", 1, "pos = %d", pos);
    if (pos == -1) {
+      pos = findZIndex (widget->getStyle()->zIndex, false);
+      DBG_OBJ_MSGF ("common.scm", 1, "pos = %d", pos);
+
       numZIndices++;
+      DBG_OBJ_SET_NUM ("numZIndices", numZIndices);
       zIndices = (int*)(zIndices ?
                         realloc (zIndices, numZIndices * sizeof (int)) :
                         malloc (numZIndices * sizeof (int)));
-      
-      DBG_OBJ_SET_NUM ("numZIndices", numZIndices);
-
-      pos = findZIndex (widget->getStyle()->zIndex, false);
-      DBG_OBJ_MSGF ("common.scm", 1, "pos = %d", pos);
 
       for (int i = numZIndices - 1; i >= pos + 1; i--) {
          zIndices[i] = zIndices[i - 1];
