@@ -68,8 +68,8 @@ void StackingContextMgr::addChildSCWidget (Widget *widget)
       pos = findZIndex (widget->getStyle()->zIndex, false);
       DBG_OBJ_MSGF ("common.scm", 1, "pos = %d", pos);
 
-      for (int i = numZIndices - 2; i >= pos; i--) {
-         zIndices[i] = zIndices[i + 1];
+      for (int i = numZIndices - 1; i >= pos + 1; i--) {
+         zIndices[i] = zIndices[i - 1];
          DBG_OBJ_ARRSET_NUM ("zIndex", i, zIndices[i]);
       }
 
