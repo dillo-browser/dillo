@@ -707,13 +707,11 @@ int OOFAwareWidget::getLastMinorLevel (int majorLevel)
       return 0;
 
    case OOFStackingIterator::SC_BOTTOM:
+   case OOFStackingIterator::SC_TOP:
+      // See StackingContextMgr: refers to list of z-indices; region
+      // (top or bottom) does not play a role.
       if (stackingContextMgr)
-         // See StackingContextMgr:
-         // - startZIndexEff = max (minZIndex, INT_MIN) = minZIndex (<= 0)
-         // - endZIndexEff = min (maxZIndex, -1) = -1
-         // So, zIndexOffset runs from 0 to endZIndexEff - startZIndexEff =
-         // - 1 - minZIndex.
-         return max (- stackingContextMgr->getMinZIndex () - 1, 0);
+         return stackingContextMgr->getNumZIndices () - 1;
       else
          return 0;
 
@@ -724,14 +722,6 @@ int OOFAwareWidget::getLastMinorLevel (int majorLevel)
    case OOFStackingIterator::OOF_CONT:
          return NUM_OOFM - 1;
 
-   case OOFStackingIterator::SC_TOP:
-      // See StackingContextMgr:
-      // - startZIndexEff = max (minZIndex, 0) = 0
-      // - endZIndexEff = min (maxZIndex, INT_MAX) = maxZIndex
-      if (stackingContextMgr)
-         return stackingContextMgr->getMaxZIndex ();
-      else
-         return 0;
 
    default:
       assertNotReached ();

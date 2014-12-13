@@ -21,13 +21,14 @@ class StackingContextMgr
 private:
    Widget *widget;
    lout::container::typed::Vector<Widget> *childSCWidgets;
-   int minZIndex, maxZIndex;
+   int *zIndices, numZIndices;
 
+   int findZIndex (int zIndex, bool mustExist);
    void draw (View *view, Rectangle *area,
               StackingIteratorStack *iteratorStack, Widget **interruptedWidget,
-              int *zIndexOffset, int startZIndex, int endZIndex, int *index);
+              int *zIndexIndex, int startZIndex, int endZIndex, int *index);
    Widget *getWidgetAtPoint (int x, int y, StackingIteratorStack *iteratorStack,
-                             Widget **interruptedWidget, int *zIndexOffset,
+                             Widget **interruptedWidget, int *zIndexIndex,
                              int startZIndex, int endZIndex, int *index);
 
 public:
@@ -49,25 +50,24 @@ public:
 
    void addChildSCWidget (Widget *widget);
 
-   inline int getMinZIndex () { return minZIndex; }
-   inline int getMaxZIndex () { return maxZIndex; }
+   inline int getNumZIndices () { return numZIndices; }
    inline int getNumChildSCWidgets () { return childSCWidgets->size (); }
 
    void drawBottom (View *view, Rectangle *area,
                     StackingIteratorStack *iteratorStack,
-                    Widget **interruptedWidget, int *zIndexOffset, int *index);
+                    Widget **interruptedWidget, int *zIndexIndex, int *index);
    void drawTop (View *view, Rectangle *area,
                  StackingIteratorStack *iteratorStack,
-                 Widget **interruptedWidget, int *zIndexOffset, int *index);
+                 Widget **interruptedWidget, int *zIndexIndex, int *index);
 
    Widget *getTopWidgetAtPoint (int x, int y,
                                 core::StackingIteratorStack *iteratorStack,
                                 Widget **interruptedWidget,
-                                int *zIndexOffset, int *index);
+                                int *zIndexIndex, int *index);
    Widget *getBottomWidgetAtPoint (int x, int y,
                                    core::StackingIteratorStack *iteratorStack,
                                    Widget **interruptedWidget,
-                                   int *zIndexOffset, int *index);
+                                   int *zIndexIndex, int *index);
 };
 
 } // namespace core
