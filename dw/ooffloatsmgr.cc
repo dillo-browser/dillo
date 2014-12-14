@@ -577,8 +577,8 @@ void OOFFloatsMgr::sizeAllocateStart (OOFAwareWidget *caller,
       // argument. So this is the correct point to initialize size
       // allocation.
 
-      containerAllocation = *allocation;
       containerWasAllocated = true;
+      containerAllocation = *allocation;
 
       // Move floats from GB lists to the one CB list.
       moveFromGBToCB (LEFT);

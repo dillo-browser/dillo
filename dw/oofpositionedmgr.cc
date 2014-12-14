@@ -39,6 +39,10 @@ OOFPositionedMgr::OOFPositionedMgr (OOFAwareWidget *container)
    children = new Vector<Child> (1, false);
    childrenByWidget = new HashTable<TypedPointer<Widget>, Child> (true, true);
 
+   containerAllocationState =
+      container->wasAllocated () ? WAS_ALLOCATED : NOT_ALLOCATED;
+   containerAllocation = *(container->getAllocation());
+
    DBG_OBJ_SET_NUM ("children.size", children->size());
 }
 
@@ -57,8 +61,13 @@ void OOFPositionedMgr::sizeAllocateStart (OOFAwareWidget *caller,
                   "%p, (%d, %d, %d * (%d + %d))",
                   caller, allocation->x, allocation->y, allocation->width,
                   allocation->ascent, allocation->descent);
-   if (caller == container)
+
+   if (caller == container) {
+      if (containerAllocationState == NOT_ALLOCATED)
+         containerAllocationState = IN_ALLOCATION;
       containerAllocation = *allocation;
+   }
+
    DBG_OBJ_LEAVE ();
 }
 
@@ -71,8 +80,30 @@ void OOFPositionedMgr::sizeAllocateEnd (OOFAwareWidget *caller)
 
       bool sizeChanged = doChildrenExceedContainer ();
       bool extremesChanged = haveExtremesChanged ();
-      if (sizeChanged || extremesChanged)
+
+      // Consider children which were ignored in getSize (see comment
+      // there). These are children, for which the generator is
+      // different from the container, and for which the generator and
+      // container were not allocated. For the container, the latter
+      // is the case when containerAllocationState == IN_ALLOCATION;
+      // for the generator, this is valid in an analogue way, as long
+      // as sizeRequest is immediately followed by sizeAllocate (as in
+      // resizeIdle).
+
+      bool notAllChildrenConsideredBefore = false;
+      if (containerAllocationState == IN_ALLOCATION) {
+         for (int i = 0;
+              !notAllChildrenConsideredBefore && i < children->size(); i++) {
+            Child *child = children->get(i);
+            if (child->generator != container)
+               notAllChildrenConsideredBefore = true;
+         }
+      }
+
+      if (sizeChanged || notAllChildrenConsideredBefore || extremesChanged)
          container->oofSizeChanged (extremesChanged);
+
+      containerAllocationState = WAS_ALLOCATED;
    }
 
    DBG_OBJ_LEAVE ();
@@ -297,12 +328,21 @@ void OOFPositionedMgr::getSize (Requisition *containerReq, int *oofWidth,
 
    for (int i = 0; i < children->size(); i++) {
       Child *child = children->get(i);
-      int x, y, width, ascent, descent;
-      calcPosAndSizeChildOfChild (child, refWidth, refHeight, &x, &y, &width,
-                                  &ascent, &descent);
-      *oofWidth = max (*oofWidth, x + width) + containerBoxDiffWidth ();
-      *oofHeight =
-         max (*oofHeight, y + ascent + descent) + containerBoxDiffHeight ();
+
+      // The position of a child (which goes into the return value of
+      // this method) can only be determined when the following
+      // condition (if clause) is is fulfilled. Other children will be
+      // considered later in sizeAllocateEnd.
+      if (child->generator == container ||
+          (containerAllocationState != NOT_ALLOCATED
+           && child->generator->wasAllocated ())) {
+         int x, y, width, ascent, descent;
+         calcPosAndSizeChildOfChild (child, refWidth, refHeight, &x, &y, &width,
+                                     &ascent, &descent);
+         *oofWidth = max (*oofWidth, x + width) + containerBoxDiffWidth ();
+         *oofHeight =
+            max (*oofHeight, y + ascent + descent) + containerBoxDiffHeight ();
+      }
    }      
 
    DBG_OBJ_LEAVE ();
@@ -487,6 +527,10 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
                                                    int *y, int *width,
                                                    int *ascent, int *descent)
 {
+   assert (child->generator == container ||
+           (containerAllocationState != NOT_ALLOCATED
+            && child->generator->wasAllocated ()));
+
    // *x and *y refer to reference area; caller must adjust them.
 
    DBG_OBJ_ENTER ("resize.oofm", 0, "calcPosAndSizeChildOfChild",
@@ -528,7 +572,8 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
                  left, right, *width, widthDefined ? "true" : "false");
 
    if (left == -1 && right == -1)
-      *x = child->x + (child->generator->getAllocation()->x
+      *x = child->x + (child->generator == container ? 0 :
+                       child->generator->getAllocation()->x
                        - (containerAllocation.x + containerBoxOffsetX ()));
    else if (left == -1 && right != -1)
       *x = refWidth - *width - right;
@@ -573,7 +618,8 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
                  heightDefined ? "true" : "false");
 
    if (top == -1 && bottom == -1)
-      *y = child->y + (child->generator->getAllocation()->y
+      *y = child->y + (child->generator == container ? 0 :
+                       child->generator->getAllocation()->y
                        - (containerAllocation.y + containerBoxOffsetY ()));
    else if (top == -1 && bottom != -1)
       *y = refHeight - (*ascent + *descent) - bottom;

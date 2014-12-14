@@ -32,6 +32,8 @@ protected:
    { return containerBoxOffsetY () + containerBoxRestHeight (); }
 
    OOFAwareWidget *container;
+   enum { NOT_ALLOCATED, IN_ALLOCATION, WAS_ALLOCATED }
+      containerAllocationState;
    core::Allocation containerAllocation;
 
    lout::container::typed::Vector<Child> *children;
