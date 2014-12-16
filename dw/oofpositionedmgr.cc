@@ -83,19 +83,19 @@ void OOFPositionedMgr::sizeAllocateEnd (OOFAwareWidget *caller)
 
       // Consider children which were ignored in getSize (see comment
       // there). These are children, for which the generator is
-      // different from the container, and for which the generator and
-      // container were not allocated. For the container, the latter
-      // is the case when containerAllocationState == IN_ALLOCATION;
-      // for the generator, this is valid in an analogue way, as long
-      // as sizeRequest is immediately followed by sizeAllocate (as in
-      // resizeIdle).
+      // different from the container, whose position is not fully
+      // defined, and for which the generator and container were not
+      // allocated. For the container, the latter is the case when
+      // containerAllocationState == IN_ALLOCATION; for the generator,
+      // this is valid in an analogue way, as long as sizeRequest is
+      // immediately followed by sizeAllocate (as in resizeIdle).
 
       bool notAllChildrenConsideredBefore = false;
       if (containerAllocationState == IN_ALLOCATION) {
          for (int i = 0;
               !notAllChildrenConsideredBefore && i < children->size(); i++) {
             Child *child = children->get(i);
-            if (child->generator != container)
+            if (child->generator != container && !isPosComplete (child->widget))
                notAllChildrenConsideredBefore = true;
          }
       }
@@ -156,6 +156,7 @@ bool OOFPositionedMgr::doChildrenExceedContainer ()
    // of the children against the *requisition* of the container,
    // which may (e. g. within tables) differ from the new allocation.
    // (Generally, a widget may allocated at a different size.)
+
    Requisition containerReq;
    container->sizeRequest (&containerReq);
    bool exceeds = false;
@@ -194,8 +195,29 @@ bool OOFPositionedMgr::doChildrenExceedContainer ()
 
 bool OOFPositionedMgr::haveExtremesChanged ()
 {
-   // TODO Something to do?
-   return false;
+   DBG_OBJ_ENTER0 ("resize.oofm", 0, "haveExtremesChanged");
+
+   Extremes containerExtr;
+   container->getExtremes (&containerExtr);
+   bool changed = false;
+
+   DBG_OBJ_MSG_START ();
+
+   // Search for children which have not yet been considered by getExtremes().
+
+   for (int i = 0; i < children->size () && !changed; i++) {
+      Child *child = children->get (i);
+      if (child->generator != container && !isPosComplete (child->widget) &&
+          containerAllocationState == IN_ALLOCATION)
+         changed = true;
+   }
+
+   DBG_OBJ_MSG_END ();
+
+   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", changed ? "true" : "false");
+   DBG_OBJ_LEAVE ();
+
+   return changed;
 }
 
 
@@ -334,6 +356,7 @@ void OOFPositionedMgr::getSize (Requisition *containerReq, int *oofWidth,
       // condition (if clause) is is fulfilled. Other children will be
       // considered later in sizeAllocateEnd.
       if (child->generator == container ||
+          isPosComplete (child->widget) ||
           (containerAllocationState != NOT_ALLOCATED
            && child->generator->wasAllocated ())) {
          int x, y, width, ascent, descent;
@@ -345,6 +368,7 @@ void OOFPositionedMgr::getSize (Requisition *containerReq, int *oofWidth,
       }
    }      
 
+   DBG_OBJ_MSGF ("resize.oofm", 0, "=> %d * %d", *oofWidth, *oofHeight);
    DBG_OBJ_LEAVE ();
 }
 
@@ -359,9 +383,34 @@ void OOFPositionedMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
    DBG_OBJ_ENTER ("resize.oofm", 0, "getExtremes", "(%d / %d), ...",
                   containerExtr->minWidth, containerExtr->maxWidth);
 
-   // TODO Something to do?
    *oofMinWidth = *oofMaxWidth = 0;
 
+   for (int i = 0; i < children->size(); i++) {
+      Child *child = children->get(i);
+
+      // If clause: see getSize().
+      if (child->generator == container ||
+          isPosComplete (child->widget) ||
+          (containerAllocationState != NOT_ALLOCATED
+           && child->generator->wasAllocated ())) {
+         int x, width;
+         Extremes childExtr;
+         child->widget->getExtremes (&childExtr);
+         
+         calcHPosAndSizeChildOfChild (child, containerExtr->minWidth,
+                                      childExtr.minWidth, &x, &width);
+         *oofMinWidth = max (*oofMinWidth, x + width);
+
+         calcHPosAndSizeChildOfChild (child, containerExtr->maxWidth,
+                                      childExtr.maxWidth, &x, &width);
+         *oofMaxWidth = max (*oofMaxWidth, x + width);
+      }
+   }      
+
+   *oofMinWidth += containerBoxDiffWidth ();
+   *oofMaxWidth += containerBoxDiffWidth ();
+
+   DBG_OBJ_MSGF ("resize.oofm", 0, "=> %d / %d", *oofMinWidth, *oofMaxWidth);
    DBG_OBJ_LEAVE ();
 }
 
@@ -522,16 +571,34 @@ int OOFPositionedMgr::getPosBorder (style::Length cssValue, int refLength)
       return -1;
 }
 
-void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
-                                                   int refHeight, int *x,
-                                                   int *y, int *width,
-                                                   int *ascent, int *descent)
+bool OOFPositionedMgr::isHPosComplete (Widget *child)
 {
-   assert (child->generator == container ||
-           (containerAllocationState != NOT_ALLOCATED
-            && child->generator->wasAllocated ()));
+   return (style::isAbsLength (child->getStyle()->left) ||
+           style::isPerLength (child->getStyle()->left)) &&
+      (style::isAbsLength (child->getStyle()->right) ||
+       style::isPerLength (child->getStyle()->right));
+}
 
-   // *x and *y refer to reference area; caller must adjust them.
+bool OOFPositionedMgr::isVPosComplete (Widget *child)
+{
+   return (style::isAbsLength (child->getStyle()->top) ||
+           style::isPerLength (child->getStyle()->top)) &&
+      (style::isAbsLength (child->getStyle()->bottom) ||
+       style::isPerLength (child->getStyle()->bottom));
+}
+
+bool OOFPositionedMgr::isPosComplete (Widget *child)
+{
+   return isHPosComplete (child) && isVPosComplete (child);
+}
+
+void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
+                                                   int refHeight, int *xPtr,
+                                                   int *yPtr, int *widthPtr,
+                                                   int *ascentPtr,
+                                                   int *descentPtr)
+{
+   // *xPtr and *yPtr refer to reference area; caller must adjust them.
 
    DBG_OBJ_ENTER ("resize.oofm", 0, "calcPosAndSizeChildOfChild",
                   "%p, %d, %d, ...", child, refWidth, refHeight);
@@ -544,56 +611,95 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
    Requisition childRequisition;
    child->widget->sizeRequest (&childRequisition);
 
+   calcHPosAndSizeChildOfChild (child, refWidth, childRequisition.width,
+                                xPtr, widthPtr);
+   calcVPosAndSizeChildOfChild (child, refHeight, childRequisition.ascent,
+                                childRequisition.descent, yPtr, ascentPtr,
+                                descentPtr);
+
+   DBG_OBJ_LEAVE ();
+}
+
+void OOFPositionedMgr::calcHPosAndSizeChildOfChild (Child *child, int refWidth,
+                                                    int origChildWidth,
+                                                    int *xPtr, int *widthPtr)
+{
+   assert (refWidth != -1 || (xPtr == NULL && widthPtr == NULL));
+
+   int width;
    bool widthDefined;
    if (style::isAbsLength (child->widget->getStyle()->width)) {
       DBG_OBJ_MSGF ("resize.oofm", 1, "absolute width: %dpx",
                     style::absLengthVal (child->widget->getStyle()->width));
-      *width = style::absLengthVal (child->widget->getStyle()->width)
+      width = style::absLengthVal (child->widget->getStyle()->width)
          + child->widget->boxDiffWidth ();
       widthDefined = true;
    } else if (style::isPerLength (child->widget->getStyle()->width)) {
       DBG_OBJ_MSGF ("resize.oofm", 1, "percentage width: %g%%",
                     100 * style::perLengthVal_useThisOnlyForDebugging
                              (child->widget->getStyle()->width));
-      *width = style::multiplyWithPerLength (refWidth,
+      width = style::multiplyWithPerLength (refWidth,
                                              child->widget->getStyle()->width)
          + child->widget->boxDiffWidth ();
       widthDefined = true;
    } else {
       DBG_OBJ_MSG ("resize.oofm", 1, "width not specified");
-      *width = childRequisition.width;
+      width = origChildWidth;
       widthDefined = false;
    }
 
    int left = getPosLeft (child->widget, refWidth),
       right = getPosRight (child->widget, refWidth);
    DBG_OBJ_MSGF ("resize.oofm", 1,
-                 "left = %d, right = %d, width = %d (defined: %s)",
-                 left, right, *width, widthDefined ? "true" : "false");
+                 "=> left = %d, right = %d, width = %d (defined: %s)",
+                 left, right, width, widthDefined ? "true" : "false");
 
-   if (left == -1 && right == -1)
-      *x = child->x + (child->generator == container ? 0 :
-                       child->generator->getAllocation()->x
-                       - (containerAllocation.x + containerBoxOffsetX ()));
-   else if (left == -1 && right != -1)
-      *x = refWidth - *width - right;
-   else if (left != -1 && right == -1)
-      *x = left;
-   else {
-      *x = left;
-      if (!widthDefined)
-         *width = refWidth - (left + right);
+   if (xPtr) {
+      if (left == -1 && right == -1) {
+         assert (child->generator == container ||
+                 (containerAllocationState != NOT_ALLOCATED
+                  && child->generator->wasAllocated ()));
+         *xPtr =
+            child->x + (child->generator == container ? 0 :
+                        child->generator->getAllocation()->x
+                        - (containerAllocation.x + containerBoxOffsetX ()));
+      } else if (left == -1 && right != -1)
+         *xPtr = refWidth - width - right;
+      else if (left != -1 && right == -1)
+         *xPtr = left;
+      else {
+         *xPtr = left;
+         if (!widthDefined) {
+            width = refWidth - (left + right);
+            DBG_OBJ_MSGF ("resize.oofm", 0, "=> width (corrected) = %d", width);
+         }
+      }
+
+      DBG_OBJ_MSGF ("resize.oofm", 0, "=> x = %d", *xPtr);
    }
 
+   if (widthPtr)
+      *widthPtr = width;
+}
+
+void OOFPositionedMgr::calcVPosAndSizeChildOfChild (Child *child, int refHeight,
+                                                    int origChildAscent,
+                                                    int origChildDescent,
+                                                    int *yPtr, int *ascentPtr,
+                                                    int *descentPtr)
+{
+   assert (refHeight != -1 ||
+           (yPtr == NULL && ascentPtr == NULL && descentPtr == NULL));
+
+   int ascent = origChildAscent, descent = origChildDescent;
    bool heightDefined;
-   *ascent = childRequisition.ascent;
-   *descent = childRequisition.descent;
+
    if (style::isAbsLength (child->widget->getStyle()->height)) {
       DBG_OBJ_MSGF ("resize.oofm", 1, "absolute height: %dpx",
                     style::absLengthVal (child->widget->getStyle()->height));
       int height = style::absLengthVal (child->widget->getStyle()->height)
          + child->widget->boxDiffHeight ();
-      splitHeightPreserveAscent (height, ascent, descent);
+      splitHeightPreserveAscent (height, &ascent, &descent);
       heightDefined = true;
    } else if (style::isPerLength (child->widget->getStyle()->height)) {
       DBG_OBJ_MSGF ("resize.oofm", 1, "percentage height: %g%%",
@@ -603,7 +709,7 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
          style::multiplyWithPerLength (refHeight,
                                        child->widget->getStyle()->height)
          + child->widget->boxDiffHeight ();
-      splitHeightPreserveAscent (height, ascent, descent);
+      splitHeightPreserveAscent (height, &ascent, &descent);
       heightDefined = true;
    } else {
       DBG_OBJ_MSG ("resize.oofm", 1, "height not specified");
@@ -613,29 +719,41 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
    int top = getPosTop (child->widget, refHeight),
       bottom = getPosBottom (child->widget, refHeight);
    DBG_OBJ_MSGF ("resize.oofm", 1,
-                 "top = %d, bottom = %d, height = %d + %d (defined: %s)",
-                 top, bottom, *ascent, *descent,
+                 "=> top = %d, bottom = %d, height = %d + %d (defined: %s)",
+                 top, bottom, ascent, descent,
                  heightDefined ? "true" : "false");
 
-   if (top == -1 && bottom == -1)
-      *y = child->y + (child->generator == container ? 0 :
-                       child->generator->getAllocation()->y
-                       - (containerAllocation.y + containerBoxOffsetY ()));
-   else if (top == -1 && bottom != -1)
-      *y = refHeight - (*ascent + *descent) - bottom;
-   else if (top != -1 && bottom == -1)
-      *y = top;
-   else {
-      *y = top;
-      if (!heightDefined) {
-         int height = refHeight - (top + bottom);
-         splitHeightPreserveAscent (height, ascent, descent);
+   if (yPtr) {
+      if (top == -1 && bottom == -1) {
+         assert (child->generator == container ||
+                 (containerAllocationState != NOT_ALLOCATED
+                  && child->generator->wasAllocated ()));
+         *yPtr =
+            child->y + (child->generator == container ? 0 :
+                        child->generator->getAllocation()->y
+                        - (containerAllocation.y + containerBoxOffsetY ()));
+      } else if (top == -1 && bottom != -1)
+         *yPtr = refHeight - (ascent + descent) - bottom;
+      else if (top != -1 && bottom == -1)
+         *yPtr = top;
+      else {
+         *yPtr = top;
+         if (!heightDefined) {
+            int height = refHeight - (top + bottom);
+            splitHeightPreserveAscent (height, &ascent, &descent);
+            DBG_OBJ_MSGF ("resize.oofm", 0,
+                          "=> ascent + descent (corrected) = %d + %d",
+                          ascent, descent);
+         }
       }
+
+      DBG_OBJ_MSGF ("resize.oofm", 0, "=> y = %d", *yPtr);
    }
 
-   DBG_OBJ_MSGF ("resize.oofm", 0, "=> %d, %d, %d * (%d + %d)",
-                 *x, *y, *width, *ascent, *descent);
-   DBG_OBJ_LEAVE ();
+   if (ascentPtr)
+      *ascentPtr = ascent;
+   if (descentPtr)
+      *descentPtr = descent;
 }
 
 int OOFPositionedMgr::getNumWidgets ()

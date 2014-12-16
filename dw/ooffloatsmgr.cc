@@ -654,12 +654,10 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
             tbInfo->lineBreakWidth = tb->getLineBreakWidth ();
          }
 
-         // There are cases where some allocated floats (TODO: later also
-         // absolutely positioned elements?) exceed the CB allocation.
+         // There are cases where some allocated floats exceed the CB size.
          bool sizeChanged = doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT);
 
-         // Similar for extremes. (TODO: here also absolutely positioned
-         // elements?)
+         // Similar for extremes.
          bool extremesChanged =
             haveExtremesChanged (LEFT) || haveExtremesChanged (RIGHT);
 
@@ -1096,6 +1094,15 @@ bool OOFFloatsMgr::haveExtremesChanged (Side side)
    // allocation which is part of the extremes calculation (see
    // getFloatsExtremes). Changes of the extremes are handled by the
    // normal queueResize mechanism.
+
+   // (This may refer to the old implementation of doFloatsExceedCB,
+   // which checked the container *allocation*, not the *requisition*.
+   //
+   // TODO: (i) Correct the comment. (ii) Is this implementation still
+   // correct, considering the reasoning behind the change of
+   // doFloatsExceedCB?
+   //
+   // See also OOFPositionedMgr::haveExtremesChanged.)
 
    SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
    bool changed = false;

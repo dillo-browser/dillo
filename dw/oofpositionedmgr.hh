@@ -55,9 +55,21 @@ protected:
    { return getPosBorder (child->getStyle()->bottom, availHeight); }
 
    int getPosBorder (core::style::Length cssValue, int refLength);
+
+   bool isHPosComplete (core::Widget *child);
+   bool isVPosComplete (core::Widget *child);
+   bool isPosComplete (core::Widget *child);
+
    void calcPosAndSizeChildOfChild (Child *child, int refWidth, int refHeight,
-                                    int *x, int *y, int *width, int *ascent,
-                                    int *descent);
+                                    int *xPtr, int *yPtr, int *widthPtr,
+                                    int *ascentPtr, int *descentPtr);
+   void calcHPosAndSizeChildOfChild (Child *child, int refWidth,
+                                     int origChildWidth, int *xPtr,
+                                     int *widthPtr);
+   void calcVPosAndSizeChildOfChild (Child *child, int refHeight,
+                                     int origChildAscent, int origChildDescent,
+                                     int *yPtr, int *ascentPtr,
+                                     int *descentPtr);
 
 public:
    OOFPositionedMgr (OOFAwareWidget *container);
