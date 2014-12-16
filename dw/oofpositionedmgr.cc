@@ -207,7 +207,7 @@ bool OOFPositionedMgr::haveExtremesChanged ()
 
    for (int i = 0; i < children->size () && !changed; i++) {
       Child *child = children->get (i);
-      if (child->generator != container && !isPosComplete (child->widget) &&
+      if (child->generator != container && !isHPosComplete (child->widget) &&
           containerAllocationState == IN_ALLOCATION)
          changed = true;
    }
@@ -390,13 +390,26 @@ void OOFPositionedMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
 
       // If clause: see getSize().
       if (child->generator == container ||
-          isPosComplete (child->widget) ||
+          isHPosComplete (child->widget) ||
           (containerAllocationState != NOT_ALLOCATED
            && child->generator->wasAllocated ())) {
          int x, width;
          Extremes childExtr;
          child->widget->getExtremes (&childExtr);
          
+         // Here, we put the extremes of the container in relation to
+         // the extremes of the child, as sizes are put in relation
+         // for calculating the size. In one case, the allocation is
+         // used: when neither "left" nor "right" is set, and so the
+         // position told by the generator is used.
+         //
+         // If you look at the Textblock widget, you'll find that this
+         // is always boxOffsetX(), and the horizontal position of a
+         // textblock within its parent is also constant; so this is
+         // not a problem.
+         //
+         // (TODO What about a table cell within a table?)
+
          calcHPosAndSizeChildOfChild (child, containerExtr->minWidth,
                                       childExtr.minWidth, &x, &width);
          *oofMinWidth = max (*oofMinWidth, x + width);
