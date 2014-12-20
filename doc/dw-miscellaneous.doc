@@ -1,0 +1,20 @@
+/** \page dw-miscellaneous Miscellaneous Notes on Dw
+
+This is a barely sorted list of issues which I consider noteworthy,
+but have yet to be moved to other parts of the documentation (which is
+partly to be created).
+
+General
+=======
+
+A **widget allocation outside of the allocation of the parent** is
+allowed, but the part outside is not visible.
+
+**Interrupted drawing:** ...
+
+Positioned element
+==================
+
+**Positioned elements outside of the container:** ...
+
+*/
