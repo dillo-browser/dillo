@@ -44,7 +44,7 @@ Set initial window position where \fIGEO\fR is
 Display this help text and exit.
 .TP
 \fB\-l\fR, \fB\-\-local\fR
-Don't load images or stylesheets for these URL(s).
+Don't load images or stylesheets, or follow redirections, for these URL(s).
 .TP
 \fB\-v\fR, \fB\-\-version\fR
 Display version info and exit.
