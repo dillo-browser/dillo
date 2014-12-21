@@ -345,7 +345,7 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 /*
  * Send the requested URL's source to the "view source" dpi
  */
-static void Capi_dpi_send_source(BrowserWindow *bw,  DilloUrl *url)
+static void Capi_dpi_send_source(BrowserWindow *bw, DilloUrl *url)
 {
    char *p, *buf, *cmd, size_str[32], *server="vsource";
    int buf_size;

@@ -303,7 +303,7 @@ int32_t a_Color_parse (const char *str, int32_t default_color, int *err)
 static int Color_distance(long c1, long c2)
 {
    return (labs((c1 & 0x0000ff) - (c2 & 0x0000ff)) +
-           labs(((c1 & 0x00ff00) - (c2 & 0x00ff00)) >> 8)  +
+           labs(((c1 & 0x00ff00) - (c2 & 0x00ff00)) >> 8) +
            labs(((c1 & 0xff0000) - (c2 & 0xff0000)) >> 16)) / 75;
 }
 #endif

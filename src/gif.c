@@ -800,8 +800,8 @@ static size_t Gif_do_img_desc(DilloGif *gif, void *Buf,
    if (bsize < 10)
       return 0;
 
-   gif->Width   = LM_to_uint(buf[4], buf[5]);
-   gif->Height  = LM_to_uint(buf[6], buf[7]);
+   gif->Width  = LM_to_uint(buf[4], buf[5]);
+   gif->Height = LM_to_uint(buf[6], buf[7]);
 
    /* check max image size */
    if (gif->Width <= 0 || gif->Height <= 0 ||

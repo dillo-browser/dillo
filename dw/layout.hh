@@ -345,7 +345,7 @@ public:
                           button);
    }
 
-   bool motionNotify (View *view,  int x, int y, ButtonState state);
+   bool motionNotify (View *view, int x, int y, ButtonState state);
    void enterNotify (View *view, int x, int y, ButtonState state);
    void leaveNotify (View *view, ButtonState state);
 

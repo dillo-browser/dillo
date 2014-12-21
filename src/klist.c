@@ -74,7 +74,7 @@ int a_Klist_insert(Klist_t **Klist, void *Data)
             a_Klist_get_data((*Klist), (*Klist)->Counter));
 
    Node = dNew(KlistNode_t, 1);
-   Node->Key  = (*Klist)->Counter;
+   Node->Key = (*Klist)->Counter;
    Node->Data = Data;
    dList_insert_sorted((*Klist)->List, Node, Klist_node_by_node_cmp);
    return (*Klist)->Counter;

@@ -379,10 +379,10 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
       for (i = 0; url_str[i]; ++i)
          if (url_str[i] > 0x1F && url_str[i] < 0x7F && url_str[i] != ' ')
             *p++ = url_str[i];
-         else  {
-           *p++ = '%';
-           *p++ = HEX[(url_str[i] >> 4) & 15];
-           *p++ = HEX[url_str[i] & 15];
+         else {
+            *p++ = '%';
+            *p++ = HEX[(url_str[i] >> 4) & 15];
+            *p++ = HEX[url_str[i] & 15];
          }
       *p = 0;
       urlstr = str1;
@@ -509,7 +509,7 @@ void a_Url_set_ismap_coords(DilloUrl *u, char *coord_str)
 
    if (!u->ismap_url_len) {
       /* Save base-url length (without coords) */
-      u->ismap_url_len  = URL_STR_(u) ? u->url_string->len : 0;
+      u->ismap_url_len = URL_STR_(u) ? u->url_string->len : 0;
       a_Url_set_flags(u, URL_FLAGS(u) | URL_Ismap);
    }
    if (u->url_string) {

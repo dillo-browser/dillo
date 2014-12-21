@@ -498,7 +498,7 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
    _MSG("a_Cache_set_content_type {%s} {%s}\n", ctype, URL_STR(url));
 
    curr = Cache_current_content_type(entry);
-   if  (entry->TypeMeta || (*from == 'h' && entry->TypeHdr) ) {
+   if (entry->TypeMeta || (*from == 'h' && entry->TypeHdr) ) {
       /* Type is already been set. Do nothing.
        * BTW, META overrides TypeHdr */
    } else {
