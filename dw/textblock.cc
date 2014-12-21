@@ -361,7 +361,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    } else {
       requisition->width = leftInnerPadding + boxDiffWidth ();
       requisition->ascent = boxOffsetY ();
-      requisition->descent = boxRestHeight ();;
+      requisition->descent = boxRestHeight ();
    }
 
    if (mustBeWidenedToAvailWidth ()) {
