@@ -155,7 +155,7 @@ void StyleEngine::startElement (const char *tagname, BrowserWindow *bw) {
 }
 
 void StyleEngine::setId (const char *id) {
-   DoctreeNode *dn =  doctree->top ();
+   DoctreeNode *dn = doctree->top ();
    assert (dn->id == NULL);
    dn->id = dStrdup (id);
 }

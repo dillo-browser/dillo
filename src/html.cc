@@ -2106,8 +2106,8 @@ void a_Html_common_image_attrs(DilloHtml *html, const char *tag, int tagsize)
 {
    char *width_ptr, *height_ptr;
    const char *attrbuf;
-   CssLength l_w  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
-   CssLength l_h  = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
+   CssLength l_w = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
+   CssLength l_h = CSS_CREATE_LENGTH(0.0, CSS_LENGTH_TYPE_AUTO);
    int w = 0, h = 0;
 
    if (prefs.show_tooltip &&
@@ -2140,7 +2140,7 @@ void a_Html_common_image_attrs(DilloHtml *html, const char *tag, int tagsize)
     */
    if (w < 0 || h < 0 ||
        w > IMAGE_MAX_AREA || h > IMAGE_MAX_AREA ||
-       (h > 0 &&  w > IMAGE_MAX_AREA / h)) {
+       (h > 0 && w > IMAGE_MAX_AREA / h)) {
       dFree(width_ptr);
       dFree(height_ptr);
       width_ptr = height_ptr = NULL;
@@ -3660,10 +3660,10 @@ static int Html_needs_optional_close(int old_idx, int cur_idx)
    } else if (old_idx == i_TR) {
       /* TR closes TR */
       return (cur_idx == i_TR);
-   } else if (old_idx ==  i_DD) {
+   } else if (old_idx == i_DD) {
       /* DD is closed by DD and DT */
       return (cur_idx == i_DD || cur_idx == i_DT);
-   } else if (old_idx ==  i_OPTION) {
+   } else if (old_idx == i_OPTION) {
       return 1;  // OPTION always needs close
    }
 

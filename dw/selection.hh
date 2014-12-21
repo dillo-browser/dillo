@@ -178,7 +178,7 @@ namespace core {
 class SelectionState
 {
 public:
-   enum { END_OF_WORD =  1 << 30 };
+   enum { END_OF_WORD = 1 << 30 };
 
 private:
    Layout *layout;

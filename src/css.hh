@@ -133,7 +133,7 @@ inline float CSS_LENGTH_VALUE (CssLength l) {
    case CSS_LENGTH_TYPE_EX:
    case CSS_LENGTH_TYPE_PERCENTAGE:
    case CSS_LENGTH_TYPE_RELATIVE:
-      return  ((float)(l & ~7)) / (1 << 15);
+      return ((float)(l & ~7)) / (1 << 15);
    case CSS_LENGTH_TYPE_AUTO:
       return 0.0;
    default:

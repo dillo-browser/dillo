@@ -128,7 +128,7 @@ DilloWeb* a_Web_new(BrowserWindow *bw, const DilloUrl *url,
    web->flags = 0;
    web->Image = NULL;
    web->filename = NULL;
-   web->stream  = NULL;
+   web->stream = NULL;
    web->SavedBytes = 0;
    web->bgColor = 0x000000; /* Dummy value will be overwritten
                              * in a_Web_dispatch_by_type. */

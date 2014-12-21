@@ -149,7 +149,7 @@ public:
 
    void attachView (core::View *view);
 
-   void detachView  (core::View *view);
+   void detachView (core::View *view);
 
    int textWidth (core::style::Font *font, const char *text, int len);
    char *textToUpper (const char *text, int len);

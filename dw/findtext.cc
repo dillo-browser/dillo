@@ -221,7 +221,7 @@ bool FindtextState::unhighlight ()
       return false;
 }
 
-bool FindtextState::search0 (bool backwards,  bool firstTrial)
+bool FindtextState::search0 (bool backwards, bool firstTrial)
 {
    if (iterator->getChar () == CharIterator::END)
       return false;

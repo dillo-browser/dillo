@@ -387,7 +387,7 @@ public:
          this->startExtra = index;
          resizeExtra ();
       } else {
-         if (index < startExtra)  {
+         if (index < startExtra) {
             consolidate ();
             insert (index, numInsert);
          } else if (index < startExtra + numExtra) {

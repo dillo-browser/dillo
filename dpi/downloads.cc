@@ -68,7 +68,7 @@ protected:
    void draw();
 public:
    ProgressBar(int x, int y, int w, int h, const char *lbl = 0);
-   void range(double min, double max, double step = 1)  {
+   void range(double min, double max, double step = 1) {
       mMin = min; mMax = max; mStep = step;
    };
    void step(double step)        { mPresent += step; redraw(); };

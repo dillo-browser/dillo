@@ -216,7 +216,7 @@ static Dstr *Decode_deflate(Decode *dc, const char *instr, int inlen)
          dStr_free(output, 1);
          (void)inflateEnd(zs);
          dFree(dc->state);
-         dc->state = zs = dNew(z_stream, 1);;
+         dc->state = zs = dNew(z_stream, 1);
          zs->zalloc = NULL;
          zs->zfree = NULL;
          zs->next_in = NULL;

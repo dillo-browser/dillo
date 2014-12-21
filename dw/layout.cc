@@ -939,7 +939,7 @@ void Layout::resizeIdle ()
          int currVThickness = currVScrollbarThickness();
 
          if (!canvasHeightGreater &&
-             canvasAscent + canvasDescent  > viewportHeight - currHThickness) {
+             canvasAscent + canvasDescent > viewportHeight - currHThickness) {
             canvasHeightGreater = true;
             DBG_OBJ_SET_SYM ("canvasHeightGreater",
                              canvasHeightGreater ? "true" : "false");
@@ -1042,7 +1042,7 @@ bool Layout::buttonEvent (ButtonEventType type, View *view, int numPressed,
  *
  * Arguments are similar to dw::core::Layout::buttonPress.
  */
-bool Layout::motionNotify (View *view,  int x, int y, ButtonState state)
+bool Layout::motionNotify (View *view, int x, int y, ButtonState state)
 {
    EventButton event;
 
