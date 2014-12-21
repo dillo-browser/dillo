@@ -1414,7 +1414,7 @@ void Widget::getPaddingArea (int *xPad, int *yPad, int *widthPad,
    *yPad = allocation.y + style->margin.top + style->borderWidth.top;
    *widthPad = allocation.width - style->margin.left - style->borderWidth.left
       - style->margin.right - style->borderWidth.right;
-   *heightPad = getHeight () -  style->margin.top - style->borderWidth.top
+   *heightPad = getHeight () - style->margin.top - style->borderWidth.top
       - style->margin.bottom - style->borderWidth.bottom;
 }
 
