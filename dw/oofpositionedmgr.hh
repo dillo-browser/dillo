@@ -13,14 +13,17 @@ protected:
    class Child: public lout::object::Object
    {
    public:
-      core::Widget *widget;
+      core::Widget *widget, *reference;
       OOFAwareWidget *generator;
       int x, y;
 
-      inline Child (core::Widget *widget, OOFAwareWidget *generator)
-      { this->widget = widget; this->generator = generator; x = y = 0; }  
+      inline Child (core::Widget *widget, OOFAwareWidget *generator,
+                    core::Widget *reference)
+      { this->widget = widget; this->generator = generator;
+         this->reference = reference; x = y = 0; }  
    };
 
+   virtual bool isReference (core::Widget *widget) = 0;
    virtual int containerBoxOffsetX () = 0;
    virtual int containerBoxOffsetY () = 0;
    virtual int containerBoxRestWidth () = 0;
@@ -56,9 +59,13 @@ protected:
 
    int getPosBorder (core::style::Length cssValue, int refLength);
 
-   bool isHPosComplete (core::Widget *child);
-   bool isVPosComplete (core::Widget *child);
-   bool isPosComplete (core::Widget *child);
+   bool isHPosComplete (Child *child);
+   bool isVPosComplete (Child *child);
+
+   bool isHPosCalculable (Child *child, bool allocated);
+   bool isVPosCalculable (Child *child, bool allocated);
+
+   bool isPosCalculable (Child *child, bool allocated);
 
    void calcPosAndSizeChildOfChild (Child *child, int refWidth, int refHeight,
                                     int *xPtr, int *yPtr, int *widthPtr,

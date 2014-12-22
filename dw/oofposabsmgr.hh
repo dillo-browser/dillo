@@ -10,6 +10,7 @@ namespace oof {
 class OOFPosAbsMgr: public OOFPositionedMgr
 {
 protected:
+   bool isReference (core::Widget *widget);
    int containerBoxOffsetX ();
    int containerBoxOffsetY ();
    int containerBoxRestWidth ();

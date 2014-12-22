@@ -195,13 +195,10 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
            testWidgetOutOfFlow (widget)));
       
    case OOFM_ABSOLUTE:
-      // Only the toplevel widget (as for all) as well as absolutely,
-      // relatively, and fixedly positioned elements constitute the
-      // containing block for absolutely positioned elements, but
-      // neither floats nor other elements like table cells, or
-      // elements with 'overview' set to another value than 'visible'.
-      return widget->instanceOf (OOFAwareWidget::CLASS_ID) &&
-         (widget->getParent() == NULL || testWidgetPositioned (widget));
+      // We use the toplevel widget as container, i. e. parent widget.
+      // See also OOFPosAbsMgr::isReference for the definition of the
+      // "reference widget".
+      return widget->getParent() == NULL;
       
    case OOFM_FIXED:
       // The single container for fixedly positioned elements is the

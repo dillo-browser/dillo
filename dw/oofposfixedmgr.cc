@@ -34,6 +34,10 @@ OOFPosFixedMgr::~OOFPosFixedMgr ()
    DBG_OBJ_DELETE ();
 }
 
+bool OOFPosFixedMgr::isReference (core::Widget *widget)
+{
+   return widget->getParent () == NULL;
+}
 
 int OOFPosFixedMgr::containerBoxOffsetX ()
 {
