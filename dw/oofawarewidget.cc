@@ -198,7 +198,13 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
       // We use the toplevel widget as container, i. e. parent widget.
       // See also OOFPosAbsMgr::isReference for the definition of the
       // "reference widget".
-      return widget->getParent() == NULL;
+      //return widget->getParent() == NULL;
+
+      // The above does not work. Temporary re-enact old behaviour:
+      return widget->instanceOf (OOFAwareWidget::CLASS_ID) &&
+         (widget->getParent() == NULL ||
+          OOFAwareWidget::testWidgetPositioned (widget));
+
       
    case OOFM_FIXED:
       // The single container for fixedly positioned elements is the
@@ -402,6 +408,8 @@ void OOFAwareWidget::draw (View *view, Rectangle *area,
          if ((*interruptedWidget)->getParent () == this) {
             DBG_OBJ_MSGF ("draw", 1, "interrupted at %p, drawing seperately",
                           *interruptedWidget);
+            DBG_OBJ_MSG_START ();
+            
             DBG_IF_RTFL {
                StringBuffer sb;
                iteratorStack->intoStringBuffer (&sb);
@@ -419,6 +427,11 @@ void OOFAwareWidget::draw (View *view, Rectangle *area,
                                                 &iteratorStack2,
                                                 &interruptedWidget2);
                assert (interruptedWidget2 == NULL);
+               //if (interruptedWidget2 != NULL)
+               //   DBG_OBJ_MSGF ("draw", 0,
+               //                 "<b>===== Assertion failed: "
+               //                 "interruptedWidget2 = %p =====</b>",
+               //                 interruptedWidget2);
             }
 
             ((OOFStackingIterator*)iteratorStack->getTop())
@@ -426,7 +439,8 @@ void OOFAwareWidget::draw (View *view, Rectangle *area,
 
             // Continue with the current state of "iterator".
             *interruptedWidget = NULL;
-            DBG_OBJ_MSG ("draw", 1, "done with interruption");
+
+            DBG_OBJ_MSG_END ();
          }
       } else {
          OOFStackingIterator* osi =
