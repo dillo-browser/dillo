@@ -606,7 +606,7 @@ bool OOFPositionedMgr::isVPosComplete (Child *child)
 bool OOFPositionedMgr::isHPosCalculable (Child *child, bool allocated)
 {
    return
-      allocated || (isVPosComplete (child) && child->reference == container);
+      allocated || (isHPosComplete (child) && child->reference == container);
 }
 
 bool OOFPositionedMgr::isVPosCalculable (Child *child, bool allocated)
