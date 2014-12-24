@@ -33,12 +33,25 @@ dillo-3.1 [not released yet]
  - Fix X11 icon name.
  - Abort failed queries.
  - In location bar, tend toward showing beginning of URL instead of end.
- - Remove Fl_Printer stub that always gave problems compiling under OSX.
  - Handle irix's version of vsnprintf().
    Patches: corvid
 +- Avoid requesting background images if an ancestor has display:none.
- - Don't load background images in --local mode.
+   Patch: Johannes Hofmann
+
+-----------------------------------------------------------------------------
+
+dillo-3.0.4.1 [December 24, 2014]
+
++- Avoid a corner case segfault when no search URL is found in dillorc.
+   Patch: Sebastian Geerken, Jorge Arellano
++- Fix linking problem with fltk-1.3.3 and fl_oldfocus.
+ - Don't follow redirections or meta refresh in --local mode.
+   Patches: Jorge Arellano Cid
++- Don't load background images in --local mode.
+ - Make sure window is resizable with fltk-1.3.3.
    Patches: Johannes Hofmann
++- Remove Fl_Printer stub that always gave problems compiling under OSX.
+   Patch: corvid
 
 -----------------------------------------------------------------------------
 

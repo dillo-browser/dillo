@@ -1001,14 +1001,20 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
 
    _MSG(" Cache_redirect: redirect_level = %d\n", bw->redirect_level);
 
+   /* Don't allow redirection for SpamSafe/local URLs */
+   if (URL_FLAGS(entry->Url) & URL_SpamSafe) {
+      a_UIcmd_set_msg(bw, "WARNING: local URL with redirection.  Aborting.");
+      return 0;
+   }
+
    /* if there's a redirect loop, stop now */
    if (bw->redirect_level >= 5)
       entry->Flags |= CA_RedirectLoop;
 
    if (entry->Flags & CA_RedirectLoop) {
-     a_UIcmd_set_msg(bw, "ERROR: redirect loop for: %s", URL_STR_(entry->Url));
-     bw->redirect_level = 0;
-     return 0;
+      a_UIcmd_set_msg(bw, "ERROR: redirect loop for: %s", URL_STR_(entry->Url));
+      bw->redirect_level = 0;
+      return 0;
    }
 
    if ((entry->Flags & CA_Redirect && entry->Location) &&

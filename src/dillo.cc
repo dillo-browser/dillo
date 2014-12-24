@@ -92,8 +92,8 @@ static const CLI_options Options[] = {
    {"-h", "--help",       0, DILLO_CLI_HELP,
     "  -h, --help             Display this help text and exit."},
    {"-l", "--local",      0, DILLO_CLI_LOCAL,
-    "  -l, --local            Don't load images or stylesheets for these "
-    "URL(s)."},
+    "  -l, --local            Don't load images or stylesheets, or follow\n"
+    "                         redirections, for these FILEs or URLs."},
    {"-v", "--version",    0, DILLO_CLI_VERSION,
     "  -v, --version          Display version info and exit."},
    {"-x", "--xid",        1, DILLO_CLI_XID,
