@@ -6,7 +6,7 @@ Here we list changes that are relatively significant and/or visible to the
 user. For a history of changes in full detail, see our Mercurial repository
 at http://hg.dillo.org/dillo
 
-dillo-3.0.4.1 [not released yet]
+dillo-3.0.4.1 [December 24, 2014]
 
 +- Avoid a corner case segfault when no search URL is found in dillorc.
    Patch: Sebastian Geerken, Jorge Arellano
