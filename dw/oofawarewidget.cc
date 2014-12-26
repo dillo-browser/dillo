@@ -384,8 +384,7 @@ bool OOFAwareWidget::doesWidgetOOFInterruptDrawing (Widget *widget)
    int cl = oofContainer[oofmIndex]->stackingContextWidget->getLevel (),
       gl = stackingContextWidget->getLevel ();
 
-   DBG_OBJ_MSGF_O ("draw", 1, (void*)NULL, "%d < %d => %s",
-                   cl, gl, cl < gl ? "true" : "false");
+   DBG_OBJ_MSGF ("draw", 1,"%d < %d => %s", cl, gl, cl < gl ? "true" : "false");
 
    DBG_OBJ_LEAVE ();
    return cl < gl;
@@ -405,9 +404,11 @@ void OOFAwareWidget::draw (View *view, Rectangle *area,
                  ((OOFStackingIterator*)iteratorStack->getTop())->majorLevel);
       
       if (*interruptedWidget) {
+         DBG_OBJ_MSGF ("draw", 1, "interrupted at %p (parent = %p)",
+                       *interruptedWidget, (*interruptedWidget)->getParent ());
+         
          if ((*interruptedWidget)->getParent () == this) {
-            DBG_OBJ_MSGF ("draw", 1, "interrupted at %p, drawing seperately",
-                          *interruptedWidget);
+            DBG_OBJ_MSG ("draw", 1, "drawing seperately");
             DBG_OBJ_MSG_START ();
             
             DBG_IF_RTFL {
@@ -429,8 +430,8 @@ void OOFAwareWidget::draw (View *view, Rectangle *area,
                assert (interruptedWidget2 == NULL);
                //if (interruptedWidget2 != NULL)
                //   DBG_OBJ_MSGF ("draw", 0,
-               //                 "<b>===== Assertion failed: "
-               //                 "interruptedWidget2 = %p =====</b>",
+               //                 "===== Assertion failed: "
+               //                 "interruptedWidget2 = %p =====",
                //                 interruptedWidget2);
             }
 

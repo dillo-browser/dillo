@@ -125,8 +125,8 @@ Widget::~Widget ()
  * \brief Calculates the intersection of widget->allocation and area, returned
  *    in intersection (in widget coordinates!).
  *
- * Typically used by containers when
- * drawing their children. Returns whether intersection is not empty.
+ * Typically used by containers when drawing their children. Returns whether
+ * intersection is not empty.
  */
 bool Widget::intersects (Rectangle *area, Rectangle *intersection)
 {
@@ -252,6 +252,10 @@ void Widget::drawToplevel (View *view, Rectangle *area)
 
    // Everything should be finished at this point.
    assert (interruptedWidget == NULL);
+   //if (interruptedWidget != NULL)
+   //   DBG_OBJ_MSGF ("draw", 0,
+   //                 "===== Assertion failed: interruptedWidget = %p =====",
+   //                 interruptedWidget);
 }
 
 Widget *Widget::getWidgetAtPoint (int x, int y,
@@ -344,6 +348,8 @@ Widget *Widget::getWidgetAtPointToplevel (int x, int y)
 
 void Widget::setParent (Widget *parent)
 {
+   DBG_OBJ_ENTER ("construct", 0, "setParent", "%p", parent);
+
    this->parent = parent;
    layout = parent->layout;
 
@@ -381,6 +387,8 @@ void Widget::setParent (Widget *parent)
       stackingContextWidget = parent->stackingContextWidget;
 
    notifySetParent();
+
+   DBG_OBJ_LEAVE ();
 }
 
 void Widget::setQuasiParent (Widget *quasiParent)

@@ -10,11 +10,15 @@ General
 A **widget allocation outside of the allocation of the parent** is
 allowed, but the part outside is not visible.
 
-**Interrupted drawing:** ...
+**Interrupted drawing:** \ref dw-interrupted-drawing.
 
-Positioned element
-==================
+Positioned elements
+===================
 
 **Positioned elements outside of the container:** ...
+
+**Relative positions:** ...
+
+**Fixed positions:** ...
 
 */

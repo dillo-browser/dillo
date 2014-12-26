@@ -1772,8 +1772,11 @@ void Textblock::handleOOFReferences (core::StackingIteratorStack *iteratorStack,
          Word *word = words->getRef (osi->index);
          if (word->content.type == core::Content::WIDGET_OOF_REF &&
              getOOFMIndex (word->content.widget) == osi->minorLevel &&
-             doesWidgetOOFInterruptDrawing (word->content.widget))
+             doesWidgetOOFInterruptDrawing (word->content.widget)) {
             *interruptedWidget = word->content.widget;
+            DBG_OBJ_MSGF ("draw", 0, "widget oof %p interrupts drawing",
+                          interruptedWidget);
+         }
 
          // The index is increased in any case: the iterator must
          // point to the next element.

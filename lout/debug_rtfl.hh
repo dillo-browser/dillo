@@ -123,6 +123,26 @@ inline void rtfl_print (const char *version, const char *file, int line,
       DBG_OBJ_MSG_O (aspect, prio, obj, msg); \
    } STMT_END
 
+#define DBG_OBJ_MARK(aspect, prio, mark) \
+   DBG_OBJ_MARK_O (aspect, prio, this, mark)
+
+#define DBG_OBJ_MARK_O(aspect, prio, obj, mark) \
+   RTFL_OBJ_PRINT ("mark", "p:s:d:s", obj, aspect, prio, mark)
+
+#define DBG_OBJ_MARKF(aspect, prio, fmt, ...) \
+   STMT_START { \
+      char mark[256]; \
+      snprintf (mark, sizeof (mark), fmt, __VA_ARGS__); \
+      DBG_OBJ_MARK (aspect, prio, mark); \
+   } STMT_END
+
+#define DBG_OBJ_MARKF_O(aspect, prio, obj, fmt, ...) \
+   STMT_START { \
+      char mark[256]; \
+      snprintf (mark, sizeof (mark), fmt, __VA_ARGS__); \
+      DBG_OBJ_MARK_O (aspect, prio, obj, mark); \
+   } STMT_END
+
 #define DBG_OBJ_MSG_START() \
    DBG_OBJ_MSG_START_O (this)
 
@@ -309,6 +329,10 @@ inline void rtfl_print (const char *version, const char *file, int line,
 #define DBG_OBJ_MSG_O(aspect, prio, obj, msg)                  STMT_NOP
 #define DBG_OBJ_MSGF(aspect, prio, fmt, ...)                   STMT_NOP
 #define DBG_OBJ_MSGF_O(aspect, prio, obj, fmt, ...)            STMT_NOP
+#define DBG_OBJ_MARK(aspect, prio, mark)                       STMT_NOP
+#define DBG_OBJ_MARK_O(aspect, prio, obj, mark)                STMT_NOP
+#define DBG_OBJ_MARKF(aspect, prio, fmt, ...)                  STMT_NOP
+#define DBG_OBJ_MARKF_O(aspect, prio, obj, fmt, ...)           STMT_NOP
 #define DBG_OBJ_MSG_START()                                    STMT_NOP
 #define DBG_OBJ_MSG_START_O(obj)                               STMT_NOP
 #define DBG_OBJ_MSG_END()                                      STMT_NOP
