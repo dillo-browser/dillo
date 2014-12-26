@@ -173,9 +173,19 @@ void StackingContextMgr::draw (View *view, Rectangle *area,
             Widget *child = childSCWidgets->get (*index);
             DBG_OBJ_MSGF ("draw", 2, "widget %p has zIndex = %d",
                           child, child->getStyle()->zIndex);
-            Rectangle childArea;
+            Rectangle parentArea, childArea;
+
+            // This is a hack: since "area" is given in widget coordinates,
+            // but the calling widget is not necessary the parent, as
+            // Widget::interects assumes, "area" has to be corrected.
+            parentArea = *area;
+            area->x += widget->getAllocation()->x 
+               - child->getParent()->getAllocation()->x;
+            area->y += widget->getAllocation()->y
+               - child->getParent()->getAllocation()->y;
+            
             if (child->getStyle()->zIndex == zIndices[*zIndexIndex] &&
-                child->intersects (area, &childArea))
+                child->intersects (&parentArea, &childArea))
                child->drawTotal (view, &childArea, iteratorStack,
                                  interruptedWidget);
 
