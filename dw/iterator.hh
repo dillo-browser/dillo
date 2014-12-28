@@ -264,7 +264,8 @@ public:
 };
 
 /**
- * \brief Some completely different kind of iterator: ...
+ * \brief Some completely different kind of iterator. See \ref
+ *    dw-interrupted-drawing for details.
  */
 class StackingIteratorStack
 {

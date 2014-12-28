@@ -12,6 +12,18 @@ allowed, but the part outside is not visible.
 
 **Interrupted drawing:** \ref dw-interrupted-drawing.
 
+
+Floats
+======
+
+**Handling collisions:** The CSS specification allows two strategies
+to deal with colliding floats: placing the second float beside or
+below the first one. Many other browsers implement the first approach,
+while dillo implements the second one, which may cause problems when
+the author assumes the first. Example: the "tabs" at the top of every
+page at Wikipedia ("Article", "Talk", ...).
+
+
 Positioned elements
 ===================
 
