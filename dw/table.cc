@@ -712,10 +712,10 @@ void Table::calcCellSizes (bool calcHeights)
                   calcHeights ? "true" : "false");
 
    bool sizeChanged = needsResize () || resizeQueued ();
-   bool extremesChanges = extremesChanged () || extremesQueued ();
+   bool extremesChanget = extremesChanged () || extremesQueued ();
 
-   if (calcHeights ? (extremesChanges || sizeChanged) :
-       (extremesChanges || !colWidthsUpToDateWidthColExtremes))
+   if (calcHeights ? (extremesChanget || sizeChanged) :
+       (extremesChanget || !colWidthsUpToDateWidthColExtremes))
       forceCalcCellSizes (calcHeights);
 
    DBG_OBJ_LEAVE ();
@@ -1113,8 +1113,10 @@ void Table::apportionRowSpan ()
  *
  * \bug Some parts are missing.
  */
-void Table::calcColumnExtremes ()
+void Table::_unused_calcColumnExtremes ()
 {
+   // This method is actually not used. Consider removal.
+
    DBG_OBJ_ENTER0 ("resize", 0, "calcColumnExtremes");
 
    if (extremesChanged () || extremesQueued ())
