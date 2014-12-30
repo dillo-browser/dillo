@@ -544,6 +544,7 @@ void Textblock::processWord (int wordIndex)
       if (paragraphs->size() > 0) {
          firstWord = paragraphs->getLastRef()->firstWord;
          paragraphs->setSize (paragraphs->size() - 1);
+         DBG_OBJ_SET_NUM ("paragraphs.size", paragraphs->size ());
          DBG_OBJ_MSG ("construct.paragraph", 1, "removing last paragraph");
       } else
          firstWord = 0;
@@ -1221,6 +1222,8 @@ void Textblock::handleWordExtremes (int wordIndex)
        ->badnessAndPenalty.lineMustBeBroken (1)) {
       // Add a new paragraph.
       paragraphs->increase ();
+      DBG_OBJ_SET_NUM ("paragraphs.size", paragraphs->size ());
+
       Paragraph *prevPar = paragraphs->size() == 1 ?
          NULL : paragraphs->getRef(paragraphs->size() - 2);
       Paragraph *par = paragraphs->getLastRef();
@@ -1238,12 +1241,16 @@ void Textblock::handleWordExtremes (int wordIndex)
          par->maxParMin = par->maxParMinIntrinsic = par->maxParMax =
             par->maxParMaxIntrinsic = 0;
 
-      DBG_OBJ_MSGF ("construct.paragraph", 1, "new par: %d",
-                    paragraphs->size() - 1);
+      DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "maxParMin",
+                              par->maxParMin);
+      DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                              "maxParMinIntrinsic", par->maxParMinIntrinsic);
+      DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "maxParMax",
+                              par->maxParMax);
+      DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                              "maxParMaxIntrinsic", par->maxParMaxIntrinsic);
    }
 
-   DBG_OBJ_MSGF ("construct.paragraph", 1, "last par: %d",
-                 paragraphs->size() - 1);
    Paragraph *lastPar = paragraphs->getLastRef();
 
    int corrDiffMin, corrDiffMax;
@@ -1259,19 +1266,6 @@ void Textblock::handleWordExtremes (int wordIndex)
    } else
       corrDiffMin = corrDiffMax = 0;
 
-   DBG_OBJ_MSGF ("construct.paragraph", 1,
-                 "(lastPar from %d to %d; corrDiffMin = %d, corDiffMax = %d)",
-                 lastPar->firstWord, lastPar->lastWord, corrDiffMin,
-                 corrDiffMax);
-
-   DBG_OBJ_MSGF ("construct.paragraph", 1,
-                 "before: parMin = %d (%d) (max = %d (%d)), "
-                 "parMax = %d (%d) (max = %d (%d))",
-                 lastPar->parMin, lastPar->parMinIntrinsic,
-                 lastPar->maxParMin, lastPar->maxParMinIntrinsic,
-                 lastPar->parMax, lastPar->parMaxIntrinsic,
-                 lastPar->maxParMax, lastPar->maxParMaxIntrinsic);
-
    // Minimum: between two *possible* breaks.
    // Shrinkability could be considered, but really does not play a role.
    lastPar->parMin += wordExtremes.minWidth + word->hyphenWidth + corrDiffMin;
@@ -1280,9 +1274,25 @@ void Textblock::handleWordExtremes (int wordIndex)
    lastPar->maxParMin = misc::max (lastPar->maxParMin, lastPar->parMin);
    lastPar->maxParMinIntrinsic =
       misc::max (lastPar->maxParMinIntrinsic, lastPar->parMinIntrinsic);
+
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "parMin",
+                           lastPar->parMin);
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                           "parMinIntrinsic", lastPar->parMinIntrinsic);
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "maxParMin",
+                           lastPar->maxParMin);
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                           "maxParMinIntrinsic", lastPar->maxParMinIntrinsic);
+
    if (word->badnessAndPenalty.lineCanBeBroken (1) &&
-       (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0)
+       (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0) {
       lastPar->parMin = lastPar->parMinIntrinsic = 0;
+
+      DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "parMin",
+                              lastPar->parMin);
+      DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                              "parMinIntrinsic", lastPar->parMinIntrinsic);
+   }
 
    // Maximum: between two *necessary* breaks.
    lastPar->parMax += wordExtremes.maxWidth + word->hyphenWidth + corrDiffMax;
@@ -1292,14 +1302,15 @@ void Textblock::handleWordExtremes (int wordIndex)
    lastPar->maxParMaxIntrinsic =
       misc::max (lastPar->maxParMaxIntrinsic, lastPar->parMaxIntrinsic);
 
-   DBG_OBJ_MSGF ("construct.paragraph", 1,
-                 "after: parMin = %d (%d) (max = %d (%d)), "
-                 "parMax = %d (%d) (max = %d (%d))",
-                 lastPar->parMin, lastPar->parMinIntrinsic,
-                 lastPar->maxParMin, lastPar->maxParMinIntrinsic,
-                 lastPar->parMax, lastPar->parMaxIntrinsic,
-                 lastPar->maxParMax, lastPar->maxParMaxIntrinsic);
-
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "parMax",
+                           lastPar->parMax);
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                           "parMaxIntrinsic", lastPar->parMaxIntrinsic);
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "maxParMax",
+                           lastPar->maxParMax);
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                           "maxParMaxIntrinsic", lastPar->maxParMaxIntrinsic);
+   
    lastPar->lastWord = wordIndex;
    DBG_OBJ_LEAVE ();
 }
@@ -1896,6 +1907,7 @@ void Textblock::fillParagraphs ()
          parNo = misc::max (0, findParagraphOfWord (firstWordOfLine));
 
       paragraphs->setSize (parNo);
+      DBG_OBJ_SET_NUM ("paragraphs.size", paragraphs->size ());
 
       int firstWord;
       if (paragraphs->size () > 0)
