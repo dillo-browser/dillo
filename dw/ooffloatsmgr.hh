@@ -306,7 +306,6 @@ private:
                        int *height);
    void getFloatsExtremes (core::Extremes *cbExtr, Side side, int *minWidth,
                            int *maxWidth);
-   bool getFloatDiffToCB (Float *vloat, int *leftDiff, int *rightDiff);
 
    TBInfo *getOOFAwareWidget (OOFAwareWidget *widget);
    TBInfo *getOOFAwareWidgetWhenRegistered (OOFAwareWidget *widget);

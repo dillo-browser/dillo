@@ -552,10 +552,10 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
    win->box(FL_NO_BOX);
    CustTabs *DilloTabs = new CustTabs(ww, wh, 16);
    win->end();
+   win->resizable(DilloTabs->wizard());
 
    int focus = 1;
    new_bw = UIcmd_tab_new(DilloTabs, old_ui, focus);
-   win->resizable(DilloTabs->wizard());
    win->show();
 
    if (old_bw == NULL && prefs.xpos >= 0 && prefs.ypos >= 0) {
@@ -682,7 +682,7 @@ static char *UIcmd_find_search_str(const char *str)
       for (p = 0; p < dList_length(prefs.search_urls); p++) {
          const char *search =
             (const char *)dList_nth_data(prefs.search_urls, p);
-         if (strncasecmp(str, search, len) == 0) {
+         if (search && strncasecmp(str, search, len) == 0) {
             prefs.search_url_idx = p;
             url = UIcmd_make_search_str(str + len + 1);
             break;
@@ -933,7 +933,7 @@ static int UIcmd_save_file_check(const char *name)
       int ch;
       ds = dStr_sized_new(128);
       dStr_sprintf(ds,
-                   "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
+                  "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
                    name, (int)ss.st_size);
       ch = a_Dialog_choice("Dillo Save: File exists!", ds->str,
                            "Abort", "Continue", "Rename", NULL);

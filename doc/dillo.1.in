@@ -1,4 +1,4 @@
-.TH dillo 1 "November 5, 2012" "" "USER COMMANDS"
+.TH dillo 1 "December 20, 2014" "" "USER COMMANDS"
 .SH NAME
 dillo \- web browser
 .SH SYNOPSIS
@@ -44,7 +44,8 @@ Set initial window position where \fIGEO\fR is
 Display this help text and exit.
 .TP
 \fB\-l\fR, \fB\-\-local\fR
-Don't load images or stylesheets for these URL(s).
+Don't load images or stylesheets, or follow redirections, for these FILEs or
+URLs. This is intended for use with HTML email.
 .TP
 \fB\-v\fR, \fB\-\-version\fR
 Display version info and exit.

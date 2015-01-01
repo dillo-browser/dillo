@@ -241,7 +241,7 @@ void Image::getExtremesImpl (core::Extremes *extremes)
 {
    int contentWidth;
    if (buffer)
-      contentWidth =buffer->getRootWidth ();
+      contentWidth = buffer->getRootWidth ();
    else {
       if (altText && altText[0]) {
          if (altTextWidth == -1)
@@ -252,7 +252,7 @@ void Image::getExtremesImpl (core::Extremes *extremes)
          contentWidth = 0;
    }
 
-   int width = contentWidth +  + boxDiffWidth ();
+   int width = contentWidth + boxDiffWidth ();
 
    // With percentage width, the image may be narrower than the buffer.
    extremes->minWidth =

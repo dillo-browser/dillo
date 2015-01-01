@@ -436,7 +436,7 @@ private:
    void forceCalcCellSizes (bool calcHeights);
    void apportionRowSpan ();
 
-   void calcColumnExtremes ();
+   void _unused_calcColumnExtremes ();
    void forceCalcColumnExtremes ();
    void calcExtremesSpanMulteCols (int col, int cs,
                                    core::Extremes *cellExtremes,

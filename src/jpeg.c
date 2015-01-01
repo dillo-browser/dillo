@@ -273,9 +273,8 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
          } else if (jpeg->cinfo.num_components == 3) {
             type = DILLO_IMG_TYPE_RGB;
          } else {
-            MSG("4-component JPEG!\n");
             if (jpeg->cinfo.jpeg_color_space == JCS_YCCK)
-               MSG("YCCK. Are the colors wrong?\n");
+               MSG("YCCK JPEG. Are the colors wrong?\n");
             if (!jpeg->cinfo.saw_Adobe_marker)
                MSG("No adobe marker! Is the image shown in reverse video?\n");
             type = DILLO_IMG_TYPE_CMYK_INV;
