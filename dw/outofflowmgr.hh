@@ -294,7 +294,6 @@ private:
                        int *height);
    void getFloatsExtremes (core::Extremes *cbExtr, Side side, int *minWidth,
                            int *maxWidth);
-   bool getFloatDiffToCB (Float *vloat, int *leftDiff, int *rightDiff);
 
    TBInfo *getTextblock (Textblock *textblock);
    int getBorder (Textblock *textblock, Side side, int y, int h,
