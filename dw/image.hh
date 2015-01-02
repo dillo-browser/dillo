@@ -153,6 +153,10 @@ public:
    Image(const char *altText);
    ~Image();
 
+   // For images, the minimal width is not well defined, and
+   // correction of the size makes not much sense.
+   virtual bool getAdjustMinWidth () { return false; }
+
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 
    inline core::Imgbuf *getBuffer () { return buffer; }

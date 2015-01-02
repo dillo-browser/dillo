@@ -511,9 +511,11 @@ void Widget::sizeRequest (Requisition *requisition)
  *
  * If extremes == NULL, getExtremes is called. ForceValue is the same
  * value passed to getAvailWidth etc.; if false, getExtremes is not
- * called.
+ * called. A value of "false" is passed for "useCorrected" in the
+ * context of correctExtemes etc., to avoid cyclic dependencies.
+ * 
  */
-int Widget::getMinWidth (Extremes *extremes, bool forceValue)
+int Widget::getMinWidth (Extremes *extremes, bool useCorrected, bool forceValue)
 {
    if (extremes)
       DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "[%d (%d) / %d (%d), %s",
@@ -538,8 +540,14 @@ int Widget::getMinWidth (Extremes *extremes, bool forceValue)
       // TODO Not completely clear whether this is feasable: Within
       // the context of getAvailWidth(false) etc., getExtremes may not
       // be called. We ignore the minimal width then.
-      minWidth = extremes ?
-         misc::max (extremes->minWidth, extremes->minWidthIntrinsic) : 0;
+      if (extremes) {
+         if (useCorrected)
+            minWidth =
+               misc::max (extremes->minWidth, extremes->minWidthIntrinsic);
+         else
+            minWidth = extremes->minWidthIntrinsic;
+      } else
+         minWidth = 0;
    } else
       minWidth = 0;
 
@@ -665,7 +673,7 @@ void Widget::correctRequisition (Requisition *requisition,
       DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
 
-      int limitMinWidth = getMinWidth (NULL, true);
+      int limitMinWidth = getMinWidth (NULL, true, true);
       int viewportWidth =
          layout->viewportWidth - (layout->canvasHeightGreater ?
                                   layout->vScrollbarThickness : 0);
@@ -722,7 +730,7 @@ void Widget::correctExtremes (Extremes *extremes)
       DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
 
-      int limitMinWidth = getMinWidth (extremes, false);
+      int limitMinWidth = getMinWidth (extremes, false, false);
       int viewportWidth =
          layout->viewportWidth - (layout->canvasHeightGreater ?
                                   layout->vScrollbarThickness : 0);
@@ -1590,7 +1598,7 @@ void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition)
 
    assert (this == child->quasiParent || this == child->container);
 
-   int limitMinWidth = child->getMinWidth (NULL, true);
+   int limitMinWidth = child->getMinWidth (NULL, true, true);
    child->calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, false,
                           &requisition->width);
 
@@ -1650,7 +1658,7 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
       (child->container ? child->container : child->parent);
 
    if (effContainer == this) {
-      int limitMinWidth = child->getMinWidth (extremes, false);
+      int limitMinWidth = child->getMinWidth (extremes, false, false);
       int width = child->calcWidth (child->getStyle()->width, -1, this,
                                     limitMinWidth, false);
       int minWidth = child->calcWidth (child->getStyle()->minWidth, -1, this,
