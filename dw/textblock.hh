@@ -845,11 +845,14 @@ protected:
       DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
       bool toplevel = getParent () == NULL,
          block = getStyle()->display == core::style::DISPLAY_BLOCK,
+         listitem = getStyle()->display == core::style::DISPLAY_LIST_ITEM,
          vloat = getStyle()->vloat != core::style::FLOAT_NONE,
-         result =  toplevel || (block && !vloat);
-      DBG_OBJ_MSGF ("resize", 0, "=> %s (toplevel: %s, block: %s, float: %s)",
+         result =  toplevel || ((block || listitem) && !vloat);
+      DBG_OBJ_MSGF ("resize", 0,
+                    "=> %s (toplevel: %s, block: %s, listitem: %s, float: %s)",
                     result ? "true" : "false", toplevel ? "true" : "false",
-                    block ? "true" : "false", vloat ? "true" : "false");
+                    block ? "true" : "false", listitem ? "true" : "false",
+                    vloat ? "true" : "false");
       DBG_OBJ_LEAVE ();
       return result;
    }
