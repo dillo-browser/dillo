@@ -538,7 +538,8 @@ int Widget::getMinWidth (Extremes *extremes, bool forceValue)
       // TODO Not completely clear whether this is feasable: Within
       // the context of getAvailWidth(false) etc., getExtremes may not
       // be called. We ignore the minimal width then.
-      minWidth = extremes ? extremes->minWidthIntrinsic : 0;
+      minWidth = extremes ?
+         misc::max (extremes->minWidth, extremes->minWidthIntrinsic) : 0;
    } else
       minWidth = 0;
 
