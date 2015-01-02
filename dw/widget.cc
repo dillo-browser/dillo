@@ -60,7 +60,7 @@ void Widget::WidgetImgRenderer::draw (int x, int y, int width, int height)
 
 // ----------------------------------------------------------------------
 
-bool Widget::adjustMinWidth = false;
+bool Widget::adjustMinWidth = true;
 int Widget::CLASS_ID = -1;
 
 Widget::Widget ()
