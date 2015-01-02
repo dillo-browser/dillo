@@ -518,12 +518,14 @@ void Widget::sizeRequest (Requisition *requisition)
 int Widget::getMinWidth (Extremes *extremes, bool useCorrected, bool forceValue)
 {
    if (extremes)
-      DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "[%d (%d) / %d (%d), %s",
+      DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "[%d (%d) / %d (%d), %s, %s",
                      extremes->minWidth, extremes->minWidthIntrinsic,
                      extremes->maxWidth, extremes->maxWidthIntrinsic,
+                     useCorrected ? "true" : "false",
                      forceValue ? "true" : "false");
    else
-      DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "(nil), %s",
+      DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "(nil), %s, %s",
+                     useCorrected ? "true" : "false",
                      forceValue ? "true" : "false");
 
    int minWidth;
