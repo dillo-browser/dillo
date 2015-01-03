@@ -435,6 +435,15 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                     word->effSpace, word->origSpace, i, lineWidth);
    }
 
+   // Until here, lineWidth refers does not include floats on the left
+   // side. To include left floats, so that maxLineWidth, and
+   // eventually the requisition, is correct, line->textOffset has to
+   // be added, which was calculated just before in calcTextOffset().
+   // The correction in sizeAllocateImpl() is irrelevant in this
+   // regard. Also, right floats are not regarded here, but in
+   // OutOfFlowMgr::getSize(),
+   lineWidth += line->textOffset;
+
    if (lines->size () == 1) {
       // first line
       line->maxLineWidth = lineWidth;
