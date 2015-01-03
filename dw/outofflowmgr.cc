@@ -1915,8 +1915,8 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
                     + max (containingBlockAllocation.width - gba->width, 0));
          }
          
-         DBG_OBJ_MSGF ("resize.oofm", 1, "%d + %d / %d => %d * %d",
-                       x, extr.minWidth, extr.maxWidth, *minWidth, *maxWidth);
+         DBG_OBJ_MSGF ("resize.oofm", 1, "%d / %d => %d / %d",
+                       extr.minWidth, extr.maxWidth, *minWidth, *maxWidth);
       } else
          DBG_OBJ_MSG ("resize.oofm", 1, "not allocated");
    }
