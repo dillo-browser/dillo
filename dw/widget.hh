@@ -459,7 +459,7 @@ public:
    virtual int applyPerWidth (int containerWidth, style::Length perWidth);
    virtual int applyPerHeight (int containerHeight, style::Length perHeight);
 
-   int getMinWidth (Extremes *extremes, bool forceValue);
+   int getMinWidth (Extremes *extremes, bool useCorrected, bool forceValue);
 
    virtual bool isBlockLevel ();
    virtual bool isPossibleContainer ();

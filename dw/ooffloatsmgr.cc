@@ -1930,26 +1930,41 @@ void OOFFloatsMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
       DBG_OBJ_MSGF ("resize.oofm", 1,
                     "float %p has generator %p (container is %p)",
                     vloat->getWidget (), vloat->generatingBlock,
-                    containingBlock);
-                    
+                    container);
+      
       if (vloat->generatingBlock == container ||
           wasAllocated (vloat->generatingBlock)) {
          Extremes extr;
          vloat->getWidget()->getExtremes (&extr);
-         int x;
-
-         if (vloat->generatingBlock == container)
-            x = side == LEFT ? 
-               vloat->generatingBlock->getStyle()->boxOffsetX() : 0;
-         else {
-            Allocation *gba = getAllocation(vloat->generatingBlock);
-            x = calcFloatX (vloat, side,
-                            gba->x - containerAllocation.x, gba->width,
-                            vloat->generatingBlock->getLineBreakWidth ());
-         }
          
-         *minWidth = max (*minWidth, x +  extr.minWidth);
-         *maxWidth = max (*maxWidth, x +  extr.maxWidth);
+         // The calculation of extremes must be kept consistent with
+         // getSize(). Especially this means for the *minimal* width:
+         //
+         // - The right border (difference between float and
+         //   container) does not have to be considered (see
+         //   getSize()).
+         //
+         // - This is also the case for the left border, as seen in
+         //   calcFloatX() ("... but when the float exceeds the line
+         //   break width" ...).
+
+         *minWidth = max (*minWidth, extr.minWidth);
+
+         // For the maximal width, borders must be considered.
+      
+         if (vloat->generatingBlock == container)
+            *maxWidth =
+               max (*maxWidth,
+                    extr.maxWidth
+                    + vloat->generatingBlock->getStyle()->boxDiffWidth());
+         else {
+            Allocation *gba = getAllocation (vloat->generatingBlock);
+            *maxWidth =
+               max (*maxWidth,
+                    extr.maxWidth
+                    + vloat->generatingBlock->getStyle()->boxDiffWidth()
+                    + max (containerAllocation.width - gba->width, 0));
+         }
          
          DBG_OBJ_MSGF ("resize.oofm", 1, "%d + %d / %d => %d * %d",
                        x, extr.minWidth, extr.maxWidth, *minWidth, *maxWidth);

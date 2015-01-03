@@ -81,12 +81,12 @@
 
 # If this is set to YES, all CSS size specifications are adjusted so that
 # all contents can be displayed. (Except for tables, see below.)
-#adjust_min_width=NO
+#adjust_min_width=YES
 
 # If this is set to YES, all CSS size specifications for tables are
 # adjusted so that all contents can be displayed. This is seperated
-# from "adjust_min_width" (with another standard value) to mimic
-# Firefox, which differenciates between tables and, say, textblocks.
+# from "adjust_min_width" so that it is able to mimic Firefox, which
+# differenciates between tables and, say, textblocks (in some cases).
 #adjust_table_min_width=YES
 
 #-------------------------------------------------------------------------
