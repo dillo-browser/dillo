@@ -357,16 +357,22 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html, const char *tag, int tagsize)
 
 
 /*
- * Create and add a new Textblock to the current Textblock
+ * Create and add a new Textblock to the current Textblock. Typically
+ * only one of addBreaks and addBreakOpt is true.
  */
-static void Html_add_textblock(DilloHtml *html, bool addBreaks, int breakSpace)
+static void Html_add_textblock(DilloHtml *html, bool addBreaks, int breakSpace,
+                               bool addBreakOpt)
 {
    Textblock *textblock = new Textblock (prefs.limit_text_width);
 
    if (addBreaks)
       HT2TB(html)->addParbreak (breakSpace, html->wordStyle ());
+
    HT2TB(html)->addWidget (textblock, html->style ()); /* Works also for floats
                                                           etc. */
+   if (addBreakOpt)
+      HT2TB(html)->addBreakOption (html->style (), false);
+
    if (addBreaks)
       HT2TB(html)->addParbreak (breakSpace, html->wordStyle ());
    S_TOP(html)->textblock = html->dw = textblock;
@@ -2029,7 +2035,7 @@ static void Html_tag_content_frameset (DilloHtml *html,
 {
    HT2TB(html)->addParbreak (9, html->wordStyle ());
    HT2TB(html)->addText("--FRAME--", html->wordStyle ());
-   Html_add_textblock(html, true, 5);
+   Html_add_textblock(html, true, 5, false);
 }
 
 /*
@@ -2811,7 +2817,7 @@ static void Html_tag_close_a(DilloHtml *html)
 static void Html_tag_open_blockquote(DilloHtml *html,
                                      const char *tag, int tagsize)
 {
-   Html_add_textblock(html, true, 9);
+   Html_add_textblock(html, true, 9, false);
 }
 
 /*
@@ -3075,7 +3081,7 @@ static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
 {
-   Html_add_textblock(html, true, 9);
+   Html_add_textblock(html, true, 9, false);
 }
 
 /*
@@ -3868,12 +3874,13 @@ static void Html_check_html5_obsolete(DilloHtml *html, int ni)
 
 static void Html_display_block(DilloHtml *html)
 {
-   Html_add_textblock(html, !Html_will_textblock_be_out_of_flow (html), 0);
+   Html_add_textblock(html, !Html_will_textblock_be_out_of_flow (html), 0,
+                      false /* Perhaps true for widgets oof? */);
 }
 
 static void Html_display_inline_block(DilloHtml *html)
 {
-   Html_add_textblock(html, false, 0);
+   Html_add_textblock(html, false, 0, true);
 }
 
 static void Html_display_listitem(DilloHtml *html)
