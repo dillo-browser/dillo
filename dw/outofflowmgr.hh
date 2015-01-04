@@ -258,8 +258,8 @@ private:
 
    void moveFromGBToCB (Side side);
    void sizeAllocateFloats (Side side, int newLastAllocatedFloat);
-   int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
-                   int gbLineBreakWidth);
+   int getGBWidthForAllocation (Float *vloat);
+   int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth);
 
    bool hasRelationChanged (TBInfo *tbInfo,int *minFloatPos,
                             core::Widget **minFloat);

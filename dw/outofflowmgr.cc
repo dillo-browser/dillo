@@ -746,10 +746,9 @@ bool OutOfFlowMgr::hasRelationChanged (TBInfo *tbInfo, Side side,
       else {
          Allocation *gba = getAllocation (vloat->generatingBlock);
 
-         int newFlx =
-            calcFloatX (vloat, side,
-                        gba->x - containingBlockAllocation.x, gba->width,
-                        vloat->generatingBlock->getLineBreakWidth ());
+         int newFlx = calcFloatX (vloat, side,
+                                  gba->x - containingBlockAllocation.x,
+                                  getGBWidthForAllocation (vloat));
          int newFly = vloat->generatingBlock->getAllocation()->y
             - containingBlockAllocation.y + vloat->yReal;
 
@@ -1193,11 +1192,10 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
       ensureFloatSize (vloat);
 
       Allocation *gba = getAllocation (vloat->generatingBlock);
-      int lineBreakWidth = vloat->generatingBlock->getLineBreakWidth();
 
       Allocation childAllocation;
-      childAllocation.x = cba->x +
-         calcFloatX (vloat, side, gba->x - cba->x, gba->width, lineBreakWidth);
+      childAllocation.x = cba->x + calcFloatX (vloat, side, gba->x - cba->x,
+                                               getGBWidthForAllocation (vloat));
       childAllocation.y = gba->y + vloat->yReal;
       childAllocation.width = vloat->size.width;
       childAllocation.ascent = vloat->size.ascent;
@@ -1211,18 +1209,30 @@ void OutOfFlowMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
    DBG_OBJ_LEAVE ();
 }
 
+// Used as argument "gbWidth" for calcFloatX(), in the context of allocation.
+int OutOfFlowMgr::getGBWidthForAllocation (Float *vloat)
+{
+   // See comments in getFloatsSize() for a detailed rationale ...
+   if (containingBlock->mustBeWidenedToAvailWidth ())
+      return vloat->generatingBlock->getLineBreakWidth ();
+   else
+      // ... but notice this difference: not GB width + float width is
+      // used, but only GB width, since the float width has already
+      // been included in getFloatsSize().
+      return min (getAllocation(vloat->generatingBlock)->width,
+                  vloat->generatingBlock->getLineBreakWidth ());
+}
 
 /**
  * \brief ...
  *
  * gbX is given relative to the CB, as is the return value.
  */
-int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
-                              int gbLineBreakWidth)
+int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth)
 {
-   DBG_OBJ_ENTER ("resize.common", 0, "calcFloatX", "%p, %s, %d, %d, %d",
+   DBG_OBJ_ENTER ("resize.common", 0, "calcFloatX", "%p, %s, %d, %d",
                   vloat->getWidget (), side == LEFT ? "LEFT" : "RIGHT", gbX,
-                  gbWidth, gbLineBreakWidth);
+                  gbWidth);
    int x;
 
    switch (side) {
@@ -1251,16 +1261,12 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
       // shifted to the right when they are too big (instead of
       // shifting the generator to the right).
 
-      // Notice that not the actual width, but the line break width is
-      // used. (This changed for GROWS, where the width of a textblock
-      // is often smaller that the line break.)
-
-      x = max (gbX + gbLineBreakWidth - vloat->size.width
+      x = max (gbX + gbWidth - vloat->size.width
                - vloat->generatingBlock->getStyle()->boxRestWidth(),
                // Do not exceed CB allocation:
                0);
       DBG_OBJ_MSGF ("resize.common", 1, "x = max (%d + %d - %d - %d, 0) = %d",
-                    gbX, gbLineBreakWidth, vloat->size.width,
+                    gbX, gbWidth, vloat->size.width,
                     vloat->generatingBlock->getStyle()->boxRestWidth(), x);
       break;
 
@@ -1273,7 +1279,6 @@ int OutOfFlowMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth,
    DBG_OBJ_LEAVE ();
    return x;
 }
-
 
 void OutOfFlowMgr::draw (View *view, Rectangle *area)
 {
@@ -1711,8 +1716,7 @@ bool OutOfFlowMgr::collidesH (Float *vloat, Float *other, SFVType type)
             calcFloatX (vloat,
                         vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT ?
                         LEFT : RIGHT,
-                        gba->x, gba->width,
-                        vloat->generatingBlock->getLineBreakWidth ());
+                        gba->x, getGBWidthForAllocation (vloat));
 
          // Generally: right border of the left float > left border of
          // the right float (all in canvas coordinates).
@@ -1810,15 +1814,35 @@ void OutOfFlowMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
          ensureFloatSize (vloat);
          int x, y;
 
-         if (vloat->generatingBlock == containingBlock) {
-            x = calcFloatX (vloat, side, 0, cbReq->width,
+         int effWidth;
+         if (containingBlock->mustBeWidenedToAvailWidth ())
+            // For most textblocks, the line break width is used for
+            // calculating the x position. (This changed for GROWS,
+            // where the width of a textblock is often smaller that
+            // the line break.)
+            effWidth = vloat->generatingBlock->getLineBreakWidth ();
+         else
+            // For some textblocks, like inline blocks, the line break
+            // width would be too large for right floats in some
+            // cases.
+            //
+            //  (i) Consider a small inline block with only a few words
+            //      in one line, narrower that line break width minus
+            //      float width. In this case, the sum should be used.
+            //
+            // (ii) If there is more than one line, the line break
+            //      will already be exceeded, and so be smaller that
+            //      GB width + float width.
+            effWidth = min (cbReq->width + vloat->size.width,
                             vloat->generatingBlock->getLineBreakWidth ());
+
+         if (vloat->generatingBlock == containingBlock) {
+            x = calcFloatX (vloat, side, 0, effWidth);
             y = vloat->yReal;
          } else {
             Allocation *gba = getAllocation(vloat->generatingBlock);
-            x = calcFloatX (vloat, side,
-                            gba->x - containingBlockAllocation.x, gba->width,
-                            vloat->generatingBlock->getLineBreakWidth ());
+            x = calcFloatX (vloat, side, gba->x - containingBlockAllocation.x,
+                            effWidth);
             y = gba->y - containingBlockAllocation.y + vloat->yReal;
          }
 
@@ -1887,11 +1911,11 @@ void OutOfFlowMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
          vloat->getWidget()->getExtremes (&extr);
          
          // The calculation of extremes must be kept consistent with
-         // getSize(). Especially this means for the *minimal* width:
+         // getFloatsSize(). Especially this means for the *minimal* width:
          //
          // - The right border (difference between float and
          //   container) does not have to be considered (see
-         //   getSize()).
+         //   getFloatsSize().
          //
          // - This is also the case for the left border, as seen in
          //   calcFloatX() ("... but when the float exceeds the line

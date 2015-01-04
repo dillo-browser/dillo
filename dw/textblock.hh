@@ -841,22 +841,6 @@ protected:
                        core::Requisition *wordSize);
    static bool isContainingBlock (Widget *widget);
 
-   inline bool mustBeWidenedToAvailWidth () {
-      DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
-      bool toplevel = getParent () == NULL,
-         block = getStyle()->display == core::style::DISPLAY_BLOCK,
-         listitem = getStyle()->display == core::style::DISPLAY_LIST_ITEM,
-         vloat = getStyle()->vloat != core::style::FLOAT_NONE,
-         result =  toplevel || ((block || listitem) && !vloat);
-      DBG_OBJ_MSGF ("resize", 0,
-                    "=> %s (toplevel: %s, block: %s, listitem: %s, float: %s)",
-                    result ? "true" : "false", toplevel ? "true" : "false",
-                    block ? "true" : "false", listitem ? "true" : "false",
-                    vloat ? "true" : "false");
-      DBG_OBJ_LEAVE ();
-      return result;
-   }
-
 public:
    static int CLASS_ID;
 
@@ -891,6 +875,22 @@ public:
    void changeLinkColor (int link, int newColor);
    void changeWordStyle (int from, int to, core::style::Style *style,
                          bool includeFirstSpace, bool includeLastSpace);
+
+   inline bool mustBeWidenedToAvailWidth () {
+      DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
+      bool toplevel = getParent () == NULL,
+         block = getStyle()->display == core::style::DISPLAY_BLOCK,
+         listitem = getStyle()->display == core::style::DISPLAY_LIST_ITEM,
+         vloat = getStyle()->vloat != core::style::FLOAT_NONE,
+         result =  toplevel || ((block || listitem) && !vloat);
+      DBG_OBJ_MSGF ("resize", 0,
+                    "=> %s (toplevel: %s, block: %s, listitem: %s, float: %s)",
+                    result ? "true" : "false", toplevel ? "true" : "false",
+                    block ? "true" : "false", listitem ? "true" : "false",
+                    vloat ? "true" : "false");
+      DBG_OBJ_LEAVE ();
+      return result;
+   }
 
    void borderChanged (int y, core::Widget *vloat);
    void clearPositionChanged ();
