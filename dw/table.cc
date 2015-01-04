@@ -735,10 +735,10 @@ void Table::forceCalcCellSizes (bool calcHeights)
    getExtremes (&extremes);
 
    int availWidth = getAvailWidth (true);
-   // When adjust_table_min_width is set, use the minimal (intrinsic)
-   // width for correction.
+   // When adjust_table_min_width is set, use perhaps the adjustment
+   // width for correction. (TODO: Is this necessary?)
    int corrWidth =
-      Table::getAdjustTableMinWidth () ? extremes.minWidthIntrinsic : 0;
+      Table::getAdjustTableMinWidth () ? extremes.adjustmentWidth : 0;
    int totalWidth = misc::max (availWidth, corrWidth)
       - ((numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ());
       
