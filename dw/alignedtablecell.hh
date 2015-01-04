@@ -37,6 +37,8 @@ public:
    int applyPerHeight (int containerHeight, core::style::Length perHeight);
 
    bool isBlockLevel ();
+
+   bool mustBeWidenedToAvailWidth ();
 };
 
 } // namespace dw

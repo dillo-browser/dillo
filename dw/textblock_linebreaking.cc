@@ -1238,8 +1238,8 @@ void Textblock::handleWordExtremes (int wordIndex)
       Paragraph *par = paragraphs->getLastRef();
 
       par->firstWord = par->lastWord = wordIndex;
-      par->parMin = par->parMinIntrinsic = par->parMax = par->parMaxIntrinsic
-         = 0;
+      par->parMin = par->parMinIntrinsic = par->parMax = par->parMaxIntrinsic =
+         par->parAdjustmentWidth = 0;
 
       if (prevPar) {
          par->maxParMin = prevPar->maxParMin;
@@ -1280,9 +1280,13 @@ void Textblock::handleWordExtremes (int wordIndex)
    lastPar->parMin += wordExtremes.minWidth + word->hyphenWidth + corrDiffMin;
    lastPar->parMinIntrinsic +=
       wordExtremes.minWidthIntrinsic + word->hyphenWidth + corrDiffMin;
+   lastPar->parAdjustmentWidth +=
+      wordExtremes.adjustmentWidth + word->hyphenWidth + corrDiffMin;
    lastPar->maxParMin = misc::max (lastPar->maxParMin, lastPar->parMin);
    lastPar->maxParMinIntrinsic =
       misc::max (lastPar->maxParMinIntrinsic, lastPar->parMinIntrinsic);
+   lastPar->maxParAdjustmentWidth =
+      misc::max (lastPar->maxParAdjustmentWidth, lastPar->parAdjustmentWidth);
 
    DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "parMin",
                            lastPar->parMin);
@@ -1292,15 +1296,24 @@ void Textblock::handleWordExtremes (int wordIndex)
                            lastPar->maxParMin);
    DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
                            "maxParMinIntrinsic", lastPar->maxParMinIntrinsic);
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                           "parAdjustmentWidth", lastPar->parAdjustmentWidth);
+   DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                           "maxParAdjustmentWidth",
+                           lastPar->maxParAdjustmentWidth);
 
    if (word->badnessAndPenalty.lineCanBeBroken (1) &&
        (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0) {
-      lastPar->parMin = lastPar->parMinIntrinsic = 0;
+      lastPar->parMin = lastPar->parMinIntrinsic = lastPar->parAdjustmentWidth
+         = 0;
 
       DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "parMin",
                               lastPar->parMin);
       DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
                               "parMinIntrinsic", lastPar->parMinIntrinsic);
+      DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1,
+                              "parAdjustmentWidth",
+                              lastPar->parAdjustmentWidth);
    }
 
    // Maximum: between two *necessary* breaks.
@@ -1333,8 +1346,9 @@ void Textblock::correctLastWordExtremes ()
       Word *word = words->getLastRef ();
       if (word->badnessAndPenalty.lineCanBeBroken (1) &&
           (word->flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) == 0) {
-         paragraphs->getLastRef()->parMin =
-            paragraphs->getLastRef()->parMinIntrinsic = 0;
+         Paragraph *lastPar = paragraphs->getLastRef();
+         lastPar->parMin = lastPar->parMinIntrinsic =
+            lastPar->parAdjustmentWidth = 0;
          PRINTF ("   => corrected; parMin = %d\n",
                  paragraphs->getLastRef()->parMin);
       }

@@ -544,10 +544,12 @@ int Widget::getMinWidth (Extremes *extremes, bool useCorrected, bool forceValue)
       // be called. We ignore the minimal width then.
       if (extremes) {
          if (useCorrected)
-            minWidth =
-               misc::max (extremes->minWidth, extremes->minWidthIntrinsic);
+            minWidth = extremes->adjustmentWidth;
          else
-            minWidth = extremes->minWidthIntrinsic;
+            // UseCorrected is set to false when called for the
+            // correction of extemes. This is not supported anymore,
+            // so we return 0. TODO: Should be cleaned up again.
+            minWidth = 0;
       } else
          minWidth = 0;
    } else
@@ -932,6 +934,7 @@ void Widget::getExtremes (Extremes *extremes)
       DBG_OBJ_SET_NUM ("extremes.maxWidth", extremes->maxWidth);
       DBG_OBJ_SET_NUM ("extremes.maxWidthIntrinsic",
                        extremes->maxWidthIntrinsic);
+      DBG_OBJ_SET_NUM ("extremes.adjustmentWidth", extremes->adjustmentWidth);
    } else
       *extremes = this->extremes;
 

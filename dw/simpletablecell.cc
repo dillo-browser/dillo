@@ -50,6 +50,11 @@ bool SimpleTableCell::isBlockLevel ()
    return tablecell::isBlockLevel ();
 }
 
+bool SimpleTableCell::mustBeWidenedToAvailWidth ()
+{
+   return tablecell::mustBeWidenedToAvailWidth ();
+}
+
 int SimpleTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
    DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell/getAvailWidthOfChild",

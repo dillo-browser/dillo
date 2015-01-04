@@ -58,6 +58,11 @@ bool AlignedTableCell::isBlockLevel ()
    return tablecell::isBlockLevel ();
 }
 
+bool AlignedTableCell::mustBeWidenedToAvailWidth ()
+{
+   return tablecell::mustBeWidenedToAvailWidth ();
+}
+
 int AlignedTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
    DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/getAvailWidthOfChild",

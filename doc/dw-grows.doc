@@ -89,6 +89,22 @@ The rules for the calculation:
    <b>Notice:</b> Currently, dw::core::Widget::getExtremesImpl must
    set all four members in dw::core::Extremes; this may change.</div>
 
+Another **extension of extremes: *adjustmentWidth*.** This is used as
+minimum for the width, when "adjust_min_width" (or,
+"adjust_table_min_width", respectively) is set.
+
+The rules for the calculation:
+
+1. If a widget has no children, it can choose a suitable value,
+   typically based on dw::core::Extremes::minWidth and
+   dw::core::Extremes::minWidthIntrinsic.
+2. A widget must calculate *adjustmentWidth* from *adjustmentWidth* of
+   its children.
+
+*Note:* An implementation of dw::core::Widget::getExtremesImpl
+typically sets this value after calling
+dw::core::Widget::correctExtremesOfChild, so that it cannot be used
+for the correction of extremes.
 
 Rules for *new* methods related to resizing
 ===========================================

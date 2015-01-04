@@ -44,6 +44,8 @@ void Ruler::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidthIntrinsic = extremes->minWidth;
    extremes->maxWidthIntrinsic = extremes->maxWidth;
    correctExtremes (extremes);
+   extremes->adjustmentWidth =
+      lout::misc::min (extremes->minWidthIntrinsic, extremes->minWidth);
 }
 
 bool Ruler::isBlockLevel ()

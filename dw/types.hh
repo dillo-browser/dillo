@@ -182,6 +182,7 @@ struct Extremes
    int maxWidth;
    int minWidthIntrinsic;
    int maxWidthIntrinsic;
+   int adjustmentWidth;
 };
 
 struct Content

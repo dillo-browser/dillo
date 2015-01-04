@@ -133,12 +133,13 @@ void Table::getExtremesImpl (core::Extremes *extremes)
 
    if (numCols == 0)
       extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
-         extremes->maxWidthIntrinsic = boxDiffWidth ();
+         extremes->maxWidthIntrinsic = extremes->adjustmentWidth =
+         boxDiffWidth ();
    else {
       forceCalcColumnExtremes ();
 
       extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
-         extremes->maxWidthIntrinsic =
+         extremes->maxWidthIntrinsic = extremes->adjustmentWidth =
          (numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ();
       for (int col = 0; col < numCols; col++) {
          extremes->minWidth += colExtremes->getRef(col)->minWidth;
@@ -147,6 +148,7 @@ void Table::getExtremesImpl (core::Extremes *extremes)
          extremes->maxWidth += colExtremes->getRef(col)->maxWidth;
          extremes->maxWidthIntrinsic +=
             colExtremes->getRef(col)->maxWidthIntrinsic;
+         extremes->adjustmentWidth += colExtremes->getRef(col)->adjustmentWidth;
       }
    }
 
@@ -1151,6 +1153,7 @@ void Table::forceCalcColumnExtremes ()
          colExtremes->getRef(col)->minWidthIntrinsic = 0;
          colExtremes->getRef(col)->maxWidth = 0;
          colExtremes->getRef(col)->maxWidthIntrinsic = 0;
+         colExtremes->getRef(col)->adjustmentWidth = 0;
 
          for (int row = 0; row < numRows; row++) {
             DBG_OBJ_MSGF ("resize", 1, "row %d", row);
@@ -1181,6 +1184,10 @@ void Table::forceCalcColumnExtremes ()
                      misc::max (colExtremes->getRef(col)->minWidth,
                                 colExtremes->getRef(col)->maxWidth,
                                 cellExtremes.maxWidth);
+
+                  colExtremes->getRef(col)->adjustmentWidth =
+                     misc::max (colExtremes->getRef(col)->adjustmentWidth,
+                                cellExtremes.adjustmentWidth);
 
                   core::style::Length childWidth =
                      children->get(n)->cell.widget->getStyle()->width;
@@ -1220,9 +1227,10 @@ void Table::forceCalcColumnExtremes ()
          core::Extremes cellExtremes;
          children->get(n)->cell.widget->getExtremes (&cellExtremes);
 
-         calcExtremesSpanMulteCols (col, cs, &cellExtremes, MIN, MAX, NULL);
-         calcExtremesSpanMulteCols (col, cs, &cellExtremes, MIN_INTR, MAX_INTR,
+         calcExtremesSpanMultiCols (col, cs, &cellExtremes, MIN, MAX, NULL);
+         calcExtremesSpanMultiCols (col, cs, &cellExtremes, MIN_INTR, MAX_INTR,
                                     NULL);
+         calcAdjustmentWidthSpanMultiCols (col, cs, &cellExtremes);
 
          core::style::Length childWidth =
             children->get(n)->cell.widget->getStyle()->width;
@@ -1278,7 +1286,7 @@ void Table::forceCalcColumnExtremes ()
    DBG_OBJ_LEAVE ();
 }
 
-void Table::calcExtremesSpanMulteCols (int col, int cs,
+void Table::calcExtremesSpanMultiCols (int col, int cs,
                                        core::Extremes *cellExtremes,
                                        ExtrMod minExtrMod, ExtrMod maxExtrMod,
                                        void *extrData)
@@ -1324,6 +1332,28 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
                                    getColExtreme (col + j, maxExtrMod,
                                                   extrData)));
       }
+   }
+
+   DBG_OBJ_LEAVE ();
+}
+
+void Table::calcAdjustmentWidthSpanMultiCols (int col, int cs,
+                                              core::Extremes *cellExtremes)
+{
+   DBG_OBJ_ENTER ("resize", 0, "calcAdjustmentWidthSpanMultiCols",
+                  "%d, %d, ...", col, cs);
+
+   int sumAdjustmentWidth = 0;
+   for (int j = 0; j < cs; j++)
+      sumAdjustmentWidth +=  colExtremes->getRef(col + j)->adjustmentWidth;
+   
+   if (cellExtremes->adjustmentWidth > sumAdjustmentWidth) {
+      misc::SimpleVector<int> newAdjustmentWidth;
+      apportion2 (cellExtremes->adjustmentWidth, col, col + cs - 1, MIN, MAX,
+                  NULL, &newAdjustmentWidth, 0);
+      for (int j = 0; j < cs; j++)
+         colExtremes->getRef(col + j)->adjustmentWidth =
+            newAdjustmentWidth.get (j);
    }
 
    DBG_OBJ_LEAVE ();

@@ -7,6 +7,8 @@ namespace dw {
 
 namespace tablecell {
 
+inline bool mustBeWidenedToAvailWidth () { return true; }
+
 bool getAdjustMinWidth ();
 bool isBlockLevel ();
 

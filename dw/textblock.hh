@@ -351,6 +351,7 @@ protected:
                            hyphen width etc.) since the last possible
                            break within this paragraph. */
       int parMinIntrinsic;
+      int parAdjustmentWidth;
       int parMax;       /* The sum of all word maxima in this
                            paragraph (plus spaces, hyphen width
                            etc.). */
@@ -359,6 +360,7 @@ protected:
       int maxParMin;    /* Maximum of all paragraph minima (value of
                            "parMin"), including this paragraph. */
       int maxParMinIntrinsic;
+      int maxParAdjustmentWidth;
       int maxParMax;    /* Maximum of all paragraph maxima (value of
                            "parMax""), including this paragraph. */
       int maxParMaxIntrinsic;
@@ -876,21 +878,7 @@ public:
    void changeWordStyle (int from, int to, core::style::Style *style,
                          bool includeFirstSpace, bool includeLastSpace);
 
-   inline bool mustBeWidenedToAvailWidth () {
-      DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
-      bool toplevel = getParent () == NULL,
-         block = getStyle()->display == core::style::DISPLAY_BLOCK,
-         listitem = getStyle()->display == core::style::DISPLAY_LIST_ITEM,
-         vloat = getStyle()->vloat != core::style::FLOAT_NONE,
-         result =  toplevel || ((block || listitem) && !vloat);
-      DBG_OBJ_MSGF ("resize", 0,
-                    "=> %s (toplevel: %s, block: %s, listitem: %s, float: %s)",
-                    result ? "true" : "false", toplevel ? "true" : "false",
-                    block ? "true" : "false", listitem ? "true" : "false",
-                    vloat ? "true" : "false");
-      DBG_OBJ_LEAVE ();
-      return result;
-   }
+   virtual bool mustBeWidenedToAvailWidth ();
 
    void borderChanged (int y, core::Widget *vloat);
    void clearPositionChanged ();

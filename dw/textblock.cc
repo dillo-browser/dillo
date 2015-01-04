@@ -465,7 +465,8 @@ void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
       word->content.widget->getExtremes (extremes);
    else
       extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
-         extremes->maxWidthIntrinsic = word->size.width;
+         extremes->maxWidthIntrinsic = extremes->adjustmentWidth =
+         word->size.width;
 }
 
 void Textblock::getExtremesImpl (core::Extremes *extremes)
@@ -493,12 +494,14 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       extremes->minWidthIntrinsic = 0;
       extremes->maxWidth = 0;
       extremes->maxWidthIntrinsic = 0;
+      extremes->adjustmentWidth = 0;
    } else  {
       Paragraph *lastPar = paragraphs->getLastRef ();
       extremes->minWidth = lastPar->maxParMin;
       extremes->minWidthIntrinsic = lastPar->maxParMinIntrinsic;
       extremes->maxWidth = lastPar->maxParMax;
       extremes->maxWidthIntrinsic = lastPar->maxParMaxIntrinsic;
+      extremes->adjustmentWidth = lastPar->maxParAdjustmentWidth;
 
       DBG_OBJ_MSGF ("resize", 1, "paragraphs[%d]->maxParMin = %d (%d)",
                     paragraphs->size () - 1, lastPar->maxParMin,
@@ -517,6 +520,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidthIntrinsic += diff;
    extremes->maxWidth += diff;
    extremes->maxWidthIntrinsic += diff;
+   extremes->adjustmentWidth += diff;
 
    DBG_OBJ_MSGF ("resize", 0, "after adding diff: %d (%d) / %d (%d)",
                  extremes->minWidth, extremes->minWidthIntrinsic,
@@ -543,6 +547,8 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       extremes->maxWidth = misc::max (extremes->maxWidth, oofMaxWidth);
       extremes->maxWidthIntrinsic =
          misc::max (extremes->maxWidthIntrinsic, oofMinWidth);
+      extremes->adjustmentWidth =
+         misc::max (extremes->adjustmentWidth, oofMinWidth);
    }
 
    DBG_OBJ_MSGF ("resize", 0,
@@ -2936,6 +2942,21 @@ void Textblock::setVerticalOffset (int verticalOffset)
    }
 
    DBG_OBJ_LEAVE ();
+}
+
+bool Textblock::mustBeWidenedToAvailWidth ()
+{
+   DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
+   bool toplevel = getParent () == NULL,
+      block = getStyle()->display == core::style::DISPLAY_BLOCK,
+      vloat = getStyle()->vloat != core::style::FLOAT_NONE,
+      result =  toplevel || (block && !vloat);
+   DBG_OBJ_MSGF ("resize", 0,
+                 "=> %s (toplevel: %s, block: %s, float: %s)",
+                 result ? "true" : "false", toplevel ? "true" : "false",
+                 block ? "true" : "false", vloat ? "true" : "false");
+   DBG_OBJ_LEAVE ();
+   return result;
 }
 
 /**

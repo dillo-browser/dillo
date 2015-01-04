@@ -441,10 +441,12 @@ private:
 
    void _unused_calcColumnExtremes ();
    void forceCalcColumnExtremes ();
-   void calcExtremesSpanMulteCols (int col, int cs,
+   void calcExtremesSpanMultiCols (int col, int cs,
                                    core::Extremes *cellExtremes,
                                    ExtrMod minExtrMod, ExtrMod maxExtrMod,
                                    void *extrData);
+   void calcAdjustmentWidthSpanMultiCols (int col, int cs,
+                                          core::Extremes *cellExtremes);
 
    void apportion2 (int totalWidth, int firstCol, int lastCol,
                     ExtrMod minExtrMod, ExtrMod maxExtrMod, void *extrData,
