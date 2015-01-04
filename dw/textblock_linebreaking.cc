@@ -1246,9 +1246,10 @@ void Textblock::handleWordExtremes (int wordIndex)
          par->maxParMinIntrinsic = prevPar->maxParMinIntrinsic;
          par->maxParMax = prevPar->maxParMax;
          par->maxParMaxIntrinsic = prevPar->maxParMaxIntrinsic;
+         par->maxParAdjustmentWidth = prevPar->maxParAdjustmentWidth;
       } else
          par->maxParMin = par->maxParMinIntrinsic = par->maxParMax =
-            par->maxParMaxIntrinsic = 0;
+            par->maxParMaxIntrinsic = par->maxParAdjustmentWidth = 0;
 
       DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "maxParMin",
                               par->maxParMin);
