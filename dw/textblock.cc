@@ -528,7 +528,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 
    // For the order, see similar reasoning in sizeRequestImpl.
 
-   correctExtremes (extremes);
+   correctExtremes (extremes, true);
 
    DBG_OBJ_MSGF ("resize", 0, "after correction: %d (%d) / %d (%d)",
                  extremes->minWidth, extremes->minWidthIntrinsic,

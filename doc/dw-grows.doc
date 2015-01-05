@@ -101,10 +101,12 @@ The rules for the calculation:
 2. A widget must calculate *adjustmentWidth* from *adjustmentWidth* of
    its children.
 
-*Note:* An implementation of dw::core::Widget::getExtremesImpl
-typically sets this value after calling
-dw::core::Widget::correctExtremesOfChild, so that it cannot be used
-for the correction of extremes.
+*Note:* An implementation of dw::core::Widget::getExtremesImpl may set
+this value *after* calling dw::core::Widget::correctExtremesOfChild,
+so that it cannot be used for the correction of extremes. In this case
+*useAdjustmentWidth = false* should be passed to
+dw::core::Widget::correctExtremesOfChild. On the other hand, if known
+before, *useAdjustmentWidth* should be set to *true*.
 
 Rules for *new* methods related to resizing
 ===========================================

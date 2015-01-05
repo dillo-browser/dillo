@@ -23,7 +23,8 @@ void correctCorrectedRequisitionOfChild (core::Widget *widget,
                                          void (*splitHeightFun) (int, int*,
                                                                  int*));
 void correctCorrectedExtremesOfChild (core::Widget *widget, core::Widget *child,
-                                      core::Extremes *extremes);
+                                      core::Extremes *extremes,
+                                      bool useAdjustmentWidth);
 
 int applyPerWidth (core::Widget *widget, int containerWidth,
                    core::style::Length perWidth);

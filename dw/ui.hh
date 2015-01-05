@@ -237,7 +237,8 @@ protected:
    void correctRequisitionOfChild (Widget *child,
                                    Requisition *requisition,
                                    void (*splitHeightFun) (int, int*, int*));
-   void correctExtremesOfChild (Widget *child, Extremes *extremes);
+   void correctExtremesOfChild (Widget *child, Extremes *extremes,
+                                bool useAdjustmentWidth);
 
    void containerSizeChangedForChildren ();
 
@@ -269,8 +270,9 @@ public:
                                                                      int*))
    { Widget::correctReqHeightOfChild (child, requisition, splitHeightFun); }
 
-   virtual void correctExtremesOfChildNoRec (Widget *child, Extremes *extremes)
-   { Widget::correctExtremesOfChild (child, extremes); }
+   virtual void correctExtremesOfChildNoRec (Widget *child, Extremes *extremes,
+                                             bool useAdjustmentWidth)
+   { Widget::correctExtremesOfChild (child, extremes, useAdjustmentWidth); }
 };
 
 /**
@@ -362,7 +364,8 @@ public:
                                            Requisition *requisition,
                                            void (*splitHeightFun) (int, int*,
                                                                    int*));
-   virtual void correctExtremesOfChild (Widget *child, Extremes *extremes);
+   virtual void correctExtremesOfChild (Widget *child, Extremes *extremes,
+                                        bool useAdjustmentWidth);
    virtual void containerSizeChangedForChildren ();
 
    virtual void setDisplayed (bool displayed);
@@ -438,7 +441,8 @@ public:
    void correctRequisitionOfChild (Widget *child,
                                    Requisition *requisition,
                                    void (*splitHeightFun) (int, int*, int*));
-   void correctExtremesOfChild (Widget *child, Extremes *extremes);
+   void correctExtremesOfChild (Widget *child, Extremes *extremes,
+                                bool useAdjustmentWidth);
    void containerSizeChangedForChildren ();
 
    Iterator *iterator (Content::Type mask, bool atEnd);

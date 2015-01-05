@@ -515,18 +515,18 @@ void Widget::sizeRequest (Requisition *requisition)
  * context of correctExtemes etc., to avoid cyclic dependencies.
  * 
  */
-int Widget::getMinWidth (Extremes *extremes, bool useCorrected, bool forceValue)
+int Widget::getMinWidth (Extremes *extremes, bool forceValue)
 {
-   if (extremes)
-      DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "[%d (%d) / %d (%d), %s, %s",
-                     extremes->minWidth, extremes->minWidthIntrinsic,
-                     extremes->maxWidth, extremes->maxWidthIntrinsic,
-                     useCorrected ? "true" : "false",
-                     forceValue ? "true" : "false");
-   else
-      DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "(nil), %s, %s",
-                     useCorrected ? "true" : "false",
-                     forceValue ? "true" : "false");
+   DBG_IF_RTFL {
+      if (extremes)
+         DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "[%d (%d) / %d (%d), %s",
+                        extremes->minWidth, extremes->minWidthIntrinsic,
+                        extremes->maxWidth, extremes->maxWidthIntrinsic,
+                        forceValue ? "true" : "false");
+      else
+         DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "(nil), %s",
+                        forceValue ? "true" : "false");
+   }
 
    int minWidth;
 
@@ -542,15 +542,9 @@ int Widget::getMinWidth (Extremes *extremes, bool useCorrected, bool forceValue)
       // TODO Not completely clear whether this is feasable: Within
       // the context of getAvailWidth(false) etc., getExtremes may not
       // be called. We ignore the minimal width then.
-      if (extremes) {
-         if (useCorrected)
-            minWidth = extremes->adjustmentWidth;
-         else
-            // UseCorrected is set to false when called for the
-            // correction of extemes. This is not supported anymore,
-            // so we return 0. TODO: Should be cleaned up again.
-            minWidth = 0;
-      } else
+      if (extremes)
+         minWidth = extremes->adjustmentWidth;
+      else
          minWidth = 0;
    } else
       minWidth = 0;
@@ -677,7 +671,7 @@ void Widget::correctRequisition (Requisition *requisition,
       DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
 
-      int limitMinWidth = getMinWidth (NULL, true, true);
+      int limitMinWidth = getMinWidth (NULL, true);
       int viewportWidth =
          layout->viewportWidth - (layout->canvasHeightGreater ?
                                   layout->vScrollbarThickness : 0);
@@ -724,7 +718,7 @@ void Widget::correctRequisition (Requisition *requisition,
    DBG_OBJ_LEAVE ();
 }
 
-void Widget::correctExtremes (Extremes *extremes)
+void Widget::correctExtremes (Extremes *extremes, bool useAdjustmentWidth)
 {
    DBG_OBJ_ENTER ("resize", 0, "correctExtremes", "%d (%d) / %d (%d)",
                   extremes->minWidth, extremes->minWidthIntrinsic,
@@ -734,7 +728,8 @@ void Widget::correctExtremes (Extremes *extremes)
       DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
 
-      int limitMinWidth = getMinWidth (extremes, false, false);
+      int limitMinWidth =
+         useAdjustmentWidth ? getMinWidth (extremes, false) : 0;
       int viewportWidth =
          layout->viewportWidth - (layout->canvasHeightGreater ?
                                   layout->vScrollbarThickness : 0);
@@ -760,12 +755,12 @@ void Widget::correctExtremes (Extremes *extremes)
    } else if (parent) {
       DBG_OBJ_MSG ("resize", 1, "delegated to parent");
       DBG_OBJ_MSG_START ();
-      parent->correctExtremesOfChild (this, extremes);
+      parent->correctExtremesOfChild (this, extremes, useAdjustmentWidth);
       DBG_OBJ_MSG_END ();
    } else /* if (quasiParent) */ {
       DBG_OBJ_MSG ("resize", 1, "delegated to quasiParent");
       DBG_OBJ_MSG_START ();
-      quasiParent->correctExtremesOfChild (this, extremes);
+      quasiParent->correctExtremesOfChild (this, extremes, useAdjustmentWidth);
       DBG_OBJ_MSG_END ();
    }
 
@@ -1603,7 +1598,7 @@ void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition)
 
    assert (this == child->quasiParent || this == child->container);
 
-   int limitMinWidth = child->getMinWidth (NULL, true, true);
+   int limitMinWidth = child->getMinWidth (NULL, true);
    child->calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, false,
                           &requisition->width);
 
@@ -1649,7 +1644,8 @@ void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
    DBG_OBJ_LEAVE ();
 }
 
-void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
+void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes,
+                                     bool useAdjustmentWidth)
 {
    // See comment in correctRequisitionOfChild.
 
@@ -1663,7 +1659,8 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
       (child->container ? child->container : child->parent);
 
    if (effContainer == this) {
-      int limitMinWidth = child->getMinWidth (extremes, false, false);
+      int limitMinWidth =
+         useAdjustmentWidth ? child->getMinWidth (extremes, false) : 0;
       int width = child->calcWidth (child->getStyle()->width, -1, this,
                                     limitMinWidth, false);
       int minWidth = child->calcWidth (child->getStyle()->minWidth, -1, this,
@@ -1683,7 +1680,8 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes)
    } else {
       DBG_OBJ_MSG ("resize", 1, "delegated to (effective) container");
       DBG_OBJ_MSG_START ();
-      effContainer->correctExtremesOfChild (child, extremes);
+      effContainer->correctExtremesOfChild (child, extremes,
+                                            useAdjustmentWidth);
       DBG_OBJ_MSG_END ();
    }
 

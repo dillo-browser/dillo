@@ -98,7 +98,8 @@ void correctCorrectedRequisitionOfChild (core::Widget *widget,
 }
 
 void correctCorrectedExtremesOfChild (core::Widget *widget, core::Widget *child,
-                                      core::Extremes *extremes)
+                                      core::Extremes *extremes,
+                                      bool useAdjustmentWidth)
 {
    // Something to do?
 }

@@ -43,7 +43,7 @@ void Ruler::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidth = extremes->maxWidth = getStyle()->boxDiffWidth ();
    extremes->minWidthIntrinsic = extremes->minWidth;
    extremes->maxWidthIntrinsic = extremes->maxWidth;
-   correctExtremes (extremes);
+   correctExtremes (extremes, false);
    extremes->adjustmentWidth =
       lout::misc::min (extremes->minWidthIntrinsic, extremes->minWidth);
 }

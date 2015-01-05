@@ -292,7 +292,7 @@ protected:
     */
    virtual void markExtremesChange (int ref);
 
-   int getMinWidth (Extremes *extremes, bool useCorrected, bool forceValue);
+   int getMinWidth (Extremes *extremes, bool forceValue);
 
    virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
    virtual int getAvailHeightOfChild (Widget *child, bool forceValue);
@@ -303,7 +303,8 @@ protected:
    void correctReqWidthOfChild (Widget *child, Requisition *requisition);
    void correctReqHeightOfChild (Widget *child, Requisition *requisition,
                                  void (*splitHeightFun) (int, int*, int*));
-   virtual void correctExtremesOfChild (Widget *child, Extremes *extremes);
+   virtual void correctExtremesOfChild (Widget *child, Extremes *extremes,
+                                        bool useAdjustmentWidth);
 
    virtual void containerSizeChangedForChildren ();
 
@@ -430,7 +431,7 @@ public:
    virtual bool getAdjustMinWidth () { return Widget::adjustMinWidth; }
    void correctRequisition (Requisition *requisition,
                             void (*splitHeightFun) (int, int*, int*));
-   void correctExtremes (Extremes *extremes);
+   void correctExtremes (Extremes *extremes, bool useAdjustmentWidth);
    int calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
                   int limitMinWidth, bool forceValue);
    void calcFinalWidth (style::Style *style, int refWidth, Widget *refWidget,

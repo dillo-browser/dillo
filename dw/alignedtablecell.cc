@@ -109,15 +109,18 @@ void AlignedTableCell::correctRequisitionOfChild (Widget *child,
 }
 
 void AlignedTableCell::correctExtremesOfChild (Widget *child,
-                                              core::Extremes *extremes)
+                                               core::Extremes *extremes,
+                                               bool useAdjustmentWidth)
 {
    DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/correctExtremesOfChild",
                   "%p, %d (%d) / %d (%d)",
                   child, extremes->minWidth, extremes->minWidthIntrinsic,
                   extremes->maxWidth, extremes->maxWidthIntrinsic);
 
-   AlignedTextblock::correctExtremesOfChild (child, extremes);
-   tablecell::correctCorrectedExtremesOfChild (this, child, extremes);
+   AlignedTextblock::correctExtremesOfChild (child, extremes,
+                                             useAdjustmentWidth);
+   tablecell::correctCorrectedExtremesOfChild (this, child, extremes,
+                                               useAdjustmentWidth);
 
    DBG_OBJ_LEAVE ();
 }

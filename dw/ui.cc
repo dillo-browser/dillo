@@ -56,7 +56,7 @@ void Embed::sizeRequestImpl (Requisition *requisition)
 void Embed::getExtremesImpl (Extremes *extremes)
 {
    resource->getExtremes (extremes);
-   correctExtremes (extremes);
+   correctExtremes (extremes, false);
    extremes->adjustmentWidth =
       misc::max (extremes->minWidthIntrinsic, extremes->minWidth);
 }
@@ -83,9 +83,10 @@ void Embed::correctRequisitionOfChild (Widget *child,
    resource->correctRequisitionOfChild (child, requisition, splitHeightFun);
 }
 
-void Embed::correctExtremesOfChild (Widget *child, Extremes *extremes)
+void Embed::correctExtremesOfChild (Widget *child, Extremes *extremes,
+                                       bool useAdjustmentWidth)
 {
-   resource->correctExtremesOfChild (child, extremes);
+   resource->correctExtremesOfChild (child, extremes, useAdjustmentWidth);
 }
 
 void Embed::containerSizeChangedForChildren ()
@@ -249,7 +250,8 @@ void Resource::correctRequisitionOfChild (Widget *child,
    misc::assertNotReached ();
 }
 
-void Resource::correctExtremesOfChild (Widget *child, Extremes *extremes)
+void Resource::correctExtremesOfChild (Widget *child, Extremes *extremes,
+                                       bool useAdjustmentWidth)
 {
    // Only used when the resource contains other dillo widgets.
    misc::assertNotReached ();
@@ -439,7 +441,8 @@ void ComplexButtonResource::correctRequisitionOfChild (Widget *child,
 }
 
 void ComplexButtonResource::correctExtremesOfChild (Widget *child,
-                                                    Extremes *extremes)
+                                                    Extremes *extremes,
+                                                    bool useAdjustmentWidth)
 {
    // Similar to Widget::correctExtremesOfChild, but for percentage
    // the relief has to be considered.
@@ -455,7 +458,8 @@ void ComplexButtonResource::correctExtremesOfChild (Widget *child,
             child->applyPerWidth (baseWidth, child->getStyle()->width);
       }
    } else
-      getEmbed()->correctExtremesOfChildNoRec (child, extremes);
+      getEmbed()->correctExtremesOfChildNoRec (child, extremes,
+                                               useAdjustmentWidth);
 }
 
 void ComplexButtonResource::containerSizeChangedForChildren ()

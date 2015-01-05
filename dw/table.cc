@@ -152,7 +152,7 @@ void Table::getExtremesImpl (core::Extremes *extremes)
       }
    }
 
-   correctExtremes (extremes);
+   correctExtremes (extremes, true);
 
    DBG_OBJ_LEAVE ();
 }
