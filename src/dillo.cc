@@ -496,6 +496,10 @@ int main(int argc, char **argv)
    Fl_Window::default_xclass("dillo");
 
    Fl::scheme(prefs.theme);
+
+   // Disable drag and drop as it crashes on MacOSX
+   Fl::dnd_text_ops(0);
+
    setColors();
 
    if (!prefs.show_ui_tooltip) {
