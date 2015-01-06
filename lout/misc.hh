@@ -231,6 +231,22 @@ public:
       assert (this->num > 0);
       this->array[this->num - 1] = t;
    }
+
+   /**
+    * \brief Copies some elements into another vector of the same
+    *    type.
+    *
+    * Cannot be used to copy elements within one vector. (For this,
+    * it would have to be extended to copy backwards in some cases.)
+    */
+   inline void copyTo(SimpleVector<T> *dest, int thisStart = 0,
+                      int thisLast = -1, int destStart = 0) {
+      assert (dest != this);
+      if (thisLast == -1)
+         thisLast = this->size () - 1;
+      for (int i = thisStart; i <= thisLast; i++)
+         dest->set (i - thisStart + destStart, get (i));
+   }
 };
 
 /**

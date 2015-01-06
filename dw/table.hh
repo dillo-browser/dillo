@@ -437,6 +437,7 @@ private:
 
    void calcCellSizes (bool calcHeights);
    void forceCalcCellSizes (bool calcHeights);
+   void actuallyCalcCellSizes (bool calcHeights);
    void apportionRowSpan ();
 
    void _unused_calcColumnExtremes ();

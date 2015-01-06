@@ -221,14 +221,32 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
 
    int width;
 
-   // Unlike other containers, the table widget sometimes narrows
-   // columns to a width less than specified by CSS (see
-   // forceCalcCellSizes). For this reason, the column widths have to
-   // be calculated in all cases.
-   if (forceValue) {
-      calcCellSizes (false);
+   // We do not calculate the column widths at this point, because
+   // this tends to be rather inefficient for tables with many
+   // cells:
+   //
+   // For each of the n cells, some text is added (say, only one word
+   // per cell). Textblock::addText will eventually (via addText0
+   // etc.) call this method, Table::getAvailWidthOfChild. If
+   // calcCellSizes() is called here, this will call
+   // forceCalcCellSizes(), since the last call, sizes have to be
+   // re-calculated (because cells have been added). This will
+   // calculate the extremes for each existing cell, so
+   // Widget::getExtremes is called n * (n + 1) / 2 times. Even if the
+   // extremes are cached (so that getExtremesImpl does not have to be
+   // called in each case), this would make rendering tables with more
+   // than a few hundred cells unacceptably slow.
+   //
+   // Instead, column widths are calculated in Table::sizeRequestImpl.
+   //
+   // An alternative would be incremental resizing for tables; this
+   // approach resembles the behaviour before GROWS.
+
+   // TODO Does it still make sence to return -1 when forceValue is
+   // set?
+   if (forceValue)
       width = calcAvailWidthForDescendant (child);
-   } else
+   else
       width = -1;
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
@@ -702,6 +720,18 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
    numCols = newNumCols;
    numRows = newNumRows;
 
+   // We initiate the column widths with a random value, to have a
+   // defined available width for the children before the column
+   // widths are actually calculated.
+
+   colWidths->setSize (numCols, 100);
+
+   DBG_IF_RTFL {
+      DBG_OBJ_SET_NUM ("colWidths.size", colWidths->size ());
+      for (int i = 0; i < colWidths->size (); i++)
+         DBG_OBJ_ARRSET_NUM ("colWidths", i, colWidths->get (i));
+   }
+
    DBG_OBJ_SET_NUM ("numCols", numCols);
    DBG_OBJ_SET_NUM ("numRows", numCols);
 }
@@ -726,6 +756,64 @@ void Table::calcCellSizes (bool calcHeights)
 
 void Table::forceCalcCellSizes (bool calcHeights)
 {
+   // Since Table::getAvailWidthOfChild does not calculate the column
+   // widths, and so initially a random value (100) is returned, a
+   // correction is necessary. The old values are temporary preserved
+   // ...
+
+   lout::misc::SimpleVector<int> oldColWidths (8);
+   oldColWidths.setSize (colWidths->size ());
+   colWidths->copyTo (&oldColWidths);
+   
+   actuallyCalcCellSizes (calcHeights);
+
+   // ... and then compared to the new ones. In case of a difference,
+   // the cell is told about this.
+
+   for (int col = 0; col < colWidths->size (); col++) {
+      if (oldColWidths.get (col) != colWidths->get (col)) {
+         for (int row = 0; row < numRows; row++) {
+            int n = row * numCols + col, col2;
+            Child *child = children->get(n);
+            if (child) {
+               Widget *cell;
+               switch (child->type) {
+               case Child::CELL:
+                  cell = child->cell.widget;
+                  break;
+
+               case Child::SPAN_SPACE:
+                  // TODO Are Child::spanSpace::startRow and
+                  // Child::spanSpace::startCol not defined?
+
+                  // Search for actual cell. If not found, this means
+                  // that a cell is spanning multiple columns *and*
+                  // rows; in this case it has been processed before.
+
+                  cell = NULL;
+                  for (col2 = col - 1; col2 >= 0 && cell == NULL; col2--) {
+                     int n2 = row * numCols + col2;
+                     Child *child2 = children->get(n2);
+                     if (child2->type == Child::CELL)
+                        cell = child2->cell.widget;
+                  }
+                  break;
+
+               default:
+                  misc::assertNotReached ();
+                  cell = NULL;
+               }
+                  
+               if (cell)
+                  cell->containerSizeChanged ();
+            }
+         }
+      }
+   }
+}
+
+void Table::actuallyCalcCellSizes (bool calcHeights)
+{
    DBG_OBJ_ENTER0 ("resize", 0, "forceCalcCellSizes");
 
    int childHeight;
@@ -747,13 +835,14 @@ void Table::forceCalcCellSizes (bool calcHeights)
                  availWidth, corrWidth, numCols, getStyle()->hBorderSpacing,
                  boxDiffWidth (), totalWidth);
 
-   colWidths->setSize (numCols, 0);
+   assert (colWidths->size () == numCols); // This is set in addCell.
    cumHeight->setSize (numRows + 1, 0);
    rowSpanCells->setSize (0);
    baseline->setSize (numRows);
 
    misc::SimpleVector<int> *oldColWidths = colWidths;
    colWidths = new misc::SimpleVector <int> (8);
+   colWidths->setSize (numCols);
 
    int minWidth = 0, minWidthIntrinsic = 0, maxWidth = 0;
    for (int col = 0; col < colExtremes->size(); col++) {
@@ -823,8 +912,6 @@ void Table::forceCalcCellSizes (bool calcHeights)
                      NULL, colWidths, 0);
       } else {
          DBG_OBJ_MSG ("resize", 1, "case 1b: treat percentages specially");
-
-         colWidths->setSize (colExtremes->size(), 0);
 
          // Keep track of the width which is apportioned to the rest
          // of the columns with percentage width (widthPartPer), and
@@ -948,7 +1035,6 @@ void Table::forceCalcCellSizes (bool calcHeights)
          DBG_OBJ_MSG ("resize", 1, "finally setting column widths:");
          DBG_OBJ_MSG_START ();
 
-         colWidths->setSize (colExtremes->size());
          indexNotSpecified = 0;
          for (int col = 0; col < colExtremes->size(); col++)
             if (colWidthSpecified->get (col)) {
