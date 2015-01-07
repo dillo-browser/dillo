@@ -31,7 +31,7 @@ int Ruler::CLASS_ID = -1;
 Ruler::Ruler ()
 {
    DBG_OBJ_CREATE ("dw::Ruler");
-   registerName ("dw::Image", &CLASS_ID);
+   registerName ("dw::Ruler", &CLASS_ID);
 }
 
 Ruler::~Ruler ()
