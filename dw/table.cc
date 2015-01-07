@@ -806,7 +806,7 @@ void Table::forceCalcCellSizes (bool calcHeights)
                   for (col2 = col - 1; col2 >= 0 && cell == NULL; col2--) {
                      int n2 = row * numCols + col2;
                      Child *child2 = children->get(n2);
-                     if (child2->type == Child::CELL)
+                     if (child2 != NULL && child2->type == Child::CELL)
                         cell = child2->cell.widget;
                   }
                   break;
