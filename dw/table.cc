@@ -266,38 +266,30 @@ int Table::calcAvailWidthForDescendant (Widget *child)
 
    assert (actualChild != NULL);
 
-   // TODO This is inefficient. (Use parentRef?)
-   int width = -1;
-   for (int row = numRows - 1; width == -1 && row >= 0; row--) {
-      for (int col = 0; width == -1 && col < numCols; col++) {
-         int n = row * numCols + col;
-         if (childDefined (n) &&
-             children->get(n)->cell.widget == actualChild) {
-            DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
-            width = (children->get(n)->cell.colspanEff - 1)
-               * getStyle()->hBorderSpacing;
-            for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
-               width += colWidths->get (col + i);
-            width = misc::max (width, 0);
+   // ActualChild->parentRef contains the position in the children
+   // array (see addCell()), so the column can be easily determined.
+   int col = actualChild->parentRef % numCols;
+   int colspanEff = children->get(actualChild->parentRef)->cell.colspanEff;
+   DBG_OBJ_MSGF ("resize", 1, "calculated from column %d, colspanEff = %d",
+                 col, colspanEff);
 
-            if (child != actualChild) {
-               // For table cells (direct children: child == actualChild),
-               // CSS 'width' is already regarded in the column calculation.
-               // However, for children of the table cells, CSS 'width' must
-               // be regarded here.
+   int width = (colspanEff - 1) * getStyle()->hBorderSpacing;
+   for (int i = 0; i < colspanEff; i++)
+      width += colWidths->get (col + i);
+   width = misc::max (width, 0);
 
-               int corrWidth = width;
-               child->calcFinalWidth (child->getStyle(), -1, this, 0, true,
-                                      &corrWidth);
+   if (child != actualChild) {
+      // For table cells (direct children: child == actualChild), CSS
+      // 'width' is already regarded in the column calculation.
+      // However, for children of the table cells, CSS 'width' must be
+      // regarded here.
 
-               // But better not exceed it ... (TODO: Only here?)
-               width = misc::min (width, corrWidth);
-            }
-         }
-      }
+      int corrWidth = width;
+      child->calcFinalWidth (child->getStyle(), -1, this, 0, true, &corrWidth);
+      
+      // But better not exceed it ... (TODO: Only here?)
+      width = misc::min (width, corrWidth);
    }
-
-   assert (width != -1);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_LEAVE ();
@@ -482,6 +474,12 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    child->cell.colspanEff = colspanEff;
    child->cell.rowspan = rowspan;
    children->set (curRow * numCols + curCol, child);
+
+   // The position in the children array is assigned to parentRef,
+   // although incremental resizing is not implemented. Useful, e. g.,
+   // in calcAvailWidthForDescendant(). See also reallocChildren().
+   widget->parentRef = curRow * numCols + curCol;
+   DBG_OBJ_SET_NUM_O (widget, "parentRef", widget->parentRef);
 
    curCol += colspanEff;
 
@@ -716,6 +714,20 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
    for (int row = numRows; row < newNumRows; row++)
       rowStyle->set (row, NULL);
    // Rest is increased, when needed.
+
+   if (newNumCols > numCols) {
+      // Re-calculate parentRef. See addCell().
+      for (int row = 1; row < newNumRows; row++)
+         for (int col = 0; col < newNumCols; col++) {
+            int n = row * newNumCols + col;
+            Child *child = children->get (n);
+            if (child != NULL && child->type == Child::CELL) {
+               child->cell.widget->parentRef = n;
+               DBG_OBJ_SET_NUM_O (child->cell.widget, "parentRef",
+                                  child->cell.widget->parentRef);
+            }
+         }
+   }
 
    numCols = newNumCols;
    numRows = newNumRows;
