@@ -26,8 +26,17 @@
 
 namespace dw {
 
+int Ruler::CLASS_ID = -1;
+
 Ruler::Ruler ()
 {
+   DBG_OBJ_CREATE ("dw::Ruler");
+   registerName ("dw::Image", &CLASS_ID);
+}
+
+Ruler::~Ruler ()
+{
+   DBG_OBJ_DELETE ();
 }
 
 void Ruler::sizeRequestImpl (core::Requisition *requisition)

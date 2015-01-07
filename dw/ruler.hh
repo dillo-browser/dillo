@@ -23,7 +23,10 @@ protected:
    void draw (core::View *view, core::Rectangle *area);
 
 public:
+   static int CLASS_ID;
+
    Ruler ();
+   ~Ruler ();
 
    bool isBlockLevel ();
 
