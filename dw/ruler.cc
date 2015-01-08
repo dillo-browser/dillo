@@ -26,8 +26,17 @@
 
 namespace dw {
 
+int Ruler::CLASS_ID = -1;
+
 Ruler::Ruler ()
 {
+   DBG_OBJ_CREATE ("dw::Ruler");
+   registerName ("dw::Ruler", &CLASS_ID);
+}
+
+Ruler::~Ruler ()
+{
+   DBG_OBJ_DELETE ();
 }
 
 void Ruler::sizeRequestImpl (core::Requisition *requisition)
@@ -42,7 +51,9 @@ void Ruler::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidth = extremes->maxWidth = boxDiffWidth ();
    extremes->minWidthIntrinsic = extremes->minWidth;
    extremes->maxWidthIntrinsic = extremes->maxWidth;
-   correctExtremes (extremes);
+   correctExtremes (extremes, false);
+   extremes->adjustmentWidth =
+      lout::misc::min (extremes->minWidthIntrinsic, extremes->minWidth);
 }
 
 bool Ruler::isBlockLevel ()

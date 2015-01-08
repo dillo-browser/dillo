@@ -529,7 +529,7 @@ int OOFPositionedMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
    }
 
    if (width != -1)
-      width = max (width, child->getMinWidth (NULL, true, forceValue));
+      width = max (width, child->getMinWidth (NULL, forceValue));
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", width);
    DBG_OBJ_LEAVE ();

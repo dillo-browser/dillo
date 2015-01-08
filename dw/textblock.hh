@@ -3,7 +3,7 @@
 
 #include <limits.h>
 
-#include "oofawarewidget.hh"
+#include "regardingborder.hh"
 #include "../lout/misc.hh"
 
 // These were used when improved line breaking and hyphenation were implemented.
@@ -200,7 +200,7 @@ namespace dw {
  * - dw::oof::OOFAwareWidget (base class) and
  * - \ref dw-out-of-flow.
  */
-class Textblock: public oof::OOFAwareWidget
+class Textblock: public RegardingBorder
 {
 private:
    /**
@@ -353,6 +353,7 @@ protected:
                            hyphen width etc.) since the last possible
                            break within this paragraph. */
       int parMinIntrinsic;
+      int parAdjustmentWidth;
       int parMax;       /* The sum of all word maxima in this
                            paragraph (plus spaces, hyphen width
                            etc.). */
@@ -361,6 +362,7 @@ protected:
       int maxParMin;    /* Maximum of all paragraph minima (value of
                            "parMin"), including this paragraph. */
       int maxParMinIntrinsic;
+      int maxParAdjustmentWidth;
       int maxParMax;    /* Maximum of all paragraph maxima (value of
                            "parMax""), including this paragraph. */
       int maxParMaxIntrinsic;
@@ -689,12 +691,12 @@ protected:
     */
    inline bool mustBorderBeRegarded (Line *line)
    {
-      return getTextblockForLine (line) == NULL;
+      return getWidgetRegardingBorderForLine (line) == NULL;
    }
 
    inline bool mustBorderBeRegarded (int lineNo)
    {
-      return getTextblockForLine (lineNo) == NULL;
+      return getWidgetRegardingBorderForLine (lineNo) == NULL;
    }
 
    inline int _lineYOffsetWidgetAllocation (Line *line,
@@ -759,9 +761,10 @@ protected:
       }
    }
 
-   Textblock *getTextblockForLine (Line *line);
-   Textblock *getTextblockForLine (int lineNo);
-   Textblock *getTextblockForLine (int firstWord, int lastWord);
+   RegardingBorder *getWidgetRegardingBorderForLine (Line *line);
+   RegardingBorder *getWidgetRegardingBorderForLine (int lineNo);
+   RegardingBorder *getWidgetRegardingBorderForLine (int firstWord,
+                                                     int lastWord);
    void printBorderChangedErrorAndAbort (int y, Widget *vloat,
                                          int wrapLineIndex);
    int yOffsetOfLineToBeCreated ();
@@ -850,29 +853,6 @@ protected:
                        int numBreaks, int *breakPos,
                        core::Requisition *wordSize);
 
-   inline bool mustBeWidenedToAvailWidth () {
-      DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
-      bool toplevel = getParent () == NULL,
-         block = getStyle()->display == core::style::DISPLAY_BLOCK,
-         listitem = getStyle()->display == core::style::DISPLAY_LIST_ITEM,
-         vloat = testWidgetFloat (this),
-         abspos = testWidgetAbsolutelyPositioned (this),
-         fixpos = testWidgetFixedlyPositioned (this),
-         // In detail, this depends on what the respective OOFM does
-         // with the child widget:
-         result =
-            toplevel || ((block || listitem) && !(vloat || abspos || fixpos));
-      DBG_OBJ_MSGF ("resize", 0,
-                    "=> %s (toplevel: %s, block: %s, listitem: %s, float: %s, "
-                    "abspos: %s, fixpos: %s)",
-                    result ? "true" : "false", toplevel ? "true" : "false",
-                    block ? "true" : "false", listitem ? "true" : "false",
-                    vloat ? "true" : "false", abspos ? "true" : "false",
-                    fixpos ? "true" : "false");
-      DBG_OBJ_LEAVE ();
-      return result;
-   }
-
 public:
    static int CLASS_ID;
 
@@ -905,6 +885,7 @@ public:
    void changeWordStyle (int from, int to, core::style::Style *style,
                          bool includeFirstSpace, bool includeLastSpace);
 
+   bool mustBeWidenedToAvailWidth ();
    void borderChanged (int y, core::Widget *vloat);
    void clearPositionChanged ();
    void oofSizeChanged (bool extremesChanged);

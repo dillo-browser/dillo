@@ -14,7 +14,8 @@ protected:
    void correctRequisitionOfChild (Widget *child,
                                    core::Requisition *requisition,
                                    void (*splitHeightFun) (int, int*, int*));
-   void correctExtremesOfChild (Widget *child, core::Extremes *extremes);
+   void correctExtremesOfChild (Widget *child, core::Extremes *extremes,
+                                bool useAdjustmentWidth);
 
    bool getAdjustMinWidth ();
 
@@ -30,6 +31,8 @@ public:
    int applyPerHeight (int containerHeight, core::style::Length perHeight);
 
    bool isBlockLevel ();
+
+   bool mustBeWidenedToAvailWidth ();
 };
 
 } // namespace dw

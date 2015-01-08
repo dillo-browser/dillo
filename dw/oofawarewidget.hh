@@ -260,6 +260,7 @@ public:
               Widget **interruptedWidget);
    lout::object::Object *stackingIterator (bool atEnd);
 
+   virtual bool mustBeWidenedToAvailWidth ();
    virtual void borderChanged (int y, core::Widget *vloat);
    virtual void clearPositionChanged ();
    virtual void oofSizeChanged (bool extremesChanged);

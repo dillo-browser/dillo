@@ -135,12 +135,13 @@ void Table::getExtremesImpl (core::Extremes *extremes)
 
    if (numCols == 0)
       extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
-         extremes->maxWidthIntrinsic = boxDiffWidth ();
+         extremes->maxWidthIntrinsic = extremes->adjustmentWidth =
+         boxDiffWidth ();
    else {
       forceCalcColumnExtremes ();
 
       extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
-         extremes->maxWidthIntrinsic =
+         extremes->maxWidthIntrinsic = extremes->adjustmentWidth =
          (numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ();
       for (int col = 0; col < numCols; col++) {
          extremes->minWidth += colExtremes->getRef(col)->minWidth;
@@ -149,10 +150,11 @@ void Table::getExtremesImpl (core::Extremes *extremes)
          extremes->maxWidth += colExtremes->getRef(col)->maxWidth;
          extremes->maxWidthIntrinsic +=
             colExtremes->getRef(col)->maxWidthIntrinsic;
+         extremes->adjustmentWidth += colExtremes->getRef(col)->adjustmentWidth;
       }
    }
 
-   correctExtremes (extremes);
+   correctExtremes (extremes, true);
 
    // For the order, see similar reasoning for dw::Textblock.
    correctExtremesByOOF (extremes);
@@ -231,14 +233,32 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
        oofm->dealingWithSizeOfChild (child))
       width = oofm->getAvailWidthOfChild (child, forceValue);
    else {
-      // Unlike other containers, the table widget sometimes narrows
-      // columns to a width less than specified by CSS (see
-      // forceCalcCellSizes). For this reason, the column widths have to
-      // be calculated in all cases.
-      if (forceValue) {
-         calcCellSizes (false);
+      // We do not calculate the column widths at this point, because
+      // this tends to be rather inefficient for tables with many
+      // cells:
+      //
+      // For each of the n cells, some text is added (say, only one word
+      // per cell). Textblock::addText will eventually (via addText0
+      // etc.) call this method, Table::getAvailWidthOfChild. If
+      // calcCellSizes() is called here, this will call
+      // forceCalcCellSizes(), since the last call, sizes have to be
+      // re-calculated (because cells have been added). This will
+      // calculate the extremes for each existing cell, so
+      // Widget::getExtremes is called n * (n + 1) / 2 times. Even if the
+      // extremes are cached (so that getExtremesImpl does not have to be
+      // called in each case), this would make rendering tables with more
+      // than a few hundred cells unacceptably slow.
+      //
+      // Instead, column widths are calculated in Table::sizeRequestImpl.
+      //
+      // An alternative would be incremental resizing for tables; this
+      // approach resembles the behaviour before GROWS.
+
+      // TODO Does it still make sence to return -1 when forceValue is
+      // set?
+      if (forceValue)
          width = calcAvailWidthForDescendant (child);
-      } else
+      else
          width = -1;
    }
 
@@ -259,38 +279,30 @@ int Table::calcAvailWidthForDescendant (Widget *child)
 
    assert (actualChild != NULL);
 
-   // TODO This is inefficient. (Use parentRef?)
-   int width = -1;
-   for (int row = numRows - 1; width == -1 && row >= 0; row--) {
-      for (int col = 0; width == -1 && col < numCols; col++) {
-         int n = row * numCols + col;
-         if (childDefined (n) &&
-             children->get(n)->cell.widget == actualChild) {
-            DBG_OBJ_MSGF ("resize", 1, "calculated from column %d", col);
-            width = (children->get(n)->cell.colspanEff - 1)
-               * getStyle()->hBorderSpacing;
-            for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
-               width += colWidths->get (col + i);
-            width = misc::max (width, 0);
+   // ActualChild->parentRef contains the position in the children
+   // array (see addCell()), so the column can be easily determined.
+   int col = actualChild->parentRef % numCols;
+   int colspanEff = children->get(actualChild->parentRef)->cell.colspanEff;
+   DBG_OBJ_MSGF ("resize", 1, "calculated from column %d, colspanEff = %d",
+                 col, colspanEff);
 
-            if (child != actualChild) {
-               // For table cells (direct children: child == actualChild),
-               // CSS 'width' is already regarded in the column calculation.
-               // However, for children of the table cells, CSS 'width' must
-               // be regarded here.
+   int width = (colspanEff - 1) * getStyle()->hBorderSpacing;
+   for (int i = 0; i < colspanEff; i++)
+      width += colWidths->get (col + i);
+   width = misc::max (width, 0);
 
-               int corrWidth = width;
-               child->calcFinalWidth (child->getStyle(), -1, this, 0, true,
-                                      &corrWidth);
+   if (child != actualChild) {
+      // For table cells (direct children: child == actualChild), CSS
+      // 'width' is already regarded in the column calculation.
+      // However, for children of the table cells, CSS 'width' must be
+      // regarded here.
 
-               // But better not exceed it ... (TODO: Only here?)
-               width = misc::min (width, corrWidth);
-            }
-         }
-      }
+      int corrWidth = width;
+      child->calcFinalWidth (child->getStyle(), -1, this, 0, true, &corrWidth);
+      
+      // But better not exceed it ... (TODO: Only here?)
+      width = misc::min (width, corrWidth);
    }
-
-   assert (width != -1);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
    DBG_OBJ_LEAVE ();
@@ -563,6 +575,12 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    child->cell.rowspan = rowspan;
    children->set (curRow * numCols + curCol, child);
 
+   // The position in the children array is assigned to parentRef,
+   // although incremental resizing is not implemented. Useful, e. g.,
+   // in calcAvailWidthForDescendant(). See also reallocChildren().
+   widget->parentRef = curRow * numCols + curCol;
+   DBG_OBJ_SET_NUM_O (widget, "parentRef", widget->parentRef);
+
    curCol += colspanEff;
 
    widget->parentRef = makeParentRefInFlow (0);
@@ -799,8 +817,34 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
       rowStyle->set (row, NULL);
    // Rest is increased, when needed.
 
+   if (newNumCols > numCols) {
+      // Re-calculate parentRef. See addCell().
+      for (int row = 1; row < newNumRows; row++)
+         for (int col = 0; col < newNumCols; col++) {
+            int n = row * newNumCols + col;
+            Child *child = children->get (n);
+            if (child != NULL && child->type == Child::CELL) {
+               child->cell.widget->parentRef = n;
+               DBG_OBJ_SET_NUM_O (child->cell.widget, "parentRef",
+                                  child->cell.widget->parentRef);
+            }
+         }
+   }
+
    numCols = newNumCols;
    numRows = newNumRows;
+
+   // We initiate the column widths with a random value, to have a
+   // defined available width for the children before the column
+   // widths are actually calculated.
+
+   colWidths->setSize (numCols, 100);
+
+   DBG_IF_RTFL {
+      DBG_OBJ_SET_NUM ("colWidths.size", colWidths->size ());
+      for (int i = 0; i < colWidths->size (); i++)
+         DBG_OBJ_ARRSET_NUM ("colWidths", i, colWidths->get (i));
+   }
 
    DBG_OBJ_SET_NUM ("numCols", numCols);
    DBG_OBJ_SET_NUM ("numRows", numCols);
@@ -826,6 +870,64 @@ void Table::calcCellSizes (bool calcHeights)
 
 void Table::forceCalcCellSizes (bool calcHeights)
 {
+   // Since Table::getAvailWidthOfChild does not calculate the column
+   // widths, and so initially a random value (100) is returned, a
+   // correction is necessary. The old values are temporary preserved
+   // ...
+
+   lout::misc::SimpleVector<int> oldColWidths (8);
+   oldColWidths.setSize (colWidths->size ());
+   colWidths->copyTo (&oldColWidths);
+   
+   actuallyCalcCellSizes (calcHeights);
+
+   // ... and then compared to the new ones. In case of a difference,
+   // the cell is told about this.
+
+   for (int col = 0; col < colWidths->size (); col++) {
+      if (oldColWidths.get (col) != colWidths->get (col)) {
+         for (int row = 0; row < numRows; row++) {
+            int n = row * numCols + col, col2;
+            Child *child = children->get(n);
+            if (child) {
+               Widget *cell;
+               switch (child->type) {
+               case Child::CELL:
+                  cell = child->cell.widget;
+                  break;
+
+               case Child::SPAN_SPACE:
+                  // TODO Are Child::spanSpace::startRow and
+                  // Child::spanSpace::startCol not defined?
+
+                  // Search for actual cell. If not found, this means
+                  // that a cell is spanning multiple columns *and*
+                  // rows; in this case it has been processed before.
+
+                  cell = NULL;
+                  for (col2 = col - 1; col2 >= 0 && cell == NULL; col2--) {
+                     int n2 = row * numCols + col2;
+                     Child *child2 = children->get(n2);
+                     if (child2 != NULL && child2->type == Child::CELL)
+                        cell = child2->cell.widget;
+                  }
+                  break;
+
+               default:
+                  misc::assertNotReached ();
+                  cell = NULL;
+               }
+                  
+               if (cell)
+                  cell->containerSizeChanged ();
+            }
+         }
+      }
+   }
+}
+
+void Table::actuallyCalcCellSizes (bool calcHeights)
+{
    DBG_OBJ_ENTER0 ("resize", 0, "forceCalcCellSizes");
 
    int childHeight;
@@ -835,10 +937,10 @@ void Table::forceCalcCellSizes (bool calcHeights)
    getExtremes (&extremes);
 
    int availWidth = getAvailWidth (true);
-   // When adjust_table_min_width is set, use the minimal (intrinsic)
-   // width for correction.
+   // When adjust_table_min_width is set, use perhaps the adjustment
+   // width for correction. (TODO: Is this necessary?)
    int corrWidth =
-      Table::getAdjustTableMinWidth () ? extremes.minWidthIntrinsic : 0;
+      Table::getAdjustTableMinWidth () ? extremes.adjustmentWidth : 0;
    int totalWidth = misc::max (availWidth, corrWidth)
       - ((numCols + 1) * getStyle()->hBorderSpacing + boxDiffWidth ());
       
@@ -847,13 +949,14 @@ void Table::forceCalcCellSizes (bool calcHeights)
                  availWidth, corrWidth, numCols, getStyle()->hBorderSpacing,
                  boxDiffWidth (), totalWidth);
 
-   colWidths->setSize (numCols, 0);
+   assert (colWidths->size () == numCols); // This is set in addCell.
    cumHeight->setSize (numRows + 1, 0);
    rowSpanCells->setSize (0);
    baseline->setSize (numRows);
 
    misc::SimpleVector<int> *oldColWidths = colWidths;
    colWidths = new misc::SimpleVector <int> (8);
+   colWidths->setSize (numCols);
 
    int minWidth = 0, minWidthIntrinsic = 0, maxWidth = 0;
    for (int col = 0; col < colExtremes->size(); col++) {
@@ -923,8 +1026,6 @@ void Table::forceCalcCellSizes (bool calcHeights)
                      NULL, colWidths, 0);
       } else {
          DBG_OBJ_MSG ("resize", 1, "case 1b: treat percentages specially");
-
-         colWidths->setSize (colExtremes->size(), 0);
 
          // Keep track of the width which is apportioned to the rest
          // of the columns with percentage width (widthPartPer), and
@@ -1048,7 +1149,6 @@ void Table::forceCalcCellSizes (bool calcHeights)
          DBG_OBJ_MSG ("resize", 1, "finally setting column widths:");
          DBG_OBJ_MSG_START ();
 
-         colWidths->setSize (colExtremes->size());
          indexNotSpecified = 0;
          for (int col = 0; col < colExtremes->size(); col++)
             if (colWidthSpecified->get (col)) {
@@ -1253,6 +1353,7 @@ void Table::forceCalcColumnExtremes ()
          colExtremes->getRef(col)->minWidthIntrinsic = 0;
          colExtremes->getRef(col)->maxWidth = 0;
          colExtremes->getRef(col)->maxWidthIntrinsic = 0;
+         colExtremes->getRef(col)->adjustmentWidth = 0;
 
          for (int row = 0; row < numRows; row++) {
             DBG_OBJ_MSGF ("resize", 1, "row %d", row);
@@ -1283,6 +1384,10 @@ void Table::forceCalcColumnExtremes ()
                      misc::max (colExtremes->getRef(col)->minWidth,
                                 colExtremes->getRef(col)->maxWidth,
                                 cellExtremes.maxWidth);
+
+                  colExtremes->getRef(col)->adjustmentWidth =
+                     misc::max (colExtremes->getRef(col)->adjustmentWidth,
+                                cellExtremes.adjustmentWidth);
 
                   core::style::Length childWidth =
                      children->get(n)->cell.widget->getStyle()->width;
@@ -1322,9 +1427,10 @@ void Table::forceCalcColumnExtremes ()
          core::Extremes cellExtremes;
          children->get(n)->cell.widget->getExtremes (&cellExtremes);
 
-         calcExtremesSpanMulteCols (col, cs, &cellExtremes, MIN, MAX, NULL);
-         calcExtremesSpanMulteCols (col, cs, &cellExtremes, MIN_INTR, MAX_INTR,
+         calcExtremesSpanMultiCols (col, cs, &cellExtremes, MIN, MAX, NULL);
+         calcExtremesSpanMultiCols (col, cs, &cellExtremes, MIN_INTR, MAX_INTR,
                                     NULL);
+         calcAdjustmentWidthSpanMultiCols (col, cs, &cellExtremes);
 
          core::style::Length childWidth =
             children->get(n)->cell.widget->getStyle()->width;
@@ -1380,7 +1486,7 @@ void Table::forceCalcColumnExtremes ()
    DBG_OBJ_LEAVE ();
 }
 
-void Table::calcExtremesSpanMulteCols (int col, int cs,
+void Table::calcExtremesSpanMultiCols (int col, int cs,
                                        core::Extremes *cellExtremes,
                                        ExtrMod minExtrMod, ExtrMod maxExtrMod,
                                        void *extrData)
@@ -1426,6 +1532,28 @@ void Table::calcExtremesSpanMulteCols (int col, int cs,
                                    getColExtreme (col + j, maxExtrMod,
                                                   extrData)));
       }
+   }
+
+   DBG_OBJ_LEAVE ();
+}
+
+void Table::calcAdjustmentWidthSpanMultiCols (int col, int cs,
+                                              core::Extremes *cellExtremes)
+{
+   DBG_OBJ_ENTER ("resize", 0, "calcAdjustmentWidthSpanMultiCols",
+                  "%d, %d, ...", col, cs);
+
+   int sumAdjustmentWidth = 0;
+   for (int j = 0; j < cs; j++)
+      sumAdjustmentWidth +=  colExtremes->getRef(col + j)->adjustmentWidth;
+   
+   if (cellExtremes->adjustmentWidth > sumAdjustmentWidth) {
+      misc::SimpleVector<int> newAdjustmentWidth;
+      apportion2 (cellExtremes->adjustmentWidth, col, col + cs - 1, MIN, MAX,
+                  NULL, &newAdjustmentWidth, 0);
+      for (int j = 0; j < cs; j++)
+         colExtremes->getRef(col + j)->adjustmentWidth =
+            newAdjustmentWidth.get (j);
    }
 
    DBG_OBJ_LEAVE ();

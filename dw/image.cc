@@ -264,7 +264,10 @@ void Image::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidthIntrinsic = extremes->minWidth;
    extremes->maxWidthIntrinsic = extremes->maxWidth;
 
-   correctExtremes (extremes);
+   correctExtremes (extremes, false);
+
+   extremes->adjustmentWidth =
+      misc::min (extremes->minWidthIntrinsic, extremes->minWidth);
 }
 
 void Image::sizeAllocateImpl (core::Allocation *allocation)

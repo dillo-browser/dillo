@@ -319,7 +319,8 @@ protected:
    void correctReqWidthOfChild (Widget *child, Requisition *requisition);
    void correctReqHeightOfChild (Widget *child, Requisition *requisition,
                                  void (*splitHeightFun) (int, int*, int*));
-   virtual void correctExtremesOfChild (Widget *child, Extremes *extremes);
+   virtual void correctExtremesOfChild (Widget *child, Extremes *extremes,
+                                        bool useAdjustmentWidth);
 
    virtual void containerSizeChangedForChildren ();
 
@@ -448,7 +449,7 @@ public:
    virtual bool getAdjustMinWidth () { return Widget::adjustMinWidth; }
    void correctRequisition (Requisition *requisition,
                             void (*splitHeightFun) (int, int*, int*));
-   void correctExtremes (Extremes *extremes);
+   void correctExtremes (Extremes *extremes, bool useAdjustmentWidth);
    int calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
                   int limitMinWidth, bool forceValue);
    void calcFinalWidth (style::Style *style, int refWidth, Widget *refWidget,
@@ -459,7 +460,7 @@ public:
    virtual int applyPerWidth (int containerWidth, style::Length perWidth);
    virtual int applyPerHeight (int containerHeight, style::Length perHeight);
 
-   int getMinWidth (Extremes *extremes, bool useCorrected, bool forceValue);
+   int getMinWidth (Extremes *extremes, bool forceValue);
 
    virtual bool isBlockLevel ();
    virtual bool isPossibleContainer ();

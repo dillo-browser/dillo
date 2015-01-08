@@ -17,8 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "alignedtablecell.hh"
 #include "table.hh"
 #include "tablecell.hh"
@@ -56,6 +54,11 @@ bool AlignedTableCell::getAdjustMinWidth ()
 bool AlignedTableCell::isBlockLevel ()
 {
    return tablecell::isBlockLevel ();
+}
+
+bool AlignedTableCell::mustBeWidenedToAvailWidth ()
+{
+   return tablecell::mustBeWidenedToAvailWidth ();
 }
 
 int AlignedTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
@@ -104,15 +107,18 @@ void AlignedTableCell::correctRequisitionOfChild (Widget *child,
 }
 
 void AlignedTableCell::correctExtremesOfChild (Widget *child,
-                                              core::Extremes *extremes)
+                                               core::Extremes *extremes,
+                                               bool useAdjustmentWidth)
 {
    DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/correctExtremesOfChild",
                   "%p, %d (%d) / %d (%d)",
                   child, extremes->minWidth, extremes->minWidthIntrinsic,
                   extremes->maxWidth, extremes->maxWidthIntrinsic);
 
-   AlignedTextblock::correctExtremesOfChild (child, extremes);
-   tablecell::correctCorrectedExtremesOfChild (this, child, extremes);
+   AlignedTextblock::correctExtremesOfChild (child, extremes,
+                                             useAdjustmentWidth);
+   tablecell::correctCorrectedExtremesOfChild (this, child, extremes,
+                                               useAdjustmentWidth);
 
    DBG_OBJ_LEAVE ();
 }

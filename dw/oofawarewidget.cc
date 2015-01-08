@@ -339,6 +339,8 @@ void OOFAwareWidget::correctExtremesByOOF (Extremes *extremes)
          extremes->maxWidth = max (extremes->maxWidth, oofMaxWidth);
          extremes->maxWidthIntrinsic = max (extremes->maxWidthIntrinsic,
                                             oofMinWidth);
+         extremes->adjustmentWidth = max (extremes->adjustmentWidth,
+                                          oofMinWidth);
 
          DBG_OBJ_MSGF ("resize", 1, "after correction: %d (%d) / %d (%d)",
                        extremes->minWidth, extremes->minWidthIntrinsic,
@@ -807,6 +809,13 @@ void OOFAwareWidget::removeChild (Widget *child)
 Object *OOFAwareWidget::stackingIterator (bool atEnd)
 {
    return new OOFStackingIterator (this, atEnd);
+}
+
+bool OOFAwareWidget::mustBeWidenedToAvailWidth ()
+{
+   // Only used for floats.
+   assertNotReached ();
+   return false;
 }
 
 void OOFAwareWidget::borderChanged (int y, Widget *vloat)

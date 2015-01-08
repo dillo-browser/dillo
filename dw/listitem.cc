@@ -40,6 +40,11 @@ ListItem::~ListItem()
    DBG_OBJ_DELETE ();
 }
 
+bool ListItem::mustBeWidenedToAvailWidth ()
+{
+   return true;
+}
+
 void ListItem::initWithWidget (core::Widget *widget,
                                 core::style::Style *style)
 {

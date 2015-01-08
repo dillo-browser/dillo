@@ -50,6 +50,11 @@ bool SimpleTableCell::isBlockLevel ()
    return tablecell::isBlockLevel ();
 }
 
+bool SimpleTableCell::mustBeWidenedToAvailWidth ()
+{
+   return tablecell::mustBeWidenedToAvailWidth ();
+}
+
 int SimpleTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
    DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell/getAvailWidthOfChild",
@@ -94,15 +99,17 @@ void SimpleTableCell::correctRequisitionOfChild (Widget *child,
 }
 
 void SimpleTableCell::correctExtremesOfChild (Widget *child,
-                                              core::Extremes *extremes)
+                                              core::Extremes *extremes,
+                                              bool useAdjustmentWidth)
 {
    DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell/correctExtremesOfChild",
                   "%p, %d (%d) / %d (%d)",
                   child, extremes->minWidth, extremes->minWidthIntrinsic,
                   extremes->maxWidth, extremes->maxWidthIntrinsic);
 
-   Textblock::correctExtremesOfChild (child, extremes);
-   tablecell::correctCorrectedExtremesOfChild (this, child, extremes);
+   Textblock::correctExtremesOfChild (child, extremes, useAdjustmentWidth); 
+   tablecell::correctCorrectedExtremesOfChild (this, child, extremes,
+                                               useAdjustmentWidth);
 
    DBG_OBJ_LEAVE ();
 }

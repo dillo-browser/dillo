@@ -434,7 +434,8 @@ void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
       word->content.widget->getExtremes (extremes);
    else
       extremes->minWidth = extremes->minWidthIntrinsic = extremes->maxWidth =
-         extremes->maxWidthIntrinsic = word->size.width;
+         extremes->maxWidthIntrinsic = extremes->adjustmentWidth =
+         word->size.width;
 }
 
 void Textblock::getExtremesImpl (core::Extremes *extremes)
@@ -462,12 +463,14 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
       extremes->minWidthIntrinsic = 0;
       extremes->maxWidth = 0;
       extremes->maxWidthIntrinsic = 0;
+      extremes->adjustmentWidth = 0;
    } else  {
       Paragraph *lastPar = paragraphs->getLastRef ();
       extremes->minWidth = lastPar->maxParMin;
       extremes->minWidthIntrinsic = lastPar->maxParMinIntrinsic;
       extremes->maxWidth = lastPar->maxParMax;
       extremes->maxWidthIntrinsic = lastPar->maxParMaxIntrinsic;
+      extremes->adjustmentWidth = lastPar->maxParAdjustmentWidth;
 
       DBG_OBJ_MSGF ("resize", 1, "paragraphs[%d]->maxParMin = %d (%d)",
                     paragraphs->size () - 1, lastPar->maxParMin,
@@ -486,6 +489,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
    extremes->minWidthIntrinsic += diff;
    extremes->maxWidth += diff;
    extremes->maxWidthIntrinsic += diff;
+   extremes->adjustmentWidth += diff;
 
    DBG_OBJ_MSGF ("resize", 0, "after adding diff: %d (%d) / %d (%d)",
                  extremes->minWidth, extremes->minWidthIntrinsic,
@@ -493,7 +497,7 @@ void Textblock::getExtremesImpl (core::Extremes *extremes)
 
    // For the order, see similar reasoning in sizeRequestImpl.
 
-   correctExtremes (extremes);
+   correctExtremes (extremes, true);
 
    DBG_OBJ_MSGF ("resize", 0, "after correction: %d (%d) / %d (%d)",
                  extremes->minWidth, extremes->minWidthIntrinsic,
@@ -2947,6 +2951,27 @@ void Textblock::queueDrawRange (int index1, int index2)
    DBG_OBJ_LEAVE ();
 }
 
+bool Textblock::mustBeWidenedToAvailWidth ()
+{
+   DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
+   bool toplevel = getParent () == NULL,
+      block = getStyle()->display == core::style::DISPLAY_BLOCK,
+      vloat = testWidgetFloat (this),
+      abspos = testWidgetAbsolutelyPositioned (this),
+      fixpos = testWidgetFixedlyPositioned (this),
+      // In detail, this depends on what the respective OOFM does
+      // with the child widget:
+      result = toplevel || (block && !(vloat || abspos || fixpos));
+   DBG_OBJ_MSGF ("resize", 0,
+                 "=> %s (toplevel: %s, block: %s, float: %s, abspos: %s, "
+                 "fixpos: %s)",
+                 result ? "true" : "false", toplevel ? "true" : "false",
+                 block ? "true" : "false", vloat ? "true" : "false",
+                 abspos ? "true" : "false", fixpos ? "true" : "false");
+   DBG_OBJ_LEAVE ();
+   return result;
+}
+
 /**
  * Called by dw::OOFFloatsMgr when the border has changed due to a
  * float (or some floats).
@@ -3136,48 +3161,49 @@ bool Textblock::isPossibleContainerParent (int oofmIndex)
    return true;
 }
 
-Textblock *Textblock::getTextblockForLine (Line *line)
+RegardingBorder *Textblock::getWidgetRegardingBorderForLine (Line *line)
 {
-   return getTextblockForLine (line->firstWord, line->lastWord);
+   return getWidgetRegardingBorderForLine (line->firstWord, line->lastWord);
 }
 
-Textblock *Textblock::getTextblockForLine (int lineNo)
+RegardingBorder *Textblock::getWidgetRegardingBorderForLine (int lineNo)
 {
    // Can also be used for a line not yet existing.
    int firstWord = lineNo == 0 ? 0 : lines->getRef(lineNo - 1)->lastWord + 1;
    int lastWord = lineNo < lines->size() ?
       lines->getRef(lineNo)->lastWord : words->size() - 1;
-   return getTextblockForLine (firstWord, lastWord);
+   return getWidgetRegardingBorderForLine (firstWord, lastWord);
 }
 
-Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
+RegardingBorder *Textblock::getWidgetRegardingBorderForLine (int firstWord,
+                                                             int lastWord)
 {
-   DBG_OBJ_ENTER ("resize", 0, "getTextblockForLine", "%d, %d",
+   DBG_OBJ_ENTER ("resize", 0, "getWidgetRegardingBorderForLine", "%d, %d",
                   firstWord, lastWord);
    DBG_OBJ_MSGF ("resize", 1, "words.size = %d", words->size ());
 
-   Textblock *textblock = NULL;
+   RegardingBorder *widgetRegardingBorder = NULL;
 
    if (firstWord < words->size ()) {
-      // A textblock is always between two line breaks, and so the
-      // first word of the line.
+      // Any instance of a subclass of WidgetRegardingBorder is always
+      // between two line breaks, and so the first word of the line.
       Word *word = words->getRef (firstWord);
 
       DBG_MSG_WORD ("resize", 1, "<i>first word:</i> ", firstWord, "");
 
       if (word->content.type == core::Content::WIDGET_IN_FLOW) {
          Widget *widget = word->content.widget;
-         if (widget->instanceOf (Textblock::CLASS_ID) &&
+         if (widget->instanceOf (RegardingBorder::CLASS_ID) &&
              // Exclude cases where a textblock constitutes a new floats
              // container.
              !isOOFContainer (widget, OOFM_FLOATS))
-            textblock = (Textblock*)widget;
+            widgetRegardingBorder = (RegardingBorder*)widget;
       }
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %p", textblock);
+   DBG_OBJ_MSGF ("resize", 1, "=> %p", widgetRegardingBorder);
    DBG_OBJ_LEAVE ();
-   return textblock;
+   return widgetRegardingBorder;
 }
 
 /**
