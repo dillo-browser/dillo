@@ -182,8 +182,9 @@ void SimpleContainer::getExtremesImpl (Extremes *extremes)
    if (child)
       child->getExtremes (&childExtr);
    else
-      childExtr.minWidth = childExtr.maxWidth = 0;
-
+      childExtr.minWidth = childExtr.minWidthIntrinsic = childExtr.maxWidth =
+         childExtr.maxWidthIntrinsic = extremes->adjustmentWidth = 0;
+   
    extremes->minWidth = childExtr.minWidth + boxDiffWidth ();
    extremes->minWidthIntrinsic = childExtr.minWidthIntrinsic + boxDiffWidth ();
    extremes->maxWidth = childExtr.maxWidth + boxDiffWidth ();
@@ -192,7 +193,6 @@ void SimpleContainer::getExtremesImpl (Extremes *extremes)
 
    correctExtremes (extremes, true);
 }
-
 
 void SimpleContainer::sizeAllocateImpl (Allocation *allocation)
 {
