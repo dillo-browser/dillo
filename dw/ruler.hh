@@ -1,7 +1,7 @@
 #ifndef __RULER_HH__
 #define __RULER_HH__
 
-#include "core.hh"
+#include "regardingborder.hh"
 
 namespace dw {
 
@@ -10,10 +10,15 @@ namespace dw {
  *
  * This is really an empty widget, the HTML parser puts a border
  * around it, and drawing is done in dw::core::Widget::drawWidgetBox.
- * The only remarkable point is that the HAS_CONTENT flag is
- * cleared.
+ *
+ * Ruler implements RegardingBorder; this way, it is simpler to fit
+ * the ruler exactly within the space between floats. Currently, the
+ * drawn area of the ruler is too large (but most of the superfluous
+ * part is hidden by the floats); this problem will not solved but in
+ * "dillo_grows", where RegardingBorder is a sub class of
+ * OOFAwareWidget.
  */
-class Ruler: public core::Widget
+class Ruler: public RegardingBorder
 {
 protected:
    void sizeRequestImpl (core::Requisition *requisition);

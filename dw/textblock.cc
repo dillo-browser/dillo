@@ -3133,44 +3133,45 @@ void Textblock::oofSizeChanged (bool extremesChanged)
    DBG_OBJ_LEAVE ();
 }
 
-Textblock *Textblock::getTextblockForLine (Line *line)
+RegardingBorder *Textblock::getWidgetRegardingBorderForLine (Line *line)
 {
-   return getTextblockForLine (line->firstWord, line->lastWord);
+   return getWidgetRegardingBorderForLine (line->firstWord, line->lastWord);
 }
 
-Textblock *Textblock::getTextblockForLine (int lineNo)
+RegardingBorder *Textblock::getWidgetRegardingBorderForLine (int lineNo)
 {
    // Can also be used for a line not yet existing.
    int firstWord = lineNo == 0 ? 0 : lines->getRef(lineNo - 1)->lastWord + 1;
    int lastWord = lineNo < lines->size() ?
       lines->getRef(lineNo)->lastWord : words->size() - 1;
-   return getTextblockForLine (firstWord, lastWord);
+   return getWidgetRegardingBorderForLine (firstWord, lastWord);
 }
 
-Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
+RegardingBorder *Textblock::getWidgetRegardingBorderForLine (int firstWord,
+                                                             int lastWord)
 {
-   DBG_OBJ_ENTER ("resize", 0, "getTextblockForLine", "%d, %d",
+   DBG_OBJ_ENTER ("resize", 0, "getWidgetRegardingBorderForLine", "%d, %d",
                   firstWord, lastWord);
    DBG_OBJ_MSGF ("resize", 1, "words.size = %d", words->size ());
 
-   Textblock *textblock = NULL;
+   RegardingBorder *widgetRegardingBorder = NULL;
 
    if (firstWord < words->size ()) {
-      // A textblock is always between two line breaks, and so the
-      // first word of the line.
+      // Any instance of a subclass of WidgetRegardingBorder is always
+      // between two line breaks, and so the first word of the line.
       Word *word = words->getRef (firstWord);
 
       DBG_MSG_WORD ("resize", 1, "<i>first word:</i> ", firstWord, "");
 
       if (word->content.type == core::Content::WIDGET_IN_FLOW) {
          Widget *widget = word->content.widget;
-         if (widget->instanceOf (Textblock::CLASS_ID) &&
-             // Exclude some cases where a textblock constitutes a new
+         if (widget->instanceOf (RegardingBorder::CLASS_ID) &&
+             // Exclude some cases where a widget constitutes a new
              // container (see definition of float container in
              // Textblock::isContainingBlock).
              widget->getStyle()->display != core::style::DISPLAY_INLINE_BLOCK &&
              widget->getStyle()->overflow == core::style::OVERFLOW_VISIBLE)
-            textblock = (Textblock*)widget;
+            widgetRegardingBorder = (RegardingBorder*)widget;
 
          // (TODO: It would look nicer if there is one common place
          // for such definitions. Will be fixed in "dillo_grows", not
@@ -3178,9 +3179,9 @@ Textblock *Textblock::getTextblockForLine (int firstWord, int lastWord)
       }
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %p", textblock);
+   DBG_OBJ_MSGF ("resize", 1, "=> %p", widgetRegardingBorder);
    DBG_OBJ_LEAVE ();
-   return textblock;
+   return widgetRegardingBorder;
 }
 
 /**

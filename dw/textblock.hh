@@ -3,7 +3,7 @@
 
 #include <limits.h>
 
-#include "core.hh"
+#include "regardingborder.hh"
 #include "outofflowmgr.hh"
 #include "../lout/misc.hh"
 
@@ -196,7 +196,7 @@ namespace dw {
  * necessary, or otherwise the line from which a rewrap is necessary.
  *
  */
-class Textblock: public core::Widget
+class Textblock: public RegardingBorder
 {
 private:
    /**
@@ -691,12 +691,12 @@ protected:
     */
    inline bool mustBorderBeRegarded (Line *line)
    {
-      return getTextblockForLine (line) == NULL;
+      return getWidgetRegardingBorderForLine (line) == NULL;
    }
 
    inline bool mustBorderBeRegarded (int lineNo)
    {
-      return getTextblockForLine (lineNo) == NULL;
+      return getWidgetRegardingBorderForLine (lineNo) == NULL;
    }
 
    inline int _lineYOffsetWidgetAllocation (Line *line,
@@ -761,9 +761,10 @@ protected:
       }
    }
 
-   Textblock *getTextblockForLine (Line *line);
-   Textblock *getTextblockForLine (int lineNo);
-   Textblock *getTextblockForLine (int firstWord, int lastWord);
+   RegardingBorder *getWidgetRegardingBorderForLine (Line *line);
+   RegardingBorder *getWidgetRegardingBorderForLine (int lineNo);
+   RegardingBorder *getWidgetRegardingBorderForLine (int firstWord,
+                                                     int lastWord);
    void printBorderChangedErrorAndAbort (int y, Widget *vloat,
                                          int wrapLineIndex);
    int yOffsetOfLineToBeCreated ();

@@ -71,6 +71,8 @@ libDw_widgets_a_SOURCES = \
 	listitem.hh \
 	outofflowmgr.cc \
 	outofflowmgr.hh \
+	regardingborder.cc \
+	regardingborder.hh \
 	ruler.cc \
 	ruler.hh \
 	simpletablecell.cc \
