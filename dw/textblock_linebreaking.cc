@@ -1734,16 +1734,24 @@ void Textblock::alignLine (int lineIndex)
 
    Line *line = lines->getRef (lineIndex);
 
-   if (line->firstWord <= line->lastWord) {
-      Word *firstWord = words->getRef (line->firstWord);
-      Word *lastWord = words->getRef (line->lastWord);
-      int lineBreakWidth =
-         this->lineBreakWidth - (line->leftOffset + line->rightOffset);
+   for (int i = line->firstWord; i <= line->lastWord; i++)
+      words->getRef(i)->effSpace = words->getRef(i)->origSpace;
 
-      for (int i = line->firstWord; i < line->lastWord; i++)
-         words->getRef(i)->effSpace = words->getRef(i)->origSpace;
+   // We are not interested in the alignment of floats etc.
+   int firstWordNotOofRef = line->firstWord;
+   while (firstWordNotOofRef <= line->lastWord &&
+          words->getRef(firstWordNotOofRef)->content.type
+          == core::Content::WIDGET_OOF_REF)
+      firstWordNotOofRef++;
+
+   if (firstWordNotOofRef <= line->lastWord) {
+      Word *firstWord = words->getRef (firstWordNotOofRef);
 
       if (firstWord->content.type != core::Content::BREAK) {
+         Word *lastWord = words->getRef (line->lastWord);
+         int lineBreakWidth =
+            this->lineBreakWidth - (line->leftOffset + line->rightOffset);
+
          switch (firstWord->style->textAlign) {
          case core::style::TEXT_ALIGN_LEFT:
             DBG_OBJ_MSG ("construct.line", 1,
@@ -1790,7 +1798,7 @@ void Textblock::alignLine (int lineIndex)
          // empty line (only line break);
          line->alignment = Line::LEFT;
    } else
-      // empty line
+      // empty line (or only OOF references).
       line->alignment = Line::LEFT;
 
    DBG_OBJ_LEAVE ();
@@ -1805,21 +1813,27 @@ void Textblock::calcTextOffset (int lineIndex, int totalWidth)
    int lineWidth = line->firstWord <= line->lastWord ?
       words->getRef(line->lastWord)->totalWidth : 0;
 
-   DBG_OBJ_MSGF ("construct.line", 1, "leftOffset = %d, lineWidth = %d",
-                 line->leftOffset, lineWidth);
-
    switch (line->alignment) {
    case Line::LEFT:
       line->textOffset = line->leftOffset;
+      DBG_OBJ_MSGF ("construct.line", 1, "left: textOffset = %d",
+                    line->textOffset);
       break;
 
    case Line::RIGHT:
       line->textOffset = totalWidth - line->rightOffset - lineWidth;
+      DBG_OBJ_MSGF ("construct.line", 1,
+                    "right: textOffset = %d - %d - %d = %d",
+                    totalWidth, line->rightOffset, lineWidth, line->textOffset);
       break;
 
    case Line::CENTER:
       line->textOffset =
          (line->leftOffset + totalWidth - line->rightOffset - lineWidth) / 2;
+      DBG_OBJ_MSGF ("construct.line", 1,
+                    "center: textOffset = (%d + %d - %d - %d) /2 = %d",
+                    line->leftOffset, totalWidth, line->rightOffset, lineWidth,
+                    line->textOffset);
       break;
 
    default:
