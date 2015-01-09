@@ -2335,6 +2335,7 @@ static void Html_tag_content_img(DilloHtml *html, const char *tag, int tagsize)
    // multiple inheritance.
    dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)Image->img_rndr;
    HT2TB(html)->addWidget(dwi, html->style());
+   HT2TB(html)->addBreakOption (html->style (), false);
 
    /* Image maps */
    if (a_Html_get_attr(html, tag, tagsize, "ismap")) {
