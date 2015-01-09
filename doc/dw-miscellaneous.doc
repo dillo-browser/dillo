@@ -82,6 +82,8 @@ Instead, this approach is focussed:
   width, minus the maximal float width on either side. (This is an
   approach similar to the one dw::Ruler will use soon). Most likely,
   some new methods will have to be added to calculate this.
+- For paragraphs like this, dw::Textblock::borderChanged must rewrap
+  all lines; *y* is irrelevant in this case.
 - Since the textblock will tend to become taller when getting
   narrower, and so possibly cover more (wider) floats, and so become
   narrower again etc., there may be multible solutions for calculating
