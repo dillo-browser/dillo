@@ -3409,13 +3409,12 @@ static void Html_tag_open_span(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * <DIV> (TODO: make a complete implementation)
+ * html5 sectioning stuff: article aside nav section header footer
  */
-static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_sectioning(DilloHtml *html, const char *tag,
+                                     int tagsize)
 {
    const char *attrbuf;
-
-   a_Html_tag_set_align_attr (html, tag, tagsize);
 
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
@@ -3423,6 +3422,15 @@ static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
                                         attrbuf);
    }
+}
+
+/*
+ * <DIV> (TODO: make a complete implementation)
+ */
+static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
+{
+   a_Html_tag_set_align_attr (html, tag, tagsize);
+   Html_tag_open_sectioning(html, tag, tagsize);
 }
 
 /*
@@ -3474,8 +3482,8 @@ const TagInfo Tags[] = {
  {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
- {"article", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
- {"aside", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"article", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
+ {"aside", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  {"audio", B8(011101),'R',2, Html_tag_open_audio, NULL, Html_tag_close_media},
  {"b", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"base", B8(100001),'F',0, Html_tag_open_base, NULL, NULL},
@@ -3508,7 +3516,7 @@ const TagInfo Tags[] = {
  {"figcaption", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"figure", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"font", B8(010101),'R',2, Html_tag_open_font, NULL, NULL},
- {"footer", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"footer", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  {"form", B8(011110),'R',2, Html_tag_open_form, NULL, Html_tag_close_form},
  {"frame", B8(010010),'F',0, Html_tag_open_frame, Html_tag_content_frame,
                              NULL},
@@ -3521,7 +3529,7 @@ const TagInfo Tags[] = {
  {"h5", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"h6", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"head", B8(101101),'O',1, Html_tag_open_head, NULL, Html_tag_close_head},
- {"header", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"header", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  {"hr", B8(010010),'F',0, Html_tag_open_hr, Html_tag_content_hr,
                           NULL},
  {"html", B8(001110),'O',1, Html_tag_open_html, NULL, Html_tag_close_html},
@@ -3544,7 +3552,7 @@ const TagInfo Tags[] = {
  /* menu 1010 -- TODO: not exactly 1010, it can contain LI and inline */
  {"menu", B8(011010),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
  {"meta", B8(100001),'F',0, Html_tag_open_meta, NULL, NULL},
- {"nav", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"nav", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  /* noframes 1011 -- obsolete in HTML5 */
  /* noscript 1011 */
  {"object", B8(111101),'R',2, Html_tag_open_object, Html_tag_content_object,
@@ -3560,7 +3568,7 @@ const TagInfo Tags[] = {
  {"s", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"samp", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"script", B8(111001),'R',2, Html_tag_open_script,NULL,Html_tag_close_script},
- {"section", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"section", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  {"select", B8(010101),'R',2, Html_tag_open_select,NULL,Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"source", B8(010001),'F',0, Html_tag_open_source, Html_tag_content_source,
