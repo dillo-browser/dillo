@@ -3171,7 +3171,13 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
    /* only valid inside HEAD */
    if (!(html->InFlags & IN_HEAD)) {
-      BUG_MSG("<meta> must be inside the HEAD section.");
+      if (!((html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f) &&
+            a_Html_get_attr(html, tag, tagsize, "itemprop"))) {
+         /* With the HTML 5.1 draft spec, meta with itemprop may appear
+          * in the body.
+          */
+         BUG_MSG("This <meta> element must be inside the HEAD section.");
+      }
       return;
    }
 
@@ -3551,7 +3557,7 @@ const TagInfo Tags[] = {
  {"mark", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  /* menu 1010 -- TODO: not exactly 1010, it can contain LI and inline */
  {"menu", B8(011010),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
- {"meta", B8(100001),'F',0, Html_tag_open_meta, NULL, NULL},
+ {"meta", B8(110001),'F',0, Html_tag_open_meta, NULL, NULL},
  {"nav", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  /* noframes 1011 -- obsolete in HTML5 */
  /* noscript 1011 */
