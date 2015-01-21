@@ -1,5 +1,90 @@
 /** \page dw-interrupted-drawing Interrupted drawing
 
+Describing the problem
+======================
+
+Without interrupting drawing (which is described below), a widget can
+define the order in which its parts (background, non-widget content,
+child widgets, etc.) are drawn, but it must be drawn as a whole. There
+are situations when this is not possible.
+
+Consider the following simple HTML document:
+
+    <head>
+      <style>
+	#sc-1 { position: relative; z-index: 1; background: #ffe0e0; }
+	#fl-1 { float: right; background: #b0ffb0; }
+	#sc-2 { position: relative; z-index: 1; background: #f0f0ff; }
+      </style>
+    </head>
+    <body>
+      <div id="sc-1">
+	<div id="fl-1">
+	  Float, line 1/3<br/>
+	  Float, line 2/3<br/>
+	  Float, line 3/3
+	</div>
+	Stacking Context 1 
+	<div id="sc-2">Stacking Context 2</div>
+      </div>
+    </body>
+
+The rendering will look loke this:
+
+\image html dw-interrupted-drawing-1.png
+
+Note the missing "Float, line 2/3" of element #fl-1, which is covered
+by element #sc-2.
+
+As described in \ref dw-out-of-flow, it has to be distinguished
+between the *container* hierarchy (equivalent to the hierarchy of
+dw::core::Widget.) and the the *generator* hierarchy. In the following
+diagram, the former is represented by solid lines, the latter by
+dotted lines:
+
+\dot
+digraph G {
+   node [shape=rect, fontname=Helvetica, fontsize=10];
+   edge [arrowhead="vee"];
+
+   "#sc-1" [fillcolor="#ffe0e0", style="filled"];
+   "#fl-1" [fillcolor="#b0ffb0", style="filled"];
+   "#sc-2" [fillcolor="#f0f0ff", style="filled"];
+
+   "body" -> "#sc-1";
+   "body" -> "#fl-1";
+   { rank=same; "#sc-1" -> "#fl-1" [style=dotted]; }
+   "#sc-1" -> "#sc-2";
+}
+\enddot
+
+
+The drawing order of the four elements (represented by widgets) is:
+
+- body,
+- #sc-1 (background and text),
+- #fl-1,
+- #sc-2.
+
+Since 
+
+1. #sc-2 is a child of #sc-1, but
+2. #fl-1 is a child of the body, and
+3. a widget can only draw its descendants (not neccessary children,
+   but drawing siblings is not allowed),
+
+#sc-2 cannot be drawn as a whole; instead drawing is **interrupted**
+by #fl-1. This means:
+
+1. the background and text of #sc-1 is drawn;
+2. drawing of #sc-1 is **interrupted** by #fl-1, which means that its
+   parent, the body, draws #fl-1;
+3. drawing of #sc-1 is **continued**, by drawing #sc-2.
+
+
+When is drawing interrupted?
+============================
+
 ...
 
 */
