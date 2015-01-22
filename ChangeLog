@@ -24,7 +24,8 @@ dillo-3.1 [not released yet]
  - Fix crash that's possible searching for text while page still being built.
    Patches: Sebastian Geerken
 +- Image buffer/cache improvements.
-   Patch: Jorge Arellano Cid
+ - Fix for segfault when there's no dpid and view source is requested.
+   Patches: Jorge Arellano Cid
 +- Crosscompile/buildroot-friendly fltk-config test.
    Patch: Peter Seiderer
 +- HTML5 character references.
@@ -34,6 +35,7 @@ dillo-3.1 [not released yet]
  - Abort failed queries.
  - In location bar, tend toward showing beginning of URL instead of end.
  - Handle irix's version of vsnprintf().
+ - INPUT placeholder attribute.
    Patches: corvid
 +- Avoid requesting background images if an ancestor has display:none.
    Patch: Johannes Hofmann
