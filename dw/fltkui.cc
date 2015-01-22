@@ -42,18 +42,108 @@
  */
 
 /*
- * Used to enable CTRL+{a,e,d,k} in form inputs (for start,end,del,cut)
+ * Used to show optional placeholder text and to enable CTRL+{a,e,d,k} in
+ * form inputs (for start,end,del,cut)
  */
 class CustInput2 : public Fl_Input {
 public:
    CustInput2 (int x, int y, int w, int h, const char* l=0) :
-      Fl_Input(x,y,w,h,l) {};
+      Fl_Input(x,y,w,h,l) { placeholder = NULL; showing_placeholder = false; };
+   ~CustInput2 () { if (placeholder) free(placeholder); };
+   void set_placeholder(const char *str);
+   int show_placeholder();
+   int show_normal(const char *str);
+   void textcolor(Fl_Color c);
+   void input_type(int t);
+   int value(const char* str);
+   const char* value();
    int handle(int e);
+private:
+   Fl_Color dimmed(Fl_Color c) {return fl_color_average(c, color(), .33f); };
+   char *placeholder;
+   bool showing_placeholder;
+   Fl_Color usual_color;
+   int usual_type;
 };
+
+/*
+ * Show normal text.
+ */
+int CustInput2::show_normal(const char *str)
+{
+   showing_placeholder = false;
+   Fl_Input::textcolor(usual_color);
+   Fl_Input::input_type(usual_type);
+   return Fl_Input::value(str);
+}
+
+/*
+ * Show the placeholder text.
+ */
+int CustInput2::show_placeholder()
+{
+   showing_placeholder = true;
+   Fl_Input::textcolor(dimmed(usual_color));
+   Fl_Input::input_type(FL_NORMAL_INPUT);
+   return Fl_Input::value(placeholder);
+}
+
+/*
+ * Set the placeholder text.
+ */
+void CustInput2::set_placeholder(const char *str)
+{
+   if (placeholder)
+      free(placeholder);
+   placeholder = strdup(str);
+
+   if ((Fl::focus() != this) && !*value()) {
+      show_placeholder();
+   }
+}
+
+/*
+ * Set the text color.
+ */
+void CustInput2::textcolor(Fl_Color c)
+{
+   usual_color = c;
+   if (showing_placeholder)
+      c = dimmed(c);
+   Fl_Input::textcolor(c);
+}
+
+/*
+ * Set the input type (normal, password, etc.)
+ */
+void CustInput2::input_type(int t)
+{
+   usual_type = t;
+   Fl_Input::input_type(t);
+}
+
+/*
+ * Set the value of the input.
+ * NOTE that we're not being very careful with the return value, which is
+ * supposed to be nonzero iff the value was changed.
+ */
+int CustInput2::value(const char *str)
+{
+   return (placeholder && (!str || !*str) && Fl::focus() != this)
+          ? show_placeholder() : show_normal(str);
+}
+
+/*
+ * Return the value (text) of the input.
+ */
+const char* CustInput2::value()
+{
+   return showing_placeholder ? "" : Fl_Input::value();
+}
 
 int CustInput2::handle(int e)
 {
-   int k = Fl::event_key();
+   int rc, k = Fl::event_key();
 
    _MSG("CustInput2::handle event=%d\n", e);
 
@@ -82,8 +172,20 @@ int CustInput2::handle(int e)
             return 0;
          }
       }
+   } else if (e == FL_UNFOCUS) {
+      if (placeholder && !value()[0]) {
+         show_placeholder();
+      }
    }
-   return Fl_Input::handle(e);
+
+   rc = Fl_Input::handle(e);
+
+   if (rc && e == FL_FOCUS) {
+      // Nonzero return from handle() should mean that focus was accepted.
+      if (showing_placeholder)
+         show_normal("");
+   }
+   return rc;
 }
 
 
@@ -563,13 +665,15 @@ Fl_Widget *FltkComplexButtonResource::createNewWidget (core::Allocation
 // ----------------------------------------------------------------------
 
 FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int size,
-                                      bool password, const char *label):
+                                      bool password, const char *label,
+                                      const char *placeholder):
    FltkSpecificResource <dw::core::ui::EntryResource> (platform)
 {
    this->size = size;
    this->password = password;
    this->label = label ? strdup(label) : NULL;
    this->label_w = 0;
+   this->placeholder = placeholder ? strdup(placeholder) : NULL;
 
    initText = NULL;
    editable = false;
@@ -583,16 +687,17 @@ FltkEntryResource::~FltkEntryResource ()
       free((char *)initText);
    if (label)
       free(label);
+   if (placeholder)
+      free(placeholder);
 }
 
 Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
                                                     *allocation)
 {
-   Fl_Input *input =
+   CustInput2 *input =
         new CustInput2(allocation->x, allocation->y, allocation->width,
                       allocation->ascent + allocation->descent);
-   if (password)
-      input->type(FL_SECRET_INPUT);
+   input->input_type(password ? FL_SECRET_INPUT : FL_NORMAL_INPUT);
    input->callback (widgetCallback, this);
    input->when (FL_WHEN_ENTER_KEY_ALWAYS);
 
@@ -602,6 +707,8 @@ Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
    }
    if (initText)
       input->value (initText);
+   if (placeholder)
+      input->set_placeholder(placeholder);
 
    return input;
 }
@@ -609,12 +716,12 @@ Fl_Widget *FltkEntryResource::createNewWidget (core::Allocation
 void FltkEntryResource::setWidgetStyle (Fl_Widget *widget,
                                         core::style::Style *style)
 {
-   Fl_Input *in = (Fl_Input *)widget;
+   CustInput2 *in = (CustInput2 *)widget;
 
    FltkResource::setWidgetStyle(widget, style);
 
    in->textcolor(widget->labelcolor());
-   in->cursor_color(in->textcolor());
+   in->cursor_color(widget->labelcolor());
    in->textsize(in->labelsize());
    in->textfont(in->labelfont());
 
@@ -674,7 +781,7 @@ void FltkEntryResource::widgetCallback (Fl_Widget *widget, void *data)
 
 const char *FltkEntryResource::getText ()
 {
-   return ((Fl_Input*)widget)->value ();
+   return ((CustInput2*)widget)->value ();
 }
 
 void FltkEntryResource::setText (const char *text)
@@ -683,7 +790,7 @@ void FltkEntryResource::setText (const char *text)
       free((char *)initText);
    initText = strdup (text);
 
-   ((Fl_Input*)widget)->value (initText);
+   ((CustInput2*)widget)->value (initText);
 }
 
 bool FltkEntryResource::isEditable ()

@@ -431,7 +431,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    DilloHtmlInputType inp_type;
    Resource *resource = NULL;
    Embed *embed = NULL;
-   char *value, *name, *type, *init_str;
+   char *value, *name, *type, *init_str, *placeholder = NULL;
    const char *attrbuf, *label;
    bool init_val = false;
    ResourceFactory *factory;
@@ -456,9 +456,10 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    inp_type = DILLO_HTML_INPUT_UNKNOWN;
    if (!dStrAsciiCasecmp(type, "password")) {
       inp_type = DILLO_HTML_INPUT_PASSWORD;
+      placeholder = a_Html_get_attr_wdef(html, tag,tagsize,"placeholder",NULL);
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
-      resource = factory->createEntryResource (size, true, NULL);
+      resource = factory->createEntryResource (size, true, NULL, placeholder);
       init_str = value;
    } else if (!dStrAsciiCasecmp(type, "checkbox")) {
       inp_type = DILLO_HTML_INPUT_CHECKBOX;
@@ -478,7 +479,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       inp_type = DILLO_HTML_INPUT_HIDDEN;
       init_str = value;
       int size = Html_input_get_size(html, NULL);
-      resource = factory->createEntryResource(size, false, name);
+      resource = factory->createEntryResource(size, false, name, NULL);
    } else if (!dStrAsciiCasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
       init_str = (value) ? value : dStrdup("submit");
@@ -531,9 +532,10 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    } else {
       /* Text input, which also is the default */
       inp_type = DILLO_HTML_INPUT_TEXT;
+      placeholder = a_Html_get_attr_wdef(html, tag,tagsize,"placeholder",NULL);
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
-      resource = factory->createEntryResource(size, false, NULL);
+      resource = factory->createEntryResource(size, false, NULL, placeholder);
       init_str = value;
    }
    if (resource)
@@ -573,6 +575,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    dFree(name);
    if (init_str != value)
       dFree(init_str);
+   dFree(placeholder);
    dFree(value);
 }
 
@@ -606,7 +609,8 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
       HT2TB(html)->addText(attrbuf, html->wordStyle ());
 
    ResourceFactory *factory = HT2LT(html)->getResourceFactory();
-   EntryResource *entryResource = factory->createEntryResource (20,false,NULL);
+   EntryResource *entryResource = factory->createEntryResource (20, false,
+                                                                NULL, NULL);
    embed = new Embed (entryResource);
    Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 

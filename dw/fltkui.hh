@@ -301,6 +301,7 @@ private:
    const char *initText;
    char *label;
    int label_w;
+   char *placeholder;
    bool editable;
 
    static void widgetCallback (Fl_Widget *widget, void *data);
@@ -312,7 +313,7 @@ protected:
 
 public:
    FltkEntryResource (FltkPlatform *platform, int size, bool password,
-                      const char *label);
+                      const char *label, const char *placeholder);
    ~FltkEntryResource ();
 
    void sizeRequest (core::Requisition *requisition);

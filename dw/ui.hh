@@ -544,7 +544,8 @@ public:
                                              selectionMode, int rows) = 0;
    virtual OptionMenuResource *createOptionMenuResource () = 0;
    virtual EntryResource *createEntryResource (int size, bool password,
-                                               const char *label) = 0;
+                                               const char *label,
+                                               const char *placeholder) = 0;
    virtual MultiLineTextResource *createMultiLineTextResource (int cols,
                                                                int rows) = 0;
    virtual CheckButtonResource *createCheckButtonResource (bool activated) = 0;
