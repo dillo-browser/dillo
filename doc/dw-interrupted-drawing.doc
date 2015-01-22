@@ -81,9 +81,18 @@ by #fl-1. This means:
    parent, the body, draws #fl-1;
 3. drawing of #sc-1 is **continued**, by drawing #sc-2.
 
+The exact control flow is described in this sequence diagram:
+
+\image html dw-interrupted-drawing-2.png
+
 
 When is drawing interrupted?
 ============================
+
+...
+
+How does interruption of drawing work?
+======================================
 
 ...
 
