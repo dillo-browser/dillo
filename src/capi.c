@@ -571,8 +571,8 @@ int a_Capi_dpi_send_data(const DilloUrl *url, void *bw,
    } else {
       /* Re-use an open connection */
       conn = Capi_conn_find(server);
-      if (conn) {
-         /* found */
+      if (conn && conn->InfoSend) {
+         /* found & active */
          dbuf = a_Chain_dbuf_new(data, data_sz, 0);
          a_Capi_ccc(OpSend, 1, BCK, conn->InfoSend, dbuf, NULL);
          dFree(dbuf);
