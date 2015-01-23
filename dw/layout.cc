@@ -1110,9 +1110,10 @@ Widget *Layout::getWidgetAtPoint (int x, int y)
    DBG_OBJ_ENTER ("events", 0, "getWidgetAtPoint", "%d, %d", x, y);
    Widget *widget;
 
-   if (topLevel && topLevel->wasAllocated ())
-      widget = topLevel->getWidgetAtPointToplevel (x, y);
-   else
+   if (topLevel && topLevel->wasAllocated ()) {
+      GettingWidgetAtPointContext context;
+      widget = topLevel->getWidgetAtPoint (x, y, &context);
+   } else
       widget = NULL;
 
    DBG_OBJ_MSGF ("events", 0, "=> %p", widget);

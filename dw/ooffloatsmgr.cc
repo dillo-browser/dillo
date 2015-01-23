@@ -1489,51 +1489,32 @@ void OOFFloatsMgr::markExtremesChange (int ref)
 }
 
 Widget *OOFFloatsMgr::getWidgetAtPoint (int x, int y,
-                                        core::StackingIteratorStack
-                                        *iteratorStack,
-                                        core::Widget **interruptedWidget,
-                                        int *index)
+                                        GettingWidgetAtPointContext *context)
 {
    Widget *widgetAtPoint = NULL;
 
-   widgetAtPoint =
-      getFloatWidgetAtPoint (rightFloatsCB, x, y, iteratorStack,
-                             interruptedWidget, index,
-                             leftFloatsCB->size ());
-   if (widgetAtPoint == NULL && *interruptedWidget == NULL)
-      widgetAtPoint =
-         getFloatWidgetAtPoint (leftFloatsCB, x, y, iteratorStack,
-                                interruptedWidget, index, 0);
+   widgetAtPoint = getFloatWidgetAtPoint (rightFloatsCB, x, y, context);
+   if (widgetAtPoint == NULL)
+      widgetAtPoint = getFloatWidgetAtPoint (leftFloatsCB, x, y, context);
+
    return widgetAtPoint;
 }
 
 Widget *OOFFloatsMgr::getFloatWidgetAtPoint (SortedFloatsVector *list, int x,
                                              int y,
-                                             StackingIteratorStack
-                                             *iteratorStack,
-                                             Widget **interruptedWidget,
-                                             int *index, int startIndex)
+                                             GettingWidgetAtPointContext
+                                             *context)
 {
    // Could use binary search to be faster (similar to drawing).
    Widget *widgetAtPoint = NULL;
-   OOFAwareWidget::OOFStackingIterator *osi =
-      (OOFAwareWidget::OOFStackingIterator*)iteratorStack->getTop ();
    
-   while (widgetAtPoint == NULL && *interruptedWidget == NULL &&
-          *index - startIndex >= 0 &&
-          // In case the list is empty:
-          *index - startIndex < list->size()) {
-      Widget *childWidget = list->get(*index - startIndex)->getWidget ();
-      if (!osi->hasWidgetBeenDrawnAfterInterruption (childWidget) &&
+   for (int i = list->size() - 1; widgetAtPoint == NULL && i >= 0; i--) {
+      Widget *childWidget = list->get(i)->getWidget ();
+      if (!context->hasWidgetBeenProcessedAsInterruption (childWidget) &&
           !StackingContextMgr::handledByStackingContextMgr (childWidget))
-         widgetAtPoint =
-            childWidget->getWidgetAtPointTotal (x, y, iteratorStack,
-                                                interruptedWidget);
-
-      if (*interruptedWidget == NULL)
-         (*index)--;
+         widgetAtPoint = childWidget->getWidgetAtPoint (x, y, context);
    }
-
+   
    return widgetAtPoint;
 }
 

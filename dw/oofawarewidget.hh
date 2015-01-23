@@ -163,16 +163,13 @@ protected:
                  core::DrawingContext *context);
 
    Widget *getWidgetAtPoint (int x, int y,
-                             core::StackingIteratorStack *iteratorStack,
-                             Widget **interruptedWidget);
+                             core::GettingWidgetAtPointContext *context);
    virtual Widget *getWidgetAtPointLevel (int x, int y,
-                                          core::StackingIteratorStack
-                                          *iteratorStack,
-                                          Widget **interruptedWidget,
-                                          int majorLevel);
+                                          core::GettingWidgetAtPointContext
+                                          *context,
+                                          int level);
    Widget *getWidgetOOFAtPoint (int x, int y,
-                                core::StackingIteratorStack *iteratorStack,
-                                Widget **interruptedWidget);
+                                core::GettingWidgetAtPointContext *context);
 
    virtual int getLastMinorLevel (int majorLevel);
    virtual int getLastLevelIndex (int majorLevel, int minorLevel);

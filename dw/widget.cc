@@ -204,92 +204,24 @@ void Widget::drawInterruption (View *view, Rectangle *area,
 }
 
 Widget *Widget::getWidgetAtPoint (int x, int y,
-                                  StackingIteratorStack *iteratorStack,
-                                  Widget **interruptedWidget)
+                                  GettingWidgetAtPointContext *context)
 {
    // Suitable for simple widgets, without children.
 
-   if (wasAllocated () && x >= allocation.x && y >= allocation.y &&
-       x <= allocation.x + allocation.width && y <= allocation.y + getHeight ())
+   if (inAllocation (x, y))
       return this;
    else
       return NULL;
 }
 
-Widget *Widget::getWidgetAtPointTotal (int x, int y,
-                                       StackingIteratorStack *iteratorStack,
-                                       Widget **interruptedWidget)
+Widget *Widget::getWidgetAtPointInterrupted (int x, int y,
+                                             GettingWidgetAtPointContext
+                                             *context)
 {
-   DBG_OBJ_ENTER ("events", 0, "getWidgetAtPointTotal", "%d, %d", x, y);
-
-   DBG_IF_RTFL {
-      misc::StringBuffer sb;
-      iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("events", 2, "initial iteratorStack: %s", sb.getChars ());
-   }
-
-   Object *si = NULL;
-
-   if (iteratorStack->atRealTop ()) {
-      si = stackingIterator (true);
-      if (si) {
-         iteratorStack->push (si);
-      }
-   } else
-      iteratorStack->forward ();
-
-   DBG_IF_RTFL {
-      misc::StringBuffer sb;
-      iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("events", 2, "iteratorStack before: %s",
-                    sb.getChars ());
-   }
-
-   Widget *widget = getWidgetAtPoint (x, y, iteratorStack, interruptedWidget);
-   DBG_OBJ_MSGF ("events", 1, "=> %p (i: %p)", widget, *interruptedWidget);
-
-   DBG_IF_RTFL {
-      misc::StringBuffer sb;
-      iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("events", 2, "iteratorStack after: %s",
-                    sb.getChars ());
-   }
-
-   // See comment in drawTotal().
-
-   // assert (*interruptedWidget == NULL || si != NULL);
-
-   if (*interruptedWidget == NULL) {
-      if (si)
-         iteratorStack->pop ();
-   } else
-      iteratorStack->backward ();
-
-   DBG_IF_RTFL {
-      misc::StringBuffer sb;
-      iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("events", 2, "final iteratorStack: %s", sb.getChars ());
-   }
-
-   DBG_OBJ_LEAVE ();
-   return widget;
+   Widget *widgetAtPoint = getWidgetAtPoint (x, y, context);
+   context->addWidgetProcessedAsInterruption (this);
+   return widgetAtPoint;
 }
-
-Widget *Widget::getWidgetAtPointToplevel (int x, int y)
-{
-   assert (parent == NULL);
-
-   StackingIteratorStack iteratorStack;
-   Widget *interruptedWidget = NULL;
-   Widget *widget =
-      getWidgetAtPointTotal (x, y, &iteratorStack, &interruptedWidget);
-
-   // Everything should be finished at this point.
-   assert (interruptedWidget == NULL);
-
-   return widget;
-}
-
 
 void Widget::setParent (Widget *parent)
 {

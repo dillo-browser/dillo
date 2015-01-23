@@ -287,10 +287,8 @@ private:
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area, core::DrawingContext *context);
    core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y,
-                                        core::StackingIteratorStack
-                                        *iteratorStack,
-                                        core::Widget **interruptedWidget,
-                                        int *index, int startIndex);
+                                        core::GettingWidgetAtPointContext
+                                        *context);
 
    bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal,
                    bool useAllocation);
@@ -350,9 +348,7 @@ public:
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
    core::Widget *getWidgetAtPoint (int x, int y,
-                                   core::StackingIteratorStack *iteratorStack,
-                                   core::Widget **interruptedWidget,
-                                   int *index);
+                                   core::GettingWidgetAtPointContext *context);
 
    void addWidgetInFlow (OOFAwareWidget *textblock, OOFAwareWidget *parentBlock,
                          int externalIndex);

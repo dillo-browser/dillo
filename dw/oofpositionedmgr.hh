@@ -92,9 +92,7 @@ public:
    void markSizeChange (int ref);
    void markExtremesChange (int ref);
    core::Widget *getWidgetAtPoint (int x, int y,
-                                   core::StackingIteratorStack *iteratorStack,
-                                   core::Widget **interruptedWidget,
-                                   int *index);
+                                   core::GettingWidgetAtPointContext *context);
 
    void addWidgetInFlow (OOFAwareWidget *widget, OOFAwareWidget *parent,
                          int externalIndex);

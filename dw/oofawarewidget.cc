@@ -397,7 +397,8 @@ void OOFAwareWidget::draw (View *view, Rectangle *area, DrawingContext *context)
    DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
 
-   for (int level = 0; level < OOFStackingIterator::END; level++)
+   for (int level = OOFStackingIterator::START + 1;
+        level < OOFStackingIterator::END; level++)
       drawLevel (view, area, level, context);
 
    DBG_OBJ_LEAVE ();
@@ -458,120 +459,43 @@ void OOFAwareWidget::drawOOF (View *view, Rectangle *area,
 } 
 
 Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y,
-                                          StackingIteratorStack *iteratorStack,
-                                          Widget **interruptedWidget)
+                                          GettingWidgetAtPointContext *context)
 {
    DBG_OBJ_ENTER ("events", 0, "getWidgetAtPoint", "%d, %d", x, y);
    Widget *widgetAtPoint = NULL;
 
-   if (wasAllocated () && x >= allocation.x && y >= allocation.y &&
-       x <= allocation.x + allocation.width &&
-       y <= allocation.y + getHeight ()) {
-      while (widgetAtPoint == NULL && *interruptedWidget == NULL &&
-             ((OOFStackingIterator*)iteratorStack->getTop())->majorLevel
-             > OOFStackingIterator::START) {
-         widgetAtPoint =
-            getWidgetAtPointLevel (x, y, iteratorStack, interruptedWidget,
-                                   ((OOFStackingIterator*)iteratorStack
-                                    ->getTop())->majorLevel);
-      
-         if (*interruptedWidget) {
-            assert (widgetAtPoint == NULL); // Not both set.
-
-            if ((*interruptedWidget)->getParent () == this) {
-               DBG_OBJ_MSGF ("events", 1,
-                             "interrupted at %p, searching widget seperately",
-                             *interruptedWidget);
-               DBG_IF_RTFL {
-                  StringBuffer sb;
-                  iteratorStack->intoStringBuffer (&sb);
-                  DBG_OBJ_MSGF ("events", 2, "iteratorStack: %s",
-                                sb.getChars ());
-               }
-
-               // Similar to Widget::getWidgetAtPointToplevel. Nested
-               // interruptions are not allowed.
-               StackingIteratorStack iteratorStack2;
-               Widget *interruptedWidget2 = NULL;
-               widgetAtPoint = (*interruptedWidget)
-                  ->getWidgetAtPointTotal (x, y, &iteratorStack2,
-                                           &interruptedWidget2);
-               assert (interruptedWidget2 == NULL);
-
-               ((OOFStackingIterator*)iteratorStack->getTop())
-                  ->registerWidgetDrawnAfterInterruption (*interruptedWidget);
-
-               // Continue with the current state of "iterator".
-               *interruptedWidget = NULL;
-               DBG_OBJ_MSG ("events", 1, "done with interruption");
-
-               // The interrupted widget may have returned non-NULL. In this
-               // case, the stack must be cleaned up explicitly, which would
-               // otherwise be done implicitly during the further search.
-               // (Since drawing is never quit completely, this problem only
-               // applies to searching.)
-               if (widgetAtPoint) {
-                  iteratorStack->cleanup ();
-
-                  DBG_IF_RTFL {
-                     StringBuffer sb;
-                     iteratorStack->intoStringBuffer (&sb);
-                     DBG_OBJ_MSGF ("events", 2,
-                                   "iteratorStack after cleanup: %s",
-                                   sb.getChars ());
-               }
-               }
-                  
-            }
-         } else {
-            OOFStackingIterator* osi =
-               (OOFStackingIterator*)iteratorStack->getTop();
-            osi->majorLevel--;
-            if (osi->majorLevel > OOFStackingIterator::START) {
-               osi->minorLevel = getLastMinorLevel (osi->majorLevel);
-               osi->index =
-                  getLastLevelIndex (osi->majorLevel, osi->minorLevel);
-            }
-         }
-      }
+   if (inAllocation (x, y)) {
+      for (int level = OOFStackingIterator::END - 1;
+           widgetAtPoint == NULL && level > OOFStackingIterator::START; level--)
+         widgetAtPoint = getWidgetAtPointLevel (x, y, context, level);
    }
-
-   DBG_OBJ_MSGF ("events", 1, "=> %p (i: %p)",
-                 widgetAtPoint, *interruptedWidget);
+   
+   DBG_OBJ_MSGF ("events", 1, "=> %p", widgetAtPoint);
    DBG_OBJ_LEAVE ();
    return widgetAtPoint;
 }
 
 Widget *OOFAwareWidget::getWidgetAtPointLevel (int x, int y,
-                                               StackingIteratorStack
-                                               *iteratorStack,
-                                               Widget **interruptedWidget,
-                                               int majorLevel)
+                                               GettingWidgetAtPointContext
+                                               *context,
+                                               int level)
 {
    DBG_OBJ_ENTER ("events", 0, "OOFAwareWidget::getWidgetAtPointLevel",
-                  "%d, %d, %s", x, y,
-                  OOFStackingIterator::majorLevelText (majorLevel));
+                  "%d, %d, %s",
+                  x, y, OOFStackingIterator::majorLevelText (level));
 
    Widget *widgetAtPoint = NULL;
 
-   switch (majorLevel) {
+   switch (level) {
    case OOFStackingIterator::BACKGROUND:
-      if (wasAllocated () && x >= allocation.x && y >= allocation.y &&
-          x <= allocation.x + allocation.width &&
-          y <= allocation.y + getHeight ())
+      if (inAllocation (x, y))
          widgetAtPoint = this;
       break;
 
    case OOFStackingIterator::SC_BOTTOM:
-      if (stackingContextMgr) {
-         OOFStackingIterator *osi =
-            (OOFStackingIterator*)iteratorStack->getTop ();
-         widgetAtPoint = 
-            stackingContextMgr->getBottomWidgetAtPoint (x, y, iteratorStack,
-                                                        interruptedWidget,
-                                                        &osi->minorLevel,
-                                                        &osi->index);
-      }
+      if (stackingContextMgr)
+         widgetAtPoint =
+            stackingContextMgr->getBottomWidgetAtPoint (x, y, context);
       break;
 
    case OOFStackingIterator::IN_FLOW:
@@ -584,56 +508,33 @@ Widget *OOFAwareWidget::getWidgetAtPointLevel (int x, int y,
       break;
 
    case OOFStackingIterator::OOF_CONT:
-      widgetAtPoint =
-         getWidgetOOFAtPoint (x, y, iteratorStack, interruptedWidget);
+      widgetAtPoint = getWidgetOOFAtPoint (x, y, context);
       break;
 
    case OOFStackingIterator::SC_TOP:
-      if (stackingContextMgr) {
-         OOFStackingIterator *osi =
-            (OOFStackingIterator*)iteratorStack->getTop ();
+      if (stackingContextMgr)
          widgetAtPoint = 
-            stackingContextMgr->getTopWidgetAtPoint (x, y, iteratorStack,
-                                                     interruptedWidget,
-                                                     &osi->minorLevel,
-                                                     &osi->index);
-      }
+            stackingContextMgr->getTopWidgetAtPoint (x, y, context);
       break;
 
    default:
       assertNotReached ();
    }
 
-   DBG_OBJ_MSGF ("events", 1, "=> %p (i: %p)",
-                 widgetAtPoint, *interruptedWidget);
+   DBG_OBJ_MSGF ("events", 1, "=> %p", widgetAtPoint);
    DBG_OBJ_LEAVE ();
    return widgetAtPoint;
 }
 
 Widget *OOFAwareWidget::getWidgetOOFAtPoint (int x, int y,
-                                             core::StackingIteratorStack
-                                             *iteratorStack,
-                                             Widget **interruptedWidget)
+                                             GettingWidgetAtPointContext
+                                             *context)
 {
-   OOFStackingIterator *osi = (OOFStackingIterator*)iteratorStack->getTop ();
-   assert (osi->majorLevel == OOFStackingIterator::OOF_CONT);
-
    Widget *widgetAtPoint = NULL;
 
-   while (*interruptedWidget == NULL && widgetAtPoint == NULL &&
-          osi->minorLevel >= 0) {
-      if (outOfFlowMgr[osi->minorLevel])
-         widgetAtPoint =
-            outOfFlowMgr[osi->minorLevel]->getWidgetAtPoint (x, y,
-                                                             iteratorStack,
-                                                             interruptedWidget,
-                                                             &(osi->index));
-
-      if (*interruptedWidget == NULL) {
-         osi->minorLevel--;
-         if (osi->minorLevel > 0 && outOfFlowMgr[osi->minorLevel] != NULL)
-            osi->index = outOfFlowMgr[osi->minorLevel]->getNumWidgets () - 1;
-      }
+   for (int i = NUM_OOFM -1; widgetAtPoint == NULL && i >= 0; i--) {
+      if(outOfFlowMgr[i])
+         widgetAtPoint = outOfFlowMgr[i]->getWidgetAtPoint (x, y, context);
    }
 
    return widgetAtPoint;

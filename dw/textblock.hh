@@ -813,8 +813,8 @@ protected:
                    core::DrawingContext *context);
 
    Widget *getWidgetAtPointLevel (int x, int y,
-                                  core::StackingIteratorStack *iteratorStack,
-                                  Widget **interruptedWidget, int majorLevel);
+                                  core::GettingWidgetAtPointContext *context,
+                                  int level);
    int getLastLevelIndex (int majorLevel, int minorLevel);
 
    void sizeRequestImpl (core::Requisition *requisition);

@@ -26,9 +26,9 @@ private:
    int findZIndex (int zIndex, bool mustExist);
    void draw (View *view, Rectangle *area, int startZIndex, int endZIndex,
               DrawingContext *context);
-   Widget *getWidgetAtPoint (int x, int y, StackingIteratorStack *iteratorStack,
-                             Widget **interruptedWidget, int *zIndexIndex,
-                             int startZIndex, int endZIndex, int *index);
+   Widget *getWidgetAtPoint (int x, int y,
+                             core::GettingWidgetAtPointContext *context,
+                             int startZIndex, int endZIndex);
 
 public:
    StackingContextMgr (Widget *widget);
@@ -57,14 +57,15 @@ public:
    void drawTop (View *view, Rectangle *area, DrawingContext *context)
    { draw (view, area, 0, INT_MAX, context); }
 
-   Widget *getTopWidgetAtPoint (int x, int y,
-                                core::StackingIteratorStack *iteratorStack,
-                                Widget **interruptedWidget,
-                                int *zIndexIndex, int *index);
-   Widget *getBottomWidgetAtPoint (int x, int y,
-                                   core::StackingIteratorStack *iteratorStack,
-                                   Widget **interruptedWidget,
-                                   int *zIndexIndex, int *index);
+   inline Widget *getTopWidgetAtPoint (int x, int y,
+                                       core::GettingWidgetAtPointContext
+                                       *context)
+   { return getWidgetAtPoint (x, y, context, 0, INT_MAX); }
+
+   inline Widget *getBottomWidgetAtPoint (int x, int y,
+                                          core::GettingWidgetAtPointContext
+                                          *context)
+   { return getWidgetAtPoint (x, y, context, INT_MIN, -1); }
 };
 
 } // namespace core

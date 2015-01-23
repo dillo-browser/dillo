@@ -31,10 +31,8 @@ public:
    virtual void markSizeChange (int ref) = 0;
    virtual void markExtremesChange (int ref) = 0;
    virtual core::Widget *getWidgetAtPoint (int x, int y,
-                                           core::StackingIteratorStack
-                                           *iteratorStack,
-                                           core::Widget **interruptedWidget,
-                                           int *index)= 0;
+                                           core::GettingWidgetAtPointContext
+                                           *context) = 0;
 
    virtual void addWidgetInFlow (OOFAwareWidget *widget,
                                  OOFAwareWidget *parent, int externalIndex) = 0;

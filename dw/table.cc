@@ -415,49 +415,36 @@ bool Table::isBlockLevel ()
 }
 
 core::Widget *Table::getWidgetAtPointLevel (int x, int y,
-                                            core::StackingIteratorStack
-                                            *iteratorStack,
-                                            Widget **interruptedWidget,
-                                            int majorLevel)
+                                            core::GettingWidgetAtPointContext
+                                            *context,
+                                            int level)
 {
    DBG_OBJ_ENTER ("events", 0, "Table::getWidgetAtPointLevel", "%d, %d, %s",
-                  x, y, OOFStackingIterator::majorLevelText (majorLevel));
+                  x, y, OOFStackingIterator::majorLevelText (level));
 
    Widget *widgetAtPoint = NULL;
 
-   switch (majorLevel) {
+   switch (level) {
    case OOFStackingIterator::IN_FLOW:
-      {
-         OOFStackingIterator *osi =
-            (OOFStackingIterator*)iteratorStack->getTop ();
-
-         while (widgetAtPoint == NULL && *interruptedWidget == NULL &&
-                osi->index >= 0) {
-            if (childDefined (osi->index)) {
-               Widget *child = children->get(osi->index)->cell.widget;
-               if (!core::StackingContextMgr::handledByStackingContextMgr
-                   (child))
-                  widgetAtPoint =
-                     child->getWidgetAtPointTotal (x, y, iteratorStack,
-                                                   interruptedWidget);
-            }
-  
-            if (*interruptedWidget == NULL)
-               osi->index--;
+      for (int i = children->size () - 1; widgetAtPoint == NULL && i >= 0;
+           i--) {
+         if (childDefined (i)) {
+            Widget *child = children->get(i)->cell.widget;
+            if (!core::StackingContextMgr::handledByStackingContextMgr (child))
+               widgetAtPoint = child->getWidgetAtPoint (x, y, context);
          }
       }
       break;
 
    default:
       widgetAtPoint =
-         OOFAwareWidget::getWidgetAtPointLevel (x, y, iteratorStack,
-                                                interruptedWidget, majorLevel);
+         OOFAwareWidget::getWidgetAtPointLevel (x, y, context, level);
       break;
    }
 
-   DBG_OBJ_MSGF ("events", 1, "=> %p (i: %p)",
-                 widgetAtPoint, *interruptedWidget);
+   DBG_OBJ_MSGF ("events", 1, "=> %p", widgetAtPoint);
    DBG_OBJ_LEAVE ();
+
    return widgetAtPoint;
 }
 

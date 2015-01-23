@@ -426,6 +426,11 @@ public:
    inline style::Style *getStyle () { return style; }
    /** \todo I do not like this. */
    inline Allocation *getAllocation () { return &allocation; }
+   inline bool inAllocation (int x, int y) {
+      return wasAllocated () && x >= allocation.x && y >= allocation.y &&
+         x <= allocation.x + allocation.width &&
+         y <= allocation.y + getHeight ();
+   }
 
    inline int boxOffsetX ()
    { return extraSpace.left + getStyle()->boxOffsetX (); }
@@ -475,12 +480,9 @@ public:
    void drawInterruption (View *view, Rectangle *area, DrawingContext *context);
 
    virtual Widget *getWidgetAtPoint (int x, int y,
-                                     StackingIteratorStack *iteratorStack,
-                                     Widget **interruptedWidget);
-   Widget *getWidgetAtPointTotal (int x, int y,
-                                  StackingIteratorStack *iteratorStack,
-                                  Widget **interruptedWidget);
-   Widget *getWidgetAtPointToplevel (int x, int y);
+                                     GettingWidgetAtPointContext *context);
+   Widget *getWidgetAtPointInterrupted (int x, int y,
+                                        GettingWidgetAtPointContext *context);
 
    bool buttonPress (EventButton *event);
    bool buttonRelease (EventButton *event);

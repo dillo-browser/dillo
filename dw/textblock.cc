@@ -2754,60 +2754,63 @@ void Textblock::breakAdded ()
          words->getRef(words->size () - 2)->effSpace = 0;
 }
 
-core::Widget *Textblock::getWidgetAtPointLevel (int x, int y,
-                                                core::StackingIteratorStack
-                                                *iteratorStack,
-                                                Widget **interruptedWidget,
-                                                int majorLevel)
+core::Widget *Textblock::getWidgetAtPointLevel(int x, int y,
+                                               core::GettingWidgetAtPointContext
+                                               *context,
+                                               int level)
 {
    DBG_OBJ_ENTER ("events", 0, "Textblock::getWidgetAtPointLevel", "%d, %d, %s",
-                  x, y, OOFStackingIterator::majorLevelText (majorLevel));
+                  x, y, OOFStackingIterator::majorLevelText (level));
 
    Widget *widgetAtPoint = NULL;
 
-   switch (majorLevel) {
+   switch (level) {
    case OOFStackingIterator::IN_FLOW:
       {
-         OOFStackingIterator *osi =
-            (OOFStackingIterator*)iteratorStack->getTop ();
-
          int lineIndex = findLineIndexWhenAllocated (y - allocation.y);
       
          if (lineIndex >= 0 && lineIndex < lines->size ()) {
             Line *line = lines->getRef (lineIndex);
-            if (osi->index > line->lastWord)
-               osi->index = line->lastWord;
 
-            while (widgetAtPoint == NULL && *interruptedWidget == NULL &&
-                   osi->index >= 0) {
-               Word *word =  words->getRef (osi->index);
+            for (int wordIndex = line->lastWord;
+                 widgetAtPoint == NULL && wordIndex >= line->firstWord;
+                 wordIndex--) {
+               Word *word =  words->getRef (wordIndex);
                if (word->content.type == core::Content::WIDGET_IN_FLOW &&
                    !core::StackingContextMgr::handledByStackingContextMgr
-                   (word->content.widget))
-                   widgetAtPoint = word->content.widget
-                      ->getWidgetAtPointTotal (x, y, iteratorStack,
-                                               interruptedWidget);
-               if (*interruptedWidget == NULL)
-                  osi->index--;
+                      (word->content.widget))
+                   widgetAtPoint =
+                      word->content.widget->getWidgetAtPoint (x, y, context);
             }
          }
       }
       break;
 
    case OOFStackingIterator::OOF_REF:
-      handleOOFReferences (iteratorStack, interruptedWidget, true);
-      // No searching, only interruption.
+      // TODO Inefficient. Perhaps store OOF references in seperate
+      // (much smaller!) list.
+      for (int oofmIndex = NUM_OOFM; widgetAtPoint == NULL && oofmIndex >= 0;
+           oofmIndex--) {
+         for (int wordIndex = words->size () - 1;
+              widgetAtPoint == NULL && wordIndex >= 0; wordIndex--) {
+            Word *word = words->getRef (wordIndex);
+            if (word->content.type == core::Content::WIDGET_OOF_REF &&
+                getOOFMIndex (word->content.widget) == oofmIndex &&
+                doesWidgetOOFInterruptDrawing (word->content.widget))
+               widgetAtPoint = 
+                  word->content.widget->getWidgetAtPointInterrupted (x, y,
+                                                                     context);
+         }
+      }
       break;
 
    default:
       widgetAtPoint =
-         OOFAwareWidget::getWidgetAtPointLevel (x, y, iteratorStack,
-                                                interruptedWidget, majorLevel);
+         OOFAwareWidget::getWidgetAtPointLevel (x, y, context, level);
       break;
    }
 
-   DBG_OBJ_MSGF ("events", 1, "=> %p (i: %p)",
-                 widgetAtPoint, *interruptedWidget);
+   DBG_OBJ_MSGF ("events", 1, "=> %p", widgetAtPoint);
    DBG_OBJ_LEAVE ();
    return widgetAtPoint;
 }
