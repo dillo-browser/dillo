@@ -88,9 +88,19 @@ The exact control flow is described in this sequence diagram:
 When is drawing interrupted?
 ============================
 
-A widget holding references to widgets out of flow (which are not
-necessary children) draws them as interruption if ... TODO. See
-dw::oof::OOFAwareWidget::doesWidgetOOFInterruptDrawing.
+A widget out of flow is regarded as part of the stacking context (see
+\ref dw-stacking-context) of its *generator* (in the example above:
+#fl-1 is part of the stacking context stablished by #sc-1, not the one
+established by body). For this reason, a widget out of flow must, in
+some cases, drawn while the *gerator* is drawn, as an
+interruption. The exact rule:
+
+A widget out of flow must be drawn as an interruption (while the
+*generator* is drawn) if the stacking context of the generator (to
+which this widget belongs) is in front of the stacking context of the
+container (the parent widget).
+
+See dw::oof::OOFAwareWidget::doesWidgetOOFInterruptDrawing.
 
 
 How does interruption of drawing work?
