@@ -62,7 +62,7 @@ digraph G {
 The drawing order of the four elements (represented by widgets) is:
 
 - body,
-- #sc-1 (background and text),
+- #sc-1,
 - #fl-1,
 - #sc-2.
 
@@ -73,12 +73,11 @@ Since
 3. a widget can only draw its descendants (not neccessary children,
    but drawing siblings is not allowed),
 
-#sc-2 cannot be drawn as a whole; instead drawing is **interrupted**
+#sc-1 cannot be drawn as a whole; instead drawing is **interrupted**
 by #fl-1. This means:
 
 1. the background and text of #sc-1 is drawn;
-2. drawing of #sc-1 is **interrupted** by #fl-1, which means that its
-   parent, the body, draws #fl-1;
+2. drawing of #sc-1 is **interrupted** by #fl-1 (see below for details),
 3. drawing of #sc-1 is **continued**, by drawing #sc-2.
 
 The exact control flow is described in this sequence diagram:
@@ -89,11 +88,24 @@ The exact control flow is described in this sequence diagram:
 When is drawing interrupted?
 ============================
 
-...
+A widget holding references to widgets out of flow (which are not
+necessary children) draws them as interruption if ... TODO. See
+dw::oof::OOFAwareWidget::doesWidgetOOFInterruptDrawing.
+
 
 How does interruption of drawing work?
 ======================================
 
-...
+When a widget detects that an other widget should be drawn as
+interruption (se above), it calls dw::core::Widget::drawInterruption,
+which
+
+1. draws the widget within another "context" (area and reference
+   widget); for this the original drawing area
+   (dw::core::DrawingContext::getToplevelArea) is used.
+2. Using dw::core::DrawingContext::addWidgetDrawnAsInterruption, and
+   checking later with
+   dw::core::DrawingContext::hasWidgetBeenDrawnAsInterruption prevents
+   these widgets from being drawn twice.
 
 */

@@ -122,11 +122,13 @@ Widget::~Widget ()
 
 
 /**
- * \brief Calculates the intersection of widget->allocation and area, returned
- *    in intersection (in widget coordinates!).
+ * \brief Calculates the intersection of the visible allocation
+ *    (i. e. the intersection with the visible parent allocation) and
+ *    "area" (in widget coordinates referring to "refWidget"),
+ *    returned in intersection (in widget coordinates).
  *
- * Typically used by containers when drawing their children. Returns whether
- * intersection is not empty.
+ * Typically used by containers when drawing their children (passing
+ * "this" as "refWidget"). Returns whether intersection is not empty.
  */
 bool Widget::intersects (Widget *refWidget, Rectangle *area,
                          Rectangle *intersection)
@@ -141,7 +143,9 @@ bool Widget::intersects (Widget *refWidget, Rectangle *area,
       intersection->y += refWidget->allocation.y;
       
       r = true;
-      for (Widget *widget = this; r && widget != refWidget->parent;
+      // "RefWidget" is excluded; it is assumed that "area" its already within
+      // its allocation.
+      for (Widget *widget = this; r && widget != refWidget;
            widget = widget->parent) {
          assert (widget != NULL); // refWidget must be ancestor.
 
@@ -186,6 +190,9 @@ bool Widget::intersects (Widget *refWidget, Rectangle *area,
    return r;
 }
 
+/**
+ * See \ref dw-interrupted-drawing for details.
+ */
 void Widget::drawInterruption (View *view, Rectangle *area,
                                DrawingContext *context)
 {

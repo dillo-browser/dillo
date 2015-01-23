@@ -237,6 +237,9 @@ struct Content
    static void printMask (Type mask);
 };
 
+/**
+ * Set at the top when drawing. See \ref dw-interrupted-drawing for details.
+ */
 class DrawingContext
 {
 private:

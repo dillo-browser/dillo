@@ -12,9 +12,34 @@ Widget allocation outside of parent allocation
 A widget allocation outside of the allocation of the parent is
 allowed, but the part outside is not visible.
 
+Which widgets may be drawn?
+-------------------
+
+All drawing starts with the toplevel widget
+(cf. dw::core::Widget::queueDrawArea, dw::core::Layout::queueDraw, and
+dw::core::Layout::expose), and a widget has to draw its children, in a
+way consistent with their stacking order.
+
+There are two exceptions:
+
+1. Direct descendants, which are not children, may be drawn, if the
+   parent can distinguish them and so omit drawing them a second
+   time. See dw::core::StackingContextMgr and \ref dw-stacking-context.
+   Parents should not draw children in flow for which
+   dw::core::StackingContextMgr::handledByStackingContextMgr returns
+   true.
+2. Interrupted drawing: via dw::core::Widget::drawInterruption; see
+   \ref dw-interrupted-drawing.
+
+Similar rules apply to handling mouse events
+(dw::core::Widget::getWidgetAtPoint).
+
 Interrupted drawing
 -------------------
 \ref dw-interrupted-drawing.
+
+Similar rules apply to handling mouse events
+(dw::core::Widget::getWidgetAtPoint).
 
 
 Floats
