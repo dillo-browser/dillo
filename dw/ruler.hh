@@ -25,8 +25,7 @@ protected:
    void containerSizeChangedForChildren ();
    bool usesAvailWidth ();
    void draw (core::View *view, core::Rectangle *area,
-              core::StackingIteratorStack *iteratorStack,
-              Widget **interruptedWidget);
+              core::DrawingContext *context);
 
 public:
    static int CLASS_ID;

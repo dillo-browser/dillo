@@ -279,7 +279,7 @@ int OOFFloatsMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
    Float *f1 = (Float*)o1, *f2 = (Float*)o2;
    int r = -123; // Compiler happiness: GCC 4.7 does not handle this?;
 
-   DBG_OBJ_ENTER_O ("border", 1, oofm, "CompareGBAndExtIndex/compare",
+   DBG_OBJ_ENTER_O ("border", 1, oofm, "CompareGBAndExtIndex::compare",
                     "#%d -> %p/%d, #%d -> %p/#%d",
                     f1->getIndex (type), f1->generatingBlock, f1->externalIndex,
                     f2->getIndex (type), f2->generatingBlock,
@@ -1292,49 +1292,33 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth)
    return x;
 }
 
-void OOFFloatsMgr::draw (View *view, Rectangle *area,
-                         StackingIteratorStack *iteratorStack,
-                         Widget **interruptedWidget, int *index)
+void OOFFloatsMgr::draw (View *view, Rectangle *area, DrawingContext *context)
 {
-   DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d]",
-                  area->x, area->y, area->width, area->height, *index);
+   DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
+                  area->x, area->y, area->width, area->height);
 
-   drawFloats (leftFloatsCB, view, area, iteratorStack, interruptedWidget,
-               index, 0);
-   if (*interruptedWidget == NULL)
-      drawFloats (rightFloatsCB, view, area, iteratorStack, interruptedWidget,
-                  index, leftFloatsCB->size ());
+   drawFloats (leftFloatsCB, view, area, context);
+   drawFloats (rightFloatsCB, view, area, context);
 
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
    DBG_OBJ_LEAVE ();
 }
 
 void OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
-                               Rectangle *area,
-                               StackingIteratorStack *iteratorStack,
-                               Widget **interruptedWidget, int *index,
-                               int startIndex)
+                               Rectangle *area, DrawingContext *context)
 {
    // This could be improved, since the list is sorted: search the
    // first float fitting into the area, and iterate until one is
    // found below the area.
 
-   OOFAwareWidget::OOFStackingIterator *osi =
-      (OOFAwareWidget::OOFStackingIterator*)iteratorStack->getTop ();
-
-   while (*interruptedWidget == NULL && *index - startIndex < list->size()) {
-      Float *vloat = list->get(*index - startIndex);
+   for (int i = 0; i < list->size(); i++) {
+      Float *vloat = list->get(i);
       Widget *childWidget = vloat->getWidget ();
      
       Rectangle childArea;
-      if (!osi->hasWidgetBeenDrawnAfterInterruption (childWidget) &&
+      if (!context->hasWidgetBeenDrawnAsInterruption (childWidget) &&
          !StackingContextMgr::handledByStackingContextMgr (childWidget) &&
-          childWidget->intersects (area, &childArea))
-         childWidget->drawTotal (view, &childArea, iteratorStack,
-                                 interruptedWidget);
-      
-      if (*interruptedWidget == NULL)
-         (*index)++;
+          childWidget->intersects (container, area, &childArea))
+         childWidget->draw (view, &childArea, context);
    }
 }
 

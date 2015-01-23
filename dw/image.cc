@@ -408,8 +408,7 @@ bool Image::buttonReleaseImpl (core::EventButton *event)
 }
 
 void Image::draw (core::View *view, core::Rectangle *area,
-                  core::StackingIteratorStack *iteratorStack,
-                  Widget **interruptedWidget)
+                  core::DrawingContext *context)
 {
    int dx, dy;
    core::Rectangle content, intersection;

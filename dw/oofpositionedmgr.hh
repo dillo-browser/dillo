@@ -87,8 +87,7 @@ public:
    void sizeAllocateEnd (OOFAwareWidget *caller);
    void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area,
-              core::StackingIteratorStack *iteratorStack,
-              core::Widget **interruptedWidget, int *index);
+              core::DrawingContext *context);
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);

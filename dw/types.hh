@@ -237,6 +237,37 @@ struct Content
    static void printMask (Type mask);
 };
 
+class DrawingContext
+{
+private:
+   Rectangle toplevelArea;
+   lout::container::typed::HashSet<lout::object::TypedPointer<Widget> >
+      *widgetsDrawnAsInterruption;
+
+public:
+   inline DrawingContext (Rectangle *toplevelArea) {
+      this->toplevelArea = *toplevelArea;
+      widgetsDrawnAsInterruption =
+         new lout::container::typed::HashSet<lout::object::
+                                             TypedPointer<Widget> > (true);
+   }
+   
+   inline ~DrawingContext () { delete widgetsDrawnAsInterruption; }
+
+   inline Rectangle *getToplevelArea () { return &toplevelArea; }
+
+   inline bool hasWidgetBeenDrawnAsInterruption (Widget *widget) {
+      lout::object::TypedPointer<Widget> key (widget);
+      return widgetsDrawnAsInterruption->contains (&key);
+   }
+
+   inline void addWidgetDrawnAsInterruption (Widget *widget) {
+      lout::object::TypedPointer<Widget> *key =
+         new lout::object::TypedPointer<Widget> (widget);
+      return widgetsDrawnAsInterruption->put (key);
+   }
+};
+
 } // namespace core
 } // namespace dw
 

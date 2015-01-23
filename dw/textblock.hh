@@ -650,8 +650,7 @@ protected:
    void drawSpace (int wordIndex, core::View *view, core::Rectangle *area,
                    int xWidget, int yWidgetBase);
    void drawLine (Line *line, core::View *view, core::Rectangle *area,
-                  core::StackingIteratorStack *iteratorStack,
-                  Widget **interruptedWidget);
+                  core::DrawingContext *context);
    void handleOOFReferences (core::StackingIteratorStack *iteratorStack,
                              Widget **interruptedWidget, bool backwards);
 
@@ -810,9 +809,8 @@ protected:
    void alignLine (int lineIndex);
    void calcTextOffset (int lineIndex, int totalWidth);
 
-   void drawLevel (core::View *view, core::Rectangle *area,
-                   core::StackingIteratorStack *iteratorStack,
-                   Widget **interruptedWidget, int majorLevel);
+   void drawLevel (core::View *view, core::Rectangle *area, int level,
+                   core::DrawingContext *context);
 
    Widget *getWidgetAtPointLevel (int x, int y,
                                   core::StackingIteratorStack *iteratorStack,

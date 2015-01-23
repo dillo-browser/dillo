@@ -57,8 +57,7 @@ void Bullet::containerSizeChangedForChildren ()
 }
 
 void Bullet::draw (core::View *view, core::Rectangle *area,
-                   core::StackingIteratorStack *iteratorStack,
-                   Widget **interruptedWidget)
+                   core::DrawingContext *context)
 {
    int x, y, l;
    bool filled = true;

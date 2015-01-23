@@ -131,12 +131,10 @@ void Embed::setEnabled (bool enabled)
    resource->setEnabled (enabled);
 }
 
-void Embed::draw (View *view, Rectangle *area,
-                  StackingIteratorStack *iteratorStack,
-                  Widget **interruptedWidget)
+void Embed::draw (View *view, Rectangle *area, DrawingContext *context)
 {
    drawWidgetBox (view, area, false);
-   resource->draw (view, area);
+   resource->draw (view, area, context);
 }
 
 Iterator *Embed::iterator (Content::Type mask, bool atEnd)
@@ -268,7 +266,7 @@ void Resource::setDisplayed (bool displayed)
 {
 }
 
-void Resource::draw (View *view, Rectangle *area)
+void Resource::draw (View *view, Rectangle *area, DrawingContext *context)
 {
 }
 
@@ -319,7 +317,7 @@ Iterator *LabelButtonResource::iterator (Content::Type mask, bool atEnd)
 
 void ComplexButtonResource::LayoutReceiver::resizeQueued (bool extremesChanged)
 {
-   DBG_OBJ_ENTER ("resize", 0, "LayoutReceiver/resizeQueued", "%s",
+   DBG_OBJ_ENTER ("resize", 0, "LayoutReceiver::resizeQueued", "%s",
                   extremesChanged ? "true" : "false");
    resource->queueResize (extremesChanged);
    DBG_OBJ_LEAVE ();

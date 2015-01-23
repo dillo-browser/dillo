@@ -474,9 +474,8 @@ protected:
 
    bool isBlockLevel ();
 
-   void drawLevel (core::View *view, core::Rectangle *area,
-                   core::StackingIteratorStack *iteratorStack,
-                   Widget **interruptedWidget, int majorLevel);
+   void drawLevel (core::View *view, core::Rectangle *area, int level,
+                   core::DrawingContext *context);
 
    Widget *getWidgetAtPointLevel (int x, int y,
                                   core::StackingIteratorStack *iteratorStack,

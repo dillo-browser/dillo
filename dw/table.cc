@@ -368,13 +368,12 @@ bool Table::isBlockLevel ()
    return true;
 }
 
-void Table::drawLevel (core::View *view, core::Rectangle *area,
-                       core::StackingIteratorStack *iteratorStack,
-                       Widget **interruptedWidget, int majorLevel)
+   void Table::drawLevel (core::View *view, core::Rectangle *area, int level,
+                       core::DrawingContext *context)
 {
-   DBG_OBJ_ENTER ("draw", 0, "Table/drawLevel", "(%d, %d, %d * %d), %s",
+   DBG_OBJ_ENTER ("draw", 0, "Table::drawLevel", "[%d, %d, %d * %d], %s",
                   area->x, area->y, area->width, area->height,
-                  OOFStackingIterator::majorLevelText (majorLevel));
+                  OOFStackingIterator::majorLevelText (level));
 
 #if 0
    // This old code belongs perhaps to the background. Check when reactivated.
@@ -394,36 +393,24 @@ void Table::drawLevel (core::View *view, core::Rectangle *area,
    }
 #endif
 
-   switch (majorLevel) {
+   switch (level) {
    case OOFStackingIterator::IN_FLOW:
-      {
-         OOFStackingIterator *osi =
-            (OOFStackingIterator*)iteratorStack->getTop ();
-
-         while (*interruptedWidget == NULL && osi->index < children->size ()) {
-            if (childDefined (osi->index)) {
-               Widget *child = children->get(osi->index)->cell.widget;
-               core::Rectangle childArea;
-               if (!core::StackingContextMgr::handledByStackingContextMgr
-                   (child)
-                   && child->intersects (area, &childArea))
-                  child->drawTotal (view, &childArea, iteratorStack,
-                                    interruptedWidget);
-            }
-  
-            if (*interruptedWidget == NULL)
-               osi->index++;
+      for (int i = 0; i < children->size (); i++) {
+         if (childDefined (i)) {
+            Widget *child = children->get(i)->cell.widget;
+            core::Rectangle childArea;
+            if (!core::StackingContextMgr::handledByStackingContextMgr (child)
+                && child->intersects (this, area, &childArea))
+               child->draw (view, &childArea, context);
          }
       }
       break;
 
    default:
-      OOFAwareWidget::drawLevel (view, area, iteratorStack, interruptedWidget,
-                                 majorLevel);
+      OOFAwareWidget::drawLevel (view, area, level, context);
       break;
    }
 
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
    DBG_OBJ_LEAVE ();
 }
 
@@ -433,7 +420,7 @@ core::Widget *Table::getWidgetAtPointLevel (int x, int y,
                                             Widget **interruptedWidget,
                                             int majorLevel)
 {
-   DBG_OBJ_ENTER ("events", 0, "Table/getWidgetAtPointLevel", "%d, %d, %s",
+   DBG_OBJ_ENTER ("events", 0, "Table::getWidgetAtPointLevel", "%d, %d, %s",
                   x, y, OOFStackingIterator::majorLevelText (majorLevel));
 
    Widget *widgetAtPoint = NULL;

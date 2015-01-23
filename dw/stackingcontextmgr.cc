@@ -120,91 +120,36 @@ int StackingContextMgr::findZIndex (int zIndex, bool mustExist)
    return result;
 }
 
-void StackingContextMgr::drawBottom (View *view, Rectangle *area,
-                                     StackingIteratorStack *iteratorStack,
-                                     Widget **interruptedWidget,
-                                     int *zIndexIndex, int *index)
+void StackingContextMgr::draw (View *view, Rectangle *area, int startZIndex,
+                               int endZIndex, DrawingContext *context)
 {
-   DBG_OBJ_ENTER ("draw", 0, "drawBottom", "(%d, %d, %d * %d), [%d], [%d]",
-                  area->x, area->y, area->width, area->height, *zIndexIndex,
-                  *index);
-   draw (view, area, iteratorStack, interruptedWidget, index, INT_MIN, -1,
-         zIndexIndex);
-   DBG_OBJ_LEAVE ();
-}
+   DBG_OBJ_ENTER ("draw", 0, "draw", "[%d, %d, %d * %d], %d, %d",
+                  area->x, area->y, area->width, area->height, startZIndex,
+                  endZIndex);
 
-void StackingContextMgr::drawTop (View *view, Rectangle *area,
-                                  StackingIteratorStack *iteratorStack,
-                                  Widget **interruptedWidget,
-                                  int *zIndexIndex, int *index)
-{
-   DBG_OBJ_ENTER ("draw", 0, "drawTop", "(%d, %d, %d * %d), [%d], [%d]",
-                  area->x, area->y, area->width, area->height, *zIndexIndex,
-                  *index);
-   draw (view, area, iteratorStack, interruptedWidget, index, 0, INT_MAX,
-         zIndexIndex);
-   DBG_OBJ_LEAVE ();
-}
-
-void StackingContextMgr::draw (View *view, Rectangle *area,
-                               StackingIteratorStack *iteratorStack,
-                               Widget **interruptedWidget, int *zIndexIndex,
-                               int startZIndex, int endZIndex, int *index)
-{
-   DBG_OBJ_ENTER ("draw", 0, "draw", "(%d, %d, %d * %d), [%d], %d, %d, [%d]",
-                  area->x, area->y, area->width, area->height,
-                  *zIndexIndex, startZIndex, endZIndex, *index);
-
-   DBG_OBJ_MSGF ("draw", 1, "initially: index = %d (of %d)",
-                 *index, childSCWidgets->size ());
-
-   while (*interruptedWidget == NULL &&
-          *zIndexIndex < numZIndices) {
+   for (int zIndexIndex = 0; zIndexIndex < numZIndices; zIndexIndex++) {
       // Wrong region of z-indices (top or bottom) is simply ignored
       // (as well as non-defined zIndices).
-      if (zIndices != NULL && zIndices[*zIndexIndex] >= startZIndex &&
-          zIndices[*zIndexIndex] <= endZIndex) {
-         DBG_OBJ_MSGF ("draw", 1, "drawing zIndex = %d",
-                       zIndices[*zIndexIndex]);
+      if (zIndices != NULL && zIndices[zIndexIndex] >= startZIndex &&
+          zIndices[zIndexIndex] <= endZIndex) {
+         DBG_OBJ_MSGF ("draw", 1, "drawing zIndex = %d", zIndices[zIndexIndex]);
          DBG_OBJ_MSG_START ();
 
-         while (*interruptedWidget == NULL &&
-                *index < childSCWidgets->size ()) {
-            Widget *child = childSCWidgets->get (*index);
+         for (int i = 0; i < childSCWidgets->size (); i++) {
+            Widget *child = childSCWidgets->get (i);
             DBG_OBJ_MSGF ("draw", 2, "widget %p has zIndex = %d",
                           child, child->getStyle()->zIndex);
-            Rectangle parentArea, childArea;
 
-            // This is a hack: since "area" is given in widget coordinates,
-            // but the calling widget is not necessary the parent, as
-            // Widget::interects assumes, "area" has to be corrected.
-            parentArea = *area;
-            area->x += widget->getAllocation()->x 
-               - child->getParent()->getAllocation()->x;
-            area->y += widget->getAllocation()->y
-               - child->getParent()->getAllocation()->y;
-            
-            if (child->getStyle()->zIndex == zIndices[*zIndexIndex] &&
-                child->intersects (&parentArea, &childArea))
-               child->drawTotal (view, &childArea, iteratorStack,
-                                 interruptedWidget);
-
-            if (*interruptedWidget == NULL)
-               (*index)++;
+            Rectangle childArea;
+            if (child->getStyle()->zIndex == zIndices[zIndexIndex] &&
+                child->intersects (widget, area, &childArea))
+               child->draw (view, &childArea, context);
          }
 
          DBG_OBJ_MSG_END ();
       }
-
-      if (*interruptedWidget == NULL) {
-         (*zIndexIndex)++;
-         *index = 0;
-      }
    }
 
-   DBG_OBJ_MSGF ("draw", 1, "finally: index = %d (of %d)",
-                 *index, childSCWidgets->size ());
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
    DBG_OBJ_LEAVE ();
 }
 

@@ -24,9 +24,8 @@ private:
    int *zIndices, numZIndices;
 
    int findZIndex (int zIndex, bool mustExist);
-   void draw (View *view, Rectangle *area,
-              StackingIteratorStack *iteratorStack, Widget **interruptedWidget,
-              int *zIndexIndex, int startZIndex, int endZIndex, int *index);
+   void draw (View *view, Rectangle *area, int startZIndex, int endZIndex,
+              DrawingContext *context);
    Widget *getWidgetAtPoint (int x, int y, StackingIteratorStack *iteratorStack,
                              Widget **interruptedWidget, int *zIndexIndex,
                              int startZIndex, int endZIndex, int *index);
@@ -53,12 +52,10 @@ public:
    inline int getNumZIndices () { return numZIndices; }
    inline int getNumChildSCWidgets () { return childSCWidgets->size (); }
 
-   void drawBottom (View *view, Rectangle *area,
-                    StackingIteratorStack *iteratorStack,
-                    Widget **interruptedWidget, int *zIndexIndex, int *index);
-   void drawTop (View *view, Rectangle *area,
-                 StackingIteratorStack *iteratorStack,
-                 Widget **interruptedWidget, int *zIndexIndex, int *index);
+   inline void drawBottom (View *view, Rectangle *area, DrawingContext *context)
+   { draw (view, area, INT_MIN, -1, context); }
+   void drawTop (View *view, Rectangle *area, DrawingContext *context)
+   { draw (view, area, 0, INT_MAX, context); }
 
    Widget *getTopWidgetAtPoint (int x, int y,
                                 core::StackingIteratorStack *iteratorStack,

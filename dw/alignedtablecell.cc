@@ -63,7 +63,7 @@ bool AlignedTableCell::mustBeWidenedToAvailWidth ()
 
 int AlignedTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
-   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/getAvailWidthOfChild",
+   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell::getAvailWidthOfChild",
                   "%p, %s", child, forceValue ? "true" : "false");
 
    int width = tablecell::correctAvailWidthOfChild
@@ -76,7 +76,7 @@ int AlignedTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
 
 int AlignedTableCell::getAvailHeightOfChild (Widget *child, bool forceValue)
 {
-   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/getAvailHeightOfChild",
+   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell::getAvailHeightOfChild",
                   "%p, %s", child, forceValue ? "true" : "false");
 
    int height = tablecell::correctAvailHeightOfChild
@@ -94,7 +94,7 @@ void AlignedTableCell::correctRequisitionOfChild (Widget *child,
                                                                           int*,
                                                                           int*))
 {
-   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/correctRequisitionOfChild",
+   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell::correctRequisitionOfChild",
                   "%p, %d * (%d + %d), ...", child, requisition->width,
                   requisition->ascent, requisition->descent);
 
@@ -110,7 +110,7 @@ void AlignedTableCell::correctExtremesOfChild (Widget *child,
                                                core::Extremes *extremes,
                                                bool useAdjustmentWidth)
 {
-   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell/correctExtremesOfChild",
+   DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell::correctExtremesOfChild",
                   "%p, %d (%d) / %d (%d)",
                   child, extremes->minWidth, extremes->minWidthIntrinsic,
                   extremes->maxWidth, extremes->maxWidthIntrinsic);

@@ -467,16 +467,12 @@ public:
 
    void containerSizeChanged ();
 
-   bool intersects (Rectangle *area, Rectangle *intersection);
+   bool intersects (Widget *refWidget, Rectangle *area,
+                    Rectangle *intersection);
 
    /** Area is given in widget coordinates. */
-   virtual void draw (View *view, Rectangle *area,
-                      StackingIteratorStack *iteratorStack,
-                      Widget **interruptedWidget) = 0;
-   void drawTotal (View *view, Rectangle *area,
-                   StackingIteratorStack *iteratorStack,
-                   Widget **interruptedWidget);
-   void drawToplevel (View *view, Rectangle *area);
+   virtual void draw (View *view, Rectangle *area, DrawingContext *context) = 0;
+   void drawInterruption (View *view, Rectangle *area, DrawingContext *context);
 
    virtual Widget *getWidgetAtPoint (int x, int y,
                                      StackingIteratorStack *iteratorStack,

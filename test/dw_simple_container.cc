@@ -209,13 +209,12 @@ void SimpleContainer::sizeAllocateImpl (Allocation *allocation)
 }
 
 void SimpleContainer::draw (View *view, Rectangle *area,
-                            StackingIteratorStack *iteratorStack,
-                            Widget **interruptedWidget)
+                            DrawingContext *context)
 {
    drawWidgetBox (view, area, false);
    Rectangle childArea;
-   if (child && child->intersects (area, &childArea))
-      child->drawTotal (view, &childArea, iteratorStack, interruptedWidget);
+   if (child && child->intersects (this, area, &childArea))
+      child->draw (view, &childArea, context);
 }
 
 Iterator *SimpleContainer::iterator (Content::Type mask, bool atEnd)

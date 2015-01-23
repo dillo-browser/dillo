@@ -26,8 +26,7 @@ public:
    virtual void sizeAllocateEnd (OOFAwareWidget *caller) = 0;
    virtual void containerSizeChangedForChildren () = 0;
    virtual void draw (core::View *view, core::Rectangle *area,
-                      core::StackingIteratorStack *iteratorStack,
-                      core::Widget **interruptedWidget, int *index) = 0;
+                      core::DrawingContext *context) = 0;
 
    virtual void markSizeChange (int ref) = 0;
    virtual void markExtremesChange (int ref) = 0;

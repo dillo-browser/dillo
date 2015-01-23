@@ -45,7 +45,7 @@ bool isBlockLevel ()
 int correctAvailWidthOfChild (core::Widget *widget, core::Widget *child,
                               int width, bool forceValue)
 {
-   DBG_OBJ_ENTER_O ("resize", 0, widget, "tablecell/correctAvailWidthOfChild",
+   DBG_OBJ_ENTER_O ("resize", 0, widget, "tablecell::correctAvailWidthOfChild",
                     "%p, %d, %s", child, width, forceValue ? "true" : "false");
 
    // Make sure that this width does not exceed the width of the table
@@ -80,7 +80,7 @@ void correctCorrectedRequisitionOfChild (core::Widget *widget,
                                          void (*splitHeightFun) (int, int*,
                                                                  int*))
 {
-   DBG_OBJ_ENTER_O ("resize", 0, widget, "tablecell/correctRequisitionOfChild",
+   DBG_OBJ_ENTER_O ("resize", 0, widget, "tablecell::correctRequisitionOfChild",
                     "%p, %d * (%d + %d), ...", child, requisition->width,
                     requisition->ascent, requisition->descent);
 

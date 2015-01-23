@@ -136,8 +136,7 @@ protected:
    void containerSizeChangedForChildren ();
    
    void draw (core::View *view, core::Rectangle *area,
-              core::StackingIteratorStack *iteratorStack,
-              Widget **interruptedWidget);
+              core::DrawingContext *context);
 
    bool buttonPressImpl (core::EventButton *event);
    bool buttonReleaseImpl (core::EventButton *event);

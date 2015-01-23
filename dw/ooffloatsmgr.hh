@@ -285,10 +285,7 @@ private:
    bool haveExtremesChanged (Side side);
 
    void drawFloats (SortedFloatsVector *list, core::View *view,
-                    core::Rectangle *area,
-                    core::StackingIteratorStack *iteratorStack,
-                    core::Widget **interruptedWidget, int *index,
-                    int startIndex);
+                    core::Rectangle *area, core::DrawingContext *context);
    core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y,
                                         core::StackingIteratorStack
                                         *iteratorStack,
@@ -348,8 +345,7 @@ public:
    void sizeAllocateEnd (OOFAwareWidget *caller);
    void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area,
-              core::StackingIteratorStack *iteratorStack,
-              core::Widget **interruptedWidget, int *index);
+              core::DrawingContext *context);
 
    void markSizeChange (int ref);
    void markExtremesChange (int ref);

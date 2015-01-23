@@ -223,7 +223,8 @@ void FltkResource::sizeAllocate (core::Allocation *allocation)
    DBG_OBJ_LEAVE ();
 }
 
-void FltkResource::draw (core::View *view, core::Rectangle *area)
+void FltkResource::draw (core::View *view, core::Rectangle *area,
+                         core::DrawingContext *context)
 {
    FltkView *fltkView = (FltkView*)view;
    if (fltkView->usesFltkWidgets () && this->view == fltkView) {
@@ -324,9 +325,11 @@ template <class I> void FltkSpecificResource<I>::sizeAllocate (core::Allocation
 }
 
 template <class I> void FltkSpecificResource<I>::draw (core::View *view,
-                                                       core::Rectangle *area)
+                                                       core::Rectangle *area,
+                                                       core::DrawingContext
+                                                       *context)
 {
-   FltkResource::draw (view, area);
+   FltkResource::draw (view, area, context);
 }
 
 template <class I> void FltkSpecificResource<I>::setStyle (core::style::Style

@@ -59,7 +59,7 @@ object::Object *Textblock::TextblockIterator::clone()
 void Textblock::TextblockIterator::highlight (int start, int end,
                                               core::HighlightLayer layer)
 {
-   DBG_OBJ_ENTER_O ("iterator", 0, getWidget (), "TextblockIterator/highlight",
+   DBG_OBJ_ENTER_O ("iterator", 0, getWidget (), "TextblockIterator::highlight",
                     "..., %d, %d, %d", start, end, layer);
 
    DBG_IF_RTFL {

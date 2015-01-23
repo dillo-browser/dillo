@@ -18,8 +18,7 @@ protected:
    void getExtremesImpl (core::Extremes *extremes);
    void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area,
-              core::StackingIteratorStack *iteratorStack,
-              Widget **interruptedWidget);
+              core::DrawingContext *context);
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);
 
 public:

@@ -128,134 +128,72 @@ Widget::~Widget ()
  * Typically used by containers when drawing their children. Returns whether
  * intersection is not empty.
  */
-bool Widget::intersects (Rectangle *area, Rectangle *intersection)
+bool Widget::intersects (Widget *refWidget, Rectangle *area,
+                         Rectangle *intersection)
 {
-   DBG_OBJ_ENTER ("draw", 0, "intersects", "%d, %d, %d * %d",
-                  area->x, area->y, area->width, area->height);
+   DBG_OBJ_ENTER ("draw", 0, "intersects", "%p, [%d, %d, %d * %d]",
+                  refWidget, area->x, area->y, area->width, area->height);
    bool r;
 
    if (wasAllocated ()) {
-      Rectangle parentArea, childArea;
+      *intersection = *area;
+      intersection->x += refWidget->allocation.x;
+      intersection->y += refWidget->allocation.y;
       
-      parentArea = *area;
-      parentArea.x += parent->allocation.x;
-      parentArea.y += parent->allocation.y;
-      
-      DBG_OBJ_MSGF ("draw", 2, "parentArea: %d, %d, %d * %d",
-                    parentArea.x, parentArea.y, parentArea.width,
-                    parentArea.height);
+      r = true;
+      for (Widget *widget = this; r && widget != refWidget->parent;
+           widget = widget->parent) {
+         assert (widget != NULL); // refWidget must be ancestor.
 
-      childArea.x = allocation.x;
-      childArea.y = allocation.y;
-      childArea.width = allocation.width;
-      childArea.height = getHeight ();
+         Rectangle widgetArea, newIntersection;
+         widgetArea.x = widget->allocation.x;
+         widgetArea.y = widget->allocation.y;
+         widgetArea.width = widget->allocation.width;
+         widgetArea.height = widget->getHeight ();
 
-      DBG_OBJ_MSGF ("draw", 2, "childArea: %d, %d, %d * %d",
-                    childArea.x, childArea.y, childArea.width,
-                    childArea.height);
-      
-      if (parentArea.intersectsWith (&childArea, intersection)) {
-         DBG_OBJ_MSGF ("draw", 2, "intersection: %d, %d, %d * %d",
-                       intersection->x, intersection->y, intersection->width,
-                       intersection->height);
+         if (intersection->intersectsWith (&widgetArea, &newIntersection)) {
+            DBG_OBJ_MSGF ("draw", 1, "new intersection: %d, %d, %d * %d",
+                          newIntersection.x, newIntersection.y,
+                          newIntersection.width, newIntersection.height);
+            *intersection = newIntersection;
+         } else {
+            DBG_OBJ_MSG ("draw", 1, "no new intersection");
+            r = false;
+         }
+      }
 
+      if (r) {
          intersection->x -= allocation.x;
          intersection->y -= allocation.y;
-         r = true;
 
-         DBG_OBJ_MSGF ("draw", 1, "=> %d, %d, %d * %d",
-                       intersection->x, intersection->y, intersection->width,
-                       intersection->height);
-      } else {
-         r = false;
-         DBG_OBJ_MSG ("draw", 1, "=> no intersection");
+         DBG_OBJ_MSGF ("draw", 1, "final intersection: %d, %d, %d * %d",
+                       intersection->x, intersection->y,
+                       intersection->width, intersection->height);
       }
    } else {
       r = false;
-      DBG_OBJ_MSG ("draw", 1, "=> not allocated");
+      DBG_OBJ_MSG ("draw", 1, "not allocated");
    }
+
+   if (r)
+      DBG_OBJ_MSGF ("draw", 1, "=> true: %d, %d, %d * %d",
+                    intersection->x, intersection->y,
+                    intersection->width, intersection->height);
+   else
+      DBG_OBJ_MSG ("draw", 1, "=> false");
 
    DBG_OBJ_LEAVE ();
    return r;
 }
 
-void Widget::drawTotal (View *view, Rectangle *area,
-                        StackingIteratorStack *iteratorStack,
-                        Widget **interruptedWidget)
+void Widget::drawInterruption (View *view, Rectangle *area,
+                               DrawingContext *context)
 {
-   DBG_OBJ_ENTER ("draw", 0, "drawTotal", "%d, %d, %d * %d",
-                  area->x, area->y, area->width, area->height);
+   Rectangle thisArea;
+   if (intersects (layout->topLevel, context->getToplevelArea (), &thisArea))
+      draw (view, &thisArea, context);
 
-   DBG_IF_RTFL {
-      misc::StringBuffer sb;
-      iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("draw", 2, "initial iteratorStack: %s", sb.getChars ());
-   }
-
-   Object *si = NULL;
-
-   if (iteratorStack->atRealTop ()) {
-      si = stackingIterator (false);
-      if (si) {
-         iteratorStack->push (si);
-      }
-   } else
-      iteratorStack->forward ();
-
-   DBG_IF_RTFL {
-      misc::StringBuffer sb;
-      iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("draw", 2, "iteratorStack before: %s",
-                    sb.getChars ());
-   }
-
-   draw (view, area, iteratorStack, interruptedWidget);
-   DBG_OBJ_MSGF ("draw", 1, "=> %p", *interruptedWidget);
-
-   DBG_IF_RTFL {
-      misc::StringBuffer sb;
-      iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("draw", 2, "iteratorStack after: %s",
-                    sb.getChars ());
-   }
-
-   // A value for *interruptedWidget other than NULL indicates a
-   // widget with a complex drawing process, for which
-   // stackingIterator() must return something non-NULL, so that the
-   // interrupted drawing process can be continued. (TODO: Not quite
-   // correct when forward() was called instead of push().)
-
-   // assert (*interruptedWidget == NULL || si != NULL);
-
-   if (*interruptedWidget == NULL) {
-      if (si)
-         iteratorStack->pop ();
-   } else
-      iteratorStack->backward ();
-
-   DBG_IF_RTFL {
-      misc::StringBuffer sb;
-      iteratorStack->intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("draw", 2, "final iteratorStack: %s", sb.getChars ());
-   }
-
-   DBG_OBJ_LEAVE ();
-}
-
-void Widget::drawToplevel (View *view, Rectangle *area)
-{
-   assert (parent == NULL);
-
-   StackingIteratorStack iteratorStack;
-   Widget *interruptedWidget = NULL;
-   drawTotal (view, area, &iteratorStack, &interruptedWidget);
-
-   // Everything should be finished at this point.
-   assert (interruptedWidget == NULL);
-   //if (interruptedWidget != NULL)
-   //   DBG_OBJ_MSGF ("draw", 0,
-   //                 "===== Assertion failed: interruptedWidget = %p =====",
-   //                 interruptedWidget);
+   context->addWidgetDrawnAsInterruption (this);
 }
 
 Widget *Widget::getWidgetAtPoint (int x, int y,
@@ -738,7 +676,7 @@ int Widget::getMinWidth (Extremes *extremes, bool forceValue)
 {
    DBG_IF_RTFL {
       if (extremes)
-         DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "[%d (%d) / %d (%d), %s",
+         DBG_OBJ_ENTER ("resize", 0, "getMinWidth", "[%d (%d) / %d (%d)], %s",
                         extremes->minWidth, extremes->minWidthIntrinsic,
                         extremes->maxWidth, extremes->maxWidthIntrinsic,
                         forceValue ? "true" : "false");

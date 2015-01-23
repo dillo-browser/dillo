@@ -74,8 +74,7 @@ bool Ruler::usesAvailWidth ()
 }
 
 void Ruler::draw (core::View *view, core::Rectangle *area,
-                  core::StackingIteratorStack *iteratorStack,
-                  Widget **interruptedWidget)
+                  core::DrawingContext *context)
 {
    drawWidgetBox (view, area, false);
 }

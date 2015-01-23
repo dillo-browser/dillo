@@ -57,7 +57,7 @@ bool SimpleTableCell::mustBeWidenedToAvailWidth ()
 
 int SimpleTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
-   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell/getAvailWidthOfChild",
+   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell::getAvailWidthOfChild",
                   "%p, %s", child, forceValue ? "true" : "false");
 
    int width = tablecell::correctAvailWidthOfChild
@@ -70,7 +70,7 @@ int SimpleTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)
 
 int SimpleTableCell::getAvailHeightOfChild (Widget *child, bool forceValue)
 {
-   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell/getAvailHeightOfChild",
+   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell::getAvailHeightOfChild",
                   "%p, %s", child, forceValue ? "true" : "false");
 
    int height = tablecell::correctAvailHeightOfChild
@@ -87,7 +87,7 @@ void SimpleTableCell::correctRequisitionOfChild (Widget *child,
                                                                          int*,
                                                                          int*))
 {
-   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell/correctRequisitionOfChild",
+   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell::correctRequisitionOfChild",
                   "%p, %d * (%d + %d), ...", child, requisition->width,
                   requisition->ascent, requisition->descent);
 
@@ -102,7 +102,7 @@ void SimpleTableCell::correctExtremesOfChild (Widget *child,
                                               core::Extremes *extremes,
                                               bool useAdjustmentWidth)
 {
-   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell/correctExtremesOfChild",
+   DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell::correctExtremesOfChild",
                   "%p, %d (%d) / %d (%d)",
                   child, extremes->minWidth, extremes->minWidthIntrinsic,
                   extremes->maxWidth, extremes->maxWidthIntrinsic);
