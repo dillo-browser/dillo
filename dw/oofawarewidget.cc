@@ -37,74 +37,6 @@ const char *OOFAwareWidget::OOFM_NAME[NUM_OOFM] = {
    "FLOATS", "ABSOLUTE", "FIXED"
 };
 
-OOFAwareWidget::OOFStackingIterator::OOFStackingIterator
-   (OOFAwareWidget *widget, bool atEnd)
-{
-   if (atEnd) {
-      majorLevel = OOFStackingIterator::END - 1;
-      minorLevel = widget->getLastMinorLevel (majorLevel);
-      index = widget->getLastLevelIndex (majorLevel, minorLevel);
-   } else {
-      majorLevel = OOFStackingIterator::START + 1;
-      minorLevel = index = 0;
-   }
-
-   widgetsDrawnAfterInterruption = NULL;
-}
-
-OOFAwareWidget::OOFStackingIterator::~OOFStackingIterator ()
-{
-   if (widgetsDrawnAfterInterruption)
-      delete widgetsDrawnAfterInterruption;
-}
-
-void OOFAwareWidget::OOFStackingIterator::registerWidgetDrawnAfterInterruption
-   (Widget *widget)
-{
-   if (widgetsDrawnAfterInterruption == NULL)
-      widgetsDrawnAfterInterruption = new HashSet<TypedPointer<Widget> > (true);
-
-   TypedPointer<Widget> *p = new TypedPointer<Widget> (widget);
-   assert (!widgetsDrawnAfterInterruption->contains (p));
-   widgetsDrawnAfterInterruption->put (p);
-}
-
-bool OOFAwareWidget::OOFStackingIterator::hasWidgetBeenDrawnAfterInterruption
-   (Widget *widget)
-{
-   if (widgetsDrawnAfterInterruption) {
-      TypedPointer<Widget> p (widget);
-      return widgetsDrawnAfterInterruption->contains (&p);
-   } else
-      return false;
-}
-
-const char *OOFAwareWidget::OOFStackingIterator::majorLevelText (int majorLevel)
-{
-   switch (majorLevel) {
-   case START:      return "START";
-   case BACKGROUND: return "BACKGROUND";
-   case SC_BOTTOM:  return "SC_BOTTOM";
-   case IN_FLOW:    return "IN_FLOW";
-   case OOF_REF:    return "OOF_REF";
-   case OOF_CONT:   return "OOF_CONT";
-   case SC_TOP:     return "SC_TOP";
-   case END:        return "END";
-   default:         return "???";
-   }
-}
-
-void OOFAwareWidget::OOFStackingIterator::intoStringBuffer(StringBuffer *sb)
-{
-   sb->append ("(");
-   sb->append (majorLevelText (majorLevel));
-   sb->append (", ");
-   sb->appendInt (minorLevel);
-   sb->append (", ");
-   sb->appendInt (index);
-   sb->append (")");
-}
-
 int OOFAwareWidget::CLASS_ID = -1;
 
 OOFAwareWidget::OOFAwareWidget ()
@@ -133,6 +65,21 @@ OOFAwareWidget::~OOFAwareWidget ()
    }
 
    DBG_OBJ_DELETE ();
+}
+
+const char *OOFAwareWidget::stackingLevelText (int level)
+{
+   switch (level) {
+   case SL_START:      return "START";
+   case SL_BACKGROUND: return "BACKGROUND";
+   case SL_SC_BOTTOM:  return "SC_BOTTOM";
+   case SL_IN_FLOW:    return "IN_FLOW";
+   case SL_OOF_REF:    return "OOF_REF";
+   case SL_OOF_CONT:   return "OOF_CONT";
+   case SL_SC_TOP:     return "SC_TOP";
+   case SL_END:        return "END";
+   default:            return "???";
+   }
 }
 
 void OOFAwareWidget::notifySetAsTopLevel ()
@@ -397,8 +344,7 @@ void OOFAwareWidget::draw (View *view, Rectangle *area, DrawingContext *context)
    DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
 
-   for (int level = OOFStackingIterator::START + 1;
-        level < OOFStackingIterator::END; level++)
+   for (int level = SL_START + 1; level < SL_END; level++)
       drawLevel (view, area, level, context);
 
    DBG_OBJ_LEAVE ();
@@ -410,39 +356,39 @@ void OOFAwareWidget::drawLevel (View *view, Rectangle *area, int level,
    DBG_OBJ_ENTER ("draw", 0, "OOFAwareWidget::drawLevel",
                   "(%d, %d, %d * %d), %s",
                   area->x, area->y, area->width, area->height,
-                  OOFStackingIterator::majorLevelText (level));
+                  stackingLevelText (level));
 
    switch (level) {
-   case OOFStackingIterator::START:
+   case SL_START:
       break;
 
-   case OOFStackingIterator::BACKGROUND:
+   case SL_BACKGROUND:
       drawWidgetBox (view, area, false);
       break;
 
-   case OOFStackingIterator::SC_BOTTOM:
+   case SL_SC_BOTTOM:
       if (stackingContextMgr)
          stackingContextMgr->drawBottom (view, area, context);
       break;
 
-   case OOFStackingIterator::IN_FLOW:
+   case SL_IN_FLOW:
       // Should be implemented in the sub class.
       break;
 
-   case OOFStackingIterator::OOF_REF:
+   case SL_OOF_REF:
       // Should be implemented in the sub class (when references are hold).
       break;
 
-   case OOFStackingIterator::OOF_CONT:
+   case SL_OOF_CONT:
       drawOOF (view, area, context);
       break;
 
-   case OOFStackingIterator::SC_TOP:
+   case SL_SC_TOP:
       if (stackingContextMgr)
          stackingContextMgr->drawTop (view, area, context);
       break;
 
-   case OOFStackingIterator::END:
+   case SL_END:
       break;
    }
 
@@ -465,9 +411,9 @@ Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y,
    Widget *widgetAtPoint = NULL;
 
    if (inAllocation (x, y)) {
-      for (int level = OOFStackingIterator::END - 1;
-           widgetAtPoint == NULL && level > OOFStackingIterator::START; level--)
-         widgetAtPoint = getWidgetAtPointLevel (x, y, context, level);
+      for (int level = SL_END - 1; widgetAtPoint == NULL && level > SL_START;
+           level--)
+         widgetAtPoint = getWidgetAtPointLevel (x, y, level, context);
    }
    
    DBG_OBJ_MSGF ("events", 1, "=> %p", widgetAtPoint);
@@ -475,43 +421,41 @@ Widget *OOFAwareWidget::getWidgetAtPoint (int x, int y,
    return widgetAtPoint;
 }
 
-Widget *OOFAwareWidget::getWidgetAtPointLevel (int x, int y,
+Widget *OOFAwareWidget::getWidgetAtPointLevel (int x, int y, int level,
                                                GettingWidgetAtPointContext
-                                               *context,
-                                               int level)
+                                               *context)
 {
    DBG_OBJ_ENTER ("events", 0, "OOFAwareWidget::getWidgetAtPointLevel",
-                  "%d, %d, %s",
-                  x, y, OOFStackingIterator::majorLevelText (level));
+                  "%d, %d, %s", x, y, stackingLevelText (level));
 
    Widget *widgetAtPoint = NULL;
 
    switch (level) {
-   case OOFStackingIterator::BACKGROUND:
+   case SL_BACKGROUND:
       if (inAllocation (x, y))
          widgetAtPoint = this;
       break;
 
-   case OOFStackingIterator::SC_BOTTOM:
+   case SL_SC_BOTTOM:
       if (stackingContextMgr)
          widgetAtPoint =
             stackingContextMgr->getBottomWidgetAtPoint (x, y, context);
       break;
 
-   case OOFStackingIterator::IN_FLOW:
+   case SL_IN_FLOW:
       // Should be implemented in the sub class.
       assertNotReached ();
       break;
 
-   case OOFStackingIterator::OOF_REF:
+   case SL_OOF_REF:
       // Should be implemented in the sub class (when references are hold).
       break;
 
-   case OOFStackingIterator::OOF_CONT:
+   case SL_OOF_CONT:
       widgetAtPoint = getWidgetOOFAtPoint (x, y, context);
       break;
 
-   case OOFStackingIterator::SC_TOP:
+   case SL_SC_TOP:
       if (stackingContextMgr)
          widgetAtPoint = 
             stackingContextMgr->getTopWidgetAtPoint (x, y, context);
@@ -538,68 +482,6 @@ Widget *OOFAwareWidget::getWidgetOOFAtPoint (int x, int y,
    }
 
    return widgetAtPoint;
-}
-
-int OOFAwareWidget::getLastMinorLevel (int majorLevel)
-{
-   switch (majorLevel) {
-   case OOFStackingIterator::BACKGROUND:
-      return 0;
-
-   case OOFStackingIterator::SC_BOTTOM:
-   case OOFStackingIterator::SC_TOP:
-      // See StackingContextMgr: refers to list of z-indices; region
-      // (top or bottom) does not play a role.
-      if (stackingContextMgr)
-         return stackingContextMgr->getNumZIndices () - 1;
-      else
-         return 0;
-
-   case OOFStackingIterator::IN_FLOW:
-      return 0;
-
-   case OOFStackingIterator::OOF_REF:
-   case OOFStackingIterator::OOF_CONT:
-         return NUM_OOFM - 1;
-
-
-   default:
-      assertNotReached ();
-         return 0;
-   }
-}
-
-int OOFAwareWidget::getLastLevelIndex (int majorLevel, int minorLevel)
-{
-   switch (majorLevel) {
-   case OOFStackingIterator::BACKGROUND:
-      return 0;
-
-   case OOFStackingIterator::SC_BOTTOM:
-   case OOFStackingIterator::SC_TOP:
-      if (stackingContextMgr)
-         return stackingContextMgr->getNumChildSCWidgets () - 1;
-      else
-         return 0;
-
-   case OOFStackingIterator::IN_FLOW:
-      // Should be implemented in the sub class.
-      assertNotReached ();
-
-   case OOFStackingIterator::OOF_REF:
-      // Should be implemented in the sub class (when references are hold).
-      return 0;
-
-   case OOFStackingIterator::OOF_CONT:
-      if(outOfFlowMgr[minorLevel])
-         return outOfFlowMgr[minorLevel]->getNumWidgets () - 1;
-      else
-         return 0;
-
-   default:
-      assertNotReached ();
-      return 0;
-   }
 }
 
 int OOFAwareWidget::getAvailWidthOfChild (Widget *child, bool forceValue)
@@ -630,11 +512,6 @@ void OOFAwareWidget::removeChild (Widget *child)
    // Table do so), so this point is only reached from
    // ~OOFAwareWidget, which removes widgets out of flow.
    assert (isWidgetOOF (child));
-}
-
-Object *OOFAwareWidget::stackingIterator (bool atEnd)
-{
-   return new OOFStackingIterator (this, atEnd);
 }
 
 bool OOFAwareWidget::mustBeWidenedToAvailWidth ()

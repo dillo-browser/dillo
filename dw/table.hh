@@ -477,10 +477,8 @@ protected:
    void drawLevel (core::View *view, core::Rectangle *area, int level,
                    core::DrawingContext *context);
 
-   Widget *getWidgetAtPointLevel (int x, int y,
-                                  core::GettingWidgetAtPointContext *context,
-                                  int level);
-   int getLastLevelIndex (int majorLevel, int minorLevel);
+   Widget *getWidgetAtPointLevel (int x, int y, int level,
+                                  core::GettingWidgetAtPointContext *context);
 
    //bool buttonPressImpl (core::EventButton *event);
    //bool buttonReleaseImpl (core::EventButton *event);

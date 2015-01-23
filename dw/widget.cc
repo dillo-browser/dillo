@@ -1865,10 +1865,6 @@ void Widget::leaveNotifyImpl (EventCrossing *)
       tooltip->onLeave();
 }
 
-lout::object::Object *Widget::stackingIterator (bool atEnd)
-{
-   return NULL;
-}
 
 void Widget::removeChild (Widget *child)
 {

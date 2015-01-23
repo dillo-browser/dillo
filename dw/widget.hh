@@ -535,13 +535,6 @@ public:
     */
    virtual Iterator *iterator (Content::Type mask, bool atEnd) = 0;
 
-   /**
-    * \brief ...
-    *
-    * May return NULL.
-    */
-   virtual lout::object::Object *stackingIterator (bool atEnd);
-
    virtual void removeChild (Widget *child);
 };
 

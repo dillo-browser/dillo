@@ -368,12 +368,12 @@ bool Table::isBlockLevel ()
    return true;
 }
 
-   void Table::drawLevel (core::View *view, core::Rectangle *area, int level,
+void Table::drawLevel (core::View *view, core::Rectangle *area, int level,
                        core::DrawingContext *context)
 {
    DBG_OBJ_ENTER ("draw", 0, "Table::drawLevel", "[%d, %d, %d * %d], %s",
                   area->x, area->y, area->width, area->height,
-                  OOFStackingIterator::majorLevelText (level));
+                  stackingLevelText (level));
 
 #if 0
    // This old code belongs perhaps to the background. Check when reactivated.
@@ -394,7 +394,7 @@ bool Table::isBlockLevel ()
 #endif
 
    switch (level) {
-   case OOFStackingIterator::IN_FLOW:
+   case SL_IN_FLOW:
       for (int i = 0; i < children->size (); i++) {
          if (childDefined (i)) {
             Widget *child = children->get(i)->cell.widget;
@@ -414,18 +414,17 @@ bool Table::isBlockLevel ()
    DBG_OBJ_LEAVE ();
 }
 
-core::Widget *Table::getWidgetAtPointLevel (int x, int y,
+core::Widget *Table::getWidgetAtPointLevel (int x, int y, int level,
                                             core::GettingWidgetAtPointContext
-                                            *context,
-                                            int level)
+                                            *context)
 {
    DBG_OBJ_ENTER ("events", 0, "Table::getWidgetAtPointLevel", "%d, %d, %s",
-                  x, y, OOFStackingIterator::majorLevelText (level));
+                  x, y, stackingLevelText (level));
 
    Widget *widgetAtPoint = NULL;
 
    switch (level) {
-   case OOFStackingIterator::IN_FLOW:
+   case SL_IN_FLOW:
       for (int i = children->size () - 1; widgetAtPoint == NULL && i >= 0;
            i--) {
          if (childDefined (i)) {
@@ -438,7 +437,7 @@ core::Widget *Table::getWidgetAtPointLevel (int x, int y,
 
    default:
       widgetAtPoint =
-         OOFAwareWidget::getWidgetAtPointLevel (x, y, context, level);
+         OOFAwareWidget::getWidgetAtPointLevel (x, y, level, context);
       break;
    }
 
@@ -446,17 +445,6 @@ core::Widget *Table::getWidgetAtPointLevel (int x, int y,
    DBG_OBJ_LEAVE ();
 
    return widgetAtPoint;
-}
-
-int Table::getLastLevelIndex (int majorLevel, int minorLevel)
-{
-   switch (majorLevel) {
-   case OOFStackingIterator::IN_FLOW:
-      return children->size () - 1;
-
-   default:
-      return OOFAwareWidget::getLastLevelIndex (majorLevel, minorLevel);
-   }   
 }
 
 void Table::removeChild (Widget *child)

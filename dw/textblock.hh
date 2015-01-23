@@ -651,8 +651,6 @@ protected:
                    int xWidget, int yWidgetBase);
    void drawLine (Line *line, core::View *view, core::Rectangle *area,
                   core::DrawingContext *context);
-   void handleOOFReferences (core::StackingIteratorStack *iteratorStack,
-                             Widget **interruptedWidget, bool backwards);
 
    int findLineIndex (int y);
    int findLineIndexWhenNotAllocated (int y);
@@ -812,10 +810,8 @@ protected:
    void drawLevel (core::View *view, core::Rectangle *area, int level,
                    core::DrawingContext *context);
 
-   Widget *getWidgetAtPointLevel (int x, int y,
-                                  core::GettingWidgetAtPointContext *context,
-                                  int level);
-   int getLastLevelIndex (int majorLevel, int minorLevel);
+   Widget *getWidgetAtPointLevel (int x, int y, int level,
+                                  core::GettingWidgetAtPointContext *context);
 
    void sizeRequestImpl (core::Requisition *requisition);
    void getExtremesImpl (core::Extremes *extremes);

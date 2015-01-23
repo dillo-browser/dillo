@@ -164,15 +164,11 @@ protected:
 
    Widget *getWidgetAtPoint (int x, int y,
                              core::GettingWidgetAtPointContext *context);
-   virtual Widget *getWidgetAtPointLevel (int x, int y,
+   virtual Widget *getWidgetAtPointLevel (int x, int y, int level,
                                           core::GettingWidgetAtPointContext
-                                          *context,
-                                          int level);
+                                          *context);
    Widget *getWidgetOOFAtPoint (int x, int y,
                                 core::GettingWidgetAtPointContext *context);
-
-   virtual int getLastMinorLevel (int majorLevel);
-   virtual int getLastLevelIndex (int majorLevel, int minorLevel);
 
    static bool isOOFContainer (Widget *widget, int oofmIndex);
 
@@ -186,32 +182,16 @@ protected:
 
 
 public:
+   enum {
+      SL_START, SL_BACKGROUND, SL_SC_BOTTOM, SL_IN_FLOW, SL_OOF_REF,
+      SL_OOF_CONT, SL_SC_TOP, SL_END };
+
    static int CLASS_ID;
-
-   class OOFStackingIterator: public lout::object::Object
-   {
-   private:
-      lout::container::typed::HashSet<lout::object::TypedPointer<Widget> >
-         *widgetsDrawnAfterInterruption;
-
-   public:
-      enum { START, BACKGROUND, SC_BOTTOM, IN_FLOW, OOF_REF, OOF_CONT, SC_TOP,
-             END } ;
-      int majorLevel, minorLevel, index;
-
-      static const char *majorLevelText (int majorLevel);
-
-      OOFStackingIterator (OOFAwareWidget *widget, bool atEnd);
-      ~OOFStackingIterator ();
-
-      void intoStringBuffer(lout::misc::StringBuffer *sb);
-
-      void registerWidgetDrawnAfterInterruption (Widget *widget);
-      bool hasWidgetBeenDrawnAfterInterruption (Widget *widget);
-   };
 
    OOFAwareWidget ();
    ~OOFAwareWidget ();
+
+   static const char *stackingLevelText (int level);
 
    static inline bool testStyleFloat (core::style::Style *style)
    { return style->vloat != core::style::FLOAT_NONE; }
@@ -252,7 +232,6 @@ public:
 
    void draw (core::View *view, core::Rectangle *area,
               core::DrawingContext *context);
-   lout::object::Object *stackingIterator (bool atEnd);
 
    virtual bool mustBeWidenedToAvailWidth ();
    virtual void borderChanged (int y, core::Widget *vloat);
