@@ -225,7 +225,7 @@ void OOFPositionedMgr::draw (View *view, Rectangle *area,
       Child *child = children->get(i);
 
       Rectangle childArea;
-      if (!context->hasWidgetBeenDrawnAsInterruption (child->widget) &&
+      if (!context->hasWidgetBeenProcessedAsInterruption (child->widget) &&
           !StackingContextMgr::handledByStackingContextMgr (child->widget) &&
           child->widget->intersects (container, area, &childArea))
          child->widget->draw (view, &childArea, context);

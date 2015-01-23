@@ -1315,7 +1315,7 @@ void OOFFloatsMgr::drawFloats (SortedFloatsVector *list, View *view,
       Widget *childWidget = vloat->getWidget ();
      
       Rectangle childArea;
-      if (!context->hasWidgetBeenDrawnAsInterruption (childWidget) &&
+      if (!context->hasWidgetBeenProcessedAsInterruption (childWidget) &&
          !StackingContextMgr::handledByStackingContextMgr (childWidget) &&
           childWidget->intersects (container, area, &childArea))
          childWidget->draw (view, &childArea, context);

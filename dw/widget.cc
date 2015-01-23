@@ -200,7 +200,7 @@ void Widget::drawInterruption (View *view, Rectangle *area,
    if (intersects (layout->topLevel, context->getToplevelArea (), &thisArea))
       draw (view, &thisArea, context);
 
-   context->addWidgetDrawnAsInterruption (this);
+   context->addWidgetProcessedAsInterruption (this);
 }
 
 Widget *Widget::getWidgetAtPoint (int x, int y,
