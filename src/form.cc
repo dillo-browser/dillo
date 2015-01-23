@@ -658,7 +658,7 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
    } else {
       if (html->DocType != DT_HTML || html->DocTypeVersion <= 4.01f)
          BUG_MSG("<textarea> requires rows attribute.");
-      rows = 10;
+      rows = 2;
    }
    if (rows < 1 || rows > MAX_ROWS) {
       int badRows = rows;
