@@ -624,7 +624,9 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    core::Allocation childAllocation;
    core::Allocation *oldChildAllocation;
 
-   if (allocation->width != this->allocation.width) {
+   if (allocation->x != this->allocation.x ||
+       allocation->y != this->allocation.y ||
+       allocation->width != this->allocation.width) {
       redrawY = 0;
       DBG_OBJ_SET_NUM ("redrawY", redrawY);
    }
