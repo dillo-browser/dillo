@@ -3087,20 +3087,23 @@ static void Html_tag_close_pre(DilloHtml *html)
  * Check whether a tag is in the "excluding" element set for PRE
  * Excl. Set = {IMG, OBJECT, APPLET, BIG, SMALL, SUB, SUP, FONT, BASEFONT}
  */
-static int Html_tag_pre_excludes(int tag_idx)
+static int Html_tag_pre_excludes(DilloHtml *html, int tag_idx)
 {
-   const char *es_set[] = {"img", "object", "applet", "big", "small", "sub",
-                           "sup", "font", "basefont", NULL};
-   static int ei_set[10], i;
+   if (!(html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)) {
+      /* HTML5 doesn't say anything about excluding elements */
+      const char *es_set[] = {"img", "object", "applet", "big", "small", "sub",
+                              "sup", "font", "basefont", NULL};
+      static int ei_set[10], i;
 
-   /* initialize array */
-   if (!ei_set[0])
-      for (i = 0; es_set[i]; ++i)
-         ei_set[i] = a_Html_tag_index(es_set[i]);
+      /* initialize array */
+      if (!ei_set[0])
+         for (i = 0; es_set[i]; ++i)
+            ei_set[i] = a_Html_tag_index(es_set[i]);
 
-   for (i = 0; ei_set[i]; ++i)
-      if (tag_idx == ei_set[i])
-         return 1;
+      for (i = 0; ei_set[i]; ++i)
+         if (tag_idx == ei_set[i])
+            return 1;
+   }
    return 0;
 }
 
@@ -3950,7 +3953,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 
       /* TODO: this is only raising a warning, take some defined action.
        * Note: apache uses IMG inside PRE (we could use its "alt"). */
-      if ((html->InFlags & IN_PRE) && Html_tag_pre_excludes(ni))
+      if ((html->InFlags & IN_PRE) && Html_tag_pre_excludes(html, ni))
          BUG_MSG("<pre> is not allowed to contain <%s>.", Tags[ni].name);
 
       /* Make sure these elements don't nest each other */
