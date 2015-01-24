@@ -47,8 +47,7 @@
  */
 class CustInput2 : public Fl_Input {
 public:
-   CustInput2 (int x, int y, int w, int h, const char* l=0) :
-      Fl_Input(x,y,w,h,l) { placeholder = NULL; showing_placeholder = false; };
+   CustInput2 (int x, int y, int w, int h, const char* l=0);
    ~CustInput2 () { if (placeholder) free(placeholder); };
    void set_placeholder(const char *str);
    int show_placeholder();
@@ -64,6 +63,14 @@ private:
    bool showing_placeholder;
    Fl_Color usual_color;
    int usual_type;
+};
+
+CustInput2::CustInput2 (int x, int y, int w, int h, const char* l) :
+   Fl_Input(x,y,w,h,l)
+{
+   placeholder = NULL;
+   showing_placeholder = false;
+   usual_color = FL_BLACK;      /* just init until widget style is set */
 };
 
 /*
