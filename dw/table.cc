@@ -279,10 +279,17 @@ int Table::calcAvailWidthForDescendant (Widget *child)
 
    assert (actualChild != NULL);
 
-   // ActualChild->parentRef contains the position in the children
-   // array (see addCell()), so the column can be easily determined.
-   int col = actualChild->parentRef % numCols;
-   int colspanEff = children->get(actualChild->parentRef)->cell.colspanEff;
+   // ActualChild->parentRef contains (indirectly) the position in the
+   // children array (see addCell()), so the column can be easily
+   // determined.
+   int childNo = getParentRefInFlowSubRef (actualChild->parentRef);
+   int col = childNo % numCols;
+   DBG_OBJ_MSGF ("resize", 1, "actualChild = %p, "
+                 "childNo = getParentRefInFlowSubRef (%d) = %d, "
+                 "column = %d %% %d = %d",
+                 actualChild, actualChild->parentRef, childNo, childNo,
+                 numCols, col);
+   int colspanEff = children->get(childNo)->cell.colspanEff;
    DBG_OBJ_MSGF ("resize", 1, "calculated from column %d, colspanEff = %d",
                  col, colspanEff);
 
@@ -537,15 +544,13 @@ void Table::addCell (Widget *widget, int colspan, int rowspan)
    child->cell.rowspan = rowspan;
    children->set (curRow * numCols + curCol, child);
 
-   // The position in the children array is assigned to parentRef,
-   // although incremental resizing is not implemented. Useful, e. g.,
-   // in calcAvailWidthForDescendant(). See also reallocChildren().
-   widget->parentRef = curRow * numCols + curCol;
+   // The position in the children array is (indirectly) assigned to parentRef,
+   // although incremental resizing is not implemented. Useful, e. g., in
+   // calcAvailWidthForDescendant(). See also reallocChildren().
+   widget->parentRef = makeParentRefInFlow (curRow * numCols + curCol);
    DBG_OBJ_SET_NUM_O (widget, "parentRef", widget->parentRef);
 
    curCol += colspanEff;
-
-   widget->parentRef = makeParentRefInFlow (0);
    
    widget->setParent (this);
    if (rowStyle->get (curRow))
@@ -786,7 +791,7 @@ void Table::reallocChildren (int newNumCols, int newNumRows)
             int n = row * newNumCols + col;
             Child *child = children->get (n);
             if (child != NULL && child->type == Child::CELL) {
-               child->cell.widget->parentRef = n;
+               child->cell.widget->parentRef = makeParentRefInFlow (n);
                DBG_OBJ_SET_NUM_O (child->cell.widget, "parentRef",
                                   child->cell.widget->parentRef);
             }
@@ -832,6 +837,9 @@ void Table::calcCellSizes (bool calcHeights)
 
 void Table::forceCalcCellSizes (bool calcHeights)
 {
+   DBG_OBJ_ENTER ("resize", 0, "forceCalcCellSizes", "%s",
+                  calcHeights ? "true" : "false");
+
    // Since Table::getAvailWidthOfChild does not calculate the column
    // widths, and so initially a random value (100) is returned, a
    // correction is necessary. The old values are temporary preserved
@@ -886,11 +894,14 @@ void Table::forceCalcCellSizes (bool calcHeights)
          }
       }
    }
+
+   DBG_OBJ_LEAVE ();
 }
 
 void Table::actuallyCalcCellSizes (bool calcHeights)
 {
-   DBG_OBJ_ENTER0 ("resize", 0, "forceCalcCellSizes");
+   DBG_OBJ_ENTER ("resize", 0, "actuallyCalcCellSizes", "%s",
+                  calcHeights ? "true" : "false");
 
    int childHeight;
    core::Extremes extremes;
