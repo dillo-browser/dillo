@@ -3108,20 +3108,23 @@ static void Html_tag_close_pre(DilloHtml *html)
  * Check whether a tag is in the "excluding" element set for PRE
  * Excl. Set = {IMG, OBJECT, APPLET, BIG, SMALL, SUB, SUP, FONT, BASEFONT}
  */
-static int Html_tag_pre_excludes(int tag_idx)
+static int Html_tag_pre_excludes(DilloHtml *html, int tag_idx)
 {
-   const char *es_set[] = {"img", "object", "applet", "big", "small", "sub",
-                           "sup", "font", "basefont", NULL};
-   static int ei_set[10], i;
+   if (!(html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)) {
+      /* HTML5 doesn't say anything about excluding elements */
+      const char *es_set[] = {"img", "object", "applet", "big", "small", "sub",
+                              "sup", "font", "basefont", NULL};
+      static int ei_set[10], i;
 
-   /* initialize array */
-   if (!ei_set[0])
-      for (i = 0; es_set[i]; ++i)
-         ei_set[i] = a_Html_tag_index(es_set[i]);
+      /* initialize array */
+      if (!ei_set[0])
+         for (i = 0; es_set[i]; ++i)
+            ei_set[i] = a_Html_tag_index(es_set[i]);
 
-   for (i = 0; ei_set[i]; ++i)
-      if (tag_idx == ei_set[i])
-         return 1;
+      for (i = 0; ei_set[i]; ++i)
+         if (tag_idx == ei_set[i])
+            return 1;
+   }
    return 0;
 }
 
@@ -3171,7 +3174,13 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
 
    /* only valid inside HEAD */
    if (!(html->InFlags & IN_HEAD)) {
-      BUG_MSG("<meta> must be inside the HEAD section.");
+      if (!((html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f) &&
+            a_Html_get_attr(html, tag, tagsize, "itemprop"))) {
+         /* With the HTML 5.1 draft spec, meta with itemprop may appear
+          * in the body.
+          */
+         BUG_MSG("This <meta> element must be inside the HEAD section.");
+      }
       return;
    }
 
@@ -3409,13 +3418,12 @@ static void Html_tag_open_span(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
- * <DIV> (TODO: make a complete implementation)
+ * html5 sectioning stuff: article aside nav section header footer
  */
-static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
+static void Html_tag_open_sectioning(DilloHtml *html, const char *tag,
+                                     int tagsize)
 {
    const char *attrbuf;
-
-   a_Html_tag_set_align_attr (html, tag, tagsize);
 
    if (prefs.show_tooltip &&
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
@@ -3423,6 +3431,15 @@ static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
                                         attrbuf);
    }
+}
+
+/*
+ * <DIV> (TODO: make a complete implementation)
+ */
+static void Html_tag_open_div(DilloHtml *html, const char *tag, int tagsize)
+{
+   a_Html_tag_set_align_attr (html, tag, tagsize);
+   Html_tag_open_sectioning(html, tag, tagsize);
 }
 
 /*
@@ -3474,8 +3491,8 @@ const TagInfo Tags[] = {
  {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
- {"article", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
- {"aside", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"article", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
+ {"aside", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  {"audio", B8(011101),'R',2, Html_tag_open_audio, NULL, Html_tag_close_media},
  {"b", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"base", B8(100001),'F',0, Html_tag_open_base, NULL, NULL},
@@ -3508,7 +3525,7 @@ const TagInfo Tags[] = {
  {"figcaption", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"figure", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
  {"font", B8(010101),'R',2, Html_tag_open_font, NULL, NULL},
- {"footer", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"footer", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  {"form", B8(011110),'R',2, Html_tag_open_form, NULL, Html_tag_close_form},
  {"frame", B8(010010),'F',0, Html_tag_open_frame, Html_tag_content_frame,
                              NULL},
@@ -3521,7 +3538,7 @@ const TagInfo Tags[] = {
  {"h5", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"h6", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
  {"head", B8(101101),'O',1, Html_tag_open_head, NULL, Html_tag_close_head},
- {"header", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"header", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  {"hr", B8(010010),'F',0, Html_tag_open_hr, Html_tag_content_hr,
                           NULL},
  {"html", B8(001110),'O',1, Html_tag_open_html, NULL, Html_tag_close_html},
@@ -3543,8 +3560,8 @@ const TagInfo Tags[] = {
  {"mark", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  /* menu 1010 -- TODO: not exactly 1010, it can contain LI and inline */
  {"menu", B8(011010),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
- {"meta", B8(100001),'F',0, Html_tag_open_meta, NULL, NULL},
- {"nav", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"meta", B8(110001),'F',0, Html_tag_open_meta, NULL, NULL},
+ {"nav", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  /* noframes 1011 -- obsolete in HTML5 */
  /* noscript 1011 */
  {"object", B8(111101),'R',2, Html_tag_open_object, Html_tag_content_object,
@@ -3560,7 +3577,7 @@ const TagInfo Tags[] = {
  {"s", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"samp", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"script", B8(111001),'R',2, Html_tag_open_script,NULL,Html_tag_close_script},
- {"section", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"section", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  {"select", B8(010101),'R',2, Html_tag_open_select,NULL,Html_tag_close_select},
  {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
  {"source", B8(010001),'F',0, Html_tag_open_source, Html_tag_content_source,
@@ -3961,7 +3978,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 
       /* TODO: this is only raising a warning, take some defined action.
        * Note: apache uses IMG inside PRE (we could use its "alt"). */
-      if ((html->InFlags & IN_PRE) && Html_tag_pre_excludes(ni))
+      if ((html->InFlags & IN_PRE) && Html_tag_pre_excludes(html, ni))
          BUG_MSG("<pre> is not allowed to contain <%s>.", Tags[ni].name);
 
       /* Make sure these elements don't nest each other */
