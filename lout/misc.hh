@@ -579,7 +579,7 @@ class BitSet
 {
 private:
    unsigned char *bits;
-   int numBytes;
+   int numBits, numBytes;
 
    inline int bytesForBits(int bits) { return bits == 0 ? 1 : (bits + 7) / 8; }
 
