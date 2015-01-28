@@ -183,6 +183,20 @@ inline void rtfl_print (const char *version, const char *file, int line,
 #define DBG_OBJ_LEAVE_O(obj) \
    RTFL_OBJ_PRINT ("leave", "p", obj);
 
+#define DBG_OBJ_LEAVE_VAL(fmt, ...) \
+   STMT_START { \
+      char vals[256]; \
+      snprintf (vals, sizeof (vals), fmt, __VA_ARGS__); \
+      RTFL_OBJ_PRINT ("leave", "p:s", this, vals); \
+   } STMT_END
+
+#define DBG_OBJ_LEAVE_VAL_O(obj, fmt, ...) \
+   STMT_START { \
+      char vals[256]; \
+      snprintf (vals, sizeof (vals), fmt, __VA_ARGS__); \
+      RTFL_OBJ_PRINT ("leave", "p:s", obj, vals); \
+   } STMT_END
+
 #define DBG_OBJ_CREATE(klass) \
    DBG_OBJ_CREATE_O (this, klass)
 
@@ -343,6 +357,8 @@ inline void rtfl_print (const char *version, const char *file, int line,
 #define DBG_OBJ_ENTER_O(aspect, prio, obj, funname, fmt, ...)  STMT_NOP
 #define DBG_OBJ_LEAVE()                                        STMT_NOP
 #define DBG_OBJ_LEAVE_O(obj)                                   STMT_NOP
+#define DBG_OBJ_LEAVE_VAL(fmt, ...)                            STMT_NOP
+#define DBG_OBJ_LEAVE_VAL_O(obj, fmt, ...)                     STMT_NOP
 #define DBG_OBJ_CREATE(klass)                                  STMT_NOP
 #define DBG_OBJ_CREATE_O(obj, klass)                           STMT_NOP
 #define DBG_OBJ_DELETE()                                       STMT_NOP

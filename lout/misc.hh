@@ -64,6 +64,8 @@ inline int AsciiStrcasecmp(const char *s1, const char *s2)
    return ret;
 }
 
+inline const char *boolToStr (bool b) { return b ? "true" : "false"; }
+
 /**
  * \brief Simple (simpler than container::untyped::Vector and
  *    container::typed::Vector) template based vector.

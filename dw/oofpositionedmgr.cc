@@ -208,9 +208,7 @@ bool OOFPositionedMgr::haveExtremesChanged ()
 
    DBG_OBJ_MSG_END ();
 
-   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", changed ? "true" : "false");
-   DBG_OBJ_LEAVE ();
-
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (changed));
    return changed;
 }
 
@@ -571,36 +569,56 @@ int OOFPositionedMgr::getPosBorder (style::Length cssValue, int refLength)
 
 bool OOFPositionedMgr::isHPosComplete (Child *child)
 {
-   return (style::isAbsLength (child->widget->getStyle()->left) ||
-           style::isPerLength (child->widget->getStyle()->left)) &&
+   DBG_OBJ_ENTER ("resize.oofm", 0, "isHPosComplete", "[%p]", child->widget);
+   bool b =
+      (style::isAbsLength (child->widget->getStyle()->left) ||
+       style::isPerLength (child->widget->getStyle()->left)) &&
       (style::isAbsLength (child->widget->getStyle()->right) ||
        style::isPerLength (child->widget->getStyle()->right));
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (b));
+   return b;
 }
 
 bool OOFPositionedMgr::isVPosComplete (Child *child)
 {
-   return (style::isAbsLength (child->widget->getStyle()->top) ||
-           style::isPerLength (child->widget->getStyle()->top)) &&
+   DBG_OBJ_ENTER ("resize.oofm", 0, "isVPosComplete", "[%p]", child->widget);
+   bool b =
+      (style::isAbsLength (child->widget->getStyle()->top) ||
+       style::isPerLength (child->widget->getStyle()->top)) &&
       (style::isAbsLength (child->widget->getStyle()->bottom) ||
        style::isPerLength (child->widget->getStyle()->bottom));
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (b));
+   return b;
 }
 
 bool OOFPositionedMgr::isHPosCalculable (Child *child, bool allocated)
 {
-   return
+   DBG_OBJ_ENTER ("resize.oofm", 0, "isHPosCalculable", "[%p], %s",
+                  child->widget, boolToStr (allocated));
+   bool b =
       allocated || (isHPosComplete (child) && child->reference == container);
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (b));
+   return b;
 }
 
 bool OOFPositionedMgr::isVPosCalculable (Child *child, bool allocated)
 {
-   return
+   DBG_OBJ_ENTER ("resize.oofm", 0, "isVPosCalculable", "[%p], %s",
+                  child->widget, boolToStr (allocated));
+   bool b =
       allocated || (isVPosComplete (child) && child->reference == container);
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (b));
+   return b;
 }
 
 bool OOFPositionedMgr::isPosCalculable (Child *child, bool allocated)
 {
-   return isHPosCalculable (child, allocated) &&
+   DBG_OBJ_ENTER ("resize.oofm", 0, "isPosCalculable", "[%p], %s",
+                  child->widget, boolToStr (allocated));
+   bool b = isHPosCalculable (child, allocated) &&
       isVPosCalculable (child, allocated);
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (b));
+   return b;
 }
 
 void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
