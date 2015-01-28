@@ -107,7 +107,7 @@ How does interruption of drawing work?
 ======================================
 
 When a widget detects that an other widget should be drawn as
-interruption (se above), it calls dw::core::Widget::drawInterruption,
+interruption (see above), it calls dw::core::Widget::drawInterruption,
 which
 
 1. draws the widget within another "context" (area and reference
