@@ -36,7 +36,7 @@ Similar rules apply to handling mouse events
 
 Interrupted drawing
 -------------------
-\ref dw-interrupted-drawing.
+→ \ref dw-interrupted-drawing.
 
 Similar rules apply to handling mouse events
 (dw::core::Widget::getWidgetAtPoint).
@@ -132,7 +132,7 @@ Positioned elements
 
 Positioned elements outside of the container
 --------------------------------------------
-...
+→ \ref dw-pos-elements-outside-container.
 
 Relative positions
 ------------------

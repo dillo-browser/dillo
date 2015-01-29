@@ -29,7 +29,7 @@ Consider the following simple HTML document:
       </div>
     </body>
 
-The rendering will look loke this:
+The rendering will look like this:
 
 \image html dw-interrupted-drawing-1.png
 
