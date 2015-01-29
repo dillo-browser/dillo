@@ -136,10 +136,20 @@ Positioned elements outside of the container
 
 Relative positions
 ------------------
-...
+Relatively positioned elements are currently not supported. Some notes
+for an implementation:
+
+- It is important to find a suitable parent widget. Ideas described in
+  \ref dw-pos-elements-outside-container may be useful.
+- At the original position, a space as large as the positioned element
+  should be left. This may be implemented by assigning a size to the
+  widget *reference*. Also, handling changes of the size of the
+  positioned element may become tricky.
 
 Fixed positions
 ---------------
-...
+Currently, fixedly positioned elements are positioned relative to the
+canvas, not to the viewport. For a complete implementation, see \ref
+dw-fixed-positions.
 
 */

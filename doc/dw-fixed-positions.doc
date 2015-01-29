@@ -1,0 +1,63 @@
+/** \page dw-fixed-positions Fixed positions
+
+In some cases, widgets or widget content must be positioned relative
+to the viewport. As in the CSS specification, these positions will be
+called "fixed positions". This must not be confused with "fixedly
+positioned elements" (see \ref dw-out-of-flow), which are a special
+case of fixed positions.
+
+
+Applications
+============
+
+As defined by CSS
+-----------------
+
+- "position: fixed"; see  \ref dw-out-of-flow.
+- "background-attachment: fixed"; see  \ref dw-images-and-backgrounds.
+
+Idea for tables
+---------------
+
+Often, tables have a header, which contains informations necessary to
+interpret the columns in the table body. For this, HTML defines the elements
+&lt;thead&gt; and &lt;tbody&gt;
+<sup><a href="#note-table-footer" id="ref-table-footer">[1]</a></sup>.
+
+For large tables, the problem occurs that the table header gets out of
+the reader's view. In paged media, where a large table covers multiple
+pages, this is often solved by *repeating* the table header on each
+page occupied by the table. When using a viewport, a table larger than
+the vieport could be displayed like this:
+
+1. If the top of the table is within the viewport, show the table
+   header at the usual position.
+2. As soon as top of the table gets above the top border of the
+   viewport, keep the table header at the viewport top, so that it is
+   still visible (this means, it moves down, relative to the
+   *canvas*). This way, the header is still visible, so our objective
+   is achieved.
+3. When scrolling further down, at some point the table body gets out
+   of the viewport again, and so should the table header.
+
+(Some images would be nice.)
+
+These ideas should be considered when developing a design for fixed
+positions.
+
+
+Design sketch
+==============
+
+[...]
+
+
+----------------------------------------------------------------------
+
+<sup><a href="#ref-table-footer" id="note-table-footer">[1]</a></sup>
+... and also &lt;tfoot&gt;, which is not discussed here, for reasons
+of simplicity. However, it is obvious that &lt;tfoot&gt; should be
+dealt with in an analogue way as &lt;thead&gt;.
+
+
+*/
