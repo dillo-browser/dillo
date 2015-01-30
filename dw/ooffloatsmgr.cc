@@ -1421,6 +1421,11 @@ int OOFFloatsMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generatingBlock,
    return subRef;
 }
 
+void OOFFloatsMgr::calcWidgetRefSize (Widget *widget, Requisition *size)
+{
+   size->width = size->ascent = size->descent = 0;
+}
+
 void OOFFloatsMgr::moveExternalIndices (OOFAwareWidget *generatingBlock,
                                         int oldStartIndex, int diff)
 {
@@ -1434,8 +1439,8 @@ void OOFFloatsMgr::moveExternalIndices (SortedFloatsVector *list,
 {
    // Could be faster with binary search, but the GB (not CB!) lists
    // should be rather small.
-   for (int i = 0; i < list->size(); i++) {
-      Float *vloat = list->get(i);
+   for (int i = 0; i < list->size (); i++) {
+      Float *vloat = list->get (i);
       if (vloat->externalIndex >= oldStartIndex) {
          vloat->externalIndex += diff;
          DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.externalIndex",

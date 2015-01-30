@@ -380,9 +380,9 @@ static void Html_add_textblock(DilloHtml *html, bool addBreaks, int breakSpace,
       S_TOP(html)->hand_over_break = true;
 }
 
-static bool Html_will_textblock_be_out_of_flow(DilloHtml *html)
+static bool Html_must_add_breaks(DilloHtml *html)
 {
-   return HT2TB(html)->testStyleOutOfFlow (html->style ());
+   return HT2TB(html)->mustAddBreaks (html->style ());
 }
 
 /*
@@ -3892,7 +3892,7 @@ static void Html_check_html5_obsolete(DilloHtml *html, int ni)
 
 static void Html_display_block(DilloHtml *html)
 {
-   Html_add_textblock(html, !Html_will_textblock_be_out_of_flow (html), 0,
+   Html_add_textblock(html, Html_must_add_breaks (html), 0,
                       false /* Perhaps true for widgets oof? */);
 }
 

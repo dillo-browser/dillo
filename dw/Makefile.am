@@ -82,6 +82,8 @@ libDw_widgets_a_SOURCES = \
 	oofposfixedmgr.hh \
 	oofpositionedmgr.cc \
 	oofpositionedmgr.hh \
+	oofposrelmgr.cc \
+	oofposrelmgr.hh \
 	outofflowmgr.cc \
 	outofflowmgr.hh \
 	regardingborder.cc \

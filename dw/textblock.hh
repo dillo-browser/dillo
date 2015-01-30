@@ -857,6 +857,10 @@ public:
    static void setPenaltyEmDashRight2 (int penaltyRightEmDash2);
    static void setStretchabilityFactor (int stretchabilityFactor);
 
+   static inline bool mustAddBreaks (core::style::Style *style)
+   { return !testStyleOutOfFlow (style) ||
+         testStyleRelativelyPositioned (style); }
+
    Textblock (bool limitTextWidth);
    ~Textblock ();
 
@@ -881,6 +885,7 @@ public:
 
    bool mustBeWidenedToAvailWidth ();
    void borderChanged (int y, core::Widget *vloat);
+   void widgetRefSizeChanged (int externalIndex);
    void clearPositionChanged ();
    void oofSizeChanged (bool extremesChanged);
    int getLineBreakWidth ();
@@ -888,7 +893,7 @@ public:
    bool isPossibleContainerParent (int oofmIndex);
 };
 
-#define DBG_SET_WORD_PENALTY(n, i, is)             \
+#define DBG_SET_WORD_PENALTY(n, i, is) \
    D_STMT_START { \
       if (words->getRef(n)->badnessAndPenalty.getPenalty (i) == INT_MIN) \
          DBG_OBJ_ARRATTRSET_SYM ("words", n, "penalty." is, "-inf"); \
@@ -897,7 +902,7 @@ public:
       else \
          DBG_OBJ_ARRATTRSET_NUM ("words", n, "penalty." is, \
                                  words->getRef(n)->badnessAndPenalty \
-                                 .getPenalty (i));                   \
+                                 .getPenalty (i)); \
    } D_STMT_END
 
 #define DBG_SET_WORD(n) \

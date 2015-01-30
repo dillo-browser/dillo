@@ -1914,8 +1914,22 @@ void Textblock::rewrap ()
       for (int i = firstWord; i < words->size (); i++) {
          Word *word = words->getRef (i);
 
-         if (word->content.type == core::Content::WIDGET_IN_FLOW)
+         switch (word->content.type) {
+         case core::Content::WIDGET_IN_FLOW:
             word->content.widget->sizeRequest (&word->size);
+            break;
+            
+         case core::Content::WIDGET_OOF_REF:
+            {
+               int oofmIndex = getOOFMIndex (word->content.widget);
+               oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (oofmIndex);
+               oofm->calcWidgetRefSize (word->content.widget, &(word->size));
+            }
+            break;
+            
+         default:
+            break;
+         }
 
          wordWrap (i, false);
 

@@ -254,7 +254,7 @@ int OOFPositionedMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generator,
    if (reference == NULL)
       reference = container;
 
-   Child *child = new Child (widget, generator, reference);
+   Child *child = new Child (widget, generator, reference, externalIndex);
    children->put (child);
    childrenByWidget->put (new TypedPointer<Widget> (widget), child);
 
@@ -264,15 +264,29 @@ int OOFPositionedMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generator,
 
    DBG_OBJ_SET_PTR_O (widget, "<Positioned>.generator", generator);
    DBG_OBJ_SET_PTR_O (widget, "<Positioned>.reference", reference);
+   DBG_OBJ_SET_NUM_O (widget, "<Positioned>.externalIndex", externalIndex);
 
    DBG_OBJ_MSGF ("construct.oofm", 1, "=> %d", subRef);
    DBG_OBJ_LEAVE ();
    return subRef;
 }
 
+void OOFPositionedMgr::calcWidgetRefSize (Widget *widget, Requisition *size)
+{
+   size->width = size->ascent = size->descent = 0;
+}
+
 void OOFPositionedMgr::moveExternalIndices (OOFAwareWidget *generator,
                                             int oldStartIndex, int diff)
 {
+   for (int i = 0; i < children->size (); i++) {
+      Child *child = children->get (i);
+      if (child->externalIndex >= oldStartIndex) {
+         child->externalIndex += diff;
+         DBG_OBJ_SET_NUM_O (child->widget, "<Positioned>.externalIndex",
+                            child->externalIndex);
+      }
+   }
 }
 
 void OOFPositionedMgr::markSizeChange (int ref)
@@ -630,7 +644,7 @@ void OOFPositionedMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
    // *xPtr and *yPtr refer to reference area; caller must adjust them.
 
    DBG_OBJ_ENTER ("resize.oofm", 0, "calcPosAndSizeChildOfChild",
-                  "%p, %d, %d, ...", child, refWidth, refHeight);
+                  "[%p], %d, %d, ...", child->widget, refWidth, refHeight);
 
    // TODO (i) Consider {min|max}-{width|heigt}. (ii) Height is always
    // apportioned to descent (ascent is preserved), which makes sense

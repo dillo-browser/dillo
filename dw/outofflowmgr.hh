@@ -38,6 +38,8 @@ public:
                                  OOFAwareWidget *parent, int externalIndex) = 0;
    virtual int addWidgetOOF (core::Widget *widget, OOFAwareWidget *generator,
                              int externalIndex) = 0;
+   virtual void calcWidgetRefSize (core::Widget *widget,
+                                   core::Requisition *size) = 0;
    virtual void moveExternalIndices (OOFAwareWidget *generator,
                                      int oldStartIndex, int diff) = 0;
    

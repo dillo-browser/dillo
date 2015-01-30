@@ -20,6 +20,7 @@
 #include "oofawarewidget.hh"
 #include "ooffloatsmgr.hh"
 #include "oofposabsmgr.hh"
+#include "oofposrelmgr.hh"
 #include "oofposfixedmgr.hh"
 
 using namespace dw;
@@ -34,7 +35,7 @@ namespace dw {
 namespace oof {
 
 const char *OOFAwareWidget::OOFM_NAME[NUM_OOFM] = {
-   "FLOATS", "ABSOLUTE", "FIXED"
+   "FLOATS", "ABSOLUTE", "RELATIVE", "FIXED"
 };
 
 int OOFAwareWidget::CLASS_ID = -1;
@@ -90,18 +91,37 @@ void OOFAwareWidget::notifySetAsTopLevel ()
    }
 }
 
-bool OOFAwareWidget::getOOFMIndex (Widget *widget)
+int OOFAwareWidget::getOOFMIndex (Widget *widget)
 {
+   DBG_OBJ_ENTER_O ("construct", 0, NULL, "getOOFMIndex", "%p", widget);  
+   DBG_OBJ_MSGF_O ("construct", 1, NULL, "position = %s, float = %s",
+                   widget->getStyle()->position
+                   == style::POSITION_STATIC ? "static" :
+                   (widget->getStyle()->position
+                    == style::POSITION_RELATIVE ? "relative" :
+                    (widget->getStyle()->position
+                     == style::POSITION_ABSOLUTE ? "absolute" :
+                     (widget->getStyle()->position
+                      == style::POSITION_FIXED ? "fixed" : "???"))),
+                   widget->getStyle()->vloat == style::FLOAT_NONE ? "none" :
+                   (widget->getStyle()->vloat == style::FLOAT_LEFT ? "left" :
+                    (widget->getStyle()->vloat == style::FLOAT_RIGHT ?
+                     "right" : "???")));
+
+   int index = -1;
    if (testWidgetFloat (widget))
-      return OOFM_FLOATS;
+      index = OOFM_FLOATS;
    else if (testWidgetAbsolutelyPositioned (widget))
-      return OOFM_ABSOLUTE;
+      index = OOFM_ABSOLUTE;
+   else if (testWidgetRelativelyPositioned (widget))
+      index = OOFM_RELATIVE;
    else if (testWidgetFixedlyPositioned (widget))
-      return OOFM_FIXED;
-   else {
+      index = OOFM_FIXED;
+   else
       lout::misc::assertNotReached ();
-      return -1;
-   }
+
+   DBG_OBJ_LEAVE_VAL_O (NULL, "%d (%s)", index, OOFM_NAME[index]);
+   return index;
 }
 
 bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
@@ -141,6 +161,7 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
            // process" in "dw-stacking-context.doc".
            testWidgetOutOfFlow (widget)));
       
+   case OOFM_RELATIVE: // TODO Correct?
    case OOFM_ABSOLUTE:
       // We use the toplevel widget as container, i. e. parent widget.
       // See also OOFPosAbsMgr::isReference for the definition of the
@@ -201,6 +222,13 @@ void OOFAwareWidget::initOutOfFlowMgrs ()
          new OOFPosAbsMgr (oofContainer[OOFM_ABSOLUTE]);
       DBG_OBJ_ASSOC (oofContainer[OOFM_ABSOLUTE],
                      oofContainer[OOFM_ABSOLUTE]->outOfFlowMgr[OOFM_ABSOLUTE]);
+   }
+
+   if (oofContainer[OOFM_RELATIVE]->outOfFlowMgr[OOFM_RELATIVE] == NULL) {
+      oofContainer[OOFM_RELATIVE]->outOfFlowMgr[OOFM_RELATIVE] =
+         new OOFPosRelMgr (oofContainer[OOFM_RELATIVE]);
+      DBG_OBJ_ASSOC (oofContainer[OOFM_RELATIVE],
+                     oofContainer[OOFM_RELATIVE]->outOfFlowMgr[OOFM_RELATIVE]);
    }
 
    if (oofContainer[OOFM_FIXED]->outOfFlowMgr[OOFM_FIXED] == NULL) {
@@ -522,6 +550,11 @@ bool OOFAwareWidget::mustBeWidenedToAvailWidth ()
 }
 
 void OOFAwareWidget::borderChanged (int y, Widget *vloat)
+{
+   assertNotReached ();
+}
+
+void OOFAwareWidget::widgetRefSizeChanged (int externalIndex)
 {
    assertNotReached ();
 }

@@ -354,6 +354,7 @@ public:
                          int externalIndex);
    int addWidgetOOF (core::Widget *widget, OOFAwareWidget *generatingBlock,
                      int externalIndex);
+   void calcWidgetRefSize (core::Widget *widget,core::Requisition *size);
    void moveExternalIndices (OOFAwareWidget *generatingBlock, int oldStartIndex,
                              int diff);
 

@@ -15,12 +15,13 @@ protected:
    public:
       core::Widget *widget, *reference;
       OOFAwareWidget *generator;
-      int x, y;
+      int externalIndex, x, y;
 
       inline Child (core::Widget *widget, OOFAwareWidget *generator,
-                    core::Widget *reference)
+                    core::Widget *reference, int externalIndex)
       { this->widget = widget; this->generator = generator;
-         this->reference = reference; x = y = 0; }  
+         this->reference = reference; this->externalIndex = externalIndex;
+         x = y = 0; }  
    };
 
    virtual bool isReference (core::Widget *widget) = 0;
@@ -98,6 +99,7 @@ public:
                          int externalIndex);
    int addWidgetOOF (core::Widget *widget, OOFAwareWidget *generator,
                      int externalIndex);
+   void calcWidgetRefSize (core::Widget *widget, core::Requisition *size);
    void moveExternalIndices (OOFAwareWidget *generator, int oldStartIndex,
                              int diff);
 

@@ -67,9 +67,9 @@ namespace oof {
 class OOFAwareWidget: public core::Widget
 {
 protected:
-   enum { OOFM_FLOATS, OOFM_ABSOLUTE, OOFM_FIXED, NUM_OOFM };
+   enum { OOFM_FLOATS, OOFM_ABSOLUTE, OOFM_RELATIVE, OOFM_FIXED, NUM_OOFM };
    static const char *OOFM_NAME[NUM_OOFM];
-   enum { PARENT_REF_OOFM_BITS = 2,
+   enum { PARENT_REF_OOFM_BITS = 3,
           PARENT_REF_OOFM_MASK = (1 << PARENT_REF_OOFM_BITS) - 1 };
 
    class OOFAwareWidgetIterator: public core::Iterator
@@ -147,7 +147,7 @@ protected:
    { return oofContainer[oofmIndex] ?
          oofContainer[oofmIndex]->outOfFlowMgr[oofmIndex] : NULL; }
 
-   static bool getOOFMIndex (Widget *widget);
+   static int getOOFMIndex (Widget *widget);
 
    void initOutOfFlowMgrs ();
    void correctRequisitionByOOF (core::Requisition *requisition,
@@ -209,9 +209,12 @@ public:
          testStyleFixedlyPositioned (style); }
 
    static inline bool testStyleOutOfFlow (core::style::Style *style)
-   { return testStyleFloat (style) || testStyleAbsolutelyPositioned (style)
+   {  // Second part is equivalent to testStylePositioned(), but we still keep
+      // the two seperately.
+      return testStyleFloat (style) || testStyleAbsolutelyPositioned (style)
+         || testStyleRelativelyPositioned (style)
          || testStyleFixedlyPositioned (style); }
-
+   
    static inline bool testWidgetFloat (Widget *widget)
    { return testStyleFloat (widget->getStyle ()); }
 
@@ -235,6 +238,7 @@ public:
 
    virtual bool mustBeWidenedToAvailWidth ();
    virtual void borderChanged (int y, core::Widget *vloat);
+   virtual void widgetRefSizeChanged (int externalIndex);
    virtual void clearPositionChanged ();
    virtual void oofSizeChanged (bool extremesChanged);
    virtual int getLineBreakWidth (); // Should perhaps be renamed.

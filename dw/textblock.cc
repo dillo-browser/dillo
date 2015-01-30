@@ -735,7 +735,7 @@ void Textblock::calcExtraSpaceImpl ()
 
    int clearPosition = 0;
    for (int i = 0; i < NUM_OOFM; i++)
-      if (searchOutOfFlowMgr(i))
+      if (searchOutOfFlowMgr (i))
          clearPosition =
             misc::max (clearPosition,
                        searchOutOfFlowMgr(i)->getClearPosition (this));
@@ -2309,20 +2309,22 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 
    if (testWidgetOutOfFlow (widget)) {
       int oofmIndex = getOOFMIndex (widget);
+      DBG_OBJ_MSGF ("construct.word", 1, "ouf of flow: oofmIndex = %d (%s)",
+                    oofmIndex, OOFM_NAME[oofmIndex]);
+
       widget->setParent (oofContainer[oofmIndex]);
       widget->setGenerator (this);
 
-      int oofmSubRef =
-         searchOutOfFlowMgr(oofmIndex)->addWidgetOOF (widget, this,
-                                                      words->size ());
+      oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (oofmIndex);
+      int oofmSubRef = oofm->addWidgetOOF (widget, this, words->size ());
       widget->parentRef = makeParentRefOOF (oofmIndex, oofmSubRef);
 
-      DBG_OBJ_MSGF ("construct.word", 1,
-                    "ouf of flow: oofmIndex = %d, oofmSubRef = %d => "
-                    "parentRef = %d",
-                    oofmIndex, oofmSubRef, widget->parentRef);
+      DBG_OBJ_MSGF ("construct.word", 1, "oofmSubRef = %d => parentRef = %d",
+                    oofmSubRef, widget->parentRef);
 
-      Word *word = addWord (0, 0, 0, 0, style);
+      core::Requisition size;
+      oofm->calcWidgetRefSize (widget, &size);
+      Word *word = addWord (size.width, size.ascent, size.descent, 0, style);
       word->content.type = core::Content::WIDGET_OOF_REF;
       word->content.widget = widget;
 
@@ -3053,6 +3055,13 @@ void Textblock::borderChanged (int y, Widget *vloat)
    }
 
    DBG_OBJ_LEAVE ();
+}
+
+void Textblock::widgetRefSizeChanged (int externalIndex)
+{
+   int lineNo = findLineOfWord (externalIndex);
+   if (lineNo >= 0 && lineNo < lines->size ())
+      queueResize (makeParentRefInFlow (lineNo), true);
 }
 
 void Textblock::clearPositionChanged ()
