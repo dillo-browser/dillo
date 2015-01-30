@@ -1,13 +1,13 @@
 #ifndef __DW_OOFPOSFIXEDMGR_HH__
 #define __DW_OOFPOSFIXEDMGR_HH__
 
-#include "oofpositionedmgr.hh"
+#include "oofposabslikemgr.hh"
 
 namespace dw {
 
 namespace oof {
 
-class OOFPosFixedMgr: public OOFPositionedMgr
+class OOFPosFixedMgr: public OOFPosAbsLikeMgr
 {
 protected:
    bool isReference (core::Widget *widget);

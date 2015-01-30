@@ -4,7 +4,7 @@
 padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
 Not up to date; incorporate these two changes: (i) there are different
 containing blocks for floats and absolutely (furthermore also fixedly)
-positioned elements; (ii) dw::OutOfFlowMgr is now only the base class:
+positioned elements; (ii) dw::OutOfFlowMgr is now only the base class;
 floats and absolutely positioned elements are seperated:
 \dot
 digraph G {
@@ -12,16 +12,20 @@ digraph G {
    edge [arrowhead="none", arrowtail="empty", dir="both"];
    fontname=Helvetica; fontsize=8;
 
-   OutOfFlowMgr [URL="\ref dw::OutOfFlowMgr"];
-   OOFFloatsMgr [URL="\ref dw::OOFFloatsMgr"];
-   OOFPositionedMgr [URL="\ref dw::OOFPositionedMgr"];
-   OOFPosAbsMgr [URL="\ref dw::OOFPosAbsMgr"];
-   OOFPosFixedMgr [URL="\ref dw::OOFPosFixedMgr"];
+   OutOfFlowMgr [URL="\ref dw::oof::OutOfFlowMgr"];
+   OOFFloatsMgr [URL="\ref dw::oof::OOFFloatsMgr"];
+   OOFPositionedMgr [URL="\ref dw::oof::OOFPositionedMgr"];
+   OOFPosAbsLikeMgr [URL="\ref dw::oof::OOFPosAbsLikeMgr"];
+   OOFPosAbsMgr [URL="\ref dw::oof::OOFPosAbsMgr"];
+   OOFPosFixedMgr [URL="\ref dw::oof::OOFPosFixedMgr"];
+   OOFPosRelMgr [URL="\ref dw::oof::OOFPosRelMgr"];
 
    OutOfFlowMgr -> OOFFloatsMgr;
    OutOfFlowMgr -> OOFPositionedMgr;
-   OOFPositionedMgr -> OOFPosAbsMgr;
-   OOFPositionedMgr -> OOFPosFixedMgr;  
+   OOFPositionedMgr -> OOFPosAbsLikeMgr;
+   OOFPosAbsLikeMgr -> OOFPosAbsMgr;
+   OOFPosAbsLikeMgr -> OOFPosFixedMgr;  
+   OOFPositionedMgr -> OOFPosRelMgr;
 }
 \enddot
 </div>

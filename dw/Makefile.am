@@ -76,6 +76,8 @@ libDw_widgets_a_SOURCES = \
 	oofawarewidget.hh \
 	ooffloatsmgr.cc \
 	ooffloatsmgr.hh \
+	oofposabslikemgr.cc \
+	oofposabslikemgr.hh \
 	oofposabsmgr.cc \
 	oofposabsmgr.hh \
 	oofposfixedmgr.cc \
