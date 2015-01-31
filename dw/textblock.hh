@@ -936,6 +936,16 @@ public:
       DBG_SET_WORD_PENALTY (n, 1, "1"); \
    } D_STMT_END
 
+#define DBG_SET_WORD_SIZE(n) \
+   D_STMT_START { \
+      DBG_OBJ_ARRATTRSET_NUM ("words", n, "size.width", \
+                              words->getRef(n)->size.width); \
+      DBG_OBJ_ARRATTRSET_NUM ("words", n, "size.ascent", \
+                              words->getRef(n)->size.ascent); \
+      DBG_OBJ_ARRATTRSET_NUM ("words", n, "size.descent", \
+                              words->getRef(n)->size.descent); \
+   } D_STMT_END
+
 #define DBG_MSG_WORD(aspect, prio, prefix, n, suffix) \
    D_STMT_START { \
       if ((n) < 0 || (n) >= words->size ()) \

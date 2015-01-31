@@ -1855,6 +1855,7 @@ void Textblock::fillWord (int wordNo, int width, int ascent, int descent,
    word->size.width = width;
    word->size.ascent = ascent;
    word->size.descent = descent;
+   DBG_SET_WORD_SIZE (wordNo);
    word->origSpace = word->effSpace = 0;
    word->hyphenWidth = 0;
    word->badnessAndPenalty.setPenalty (PENALTY_PROHIBIT_BREAK);

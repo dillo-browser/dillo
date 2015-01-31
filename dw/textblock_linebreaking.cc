@@ -1917,6 +1917,7 @@ void Textblock::rewrap ()
          switch (word->content.type) {
          case core::Content::WIDGET_IN_FLOW:
             word->content.widget->sizeRequest (&word->size);
+            DBG_SET_WORD_SIZE (i);
             break;
             
          case core::Content::WIDGET_OOF_REF:
@@ -1924,6 +1925,7 @@ void Textblock::rewrap ()
                int oofmIndex = getOOFMIndex (word->content.widget);
                oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (oofmIndex);
                oofm->calcWidgetRefSize (word->content.widget, &(word->size));
+               DBG_SET_WORD_SIZE (i);
             }
             break;
             
