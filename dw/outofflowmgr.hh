@@ -43,7 +43,19 @@ public:
    virtual void moveExternalIndices (OOFAwareWidget *generator,
                                      int oldStartIndex, int diff) = 0;
    
-   virtual void tellPosition (core::Widget *widget, int x, int y) = 0;
+   /**
+    * \brief Called before tellPosition2, see there for more.
+    */
+   virtual void tellPosition1 (core::Widget *widget, int x, int y) = 0;
+
+   /**
+    * \brief Called after tellPosition1.
+    *
+    * An implementation should only implement either tellPosition1 or
+    * tellPosition2. Coordinates are relative to the allocation of the
+    * generator.
+    */
+   virtual void tellPosition2 (core::Widget *widget, int x, int y) = 0;
    
    virtual void getSize (core::Requisition *containerReq, int *oofWidth,
                          int *oofHeight) = 0;

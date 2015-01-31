@@ -65,7 +65,8 @@ public:
    void moveExternalIndices (OOFAwareWidget *generator, int oldStartIndex,
                              int diff);
 
-   void tellPosition (core::Widget *widget, int x, int y);
+   void tellPosition1 (core::Widget *widget, int x, int y);
+   void tellPosition2 (core::Widget *widget, int x, int y);
 
    bool containerMustAdjustExtraSpace ();
 

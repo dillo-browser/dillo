@@ -163,7 +163,11 @@ Widget *OOFPositionedMgr::getWidgetAtPoint (int x, int y,
    return widgetAtPoint;
 }
 
-void OOFPositionedMgr::tellPosition (Widget *widget, int x, int y)
+void OOFPositionedMgr::tellPosition1 (Widget *widget, int x, int y)
+{
+}
+
+void OOFPositionedMgr::tellPosition2 (Widget *widget, int x, int y)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "tellPosition", "%p, %d, %d",
                   widget, x, y);

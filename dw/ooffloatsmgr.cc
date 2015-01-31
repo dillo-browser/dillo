@@ -1523,7 +1523,7 @@ Widget *OOFFloatsMgr::getFloatWidgetAtPoint (SortedFloatsVector *list, int x,
    return widgetAtPoint;
 }
 
-void OOFFloatsMgr::tellPosition (Widget *widget, int x, int y)
+void OOFFloatsMgr::tellPosition1 (Widget *widget, int x, int y)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "tellPosition", "%p, %d, %d",
                   widget, x, y);
@@ -1604,6 +1604,10 @@ void OOFFloatsMgr::tellPosition (Widget *widget, int x, int y)
                  vloat->yReq, vloat->yReal);
 
    DBG_OBJ_LEAVE ();
+}
+
+void OOFFloatsMgr::tellPosition2 (Widget *widget, int x, int y)
+{
 }
 
 bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, SFVType type,

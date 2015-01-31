@@ -79,11 +79,11 @@ void OOFPosRelMgr::sizeAllocateEnd (OOFAwareWidget *caller)
          Requisition childReq;      
          child->widget->sizeRequest (&childReq);
          
-         Allocation childAlloc;
-         childAlloc.x = containerAllocation.x +
-            container->getStyle()->boxOffsetX () + child->x;
-         childAlloc.y = containerAllocation.y +
-            container->getStyle()->boxOffsetY () + child->y;
+         Allocation *genAlloc = child->generator == container ?
+            &containerAllocation : child->generator->getAllocation (),
+            childAlloc;
+         childAlloc.x = genAlloc->x + child->x;
+         childAlloc.y = genAlloc->y + child->y;
          childAlloc.width = childReq.width;
          childAlloc.ascent = childReq.ascent;
          childAlloc.descent = childReq.descent;

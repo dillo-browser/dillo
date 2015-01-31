@@ -503,12 +503,27 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    //printf ("\n");
 
    int xWidget = line->textOffset;
+   int yLine = lineYOffsetWidget (line);
    for (int i = firstWord; i <= lastWord; i++) {
       Word *word = words->getRef (i);
       if (word->wordImgRenderer)
          word->wordImgRenderer->setData (xWidget, lines->size () - 1);
       if (word->spaceImgRenderer)
          word->spaceImgRenderer->setData (xWidget, lines->size () - 1);
+
+      if (word->content.type == core::Content::WIDGET_OOF_REF) {
+         Widget *widget = word->content.widget;
+         oof::OutOfFlowMgr *oofm =
+            searchOutOfFlowMgr (getWidgetOOFIndex (widget));
+         // See also Textblock::sizeAllocate, and notes there about
+         // vertical alignment. Calculating the vertical position
+         // should probably be centralized.
+         if (oofm)
+            oofm->tellPosition2 (widget, xWidget,
+                                 yLine + (line->borderAscent
+                                          - word->size.ascent));
+      }
+
       xWidget += word->size.width + word->effSpace;
    }
 
@@ -793,7 +808,7 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                oof::OutOfFlowMgr *oofm =
                   searchOutOfFlowMgr (getWidgetOOFIndex (widget));
                if (oofm && oofm->mayAffectBordersAtAll ())
-                  oofm->tellPosition (widget, boxOffsetX (), yNewLine);
+                  oofm->tellPosition1 (widget, boxOffsetX (), yNewLine);
 
                balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
                                          tempNewLine, penaltyIndex, false,
@@ -880,13 +895,14 @@ int Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
    int yNewLine = yOffsetOfLineToBeCreated ();
 
    // Floats, which affect either border, are handled in wrapWordInFlow; this
-   // is rather for positioned elements.
+   // is rather for positioned elements (but only for completeness:
+   // tellPosition1 is not implemented for positioned elements).
    oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (getWidgetOOFIndex (widget));
    DBG_OBJ_MSGF ("construct.word", 1, "parentRef = %d, oofm = %p",
                  widget->parentRef, oofm);
    if (oofm && !oofm->mayAffectBordersAtAll ())
       // TODO Again, "x" is not correct (see above).
-      oofm->tellPosition (widget, boxOffsetX (), yNewLine);
+      oofm->tellPosition1 (widget, boxOffsetX (), yNewLine);
 
    DBG_OBJ_LEAVE ();
 
