@@ -145,6 +145,12 @@ void FltkImgbuf::init (Type type, int width, int height, double gamma,
       deleteOnUnref = true;
       copiedRows = new lout::misc::BitSet (height);
 
+      DBG_IF_RTFL {
+         lout::misc::StringBuffer sb;
+         copiedRows->intoStringBuffer (&sb);
+         DBG_OBJ_SET_SYM ("copiedRows", sb.getChars ());
+      }
+
       // The list is only used for root buffers.
       if (isRoot())
          scaledBuffers = new lout::container::typed::List <FltkImgbuf> (true);
@@ -219,6 +225,13 @@ inline void FltkImgbuf::scaleRowSimple (int row, const core::byte *data)
       if (copiedRows->get(sr)) continue;
 
       copiedRows->set (sr, true);
+
+      DBG_IF_RTFL {
+         lout::misc::StringBuffer sb;
+         copiedRows->intoStringBuffer (&sb);
+         DBG_OBJ_SET_SYM ("copiedRows", sb.getChars ());
+      }
+
       if (sr == sr1) {
          for (int px = 0; px < root->width; px++) {
             int px1 = px * width / root->width;
@@ -249,6 +262,12 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
       // Mark scaled rows done
       for (int sr = sr1; sr < sr2 || sr == sr1; sr++)
          copiedRows->set (sr, true);
+
+      DBG_IF_RTFL {
+         lout::misc::StringBuffer sb;
+         copiedRows->intoStringBuffer (&sb);
+         DBG_OBJ_SET_SYM ("copiedRows", sb.getChars ());
+      }
    } else {
       assert (sr1 == sr2 || sr1 + 1 == sr2);
       int row1 = backscaledY(sr1), row2 = backscaledY(sr1 + 1);
@@ -263,6 +282,12 @@ inline void FltkImgbuf::scaleRowBeautiful (int row, const core::byte *data)
                       bpp, gamma);
          // Mark scaled row done
          copiedRows->set (sr1, true);
+
+         DBG_IF_RTFL {
+            lout::misc::StringBuffer sb;
+            copiedRows->intoStringBuffer (&sb);
+            DBG_OBJ_SET_SYM ("copiedRows", sb.getChars ());
+         }
       }
    }
 }
@@ -333,6 +358,13 @@ void FltkImgbuf::copyRow (int row, const core::byte *data)
    if (row < height) {
       // Flag the row done and copy its data.
       copiedRows->set (row, true);
+
+      DBG_IF_RTFL {
+         lout::misc::StringBuffer sb;
+         copiedRows->intoStringBuffer (&sb);
+         DBG_OBJ_SET_SYM ("copiedRows", sb.getChars ());
+      }
+
       memcpy(rawdata + row * width * bpp, data, width * bpp);
 
       // Update all the scaled buffers of this root image.
@@ -350,6 +382,12 @@ void FltkImgbuf::newScan ()
       for (Iterator<FltkImgbuf> it = scaledBuffers->iterator(); it.hasNext();){
          FltkImgbuf *sb = it.getNext ();
          sb->copiedRows->clear();
+
+         DBG_IF_RTFL {
+            lout::misc::StringBuffer sb;
+            copiedRows->intoStringBuffer (&sb);
+            DBG_OBJ_SET_SYM ("copiedRows", sb.getChars ());
+         }
       }
    }
 }

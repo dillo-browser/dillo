@@ -133,6 +133,7 @@ void StringBuffer::clear ()
 
 BitSet::BitSet(int initBits)
 {
+   numBits = initBits;
    numBytes = bytesForBits(initBits);
    bits = (unsigned char*)malloc(numBytes * sizeof(unsigned char));
    clear();
@@ -146,7 +147,7 @@ BitSet::~BitSet()
 void BitSet::intoStringBuffer(misc::StringBuffer *sb)
 {
    sb->append("[");
-   for (int i = 0; i < numBytes; i++)
+   for (int i = 0; i < numBits; i++)
       sb->append(get(i) ? "1" : "0");
    sb->append("]");
 }
@@ -161,6 +162,9 @@ bool BitSet::get(int i) const
 
 void BitSet::set(int i, bool val)
 {
+   if (i > numBits)
+      numBits = i;
+
    if (8 * i >= numBytes) {
       int newNumBytes = numBytes;
       while (8 * i >= newNumBytes)

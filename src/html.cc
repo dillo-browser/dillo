@@ -3341,7 +3341,13 @@ static void Html_tag_open_link(DilloHtml *html, const char *tag, int tagsize)
 
    /* Ignore LINK outside HEAD */
    if (!(html->InFlags & IN_HEAD)) {
-      BUG_MSG("<link> must be inside the HEAD section.");
+      if (!((html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f) &&
+            a_Html_get_attr(html, tag, tagsize, "itemprop"))) {
+         /* With the HTML 5.1 draft spec, link with itemprop may appear
+          * in the body.
+          */
+         BUG_MSG("This <link> element must be inside the HEAD section.");
+      }
       return;
    }
    /* Remote stylesheets enabled? */
