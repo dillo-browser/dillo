@@ -66,7 +66,8 @@ void OOFPosRelMgr::calcWidgetRefSize (Widget *widget, Requisition *size)
 void OOFPosRelMgr::sizeAllocateStart (OOFAwareWidget *caller,
                                       Allocation *allocation)
 {
-   containerAllocation = *allocation;
+   if (caller == container)
+      containerAllocation = *allocation;
 }
 
 void OOFPosRelMgr::sizeAllocateEnd (OOFAwareWidget *caller)
