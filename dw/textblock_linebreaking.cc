@@ -495,15 +495,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
    mustQueueResize = true;
 
-   //printWordShort (words->getRef (line->firstWord));
-   //printf (" ... ");
-   //printWordShort (words->getRef (line->lastWord));
-   //printf (": ");
-   //words->getRef(line->lastWord)->badnessAndPenalty.print ();
-   //printf ("\n");
-
    int xWidget = line->textOffset;
-   int yLine = lineYOffsetWidget (line);
+   int yLine = yOffsetOfLineCreated (line);
    for (int i = firstWord; i <= lastWord; i++) {
       Word *word = words->getRef (i);
       if (word->wordImgRenderer)

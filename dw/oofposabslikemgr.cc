@@ -288,12 +288,13 @@ int OOFPosAbsLikeMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
       // TODO Is "boxDiffWidth()" correct here?
       DBG_OBJ_MSG ("resize.oofm", 1, "no specification");
       if (forceValue) {
-         int availWidth = container->getAvailWidth (true);
-         width = max (availWidth - containerBoxDiffWidth ()
-                      // Regard an undefined value as 0:
-                      - max (getPosLeft (child, availWidth), 0),
-                      - max (getPosRight (child, availWidth), 0),
-                      0);
+         int availWidth = container->getAvailWidth (true), left, right;
+
+         // Regard undefined values as 0:
+         if (!getPosLeft (child, availWidth, &left)) left = 0;
+         if (!getPosRight (child, availWidth, &right)) right = 0;
+
+         width = max (availWidth - containerBoxDiffWidth () - left - right, 0);
       } else
          width = -1;
    } else {
@@ -330,12 +331,14 @@ int OOFPosAbsLikeMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
       // TODO Is "boxDiffHeight()" correct here?
       DBG_OBJ_MSG ("resize.oofm", 1, "no specification");
       if (forceValue) {
-         int availHeight = container->getAvailHeight (true);
-         height = max (availHeight - containerBoxDiffHeight ()
-                       // Regard an undefined value as 0:
-                       - max (getPosTop (child, availHeight), 0),
-                       - max (getPosBottom (child, availHeight), 0),
-                       0);
+         int availHeight = container->getAvailHeight (true), top, bottom;
+
+         // Regard undefined values as 0:
+         if (!getPosTop (child, availHeight, &top)) top = 0;
+         if (!getPosBottom (child, availHeight, &bottom)) bottom = 0;
+
+         height =
+            max (availHeight - containerBoxDiffHeight () - top - bottom, 0);
       } else
          height = -1;
    } else {
@@ -464,14 +467,15 @@ void OOFPosAbsLikeMgr::calcHPosAndSizeChildOfChild (Child *child, int refWidth,
       widthDefined = false;
    }
 
-   int left = getPosLeft (child->widget, refWidth),
-      right = getPosRight (child->widget, refWidth);
+   int left, right;
+   bool leftDefined = getPosLeft (child->widget, refWidth, &left),
+      rightDefined = getPosRight (child->widget, refWidth, &right);
    DBG_OBJ_MSGF ("resize.oofm", 1,
                  "=> left = %d, right = %d, width = %d (defined: %s)",
                  left, right, width, widthDefined ? "true" : "false");
 
    if (xPtr) {
-      if (left == -1 && right == -1) {
+      if (!leftDefined && !rightDefined) {
          assert (child->generator == container ||
                  (containerAllocationState != NOT_ALLOCATED
                   && child->generator->wasAllocated ()));
@@ -487,9 +491,9 @@ void OOFPosAbsLikeMgr::calcHPosAndSizeChildOfChild (Child *child, int refWidth,
             child->generator->getAllocation()->x - containerAllocation.x;
          DBG_OBJ_MSGF ("resize.oofm", 0, "=> xBase = %d", xBase);
 
-         if (left == -1 && right != -1)
+         if (!leftDefined && rightDefined)
             *xPtr = xBase + refWidth - width - right;
-         else if (left != -1 && right == -1)
+         else if (leftDefined && !rightDefined)
             *xPtr = xBase + left;
          else {
             *xPtr = xBase + left;
@@ -542,15 +546,16 @@ void OOFPosAbsLikeMgr::calcVPosAndSizeChildOfChild (Child *child, int refHeight,
       heightDefined = false;
    }
 
-   int top = getPosTop (child->widget, refHeight),
-      bottom = getPosBottom (child->widget, refHeight);
+   int top, bottom;
+   bool topDefined = getPosTop (child->widget, refHeight, &top),
+      bottomDefined = getPosBottom (child->widget, refHeight, &bottom);
    DBG_OBJ_MSGF ("resize.oofm", 1,
                  "=> top = %d, bottom = %d, height = %d + %d (defined: %s)",
                  top, bottom, ascent, descent,
                  heightDefined ? "true" : "false");
 
    if (yPtr) {
-      if (top == -1 && bottom == -1) {
+      if (!topDefined && !bottomDefined) {
          assert (child->generator == container ||
                  (containerAllocationState != NOT_ALLOCATED
                   && child->generator->wasAllocated ()));
@@ -566,9 +571,9 @@ void OOFPosAbsLikeMgr::calcVPosAndSizeChildOfChild (Child *child, int refHeight,
             child->generator->getAllocation()->y - containerAllocation.y;
          DBG_OBJ_MSGF ("resize.oofm", 0, "=> yBase = %d", yBase);
             
-         if (top == -1 && bottom != -1)
+         if (!topDefined && bottomDefined)
             *yPtr = yBase + refHeight - (ascent + descent) - bottom;
-         else if (top != -1 && bottom == -1)
+         else if (topDefined && !bottomDefined)
             *yPtr = yBase + top;
          else {
             *yPtr = yBase + top;

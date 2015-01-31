@@ -169,7 +169,7 @@ void OOFPositionedMgr::tellPosition1 (Widget *widget, int x, int y)
 
 void OOFPositionedMgr::tellPosition2 (Widget *widget, int x, int y)
 {
-   DBG_OBJ_ENTER ("resize.oofm", 0, "tellPosition", "%p, %d, %d",
+   DBG_OBJ_ENTER ("resize.oofm", 0, "tellPosition2", "%p, %d, %d",
                   widget, x, y);
 
    TypedPointer<Widget> key (widget);
@@ -264,15 +264,18 @@ Widget *OOFPositionedMgr::getWidget (int i)
    return children->get(i)->widget;
 }
 
-int OOFPositionedMgr::getPosBorder (style::Length cssValue, int refLength)
+bool OOFPositionedMgr::getPosBorder (style::Length cssValue, int refLength,
+                                     int *result)
 {
-   if (style::isAbsLength (cssValue))
-      return style::absLengthVal (cssValue);
-   else if (style::isPerLength (cssValue))
-      return style::multiplyWithPerLength (refLength, cssValue);
-   else
-      // -1 means "undefined":
-      return -1;
+   if (style::isAbsLength (cssValue)) {
+      *result = style::absLengthVal (cssValue);
+      return true;
+   }  else if (style::isPerLength (cssValue)) {
+      *result = style::multiplyWithPerLength (refLength, cssValue);
+      return true;
+   } else
+      // "false" means "undefined":
+      return false;
 }
 
 } // namespace oof

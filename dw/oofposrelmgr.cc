@@ -18,7 +18,6 @@
  */
 
 #include "oofposrelmgr.hh"
-#include "oofawarewidget.hh"
 
 using namespace dw::core;
 using namespace lout::object;
@@ -66,12 +65,21 @@ void OOFPosRelMgr::calcWidgetRefSize (Widget *widget, Requisition *size)
 void OOFPosRelMgr::sizeAllocateStart (OOFAwareWidget *caller,
                                       Allocation *allocation)
 {
+   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateStart",
+                  "%p, (%d, %d, %d * (%d + %d))",
+                  caller, allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
+
    if (caller == container)
       containerAllocation = *allocation;
+
+   DBG_OBJ_LEAVE ();
 }
 
 void OOFPosRelMgr::sizeAllocateEnd (OOFAwareWidget *caller)
 {
+   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateEnd", "%p", caller);
+
    if (caller == container) {
       for (int i = 0; i < children->size (); i++) {
          Child *child = children->get(i);
@@ -82,14 +90,16 @@ void OOFPosRelMgr::sizeAllocateEnd (OOFAwareWidget *caller)
          Allocation *genAlloc = child->generator == container ?
             &containerAllocation : child->generator->getAllocation (),
             childAlloc;
-         childAlloc.x = genAlloc->x + child->x;
-         childAlloc.y = genAlloc->y + child->y;
+         childAlloc.x = genAlloc->x + getChildPosX (child);
+         childAlloc.y = genAlloc->y + getChildPosY (child);
          childAlloc.width = childReq.width;
          childAlloc.ascent = childReq.ascent;
          childAlloc.descent = childReq.descent;
          child->widget->sizeAllocate (&childAlloc);
       }
    }
+
+   DBG_OBJ_LEAVE ();
 }
 
 void OOFPosRelMgr::getSize (Requisition *containerReq, int *oofWidth,
@@ -99,11 +109,12 @@ void OOFPosRelMgr::getSize (Requisition *containerReq, int *oofWidth,
 
    for (int i = 0; i < children->size (); i++) {
       Child *child = children->get(i);
-      Requisition childReq;      
+      Requisition childReq;
       child->widget->sizeRequest (&childReq);
-      *oofWidth = max (*oofWidth, child->x + childReq.width);
+      *oofWidth = max (*oofWidth, getChildPosX (child) + childReq.width);
       *oofHeight = max (*oofHeight,
-                        child->y + childReq.ascent + childReq.descent);
+                        getChildPosX (child) + childReq.ascent
+                        + childReq.descent);
    }
 }
 
@@ -116,9 +127,44 @@ void OOFPosRelMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
       Child *child = children->get(i);
       Extremes childExtr;      
       child->widget->getExtremes (&childExtr);
-      *oofMinWidth = max (*oofMinWidth, child->x + childExtr.minWidth);
-      *oofMaxWidth = max (*oofMaxWidth, child->x + childExtr.maxWidth);
+
+      // Put the extremes of the container in relation to the extremes
+      // of the child, as in OOFPosAbsLikeMgr::getExtremes (see
+      // comment there).
+      *oofMinWidth = max (*oofMinWidth,
+                          getChildPosX (child, containerExtr->minWidth)
+                          + childExtr.minWidth);
+      *oofMaxWidth = max (*oofMaxWidth,
+                          getChildPosX (child, containerExtr->maxWidth)
+                          + childExtr.maxWidth);
    }
+}
+
+int OOFPosRelMgr::getChildPosDim (style::Length posCssValue,
+                                  style::Length negCssValue, int refPos,
+                                  int refLength)
+{
+   // posCssValue refers to "left" or "top", negCssValue refers to "right" or
+   // "bottom". The former values are preferred ("left" over "right" etc.),
+   // which should later depend on the CSS value "direction".
+
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getChildPosDim",
+                  "<i>%d</i>, <i>%d</i>, %d, %d",
+                  posCssValue, negCssValue, refPos, refLength);
+   
+   int diff;
+   if (getPosBorder (posCssValue, refLength, &diff))
+      DBG_OBJ_MSGF ("resize.oofm", 1, "posCssValue: diff = %d", diff);
+   else {
+      if (getPosBorder (negCssValue, refLength, &diff)) {
+         DBG_OBJ_MSGF ("resize.oofm", 1, "negCssValue: diff = %d", diff);
+         diff *= -1;
+      } else
+         diff = 0;
+   }
+
+   DBG_OBJ_LEAVE_VAL ("%d + %d = %d", refPos, diff, refPos + diff);
+   return refPos + diff;
 }
 
 int OOFPosRelMgr::getAvailWidthOfChild (Widget *child, bool forceValue)

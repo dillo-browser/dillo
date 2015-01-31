@@ -2,6 +2,7 @@
 #define __DW_OOFPOSRELMGR_HH__
 
 #include "oofpositionedmgr.hh"
+#include "oofawarewidget.hh"
 
 namespace dw {
 
@@ -11,6 +12,24 @@ class OOFPosRelMgr: public OOFPositionedMgr
 {
 protected:
    bool isReference (core::Widget *widget);
+
+   int getChildPosDim (core::style::Length posCssValue,
+                       core::style::Length negCssValue, int refPos,
+                       int refLength);
+
+   inline int getChildPosX (Child *child, int refWidth)
+   { return getChildPosDim
+         (child->widget->getStyle()->left, child->widget->getStyle()->right,
+          child->x, refWidth - child->widget->getStyle()->boxDiffWidth ()); }
+   inline int getChildPosX (Child *child) 
+   { return getChildPosX (child, container->getAvailWidth (true)); }
+
+   inline int getChildPosY (Child *child, int refHeight)
+   { return getChildPosDim
+         (child->widget->getStyle()->top, child->widget->getStyle()->bottom,
+          child->y, refHeight - child->widget->getStyle()->boxDiffHeight ()); }
+   inline int getChildPosY (Child *child) 
+   { return getChildPosY (child, container->getAvailHeight (true)); }
 
 public:
    OOFPosRelMgr (OOFAwareWidget *container);

@@ -34,16 +34,16 @@ protected:
                                         <dw::core::Widget>,
                                      Child> *childrenByWidget;
 
-   inline int getPosLeft (core::Widget *child, int availWidth)
-   { return getPosBorder (child->getStyle()->left, availWidth); }
-   inline int getPosRight (core::Widget *child, int availWidth)
-   { return getPosBorder (child->getStyle()->right, availWidth); }
-   inline int getPosTop (core::Widget *child, int availHeight)
-   { return getPosBorder (child->getStyle()->top, availHeight); }
-   inline int getPosBottom (core::Widget *child, int availHeight)
-   { return getPosBorder (child->getStyle()->bottom, availHeight); }
+   inline bool getPosLeft (core::Widget *child, int availWidth, int *result)
+   { return getPosBorder (child->getStyle()->left, availWidth, result); }
+   inline bool getPosRight (core::Widget *child, int availWidth, int *result)
+   { return getPosBorder (child->getStyle()->right, availWidth, result); }
+   inline bool getPosTop (core::Widget *child, int availHeight, int *result)
+   { return getPosBorder (child->getStyle()->top, availHeight, result); }
+   inline bool getPosBottom (core::Widget *child, int availHeight, int *result)
+   { return getPosBorder (child->getStyle()->bottom, availHeight, result); }
 
-   int getPosBorder (core::style::Length cssValue, int refLength);
+   bool getPosBorder (core::style::Length cssValue, int refLength, int *result);
 
 public:
    OOFPositionedMgr (OOFAwareWidget *container);

@@ -765,6 +765,7 @@ protected:
    void printBorderChangedErrorAndAbort (int y, Widget *vloat,
                                          int wrapLineIndex);
    int yOffsetOfLineToBeCreated ();
+   int yOffsetOfLineCreated (Line *line);
 
    bool sendSelectionEvent (core::SelectionState::EventType eventType,
                             core::MousePositionEvent *event);

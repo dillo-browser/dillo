@@ -3191,4 +3191,27 @@ int Textblock::yOffsetOfLineToBeCreated ()
    return result;
 }
 
+/**
+ * Includes margin, border, and padding. Can be used without allocation.
+ */
+int Textblock::yOffsetOfLineCreated (Line *line)
+{
+   // Similar applies (regarding exactness) as to yOffsetOfLineToBeCreated.
+
+   DBG_OBJ_ENTER0 ("line.yoffset", 0, "yOffsetOfLineToBeCreated");
+
+   int result;
+
+   Line *firstLine = lines->getRef (0);
+   result = calcVerticalBorder (getStyle()->padding.top,
+                                getStyle()->borderWidth.top,
+                                getStyle()->margin.top + extraSpace.top,
+                                firstLine->borderAscent,
+                                firstLine->marginAscent)
+      - firstLine->borderAscent + line->top;
+
+   DBG_OBJ_LEAVE_VAL ("%d", result);
+   return result;
+}
+
 } // namespace dw
