@@ -1,6 +1,116 @@
-/** \page dw-pos-elements-outside-container Positioned elements outside of the c
-ontainer
+/** \page dw-pos-elements-outside-container Positioned elements outside of the container
 
-Irrelevant. Should be removed sonn.
+<div style="border: 2px solid #ffff00; margin-bottom: 0.5em;
+padding: 0.5em 1em; background-color: #ffffe0"><b>Note:</b>
+(i) May soon become irrelevant. (ii) Is currently not even fully
+implemented.</div>
+
+
+The problem
+===========
+
+Consider the following simple HTML document:
+
+    <head>
+      <style>
+        #bl-1 { position: relative; background: #ffe0e0; }
+        #abs-1 { position: absolute; top: 0.5em; left: 2em; background: #b0ffb0; }
+        #bl-2 { background: #f0f0ff; }
+      </style>
+    </head>
+    <body>
+      at the top
+      <div id="bl-1">
+        <div id="abs-1">
+          absolutely positioned, line 1/3<br/>
+          absolutely positioned, line 2/3<br/>
+          absolutely positioned, line 3/3
+        </div>
+        stacking context 1
+      </div>
+      <div id="bl-2">
+        simple block
+      </div>      
+    </body>
+
+It will be rendered like this:
+
+\image html dw-pos-elements-outside-container-1.png
+
+Notice for the the absolutely positioned element #abs-1 that
+
+1. its containing block is #bl-1 (because #bl-1 is positioned, too
+   (relatively)), and the position of #abs-1 is calculated relative to
+   #bl-1 (based on "left" and "top");
+2. however, parts of #abs-1 lie outside of #bl-1.
+
+Because of the latter, #bl-1 cannot be a parent widget of #abs-1,
+although it represents the containing block.
+
+
+The solution
+============
+
+In the case above, body becomes the parent widget of #abs-1, as shown
+in this widget diagram:
+
+\dot
+digraph G {
+   node [shape=rect, fontname=Helvetica, fontsize=10];
+   edge [arrowhead="vee"];
+
+   "#bl-1" [fillcolor="#ffe0e0", style="filled"];
+   "#abs-1" [fillcolor="#b0ffb0", style="filled"];
+   "#bl-2" [fillcolor="#f0f0ff", style="filled"];
+
+   "body" -> "#bl-1";
+   "body" -> "#abs-1";
+   { rank=same; "#bl-1" -> "#abs-1" [style=dotted]; }
+   "body" -> "#bl-2";
+}
+\enddot
+
+In this case, the dotted line denotes the *containing block*, not the
+*generating block* of an positioned element.
+
+Generally, three widgets are related to a positioned widget:
+
+1. as before, the **generator widget**
+   <sup><a href="#note-abs-gen" id="ref-abs-gen">[1]</a></sup>;
+2. also, the **container widget**, which becomes the parent widget of
+   the positioned widget;
+3. additionaly, the **reference widget**, which is used to calculate
+   *defined* positions.
+
+**Note:** The **reference widget** is based on the **containing
+block**, as defined in CSS, while the **container widget** has no
+equivalent in CSS. (This terminology is somewhat confusing, based on
+general concepts described in \ref dw-out-of-flow.)
+
+In the example above,
+
+- #bl-1 is both the **generating block**, and
+- the **containing block**, and so becomes the **reference widget**,
+  of #abs-1;
+- body is the **container widget** of #abs-1.
+
+How is the reference widget defined?
+------------------------------------
+Simple: the reference widget is equivalent to the conaining block, as
+defined by CSS, so the rules defined there apply. [...]
+
+How is the container widget defined?
+------------------------------------
+[...]
+
+----------------------------------------------------------------------
+
+<sup><a href="#ref-abs-gen" id="note-abs-gen">[1]</a></sup> For
+positioned elements, the generator is relevant when the position is
+not fully defined; e.&nbsp;g. when neither "top" nor "bottom" is
+defined for the positioned element, its vertical position is
+determined by the position where the reference was defined. This
+special case is similar to how floats are generally positioned
+vertically.
 
 */
