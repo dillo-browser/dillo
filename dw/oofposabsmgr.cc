@@ -25,7 +25,7 @@ namespace dw {
 namespace oof {
 
 OOFPosAbsMgr::OOFPosAbsMgr (OOFAwareWidget *container) :
-   OOFPositionedMgr (container)
+   OOFPosAbsLikeMgr (container)
 {
    DBG_OBJ_CREATE ("dw::OOFPosAbsMgr");
 }

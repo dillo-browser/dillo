@@ -25,29 +25,14 @@ protected:
    };
 
    virtual bool isReference (core::Widget *widget) = 0;
-   virtual int containerBoxOffsetX () = 0;
-   virtual int containerBoxOffsetY () = 0;
-   virtual int containerBoxRestWidth () = 0;
-   virtual int containerBoxRestHeight () = 0;
-
-   inline int containerBoxDiffWidth ()
-   { return containerBoxOffsetX () + containerBoxRestWidth (); }
-   inline int containerBoxDiffHeight ()
-   { return containerBoxOffsetY () + containerBoxRestHeight (); }
 
    OOFAwareWidget *container;
-   enum { NOT_ALLOCATED, IN_ALLOCATION, WAS_ALLOCATED }
-      containerAllocationState;
    core::Allocation containerAllocation;
 
    lout::container::typed::Vector<Child> *children;
    lout::container::typed::HashTable<lout::object::TypedPointer
                                         <dw::core::Widget>,
                                      Child> *childrenByWidget;
-   
-   bool doChildrenExceedContainer ();
-   bool haveExtremesChanged ();
-   void sizeAllocateChildren ();
 
    inline int getPosLeft (core::Widget *child, int availWidth)
    { return getPosBorder (child->getStyle()->left, availWidth); }
@@ -60,32 +45,10 @@ protected:
 
    int getPosBorder (core::style::Length cssValue, int refLength);
 
-   bool isHPosComplete (Child *child);
-   bool isVPosComplete (Child *child);
-
-   bool isHPosCalculable (Child *child, bool allocated);
-   bool isVPosCalculable (Child *child, bool allocated);
-
-   bool isPosCalculable (Child *child, bool allocated);
-
-   void calcPosAndSizeChildOfChild (Child *child, int refWidth, int refHeight,
-                                    int *xPtr, int *yPtr, int *widthPtr,
-                                    int *ascentPtr, int *descentPtr);
-   void calcHPosAndSizeChildOfChild (Child *child, int refWidth,
-                                     int origChildWidth, int *xPtr,
-                                     int *widthPtr);
-   void calcVPosAndSizeChildOfChild (Child *child, int refHeight,
-                                     int origChildAscent, int origChildDescent,
-                                     int *yPtr, int *ascentPtr,
-                                     int *descentPtr);
-
 public:
    OOFPositionedMgr (OOFAwareWidget *container);
    ~OOFPositionedMgr ();
 
-   void sizeAllocateStart (OOFAwareWidget *caller,
-                           core::Allocation *allocation);
-   void sizeAllocateEnd (OOFAwareWidget *caller);
    void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area,
               core::DrawingContext *context);
@@ -99,17 +62,12 @@ public:
                          int externalIndex);
    int addWidgetOOF (core::Widget *widget, OOFAwareWidget *generator,
                      int externalIndex);
-   void calcWidgetRefSize (core::Widget *widget, core::Requisition *size);
    void moveExternalIndices (OOFAwareWidget *generator, int oldStartIndex,
                              int diff);
 
    void tellPosition (core::Widget *widget, int x, int y);
 
-   void getSize (core::Requisition *containerReq, int *oofWidth,
-                 int *oofHeight);
    bool containerMustAdjustExtraSpace ();
-   void getExtremes (core::Extremes *containerExtr,
-                     int *oofMinWidth, int *oofMaxWidth);
 
    int getLeftBorder (OOFAwareWidget *widget, int y, int h,
                       OOFAwareWidget *lastGen, int lastExtIndex);
@@ -133,8 +91,6 @@ public:
    bool mayAffectBordersAtAll ();
 
    bool dealingWithSizeOfChild (core::Widget *child);
-   int getAvailWidthOfChild (core::Widget *child, bool forceValue);
-   int getAvailHeightOfChild (core::Widget *child, bool forceValue);
 
    int getNumWidgets ();
    core::Widget *getWidget (int i);

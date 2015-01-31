@@ -175,9 +175,6 @@ protected:
    void notifySetAsTopLevel();
    void notifySetParent();
 
-   int getAvailWidthOfChild (Widget *child, bool forceValue);
-   int getAvailHeightOfChild (Widget *child, bool forceValue);
-
    void removeChild (Widget *child);
 
 
@@ -230,6 +227,11 @@ public:
 
    static inline bool testWidgetOutOfFlow (Widget *widget)
    { return testStyleOutOfFlow (widget->getStyle ()); }
+
+   // These two methods (which are protected in Widget) are made public
+   // for OOFPosRelMgr.
+   int getAvailWidthOfChild (Widget *child, bool forceValue);
+   int getAvailHeightOfChild (Widget *child, bool forceValue);
 
    bool doesWidgetOOFInterruptDrawing (Widget *widget);
 

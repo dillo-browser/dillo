@@ -24,7 +24,7 @@ namespace dw {
 namespace oof {
 
 OOFPosFixedMgr::OOFPosFixedMgr (OOFAwareWidget *container) :
-   OOFPositionedMgr (container)
+   OOFPosAbsLikeMgr (container)
 {
    DBG_OBJ_CREATE ("dw::OOFPosFixedMgr");
 }
