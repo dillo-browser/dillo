@@ -136,15 +136,24 @@ Positioned elements outside of the container
 
 Relative positions
 ------------------
-Relatively positioned elements are currently not supported. Some notes
-for an implementation:
-
-- It is important to find a suitable parent widget. Ideas described in
-  \ref dw-pos-elements-outside-container may be useful.
 - At the original position, a space as large as the positioned element
-  should be left. This may be implemented by assigning a size to the
-  widget *reference*. Also, handling changes of the size of the
-  positioned element may become tricky.
+  is left. This is implemented by assigning a size to the widget
+  *reference*. For this there are two new methods:
+  dw::oof::OutOfFlowMgr::calcWidgetRefSize and
+  dw::oof::OOFAwareWidget::widgetRefSizeChanged.
+
+- **Bug:** Since the size of a relatively positioned element should be
+  calculated as if it was in flow, the available width should be
+  delegated to the *generator*; however, since
+  dw::oof::OOFPosRelMgr::dealingWithSizeOfChild returns *false* in all
+  cases, it is delegated to the *container*. **Idea for fix:**
+  dw::oof::OOFPosRelMgr::dealingWithSizeOfChild should return *false*
+  if and only if the generator of the child is the container (to
+  prevent an endless recursion). In other cases,
+  dw::oof::OOFPosRelMgr::getAvailWidthOfChild and
+  dw::oof::OOFPosRelMgr::getAvailHeightOfChild should directly call
+  the respective methods of the *generator*, which must be made public
+  then.
 
 Fixed positions
 ---------------

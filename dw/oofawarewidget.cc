@@ -512,28 +512,6 @@ Widget *OOFAwareWidget::getWidgetOOFAtPoint (int x, int y,
    return widgetAtPoint;
 }
 
-int OOFAwareWidget::getAvailWidthOfChild (Widget *child, bool forceValue)
-{
-   if (isWidgetOOF(child)) {
-      assert (getWidgetOutOfFlowMgr(child) &&
-              getWidgetOutOfFlowMgr(child)->dealingWithSizeOfChild (child));
-      return getWidgetOutOfFlowMgr(child)->getAvailWidthOfChild (child,
-                                                                 forceValue);
-   } else
-      return Widget::getAvailWidthOfChild (child, forceValue);
-}
-
-int OOFAwareWidget::getAvailHeightOfChild (Widget *child, bool forceValue)
-{
-   if (isWidgetOOF(child)) {
-      assert (getWidgetOutOfFlowMgr(child) &&
-              getWidgetOutOfFlowMgr(child)->dealingWithSizeOfChild (child));
-      return getWidgetOutOfFlowMgr(child)->getAvailHeightOfChild (child,
-                                                                  forceValue);
-   } else
-      return Widget::getAvailWidthOfChild (child, forceValue);
-}
-
 void OOFAwareWidget::removeChild (Widget *child)
 {
    // Sub classes should implement this method (and Textblock and

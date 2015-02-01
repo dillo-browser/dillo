@@ -167,32 +167,21 @@ int OOFPosRelMgr::getChildPosDim (style::Length posCssValue,
    return refPos + diff;
 }
 
+bool OOFPosRelMgr::dealingWithSizeOfChild (Widget *child)
+{
+   return false;
+}
+
 int OOFPosRelMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
-   DBG_OBJ_ENTER ("resize.oofm", 0, "getAvailWidthOfChild", "%p, %s",
-                  child, boolToStr (forceValue));
-
-   TypedPointer<Widget> key (child);
-   Child *tshild = childrenByWidget->get (&key);
-   assert (tshild);
-   int width = tshild->generator->getAvailWidthOfChild (child, forceValue);
-
-   DBG_OBJ_LEAVE_VAL ("%d", width);
-   return width;
+   assertNotReached ();
+   return 0;
 }
 
 int OOFPosRelMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
 {
-   DBG_OBJ_ENTER ("resize.oofm", 0, "getAvailWidthOfChild", "%p, %s",
-                  child, boolToStr (forceValue));
-
-   TypedPointer<Widget> key (child);
-   Child *tshild = childrenByWidget->get (&key);
-   assert (tshild);
-   int height = tshild->generator->getAvailHeightOfChild (child, forceValue);
-
-   DBG_OBJ_LEAVE_VAL ("%d", height);
-   return height;
+   assertNotReached ();
+   return 0;
 }
 
 bool OOFPosRelMgr::isReference (Widget *widget)

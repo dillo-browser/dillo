@@ -38,9 +38,19 @@ namespace oof {
  *
  * - Implementations of dw::core::Widget::getAvailWidthOfChild and
  *   dw::core::Widget::getAvailHeightOfChild have to distinguish
- *   between widgets in flow and out of flow; see implementations of
- *   dw::oof::OOFAwareWidget. (Open issue: What about
- *   dw::core::Widget::correctRequisitionOfChild and
+ *   between widgets in flow and out of flow; general pattern:
+ *
+ *    \code
+ * if (isWidgetOOF (child) && getWidgetOutOfFlowMgr(child) &&
+ *     getWidgetOutOfFlowMgr(child)->dealingWithSizeOfChild (child))
+ *    width =
+ *      getWidgetOutOfFlowMgr(child)->getAvailWidthOfChild (child,forceValue);
+ * else {
+ *    // ... specific implementation ...
+ *    \endcode
+ *
+ *   See also implementations of dw::Textblock and dw::Table. (Open
+ *   issue: What about dw::core::Widget::correctRequisitionOfChild and
  *   dw::core::Widget::correctExtremesOfChild? Currently, all widgets
  *   are used the default implementation.)
  *
@@ -227,11 +237,6 @@ public:
 
    static inline bool testWidgetOutOfFlow (Widget *widget)
    { return testStyleOutOfFlow (widget->getStyle ()); }
-
-   // These two methods (which are protected in Widget) are made public
-   // for OOFPosRelMgr.
-   int getAvailWidthOfChild (Widget *child, bool forceValue);
-   int getAvailHeightOfChild (Widget *child, bool forceValue);
 
    bool doesWidgetOOFInterruptDrawing (Widget *widget);
 

@@ -46,7 +46,8 @@ public:
                  int *oofHeight);
    void getExtremes (core::Extremes *containerExtr, int *oofMinWidth,
                      int *oofMaxWidth);
-   
+
+   bool dealingWithSizeOfChild (core::Widget *child);
    int getAvailWidthOfChild (core::Widget *child, bool forceValue);
    int getAvailHeightOfChild (core::Widget *child, bool forceValue);
 };
