@@ -113,7 +113,8 @@ private:
                                                     const char *label,
                                                     const char *placeholder);
       core::ui::MultiLineTextResource *createMultiLineTextResource (int cols,
-                                                                    int rows);
+                                                                    int rows,
+                                                      const char *placeholder);
       core::ui::CheckButtonResource *createCheckButtonResource (bool
                                                                 activated);
       core::ui::RadioButtonResource *

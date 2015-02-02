@@ -422,9 +422,10 @@ FltkPlatform::FltkResourceFactory::createEntryResource (int size,
 
 core::ui::MultiLineTextResource *
 FltkPlatform::FltkResourceFactory::createMultiLineTextResource (int cols,
-                                                                int rows)
+                                                                int rows,
+                                                       const char *placeholder)
 {
-   return new ui::FltkMultiLineTextResource (platform, cols, rows);
+   return new ui::FltkMultiLineTextResource (platform, cols, rows,placeholder);
 }
 
 core::ui::CheckButtonResource *

@@ -331,17 +331,16 @@ class FltkMultiLineTextResource:
    public FltkSpecificResource <dw::core::ui::MultiLineTextResource>
 {
 private:
-   Fl_Text_Buffer *buffer;
-   char *text_copy;
    bool editable;
    int numCols, numRows;
-
+   char *placeholder;
 protected:
    Fl_Widget *createNewWidget (core::Allocation *allocation);
    void setWidgetStyle (Fl_Widget *widget, core::style::Style *style);
 
 public:
-   FltkMultiLineTextResource (FltkPlatform *platform, int cols, int rows);
+   FltkMultiLineTextResource (FltkPlatform *platform, int cols, int rows,
+                              const char *placeholder);
    ~FltkMultiLineTextResource ();
 
    void sizeRequest (core::Requisition *requisition);
