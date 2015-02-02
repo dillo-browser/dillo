@@ -547,7 +547,8 @@ public:
                                                const char *label,
                                                const char *placeholder) = 0;
    virtual MultiLineTextResource *createMultiLineTextResource (int cols,
-                                                               int rows) = 0;
+                                                               int rows,
+                                                  const char *placeholder) = 0;
    virtual CheckButtonResource *createCheckButtonResource (bool activated) = 0;
    virtual RadioButtonResource *createRadioButtonResource (RadioButtonResource
                                                            *groupedWith,

@@ -669,9 +669,11 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
    if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "name")))
       name = dStrdup(attrbuf);
 
+   attrbuf = a_Html_get_attr(html, tag, tagsize, "placeholder");
+
    ResourceFactory *factory = HT2LT(html)->getResourceFactory();
    MultiLineTextResource *textres =
-      factory->createMultiLineTextResource (cols, rows);
+      factory->createMultiLineTextResource (cols, rows, attrbuf);
 
    Embed *embed = new Embed(textres);
    /* Readonly or not? */
