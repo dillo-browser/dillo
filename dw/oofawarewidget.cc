@@ -247,6 +247,8 @@ void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition,
                   requisition->width, requisition->ascent,
                   requisition->descent);
 
+   requisitionWithoutOOF = *requisition;
+
    for (int i = 0; i < NUM_OOFM; i++) {
       if (outOfFlowMgr[i]) {
          DBG_OBJ_MSGF ("resize", 1, "OOFM for %s", OOFM_NAME[i]);
@@ -281,6 +283,15 @@ void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition,
                             &requisition->ascent, &requisition->descent);
          }
 
+         if (!adjustExtraSpaceWhenCorrectingRequisitionByOOF ()) {
+            requisitionWithoutOOF.width = max (requisitionWithoutOOF.width,
+                                               oofWidth);
+            if (oofHeight >
+                requisitionWithoutOOF.ascent + requisitionWithoutOOF.descent)
+               splitHeightFun (oofHeight, &requisitionWithoutOOF.ascent,
+                               &requisitionWithoutOOF.descent);
+         }
+
          DBG_OBJ_MSGF ("resize", 1, "after correction: %d * (%d + %d)",
                        requisition->width, requisition->ascent,
                        requisition->descent);
@@ -288,6 +299,12 @@ void OOFAwareWidget::correctRequisitionByOOF (Requisition *requisition,
       } else
          DBG_OBJ_MSGF ("resize", 1, "no OOFM for %s", OOFM_NAME[i]);
    }
+
+   DBG_OBJ_SET_NUM ("requisitionWithoutOOF.width", requisitionWithoutOOF.width);
+   DBG_OBJ_SET_NUM ("requisitionWithoutOOF.ascent",
+                    requisitionWithoutOOF.ascent);
+   DBG_OBJ_SET_NUM ("requisitionWithoutOOF.descent",
+                    requisitionWithoutOOF.descent);
 
    DBG_OBJ_LEAVE ();
 }

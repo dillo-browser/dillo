@@ -152,6 +152,7 @@ protected:
 
    OOFAwareWidget *oofContainer[NUM_OOFM];
    OutOfFlowMgr *outOfFlowMgr[NUM_OOFM];
+   core::Requisition requisitionWithoutOOF;
 
    inline OutOfFlowMgr *searchOutOfFlowMgr (int oofmIndex)
    { return oofContainer[oofmIndex] ?
@@ -186,7 +187,6 @@ protected:
    void notifySetParent();
 
    void removeChild (Widget *child);
-
 
 public:
    enum {
@@ -237,6 +237,9 @@ public:
 
    static inline bool testWidgetOutOfFlow (Widget *widget)
    { return testStyleOutOfFlow (widget->getStyle ()); }
+
+   inline core::Requisition *getRequisitionWithoutOOF ()
+   { return &requisitionWithoutOOF; }
 
    bool doesWidgetOOFInterruptDrawing (Widget *widget);
 

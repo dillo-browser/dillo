@@ -56,7 +56,20 @@ void OOFPosRelMgr::markExtremesChange (int ref)
 void OOFPosRelMgr::calcWidgetRefSize (Widget *widget, Requisition *size)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "calcWidgetRefSize", "%p", widget);
+
    widget->sizeRequest (size);
+
+   // In some cases, the widget has been enlarged for widgets out of
+   // flow. Partly, this is done by adding "extra space"; however, at
+   // this point, the extra space is not relevant here. See
+   // "oofawarewidget.cc" for a calculation of RequisitionWithoutOOF.
+   // (Notice also that Widget::sizeRequest has to be called in all
+   // cases.)
+
+   if (widget->instanceOf (OOFAwareWidget::CLASS_ID))
+      *size = *((OOFAwareWidget*)widget)->getRequisitionWithoutOOF ();
+
+   
    DBG_OBJ_LEAVE_VAL ("%d * (%d + %d)",
                       size->width, size->ascent, size->descent);
 }
