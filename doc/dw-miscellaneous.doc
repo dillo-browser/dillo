@@ -130,10 +130,6 @@ supporting floats at all, a fix is not urgent for a new release.
 Positioned elements
 ===================
 
-Positioned elements outside of the container
---------------------------------------------
-→ \ref dw-pos-elements-outside-container.
-
 Relative positions
 ------------------
 - At the original position, a space as large as the positioned element
