@@ -95,10 +95,14 @@ int CustInput2::show_normal(const char *str)
  */
 int CustInput2::show_placeholder()
 {
+   int ret;
+
    showing_placeholder = true;
    Fl_Input::textcolor(fltkui_dimmed(usual_color, color()));
    Fl_Input::input_type(FL_NORMAL_INPUT);
-   return Fl_Input::value(placeholder);
+   ret = Fl_Input::value(placeholder);
+   position(0);
+   return ret;
 }
 
 /*
