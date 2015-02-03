@@ -85,11 +85,9 @@ void OOFPosRelMgr::sizeAllocateChildren ()
       Requisition childReq;      
       child->widget->sizeRequest (&childReq);
          
-      Allocation *genAlloc = child->generator == container ?
-         &containerAllocation : child->generator->getAllocation (),
-         childAlloc;
-      childAlloc.x = genAlloc->x + getChildPosX (child);
-      childAlloc.y = genAlloc->y + getChildPosY (child);
+      Allocation childAlloc;
+      childAlloc.x = containerAllocation.x + getChildPosX (child);
+      childAlloc.y = containerAllocation.y + getChildPosY (child);
       childAlloc.width = childReq.width;
       childAlloc.ascent = childReq.ascent;
       childAlloc.descent = childReq.descent;
@@ -102,6 +100,10 @@ void OOFPosRelMgr::sizeAllocateChildren ()
 void OOFPosRelMgr::getSize (Requisition *containerReq, int *oofWidth,
                             int *oofHeight)
 {
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getSize", "%d * (%d + %d)",
+                  containerReq->width, containerReq->ascent,
+                  containerReq->descent);
+
    *oofWidth = *oofHeight = 0;
 
    for (int i = 0; i < children->size (); i++) {
@@ -114,13 +116,15 @@ void OOFPosRelMgr::getSize (Requisition *containerReq, int *oofWidth,
          child->widget->sizeRequest (&childReq);
          *oofWidth = max (*oofWidth, getChildPosX (child) + childReq.width);
          *oofHeight = max (*oofHeight,
-                           getChildPosX (child) + childReq.ascent
+                           getChildPosY (child) + childReq.ascent
                            + childReq.descent);
          
          child->consideredForSize = true;
       } else
          child->consideredForSize = false;
    }
+
+   DBG_OBJ_LEAVE_VAL ("%d * %d", *oofWidth, *oofHeight);
 }
 
 void OOFPosRelMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
@@ -161,6 +165,39 @@ bool OOFPosRelMgr::posXAbsolute (Child *child)
 bool OOFPosRelMgr::posYAbsolute (Child *child)
 {
    return false;
+}
+
+int OOFPosRelMgr::getChildPosX (Child *child, int refWidth)
+{
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getChildPosX", "[%p], %d",
+                  child->widget, refWidth);
+
+   int gx = generatorPosX (child);
+   int dim = getChildPosDim (child->widget->getStyle()->left,
+                             child->widget->getStyle()->right,
+                             child->x,
+                             refWidth
+                             - child->widget->getStyle()->boxDiffWidth ());
+
+   DBG_OBJ_LEAVE_VAL ("%d + %d = %d", gx, dim, gx + dim);
+   return gx + dim;
+}
+
+
+int OOFPosRelMgr::getChildPosY (Child *child, int refHeight)
+{
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getChildPosY", "[%p], %d",
+                  child->widget, refHeight);
+
+   int gy = generatorPosY (child);
+   int dim = getChildPosDim (child->widget->getStyle()->top,
+                             child->widget->getStyle()->bottom,
+                             child->y,
+                             refHeight
+                             - child->widget->getStyle()->boxDiffHeight ());
+
+   DBG_OBJ_LEAVE_VAL ("%d + %d = %d", gy, dim, gy + dim);
+   return gy + dim;
 }
 
 int OOFPosRelMgr::getChildPosDim (style::Length posCssValue,

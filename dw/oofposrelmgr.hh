@@ -14,21 +14,14 @@ protected:
    bool posXAbsolute (Child *child);
    bool posYAbsolute (Child *child);
 
+   int getChildPosX (Child *child, int refWidth);
+   int getChildPosY (Child *child, int refHeight);
    int getChildPosDim (core::style::Length posCssValue,
                        core::style::Length negCssValue, int refPos,
                        int refLength);
 
-   inline int getChildPosX (Child *child, int refWidth)
-   { return getChildPosDim
-         (child->widget->getStyle()->left, child->widget->getStyle()->right,
-          child->x, refWidth - child->widget->getStyle()->boxDiffWidth ()); }
    inline int getChildPosX (Child *child) 
    { return getChildPosX (child, container->getAvailWidth (true)); }
-
-   inline int getChildPosY (Child *child, int refHeight)
-   { return getChildPosDim
-         (child->widget->getStyle()->top, child->widget->getStyle()->bottom,
-          child->y, refHeight - child->widget->getStyle()->boxDiffHeight ()); }
    inline int getChildPosY (Child *child) 
    { return getChildPosY (child, container->getAvailHeight (true)); }
 

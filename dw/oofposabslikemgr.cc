@@ -72,7 +72,9 @@ void OOFPosAbsLikeMgr::sizeAllocateChildren ()
 void OOFPosAbsLikeMgr::getSize (Requisition *containerReq, int *oofWidth,
                                 int *oofHeight)
 {
-   DBG_OBJ_ENTER0 ("resize.oofm", 0, "getSize");
+   DBG_OBJ_ENTER ("resize.oofm", 0, "getSize", "%d * (%d + %d)",
+                  containerReq->width, containerReq->ascent,
+                  containerReq->descent);
 
    *oofWidth = *oofHeight = 0;
 
@@ -97,8 +99,7 @@ void OOFPosAbsLikeMgr::getSize (Requisition *containerReq, int *oofWidth,
          child->consideredForSize = false;
    }      
 
-   DBG_OBJ_MSGF ("resize.oofm", 0, "=> %d * %d", *oofWidth, *oofHeight);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d * %d", *oofWidth, *oofHeight);
 }
 
 void OOFPosAbsLikeMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
