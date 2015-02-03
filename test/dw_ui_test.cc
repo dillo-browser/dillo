@@ -87,7 +87,8 @@ int main(int argc, char **argv)
       layout->getResourceFactory()->createEntryResource (10, true, NULL,
                                                          "password field!");
    MultiLineTextResource *textres =
-      layout->getResourceFactory()->createMultiLineTextResource (15,3);
+      layout->getResourceFactory()->createMultiLineTextResource (15,3,
+                                                      "textarea placeholder!");
    RadioButtonResource *radiores1 =
       layout->getResourceFactory()->createRadioButtonResource (NULL, false);
    RadioButtonResource *radiores2 =
