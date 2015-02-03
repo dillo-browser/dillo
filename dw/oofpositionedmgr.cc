@@ -31,6 +31,21 @@ namespace dw {
 
 namespace oof {
 
+OOFPositionedMgr::Child::Child (core::Widget *widget, OOFAwareWidget *generator,
+                                int externalIndex)
+{
+   this->widget = widget;
+   this->generator = generator;
+   this->externalIndex = externalIndex;
+   
+   x = y = 0;
+
+   // Initially, this child does not actually have been considered,
+   // but since adding a new element will force a size/extremes
+   // calculation, this is equivalent.
+   consideredForSize = consideredForExtremes = true;
+}
+
 OOFPositionedMgr::OOFPositionedMgr (OOFAwareWidget *container)
 {
    DBG_OBJ_CREATE ("dw::OOFPositionedMgr");
@@ -265,6 +280,22 @@ bool OOFPositionedMgr::getPosBorder (style::Length cssValue, int refLength,
    } else
       // "false" means "undefined":
       return false;
+}
+
+bool OOFPositionedMgr::allChildrenConsideredForSize ()
+{   
+   for (int i = 0; i < children->size(); i++)
+      if (!children->get(i)->consideredForSize)
+         return false;
+   return true;
+}
+
+bool OOFPositionedMgr::allChildrenConsideredForExtremes ()
+{   
+   for (int i = 0; i < children->size(); i++)
+      if (!children->get(i)->consideredForExtremes)
+         return false;
+   return true;
 }
 
 } // namespace oof

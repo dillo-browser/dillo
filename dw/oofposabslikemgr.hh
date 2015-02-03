@@ -42,17 +42,18 @@ protected:
          - (containerAllocation.y + containerBoxOffsetY ());
    }
    
+   inline bool posXDefined (Child *child)
+   { return posXAbsolute (child) || generatorPosDefined (child); }
+
+   inline bool posYDefined (Child *child)
+   { return posYAbsolute (child) || generatorPosDefined (child); }
+
    bool doChildrenExceedContainer ();
    bool haveExtremesChanged ();
    void sizeAllocateChildren ();
 
-   bool isHPosComplete (Child *child);
-   bool isVPosComplete (Child *child);
-
-   bool isHPosCalculable (Child *child, bool allocated);
-   bool isVPosCalculable (Child *child, bool allocated);
-
-   bool isPosCalculable (Child *child, bool allocated);
+   bool posXAbsolute (Child *child);
+   bool posYAbsolute (Child *child);
 
    void calcPosAndSizeChildOfChild (Child *child, int refWidth, int refHeight,
                                     int *xPtr, int *yPtr, int *widthPtr,

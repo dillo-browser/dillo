@@ -66,26 +66,11 @@ void OOFPosAbsLikeMgr::sizeAllocateEnd (OOFAwareWidget *caller)
    if (caller == container) {
       sizeAllocateChildren ();
 
-      bool sizeChanged = doChildrenExceedContainer ();
-      bool extremesChanged = haveExtremesChanged ();
-
-      // Consider children which were ignored in getSize (see comment
-      // there). The respective widgets were not allocated before if
-      // and only if containerAllocationState == IN_ALLOCATION. For
-      // the generator (and reference widget), this is the case as
-      // long as sizeRequest is immediately followed by sizeAllocate
-      // (as in resizeIdle).
-
-      bool notAllChildrenConsideredBefore = false;
-      for (int i = 0;
-           !notAllChildrenConsideredBefore && i < children->size(); i++)
-         if (!isPosCalculable (children->get(i),
-                               containerAllocationState != IN_ALLOCATION))
-            notAllChildrenConsideredBefore = true;
-
-      if (sizeChanged || notAllChildrenConsideredBefore || extremesChanged)
+      bool extremesChanged = !allChildrenConsideredForExtremes ();
+      if (extremesChanged || doChildrenExceedContainer () ||
+          !allChildrenConsideredForSize ())
          container->oofSizeChanged (extremesChanged);
-
+      
       containerAllocationState = WAS_ALLOCATED;
    }
 
@@ -165,31 +150,6 @@ bool OOFPosAbsLikeMgr::doChildrenExceedContainer ()
    return exceeds;
 }
 
-bool OOFPosAbsLikeMgr::haveExtremesChanged ()
-{
-   DBG_OBJ_ENTER0 ("resize.oofm", 0, "haveExtremesChanged");
-
-   Extremes containerExtr;
-   container->getExtremes (&containerExtr);
-   bool changed = false;
-
-   DBG_OBJ_MSG_START ();
-
-   // Search for children which have not yet been considered by
-   // getExtremes(). Cf. sizeAllocateEnd().
-
-   for (int i = 0; i < children->size () && !changed; i++)
-      if (!isHPosCalculable (children->get (i),
-                             containerAllocationState == IN_ALLOCATION))
-         changed = true;
-
-   DBG_OBJ_MSG_END ();
-
-   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (changed));
-   return changed;
-}
-
-
 void OOFPosAbsLikeMgr::getSize (Requisition *containerReq, int *oofWidth,
                                 int *oofHeight)
 {
@@ -203,20 +163,19 @@ void OOFPosAbsLikeMgr::getSize (Requisition *containerReq, int *oofWidth,
    for (int i = 0; i < children->size(); i++) {
       Child *child = children->get(i);
 
-      // The position of a child (which goes into the return value of
-      // this method) can only be determined when the following
-      // condition (if clause) is is fulfilled. Other children will be
+      // Children whose position cannot be determined will be
       // considered later in sizeAllocateEnd.
-      if (isPosCalculable (child,
-                           containerAllocationState != NOT_ALLOCATED &&
-                           child->generator->wasAllocated ())) {
+      if (posXDefined (child) && posYDefined (child)) {
          int x, y, width, ascent, descent;
          calcPosAndSizeChildOfChild (child, refWidth, refHeight, &x, &y, &width,
                                      &ascent, &descent);
          *oofWidth = max (*oofWidth, x + width) + containerBoxDiffWidth ();
          *oofHeight =
             max (*oofHeight, y + ascent + descent) + containerBoxDiffHeight ();
-      }
+
+         child->consideredForSize = true;
+      } else
+         child->consideredForSize = false;
    }      
 
    DBG_OBJ_MSGF ("resize.oofm", 0, "=> %d * %d", *oofWidth, *oofHeight);
@@ -235,9 +194,7 @@ void OOFPosAbsLikeMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
       Child *child = children->get(i);
 
       // If clause: see getSize().
-      if (isHPosCalculable (child,
-                            containerAllocationState != NOT_ALLOCATED
-                            && child->generator->wasAllocated ())) {
+      if (posXDefined (child)) {
          int x, width;
          Extremes childExtr;
          child->widget->getExtremes (&childExtr);
@@ -262,7 +219,10 @@ void OOFPosAbsLikeMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
          calcHPosAndSizeChildOfChild (child, containerExtr->maxWidth,
                                       childExtr.maxWidth, &x, &width);
          *oofMaxWidth = max (*oofMaxWidth, x + width);
-      }
+
+         child->consideredForExtremes = true;
+      } else
+         child->consideredForExtremes = false;
    }      
 
    *oofMinWidth += containerBoxDiffWidth ();
@@ -356,9 +316,9 @@ int OOFPosAbsLikeMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
    return height;  
 }
 
-bool OOFPosAbsLikeMgr::isHPosComplete (Child *child)
+bool OOFPosAbsLikeMgr::posXAbsolute (Child *child)
 {
-   DBG_OBJ_ENTER ("resize.oofm", 0, "isHPosComplete", "[%p]", child->widget);
+   DBG_OBJ_ENTER ("resize.oofm", 0, "posXAbsolute", "[%p]", child->widget);
    bool b =
       (style::isAbsLength (child->widget->getStyle()->left) ||
        style::isPerLength (child->widget->getStyle()->left)) &&
@@ -368,42 +328,14 @@ bool OOFPosAbsLikeMgr::isHPosComplete (Child *child)
    return b;
 }
 
-bool OOFPosAbsLikeMgr::isVPosComplete (Child *child)
+bool OOFPosAbsLikeMgr::posYAbsolute (Child *child)
 {
-   DBG_OBJ_ENTER ("resize.oofm", 0, "isVPosComplete", "[%p]", child->widget);
+   DBG_OBJ_ENTER ("resize.oofm", 0, "posYAbsolute", "[%p]", child->widget);
    bool b =
       (style::isAbsLength (child->widget->getStyle()->top) ||
        style::isPerLength (child->widget->getStyle()->top)) &&
       (style::isAbsLength (child->widget->getStyle()->bottom) ||
        style::isPerLength (child->widget->getStyle()->bottom));
-   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (b));
-   return b;
-}
-
-bool OOFPosAbsLikeMgr::isHPosCalculable (Child *child, bool allocated)
-{
-   DBG_OBJ_ENTER ("resize.oofm", 0, "isHPosCalculable", "[%p], %s",
-                  child->widget, boolToStr (allocated));
-   bool b = allocated || isHPosComplete (child);
-   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (b));
-   return b;
-}
-
-bool OOFPosAbsLikeMgr::isVPosCalculable (Child *child, bool allocated)
-{
-   DBG_OBJ_ENTER ("resize.oofm", 0, "isVPosCalculable", "[%p], %s",
-                  child->widget, boolToStr (allocated));
-   bool b = allocated || isVPosComplete (child);
-   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (b));
-   return b;
-}
-
-bool OOFPosAbsLikeMgr::isPosCalculable (Child *child, bool allocated)
-{
-   DBG_OBJ_ENTER ("resize.oofm", 0, "isPosCalculable", "[%p], %s",
-                  child->widget, boolToStr (allocated));
-   bool b = isHPosCalculable (child, allocated) &&
-      isVPosCalculable (child, allocated);
    DBG_OBJ_LEAVE_VAL ("%s", boolToStr (b));
    return b;
 }

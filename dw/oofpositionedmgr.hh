@@ -16,11 +16,10 @@ protected:
       core::Widget *widget;
       OOFAwareWidget *generator;
       int externalIndex, x, y;
+      bool consideredForSize, consideredForExtremes;
 
-      inline Child (core::Widget *widget, OOFAwareWidget *generator,
-                    int externalIndex)
-      { this->widget = widget; this->generator = generator;
-         this->externalIndex = externalIndex; x = y = 0; }  
+      Child (core::Widget *widget, OOFAwareWidget *generator,
+             int externalIndex);
    };
 
    OOFAwareWidget *container;
@@ -41,6 +40,8 @@ protected:
    { return getPosBorder (child->getStyle()->bottom, availHeight, result); }
 
    bool getPosBorder (core::style::Length cssValue, int refLength, int *result);
+   bool allChildrenConsideredForSize ();
+   bool allChildrenConsideredForExtremes ();
 
 public:
    OOFPositionedMgr (OOFAwareWidget *container);
