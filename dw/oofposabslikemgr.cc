@@ -42,41 +42,6 @@ void OOFPosAbsLikeMgr::calcWidgetRefSize (Widget *widget, Requisition *size)
    size->width = size->ascent = size->descent = 0;
 }
 
-void OOFPosAbsLikeMgr::sizeAllocateStart (OOFAwareWidget *caller,
-                                          Allocation *allocation)
-{
-   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateStart",
-                  "%p, (%d, %d, %d * (%d + %d))",
-                  caller, allocation->x, allocation->y, allocation->width,
-                  allocation->ascent, allocation->descent);
-
-   if (caller == container) {
-      if (containerAllocationState == NOT_ALLOCATED)
-         containerAllocationState = IN_ALLOCATION;
-      containerAllocation = *allocation;
-   }
-
-   DBG_OBJ_LEAVE ();
-}
-
-void OOFPosAbsLikeMgr::sizeAllocateEnd (OOFAwareWidget *caller)
-{
-   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateEnd", "%p", caller);
-
-   if (caller == container) {
-      sizeAllocateChildren ();
-
-      bool extremesChanged = !allChildrenConsideredForExtremes ();
-      if (extremesChanged || doChildrenExceedContainer () ||
-          !allChildrenConsideredForSize ())
-         container->oofSizeChanged (extremesChanged);
-      
-      containerAllocationState = WAS_ALLOCATED;
-   }
-
-   DBG_OBJ_LEAVE ();
-}
-
 void OOFPosAbsLikeMgr::sizeAllocateChildren ()
 {
    DBG_OBJ_ENTER0 ("resize.oofm", 0, "sizeAllocateChildren");
@@ -102,52 +67,6 @@ void OOFPosAbsLikeMgr::sizeAllocateChildren ()
    }
    
    DBG_OBJ_LEAVE ();
-}
-
-bool OOFPosAbsLikeMgr::doChildrenExceedContainer ()
-{
-   DBG_OBJ_ENTER0 ("resize.oofm", 0, "doChildrenExceedContainer");
-
-   // This method is called to determine whether the *requisition* of
-   // the container must be recalculated. So, we check the allocations
-   // of the children against the *requisition* of the container,
-   // which may (e. g. within tables) differ from the new allocation.
-   // (Generally, a widget may allocated at a different size.)
-
-   Requisition containerReq;
-   container->sizeRequest (&containerReq);
-   bool exceeds = false;
-
-   DBG_OBJ_MSG_START ();
-
-   for (int i = 0; i < children->size () && !exceeds; i++) {
-      Child *child = children->get (i);
-      Allocation *childAlloc = child->widget->getAllocation ();
-      DBG_OBJ_MSGF ("resize.oofm", 2,
-                    "Does childAlloc = (%d, %d, %d * %d) exceed container "
-                    "alloc+req = (%d, %d, %d * %d)?",
-                    childAlloc->x, childAlloc->y, childAlloc->width,
-                    childAlloc->ascent + childAlloc->descent,
-                    containerAllocation.x, containerAllocation.y,
-                    containerReq.width,
-                    containerReq.ascent + containerReq.descent);
-      if (childAlloc->x + childAlloc->width
-          > containerAllocation.x + containerReq.width ||
-          childAlloc->y + childAlloc->ascent + childAlloc->descent
-          > containerAllocation.y +
-            containerReq.ascent + containerReq.descent) {
-         exceeds = true;
-         DBG_OBJ_MSG ("resize.oofm", 2, "Yes.");
-      } else
-         DBG_OBJ_MSG ("resize.oofm", 2, "No.");
-   }
-
-   DBG_OBJ_MSG_END ();
-
-   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", exceeds ? "true" : "false");
-   DBG_OBJ_LEAVE ();
-
-   return exceeds;
 }
 
 void OOFPosAbsLikeMgr::getSize (Requisition *containerReq, int *oofWidth,
@@ -193,7 +112,8 @@ void OOFPosAbsLikeMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
    for (int i = 0; i < children->size(); i++) {
       Child *child = children->get(i);
 
-      // If clause: see getSize().
+      // Children whose position cannot be determined will be
+      // considered later in sizeAllocateEnd.
       if (posXDefined (child)) {
          int x, width;
          Extremes childExtr;
@@ -408,13 +328,13 @@ void OOFPosAbsLikeMgr::calcHPosAndSizeChildOfChild (Child *child, int refWidth,
          *xPtr = generatorPosX (child) + child->x;
       else {
          if (!leftDefined && rightDefined)
-            *xPtr = refWidth - width - right;
+            *xPtr = refWidth - width - right - containerBoxRestWidth ();
          else if (leftDefined && !rightDefined)
-            *xPtr = left;
+            *xPtr = left + containerBoxOffsetX ();
          else {
             *xPtr = left;
             if (!widthDefined) {
-               width = refWidth - (left + right);
+               width = refWidth - (left + right + containerBoxDiffWidth ());
                DBG_OBJ_MSGF ("resize.oofm", 0, "=> width (corrected) = %d",
                              width);
             }
@@ -475,13 +395,15 @@ void OOFPosAbsLikeMgr::calcVPosAndSizeChildOfChild (Child *child, int refHeight,
          *yPtr = generatorPosY (child) + child->y;
       else {
          if (!topDefined && bottomDefined)
-            *yPtr = refHeight - (ascent + descent) - bottom;
+            *yPtr = refHeight - (ascent + descent) - bottom
+               - containerBoxDiffHeight ();
          else if (topDefined && !bottomDefined)
-            *yPtr = top;
+            *yPtr = top + containerBoxOffsetY ();
          else {
             *yPtr = top;
             if (!heightDefined) {
-               int height = refHeight - (top + bottom);
+               int height =
+                  refHeight - (top + bottom + containerBoxDiffHeight ());
                splitHeightPreserveAscent (height, &ascent, &descent);
                DBG_OBJ_MSGF ("resize.oofm", 0,
                              "=> ascent + descent (corrected) = %d + %d",

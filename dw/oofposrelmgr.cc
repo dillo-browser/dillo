@@ -75,41 +75,25 @@ void OOFPosRelMgr::calcWidgetRefSize (Widget *widget, Requisition *size)
 }
 
 
-void OOFPosRelMgr::sizeAllocateStart (OOFAwareWidget *caller,
-                                      Allocation *allocation)
+void OOFPosRelMgr::sizeAllocateChildren ()
 {
-   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateStart",
-                  "%p, (%d, %d, %d * (%d + %d))",
-                  caller, allocation->x, allocation->y, allocation->width,
-                  allocation->ascent, allocation->descent);
+   DBG_OBJ_ENTER0 ("resize.oofm", 0, "sizeAllocateChildren");
 
-   if (caller == container)
-      containerAllocation = *allocation;
-
-   DBG_OBJ_LEAVE ();
-}
-
-void OOFPosRelMgr::sizeAllocateEnd (OOFAwareWidget *caller)
-{
-   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateEnd", "%p", caller);
-
-   if (caller == container) {
-      for (int i = 0; i < children->size (); i++) {
-         Child *child = children->get(i);
+   for (int i = 0; i < children->size (); i++) {
+      Child *child = children->get(i);
          
-         Requisition childReq;      
-         child->widget->sizeRequest (&childReq);
+      Requisition childReq;      
+      child->widget->sizeRequest (&childReq);
          
-         Allocation *genAlloc = child->generator == container ?
-            &containerAllocation : child->generator->getAllocation (),
-            childAlloc;
-         childAlloc.x = genAlloc->x + getChildPosX (child);
-         childAlloc.y = genAlloc->y + getChildPosY (child);
-         childAlloc.width = childReq.width;
-         childAlloc.ascent = childReq.ascent;
-         childAlloc.descent = childReq.descent;
-         child->widget->sizeAllocate (&childAlloc);
-      }
+      Allocation *genAlloc = child->generator == container ?
+         &containerAllocation : child->generator->getAllocation (),
+         childAlloc;
+      childAlloc.x = genAlloc->x + getChildPosX (child);
+      childAlloc.y = genAlloc->y + getChildPosY (child);
+      childAlloc.width = childReq.width;
+      childAlloc.ascent = childReq.ascent;
+      childAlloc.descent = childReq.descent;
+      child->widget->sizeAllocate (&childAlloc);
    }
 
    DBG_OBJ_LEAVE ();
@@ -122,12 +106,20 @@ void OOFPosRelMgr::getSize (Requisition *containerReq, int *oofWidth,
 
    for (int i = 0; i < children->size (); i++) {
       Child *child = children->get(i);
-      Requisition childReq;
-      child->widget->sizeRequest (&childReq);
-      *oofWidth = max (*oofWidth, getChildPosX (child) + childReq.width);
-      *oofHeight = max (*oofHeight,
-                        getChildPosX (child) + childReq.ascent
-                        + childReq.descent);
+
+      // Children whose position cannot be determined will be
+      // considered later in sizeAllocateEnd.
+      if (posXDefined (child) && posYDefined (child)) {
+         Requisition childReq;
+         child->widget->sizeRequest (&childReq);
+         *oofWidth = max (*oofWidth, getChildPosX (child) + childReq.width);
+         *oofHeight = max (*oofHeight,
+                           getChildPosX (child) + childReq.ascent
+                           + childReq.descent);
+         
+         child->consideredForSize = true;
+      } else
+         child->consideredForSize = false;
    }
 }
 
@@ -138,19 +130,37 @@ void OOFPosRelMgr::getExtremes (Extremes *containerExtr, int *oofMinWidth,
 
    for (int i = 0; i < children->size (); i++) {
       Child *child = children->get(i);
-      Extremes childExtr;      
-      child->widget->getExtremes (&childExtr);
 
-      // Put the extremes of the container in relation to the extremes
-      // of the child, as in OOFPosAbsLikeMgr::getExtremes (see
-      // comment there).
-      *oofMinWidth = max (*oofMinWidth,
-                          getChildPosX (child, containerExtr->minWidth)
-                          + childExtr.minWidth);
-      *oofMaxWidth = max (*oofMaxWidth,
-                          getChildPosX (child, containerExtr->maxWidth)
-                          + childExtr.maxWidth);
+      // Children whose position cannot be determined will be
+      // considered later in sizeAllocateEnd.
+      if (posXDefined (child)) {
+         Extremes childExtr;      
+         child->widget->getExtremes (&childExtr);
+         
+         // Put the extremes of the container in relation to the extremes
+         // of the child, as in OOFPosAbsLikeMgr::getExtremes (see
+         // comment there).
+         *oofMinWidth = max (*oofMinWidth,
+                             getChildPosX (child, containerExtr->minWidth)
+                             + childExtr.minWidth);
+         *oofMaxWidth = max (*oofMaxWidth,
+                             getChildPosX (child, containerExtr->maxWidth)
+                             + childExtr.maxWidth);
+
+         child->consideredForExtremes = true;
+      } else
+         child->consideredForExtremes = false;
    }
+}
+
+bool OOFPosRelMgr::posXAbsolute (Child *child)
+{
+   return false;
+}
+
+bool OOFPosRelMgr::posYAbsolute (Child *child)
+{
+   return false;
 }
 
 int OOFPosRelMgr::getChildPosDim (style::Length posCssValue,

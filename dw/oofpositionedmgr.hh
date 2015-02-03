@@ -1,7 +1,8 @@
-#ifndef __DW_OOFPOSITIONEDMGR_HH__
+ #ifndef __DW_OOFPOSITIONEDMGR_HH__
 #define __DW_OOFPOSITIONEDMGR_HH__
 
 #include "outofflowmgr.hh"
+#include "oofawarewidget.hh"
 
 namespace dw {
 
@@ -24,6 +25,8 @@ protected:
 
    OOFAwareWidget *container;
    core::Allocation containerAllocation;
+   enum { NOT_ALLOCATED, IN_ALLOCATION, WAS_ALLOCATED }
+      containerAllocationState;
 
    lout::container::typed::Vector<Child> *children;
    lout::container::typed::HashTable<lout::object::TypedPointer
@@ -40,12 +43,45 @@ protected:
    { return getPosBorder (child->getStyle()->bottom, availHeight, result); }
 
    bool getPosBorder (core::style::Length cssValue, int refLength, int *result);
+
    bool allChildrenConsideredForSize ();
    bool allChildrenConsideredForExtremes ();
+
+   bool doChildrenExceedContainer ();
+
+   virtual void sizeAllocateChildren () = 0;
+   virtual bool posXAbsolute (Child *child) = 0;
+   virtual bool posYAbsolute (Child *child) = 0;
+
+   inline bool generatorPosDefined (Child *child) {
+      return child->generator == container ||
+         (containerAllocationState != NOT_ALLOCATED
+          && child->generator->wasAllocated ());
+   }
+   inline int generatorPosX (Child *child) {
+      assert (generatorPosDefined (child));
+      return child->generator == container ? 0 :
+         child->generator->getAllocation()->x - containerAllocation.x;
+   }
+   inline int generatorPosY (Child *child) {
+      assert (generatorPosDefined (child));
+      return child->generator == container ? 0 :
+         child->generator->getAllocation()->y - containerAllocation.y;
+   }
+   
+   inline bool posXDefined (Child *child)
+   { return posXAbsolute (child) || generatorPosDefined (child); }
+
+   inline bool posYDefined (Child *child)
+   { return posYAbsolute (child) || generatorPosDefined (child); }
 
 public:
    OOFPositionedMgr (OOFAwareWidget *container);
    ~OOFPositionedMgr ();
+
+   void sizeAllocateStart (OOFAwareWidget *caller,
+                           core::Allocation *allocation);
+   void sizeAllocateEnd (OOFAwareWidget *caller);
 
    void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area,

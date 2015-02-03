@@ -18,7 +18,6 @@
  */
 
 #include "oofposabsmgr.hh"
-#include "oofawarewidget.hh"
 
 namespace dw {
 

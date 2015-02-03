@@ -2,7 +2,6 @@
 #define __DW_OOFPOSRELMGR_HH__
 
 #include "oofpositionedmgr.hh"
-#include "oofawarewidget.hh"
 
 namespace dw {
 
@@ -11,6 +10,10 @@ namespace oof {
 class OOFPosRelMgr: public OOFPositionedMgr
 {
 protected:
+   void sizeAllocateChildren ();
+   bool posXAbsolute (Child *child);
+   bool posYAbsolute (Child *child);
+
    int getChildPosDim (core::style::Length posCssValue,
                        core::style::Length negCssValue, int refPos,
                        int refLength);
@@ -37,9 +40,6 @@ public:
    void markExtremesChange (int ref);
    void calcWidgetRefSize (core::Widget *widget, core::Requisition *size);
 
-   void sizeAllocateStart (OOFAwareWidget *caller,
-                           core::Allocation *allocation);
-   void sizeAllocateEnd (OOFAwareWidget *caller);
    void getSize (core::Requisition *containerReq, int *oofWidth,
                  int *oofHeight);
    void getExtremes (core::Extremes *containerExtr, int *oofMinWidth,
