@@ -8,7 +8,7 @@ at http://hg.dillo.org/dillo
 
 dillo_grows repository [to be merged]
 
-+- Absolutely positioned elements.
++- Absolutely and relatively positioned elements.
  - Fixedly positioned elements (incomplete: referring to the canvas instead to
    the viewport).
  - "Z-index", stacking contexts.
