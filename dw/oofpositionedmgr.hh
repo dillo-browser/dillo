@@ -13,18 +13,15 @@ protected:
    class Child: public lout::object::Object
    {
    public:
-      core::Widget *widget, *reference;
+      core::Widget *widget;
       OOFAwareWidget *generator;
       int externalIndex, x, y;
 
       inline Child (core::Widget *widget, OOFAwareWidget *generator,
-                    core::Widget *reference, int externalIndex)
+                    int externalIndex)
       { this->widget = widget; this->generator = generator;
-         this->reference = reference; this->externalIndex = externalIndex;
-         x = y = 0; }  
+         this->externalIndex = externalIndex; x = y = 0; }  
    };
-
-   virtual bool isReference (core::Widget *widget) = 0;
 
    OOFAwareWidget *container;
    core::Allocation containerAllocation;

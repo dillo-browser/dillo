@@ -35,20 +35,6 @@ OOFPosAbsMgr::~OOFPosAbsMgr ()
    DBG_OBJ_DELETE ();
 }
 
-bool OOFPosAbsMgr::isReference (core::Widget *widget)
-{
-   // Only the toplevel widget (as for all) as well as absolutely,
-   // relatively, and fixedly positioned elements constitute the
-   // containing block (i. e. the reference widget) for absolutely
-   // positioned elements (But neither floats nor other elements like
-   // table cells, or elements with 'overview' set to another value
-   // than 'visible').
-   
-   return widget->instanceOf (OOFAwareWidget::CLASS_ID) &&
-      (widget->getParent() == NULL ||
-       OOFAwareWidget::testWidgetPositioned (widget));
-}
-
 // Comment for all containerBox* implementations: for the toplevel
 // widget, assume margin = border = 0 (should perhaps set so when
 // widgets are constructed), so that the padding area is actually the

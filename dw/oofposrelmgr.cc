@@ -197,12 +197,6 @@ int OOFPosRelMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
    return 0;
 }
 
-bool OOFPosRelMgr::isReference (Widget *widget)
-{
-   // TODO Remove soon. This implementation will imply reference = container.
-   return false;
-}
-
 } // namespace oof
 
 } // namespace dw

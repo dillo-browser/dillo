@@ -93,17 +93,7 @@ int OOFPositionedMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generator,
    DBG_OBJ_ENTER ("construct.oofm", 0, "addWidgetOOF", "%p, %p, %d",
                   widget, generator, externalIndex);
 
-   Widget *reference = NULL;
-
-   for (Widget *widget2 = generator; reference == NULL && widget2 != container;
-        widget2 = widget2->getParent ())
-      if (isReference (widget2))
-         reference = widget2;
-
-   if (reference == NULL)
-      reference = container;
-
-   Child *child = new Child (widget, generator, reference, externalIndex);
+   Child *child = new Child (widget, generator, externalIndex);
    children->put (child);
    childrenByWidget->put (new TypedPointer<Widget> (widget), child);
 
@@ -112,7 +102,6 @@ int OOFPositionedMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generator,
    DBG_OBJ_ARRSET_PTR ("children", children->size() - 1, widget);
 
    DBG_OBJ_SET_PTR_O (widget, "<Positioned>.generator", generator);
-   DBG_OBJ_SET_PTR_O (widget, "<Positioned>.reference", reference);
    DBG_OBJ_SET_NUM_O (widget, "<Positioned>.externalIndex", externalIndex);
 
    DBG_OBJ_MSGF ("construct.oofm", 1, "=> %d", subRef);

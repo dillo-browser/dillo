@@ -2,6 +2,7 @@
 #define __DW_OOFPOSABSLIKEMGR_HH__
 
 #include "oofpositionedmgr.hh"
+#include "oofawarewidget.hh"
 
 namespace dw {
 
@@ -23,6 +24,23 @@ protected:
    enum { NOT_ALLOCATED, IN_ALLOCATION, WAS_ALLOCATED }
       containerAllocationState;
 
+   inline bool generatorPosDefined (Child *child) {
+      return child->generator == container ||
+         (containerAllocationState != NOT_ALLOCATED
+          && child->generator->wasAllocated ());
+   }
+   inline int generatorPosX (Child *child) {
+      assert (generatorPosDefined (child));
+      return child->generator == container ? 0 :
+         child->generator->getAllocation()->x
+         - (containerAllocation.x + containerBoxOffsetX ());
+   }
+   inline int generatorPosY (Child *child) {
+      assert (generatorPosDefined (child));
+      return child->generator == container ? 0 :
+         child->generator->getAllocation()->y
+         - (containerAllocation.y + containerBoxOffsetY ());
+   }
    
    bool doChildrenExceedContainer ();
    bool haveExtremesChanged ();

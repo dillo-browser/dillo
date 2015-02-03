@@ -10,7 +10,6 @@ namespace oof {
 class OOFPosAbsMgr: public OOFPosAbsLikeMgr
 {
 protected:
-   bool isReference (core::Widget *widget);
    int containerBoxOffsetX ();
    int containerBoxOffsetY ();
    int containerBoxRestWidth ();

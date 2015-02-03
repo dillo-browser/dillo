@@ -161,14 +161,8 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
            // process" in "dw-stacking-context.doc".
            testWidgetOutOfFlow (widget)));
       
-   case OOFM_RELATIVE: // TODO Correct?
+   case OOFM_RELATIVE:
    case OOFM_ABSOLUTE:
-      // We use the toplevel widget as container, i. e. parent widget.
-      // See also OOFPosAbsMgr::isReference for the definition of the
-      // "reference widget".
-      //return widget->getParent() == NULL;
-
-      // The above does not work. Temporary re-enact old behaviour:
       return widget->instanceOf (OOFAwareWidget::CLASS_ID) &&
          (widget->getParent() == NULL ||
           OOFAwareWidget::testWidgetPositioned (widget));

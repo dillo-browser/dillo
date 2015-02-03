@@ -11,8 +11,6 @@ namespace oof {
 class OOFPosRelMgr: public OOFPositionedMgr
 {
 protected:
-   bool isReference (core::Widget *widget);
-
    int getChildPosDim (core::style::Length posCssValue,
                        core::style::Length negCssValue, int refPos,
                        int refLength);
