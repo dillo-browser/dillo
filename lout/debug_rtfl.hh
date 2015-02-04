@@ -42,12 +42,12 @@
 // this function cannot be used to print the characters "d", "p", and
 // "s" directly.
 
-inline void rtfl_print (const char *version, const char *file, int line,
-                        const char *fmt, ...)
+inline void rtfl_print (const char *module, const char *version,
+                        const char *file, int line, const char *fmt, ...)
 {
    // "\n" at the beginning just in case that the previous line is not
    // finished yet.
-   printf ("\n[rtfl-%s]%s:%d:%d:", version, file, line, getpid ());
+   printf ("\n[rtfl-%s-%s]%s:%d:%d:", module, version, file, line, getpid ());
 
    va_list args;
    va_start (args, fmt);
@@ -94,14 +94,14 @@ inline void rtfl_print (const char *version, const char *file, int line,
    fflush (stdout);
 }
 
-#define RTFL_PRINT(version, cmd, fmt, ...) \
-   rtfl_print (version, CUR_WORKING_DIR "/" __FILE__, __LINE__, "s:" fmt, \
-               cmd, __VA_ARGS__)
+#define RTFL_PRINT(module, version, cmd, fmt, ...) \
+   rtfl_print (module, version, CUR_WORKING_DIR "/" __FILE__, __LINE__, \
+               "s:" fmt, cmd, __VA_ARGS__)
 
 #define RTFL_OBJ_VERSION "1.0"
 
 #define RTFL_OBJ_PRINT(cmd, fmt, ...) \
-   RTFL_PRINT (RTFL_OBJ_VERSION, "obj-" cmd, fmt, __VA_ARGS__)
+   RTFL_PRINT ("obj", RTFL_OBJ_VERSION, cmd, fmt, __VA_ARGS__)
 
 #define DBG_OBJ_MSG(aspect, prio, msg) \
    DBG_OBJ_MSG_O (aspect, prio, this, msg)
