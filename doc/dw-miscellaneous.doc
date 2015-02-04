@@ -172,7 +172,8 @@ size of the widget *reference*
 dw::oof::OOFPosRelMgr::calcWidgetRefSize).
 
 **Documentation:** Describe why the latter is not covered by
-dw::oof::OOFPositionedMgr::doChildrenExceedContainer.
+dw::oof::OOFPositionedMgr::doChildrenExceedContainer. (Is this really
+the case?)
 
 **Open:** Stacking order? Furthermore: a relatively positioned element
 does not always constitute a containing block (see CSS specification).
