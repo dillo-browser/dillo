@@ -82,12 +82,13 @@ static int parseOption(char *name, char *value,
    case PREFS_STRINGS:
    {
       Dlist *lp = *(Dlist **)node->pref;
-      if (dList_length(lp) == 2 && !dList_nth_data(lp, 1)) {
+      if (node->count == 0) {
          /* override the default */
-         void *data = dList_nth_data(lp, 0);
-         dList_remove(lp, data);
-         dList_remove(lp, NULL);
-         dFree(data);
+         for (i = 0; i < dList_length(lp); i++) {
+            void *data = dList_nth_data(lp, i);
+            dList_remove(lp, data);
+            dFree(dList_nth_data(lp, i));
+         }
       }
       dList_append(lp, dStrdup(value));
       break;
