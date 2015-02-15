@@ -44,100 +44,15 @@ typedef struct {
 /*
  * Parse a name/value pair and set preferences accordingly.
  */
-int PrefsParser::parseOption(char *name, char *value)
+static int parseOption(char *name, char *value,
+                       SymNode_t *symbols, int n_symbols)
 {
    const SymNode_t *node;
-   uint_t i;
+   int i;
    int st;
 
-   /* Symbol array, sorted alphabetically */
-   const SymNode_t symbols[] = {
-      { "allow_white_bg", &prefs.allow_white_bg, PREFS_BOOL },
-      { "white_bg_replacement", &prefs.white_bg_replacement, PREFS_COLOR },
-      { "bg_color", &prefs.bg_color, PREFS_COLOR },
-      { "buffered_drawing", &prefs.buffered_drawing, PREFS_INT32 },
-      { "contrast_visited_color", &prefs.contrast_visited_color, PREFS_BOOL },
-      { "enterpress_forces_submit", &prefs.enterpress_forces_submit,
-        PREFS_BOOL },
-      { "focus_new_tab", &prefs.focus_new_tab, PREFS_BOOL },
-      { "font_cursive", &prefs.font_cursive, PREFS_STRING },
-      { "font_factor", &prefs.font_factor, PREFS_DOUBLE },
-      { "font_fantasy", &prefs.font_fantasy, PREFS_STRING },
-      { "font_max_size", &prefs.font_max_size, PREFS_INT32 },
-      { "font_min_size", &prefs.font_min_size, PREFS_INT32 },
-      { "font_monospace", &prefs.font_monospace, PREFS_STRING },
-      { "font_sans_serif", &prefs.font_sans_serif, PREFS_STRING },
-      { "font_serif", &prefs.font_serif, PREFS_STRING },
-      { "fullwindow_start", &prefs.fullwindow_start, PREFS_BOOL },
-      { "geometry", NULL, PREFS_GEOMETRY },
-      { "home", &prefs.home, PREFS_URL },
-      { "http_language", &prefs.http_language, PREFS_STRING },
-      { "http_max_conns", &prefs.http_max_conns, PREFS_INT32 },
-      { "http_proxy", &prefs.http_proxy, PREFS_URL },
-      { "http_proxyuser", &prefs.http_proxyuser, PREFS_STRING },
-      { "http_referer", &prefs.http_referer, PREFS_STRING },
-      { "http_user_agent", &prefs.http_user_agent, PREFS_STRING },
-      { "limit_text_width", &prefs.limit_text_width, PREFS_BOOL },
-      { "load_images", &prefs.load_images, PREFS_BOOL },
-      { "load_background_images", &prefs.load_background_images, PREFS_BOOL },
-      { "load_stylesheets", &prefs.load_stylesheets, PREFS_BOOL },
-      { "middle_click_drags_page", &prefs.middle_click_drags_page,
-        PREFS_BOOL },
-      { "middle_click_opens_new_tab", &prefs.middle_click_opens_new_tab,
-        PREFS_BOOL },
-      { "right_click_closes_tab", &prefs.right_click_closes_tab, PREFS_BOOL },
-      { "no_proxy", &prefs.no_proxy, PREFS_STRING },
-      { "panel_size", &prefs.panel_size, PREFS_PANEL_SIZE },
-      { "parse_embedded_css", &prefs.parse_embedded_css, PREFS_BOOL },
-      { "save_dir", &prefs.save_dir, PREFS_STRING },
-      { "search_url", &prefs.search_urls, PREFS_STRINGS },
-      { "show_back", &prefs.show_back, PREFS_BOOL },
-      { "show_bookmarks", &prefs.show_bookmarks, PREFS_BOOL },
-      { "show_clear_url", &prefs.show_clear_url, PREFS_BOOL },
-      { "show_extra_warnings", &prefs.show_extra_warnings, PREFS_BOOL },
-      { "show_filemenu", &prefs.show_filemenu, PREFS_BOOL },
-      { "show_forw", &prefs.show_forw, PREFS_BOOL },
-      { "show_help", &prefs.show_help, PREFS_BOOL },
-      { "show_home", &prefs.show_home, PREFS_BOOL },
-      { "show_msg", &prefs.show_msg, PREFS_BOOL },
-      { "show_progress_box", &prefs.show_progress_box, PREFS_BOOL },
-      { "show_quit_dialog", &prefs.show_quit_dialog, PREFS_BOOL },
-      { "show_reload", &prefs.show_reload, PREFS_BOOL },
-      { "show_save", &prefs.show_save, PREFS_BOOL },
-      { "show_url", &prefs.show_url, PREFS_BOOL },
-      { "show_search", &prefs.show_search, PREFS_BOOL },
-      { "show_stop", &prefs.show_stop, PREFS_BOOL },
-      { "show_tools", &prefs.show_tools, PREFS_BOOL },
-      { "show_tooltip", &prefs.show_tooltip, PREFS_BOOL },
-      { "show_ui_tooltip", &prefs.show_ui_tooltip, PREFS_BOOL },
-      { "small_icons", &prefs.small_icons, PREFS_BOOL },
-      { "start_page", &prefs.start_page, PREFS_URL },
-      { "theme", &prefs.theme, PREFS_STRING },
-      { "ui_button_highlight_color", &prefs.ui_button_highlight_color,
-        PREFS_COLOR },
-      { "ui_fg_color", &prefs.ui_fg_color, PREFS_COLOR },
-      { "ui_main_bg_color", &prefs.ui_main_bg_color, PREFS_COLOR },
-      { "ui_selection_color", &prefs.ui_selection_color, PREFS_COLOR },
-      { "ui_tab_active_bg_color", &prefs.ui_tab_active_bg_color, PREFS_COLOR },
-      { "ui_tab_bg_color", &prefs.ui_tab_bg_color, PREFS_COLOR },
-      { "ui_tab_active_fg_color", &prefs.ui_tab_active_fg_color, PREFS_COLOR },
-      { "ui_tab_fg_color", &prefs.ui_tab_fg_color, PREFS_COLOR },
-      { "ui_text_bg_color", &prefs.ui_text_bg_color, PREFS_COLOR },
-      { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL },
-      { "penalty_hyphen", &prefs.penalty_hyphen, PREFS_FRACTION_100 },
-      { "penalty_hyphen_2", &prefs.penalty_hyphen_2, PREFS_FRACTION_100 },
-      { "penalty_em_dash_left", &prefs.penalty_em_dash_left,
-        PREFS_FRACTION_100 },
-      { "penalty_em_dash_right", &prefs.penalty_em_dash_right,
-        PREFS_FRACTION_100 },
-      { "penalty_em_dash_right_2", &prefs.penalty_em_dash_right_2,
-        PREFS_FRACTION_100 },
-      { "stretchability_factor", &prefs.stretchability_factor,
-        PREFS_FRACTION_100 }
-   };
-
    node = NULL;
-   for (i = 0; i < sizeof(symbols) / sizeof(symbols[0]); i++) {
+   for (i = 0; i < n_symbols; i++) {
       if (!strcmp(symbols[i].name, name)) {
          node = & (symbols[i]);
          break;
@@ -225,6 +140,91 @@ void PrefsParser::parse(FILE *fp)
    char *line, *name, *value, *oldLocale;
    int st;
 
+   /* Symbol array, sorted alphabetically */
+   SymNode_t symbols[] = {
+      { "allow_white_bg", &prefs.allow_white_bg, PREFS_BOOL },
+      { "white_bg_replacement", &prefs.white_bg_replacement, PREFS_COLOR },
+      { "bg_color", &prefs.bg_color, PREFS_COLOR },
+      { "buffered_drawing", &prefs.buffered_drawing, PREFS_INT32 },
+      { "contrast_visited_color", &prefs.contrast_visited_color, PREFS_BOOL },
+      { "enterpress_forces_submit", &prefs.enterpress_forces_submit,
+        PREFS_BOOL },
+      { "focus_new_tab", &prefs.focus_new_tab, PREFS_BOOL },
+      { "font_cursive", &prefs.font_cursive, PREFS_STRING },
+      { "font_factor", &prefs.font_factor, PREFS_DOUBLE },
+      { "font_fantasy", &prefs.font_fantasy, PREFS_STRING },
+      { "font_max_size", &prefs.font_max_size, PREFS_INT32 },
+      { "font_min_size", &prefs.font_min_size, PREFS_INT32 },
+      { "font_monospace", &prefs.font_monospace, PREFS_STRING },
+      { "font_sans_serif", &prefs.font_sans_serif, PREFS_STRING },
+      { "font_serif", &prefs.font_serif, PREFS_STRING },
+      { "fullwindow_start", &prefs.fullwindow_start, PREFS_BOOL },
+      { "geometry", NULL, PREFS_GEOMETRY },
+      { "home", &prefs.home, PREFS_URL },
+      { "http_language", &prefs.http_language, PREFS_STRING },
+      { "http_max_conns", &prefs.http_max_conns, PREFS_INT32 },
+      { "http_proxy", &prefs.http_proxy, PREFS_URL },
+      { "http_proxyuser", &prefs.http_proxyuser, PREFS_STRING },
+      { "http_referer", &prefs.http_referer, PREFS_STRING },
+      { "http_user_agent", &prefs.http_user_agent, PREFS_STRING },
+      { "limit_text_width", &prefs.limit_text_width, PREFS_BOOL },
+      { "load_images", &prefs.load_images, PREFS_BOOL },
+      { "load_background_images", &prefs.load_background_images, PREFS_BOOL },
+      { "load_stylesheets", &prefs.load_stylesheets, PREFS_BOOL },
+      { "middle_click_drags_page", &prefs.middle_click_drags_page,
+        PREFS_BOOL },
+      { "middle_click_opens_new_tab", &prefs.middle_click_opens_new_tab,
+        PREFS_BOOL },
+      { "right_click_closes_tab", &prefs.right_click_closes_tab, PREFS_BOOL },
+      { "no_proxy", &prefs.no_proxy, PREFS_STRING },
+      { "panel_size", &prefs.panel_size, PREFS_PANEL_SIZE },
+      { "parse_embedded_css", &prefs.parse_embedded_css, PREFS_BOOL },
+      { "save_dir", &prefs.save_dir, PREFS_STRING },
+      { "search_url", &prefs.search_urls, PREFS_STRINGS },
+      { "show_back", &prefs.show_back, PREFS_BOOL },
+      { "show_bookmarks", &prefs.show_bookmarks, PREFS_BOOL },
+      { "show_clear_url", &prefs.show_clear_url, PREFS_BOOL },
+      { "show_extra_warnings", &prefs.show_extra_warnings, PREFS_BOOL },
+      { "show_filemenu", &prefs.show_filemenu, PREFS_BOOL },
+      { "show_forw", &prefs.show_forw, PREFS_BOOL },
+      { "show_help", &prefs.show_help, PREFS_BOOL },
+      { "show_home", &prefs.show_home, PREFS_BOOL },
+      { "show_msg", &prefs.show_msg, PREFS_BOOL },
+      { "show_progress_box", &prefs.show_progress_box, PREFS_BOOL },
+      { "show_quit_dialog", &prefs.show_quit_dialog, PREFS_BOOL },
+      { "show_reload", &prefs.show_reload, PREFS_BOOL },
+      { "show_save", &prefs.show_save, PREFS_BOOL },
+      { "show_url", &prefs.show_url, PREFS_BOOL },
+      { "show_search", &prefs.show_search, PREFS_BOOL },
+      { "show_stop", &prefs.show_stop, PREFS_BOOL },
+      { "show_tools", &prefs.show_tools, PREFS_BOOL },
+      { "show_tooltip", &prefs.show_tooltip, PREFS_BOOL },
+      { "show_ui_tooltip", &prefs.show_ui_tooltip, PREFS_BOOL },
+      { "small_icons", &prefs.small_icons, PREFS_BOOL },
+      { "start_page", &prefs.start_page, PREFS_URL },
+      { "theme", &prefs.theme, PREFS_STRING },
+      { "ui_button_highlight_color", &prefs.ui_button_highlight_color,
+        PREFS_COLOR },
+      { "ui_fg_color", &prefs.ui_fg_color, PREFS_COLOR },
+      { "ui_main_bg_color", &prefs.ui_main_bg_color, PREFS_COLOR },
+      { "ui_selection_color", &prefs.ui_selection_color, PREFS_COLOR },
+      { "ui_tab_active_bg_color", &prefs.ui_tab_active_bg_color, PREFS_COLOR },
+      { "ui_tab_bg_color", &prefs.ui_tab_bg_color, PREFS_COLOR },
+      { "ui_tab_active_fg_color", &prefs.ui_tab_active_fg_color, PREFS_COLOR },
+      { "ui_tab_fg_color", &prefs.ui_tab_fg_color, PREFS_COLOR },
+      { "ui_text_bg_color", &prefs.ui_text_bg_color, PREFS_COLOR },
+      { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL },
+      { "penalty_hyphen", &prefs.penalty_hyphen, PREFS_FRACTION_100 },
+      { "penalty_hyphen_2", &prefs.penalty_hyphen_2, PREFS_FRACTION_100 },
+      { "penalty_em_dash_left", &prefs.penalty_em_dash_left,
+        PREFS_FRACTION_100 },
+      { "penalty_em_dash_right", &prefs.penalty_em_dash_right,
+        PREFS_FRACTION_100 },
+      { "penalty_em_dash_right_2", &prefs.penalty_em_dash_right_2,
+        PREFS_FRACTION_100 },
+      { "stretchability_factor", &prefs.stretchability_factor,
+        PREFS_FRACTION_100 }
+   };
    // changing the LC_NUMERIC locale (temporarily) to C
    // avoids parsing problems with float numbers
    oldLocale = dStrdup(setlocale(LC_NUMERIC, NULL));
@@ -236,7 +236,7 @@ void PrefsParser::parse(FILE *fp)
 
       if (st == 0) {
          _MSG("prefsparser: name=%s, value=%s\n", name, value);
-         parseOption(name, value);
+         parseOption(name, value, symbols, sizeof(symbols) / sizeof(symbols[0]));
       } else if (st < 0) {
          MSG_ERR("prefsparser: Syntax error in dillorc:"
                  " name=\"%s\" value=\"%s\"\n", name, value);
