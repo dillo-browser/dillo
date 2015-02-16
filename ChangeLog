@@ -38,7 +38,8 @@ dillo-3.1 [not released yet]
  - INPUT, TEXTAREA placeholder attribute.
    Patches: corvid
 +- Avoid requesting background images if an ancestor has display:none.
-   Patch: Johannes Hofmann
+ - Ignore built-in search url if any are specified in dillorc.
+   Patches: Johannes Hofmann
 
 -----------------------------------------------------------------------------
 
