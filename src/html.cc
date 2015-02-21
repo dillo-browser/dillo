@@ -1575,7 +1575,7 @@ static int
  * rendering modes, so it may be better to chose another behaviour. --Jcid
  *
  * http://www.mozilla.org/docs/web-developer/quirks/doctypes.html
- * http://lists.auriga.wearlab.de/pipermail/dillo-dev/2004-October/002300.html
+ * http://lists.dillo.org/pipermail/dillo-dev/2004-October/002300.html
  *
  * This is not a full DOCTYPE parser, just enough for what Dillo uses.
  */

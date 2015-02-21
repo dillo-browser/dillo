@@ -1034,7 +1034,7 @@ void StyleEngine::init () {
       "code, tt, pre, samp, kbd {font-family: monospace}"
       /* WORKAROUND: Reset font properties in tables as some
        * pages rely on it (e.g. gmail).
-       * http://developer.mozilla.org/En/Fixing_Table_Inheritance_in_Quirks_Mode
+       * http://developer.mozilla.org/en-US/Fixing_Table_Inheritance_in_Quirks_Mode
        * has a detailed description of the issue.
        */
       "table, caption {font-size: medium; font-weight: normal}";
