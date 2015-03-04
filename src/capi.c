@@ -16,6 +16,7 @@
  */
 
 #include <string.h>
+#include <errno.h>
 
 #include "msg.h"
 #include "capi.h"
@@ -401,7 +402,8 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
               if ((web->stream = fopen(web->filename, "w"))) {
                  use_cache = 1;
               } else {
-                 MSG_WARN("Cannot open \"%s\" for writing.\n", web->filename);
+                 MSG_WARN("Cannot open \"%s\" for writing: %s.\n",
+                          web->filename, dStrerror(errno));
               }
            }
         } else if (a_Cache_download_enabled(web->url)) {
