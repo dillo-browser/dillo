@@ -665,37 +665,40 @@ static int Http_get(ChainLink *Info, void *Data1)
 static void Http_socket_reuse(int SKey)
 {
    SocketData_t *new_sd, *old_sd = a_Klist_get_data(ValidSocks, SKey);
-   HostConnection_t *hc = Http_host_connection_get(old_sd->connected_to);
-   int i, n = dList_length(hc->queue);
 
-   for (i = 0; i < n; i++) {
-      new_sd = dList_nth_data(hc->queue, i);
+   if (old_sd) {
+      HostConnection_t *hc = Http_host_connection_get(old_sd->connected_to);
+      int i, n = dList_length(hc->queue);
 
-      if (a_Web_valid(new_sd->web) && old_sd->port == new_sd->port) {
-         new_sd->SockFD = old_sd->SockFD;
-         Http_fd_map_remove_entry(old_sd->SockFD);
-         a_Klist_remove(ValidSocks, SKey);
-         dFree(old_sd);
+      for (i = 0; i < n; i++) {
+         new_sd = dList_nth_data(hc->queue, i);
 
-         dList_remove(hc->queue, new_sd);
-         new_sd->flags &= ~HTTP_SOCKET_QUEUED;
-         FdMapEntry_t *e = dNew0(FdMapEntry_t, 1);
-         e->fd = new_sd->SockFD;
-         e->skey = VOIDP2INT(new_sd->Info->LocalKey);
-         dList_append(fd_map, e);
+         if (a_Web_valid(new_sd->web) && old_sd->port == new_sd->port) {
+            new_sd->SockFD = old_sd->SockFD;
+            Http_fd_map_remove_entry(old_sd->SockFD);
+            a_Klist_remove(ValidSocks, SKey);
+            dFree(old_sd);
 
-         a_Chain_bcb(OpSend, new_sd->Info, &new_sd->SockFD, "FD");
-         a_Chain_fcb(OpSend, new_sd->Info, &new_sd->SockFD, "FD");
-         Http_send_query(new_sd->Info, new_sd);
-         new_sd->connected_to = hc->host;
-         return;
+            dList_remove(hc->queue, new_sd);
+            new_sd->flags &= ~HTTP_SOCKET_QUEUED;
+            FdMapEntry_t *e = dNew0(FdMapEntry_t, 1);
+            e->fd = new_sd->SockFD;
+            e->skey = VOIDP2INT(new_sd->Info->LocalKey);
+            dList_append(fd_map, e);
+
+            a_Chain_bcb(OpSend, new_sd->Info, &new_sd->SockFD, "FD");
+            a_Chain_fcb(OpSend, new_sd->Info, &new_sd->SockFD, "FD");
+            Http_send_query(new_sd->Info, new_sd);
+            new_sd->connected_to = hc->host;
+            return;
+         }
       }
+      dClose(old_sd->SockFD);
+      Http_fd_map_remove_entry(old_sd->SockFD);
+      a_Klist_remove(ValidSocks, SKey);
+      hc->active_conns--;
+      dFree(old_sd);
    }
-   dClose(old_sd->SockFD);
-   Http_fd_map_remove_entry(old_sd->SockFD);
-   a_Klist_remove(ValidSocks, SKey);
-   hc->active_conns--;
-   dFree(old_sd);
 }
 
 /*
