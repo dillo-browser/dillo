@@ -87,7 +87,7 @@ static int parseOption(char *name, char *value,
          for (i = 0; i < dList_length(lp); i++) {
             void *data = dList_nth_data(lp, i);
             dList_remove(lp, data);
-            dFree(dList_nth_data(lp, i));
+            dFree(data);
          }
       }
       dList_append(lp, dStrdup(value));
