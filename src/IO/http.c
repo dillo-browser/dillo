@@ -795,6 +795,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             break;
          case OpAbort:
             a_Chain_bcb(OpAbort, Info, NULL, NULL);
+            Http_socket_free(SKey);
             dFree(Info);
             break;
           default:
