@@ -995,6 +995,14 @@ static const char *Html_parse_entity(DilloHtml *html, const char *token,
    const char *ret = NULL;
    char *tok;
 
+   if (toksize > 50) {
+      /* In pathological cases, attributes can be megabytes long and filled
+       * with character references. As of HTML5, the longest defined character
+       * reference is about 32 bytes long.
+       */
+      toksize = 50;
+   }
+
    token++;
    tok = dStrndup(token, (uint_t)toksize);
 
