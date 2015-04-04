@@ -51,7 +51,7 @@ namespace identity {
  *      \em name should be unique, e.g. the fully qualified class name.
  * </ul>
  *
- * After this, <i>class</i>::CLASS_ID refers to a number, which denotes the
+ * After this, <i>class</i>\::CLASS_ID refers to a number, which denotes the
  * class. (If this is still -1, since the class has not yet been instantiated,
  * any test will fail, which is correct.)
  *
