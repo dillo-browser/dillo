@@ -204,10 +204,10 @@ class Receiver;
  * <li> \em Folding signals means to represent the signal itself by an integer
  *      number (enumeration), and translate the arguments in an object::Object*
  *      array. (If a given argument is not an instance of object::Object*,
- *      the wrappers in ::object can be used.)
+ *      the wrappers in \ref object can be used.)
  * </ul>
  *
- * \sa ::signal
+ * \sa \ref signal
  */
 class Emitter: public object::Object
 {
@@ -248,7 +248,7 @@ public:
  * If defining a signal group, a sub class of this class must be defined,
  * in which only the abstract signal methods must be defined.
  *
- * \sa ::signal
+ * \sa \ref signal
  */
 class Receiver: public object::Object
 {

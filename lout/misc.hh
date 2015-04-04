@@ -12,7 +12,7 @@ namespace lout {
 /**
  * \brief Miscellaneous stuff, which does not fit anywhere else.
  *
- * Actually, the other parts, beginning with ::object, depend on this.
+ * Actually, the other parts, beginning with \ref object, depend on this.
  */
 namespace misc {
 
