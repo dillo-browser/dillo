@@ -673,7 +673,9 @@ static void Http_socket_reuse(int SKey)
       for (i = 0; i < n; i++) {
          new_sd = dList_nth_data(hc->queue, i);
 
-         if (a_Web_valid(new_sd->web) && old_sd->port == new_sd->port) {
+         if (old_sd->port == new_sd->port &&
+             !(new_sd->flags & HTTP_SOCKET_TO_BE_FREED) &&
+             a_Web_valid(new_sd->web)) {
             new_sd->SockFD = old_sd->SockFD;
             Http_fd_map_remove_entry(old_sd->SockFD);
             a_Klist_remove(ValidSocks, SKey);
