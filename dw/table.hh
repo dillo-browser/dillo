@@ -54,7 +54,7 @@ namespace dw {
  *    subgraph cluster_extremes {
  *       style="dashed"; color="#8080c0";
  *       calcColumnExtremes [URL="\ref dw::Table::calcColumnExtremes"];
- *      forceCalcColumnExtremes[URL="\ref dw::Table::forceCalcColumnExtremes"];
+ *       forceCalcColumnExtremes[URL="\ref dw::Table::forceCalcColumnExtremes"];
  *    }
  *
  *    sizeRequestImpl -> forceCalcCellSizes [label="[B]"];
