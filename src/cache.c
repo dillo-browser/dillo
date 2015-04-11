@@ -675,30 +675,23 @@ static void Cache_parse_header(CacheEntry_t *entry)
       if (header[9] == '3' && header[10] == '0' &&
           (location_str = Cache_parse_field(header, "Location"))) {
          /* 30x: URL redirection */
-         DilloUrl *location_url = a_Url_new(location_str,URL_STR_(entry->Url));
+         entry->Location = a_Url_new(location_str, URL_STR_(entry->Url));
 
-         if (!a_Domain_permit(entry->Url, location_url)) {
-            /* don't redirect; just show body like usual (if any) */
+         if (!a_Domain_permit(entry->Url, entry->Location) ||
+             (URL_FLAGS(entry->Location) & (URL_Post + URL_Get) &&
+              dStrAsciiCasecmp(URL_SCHEME(entry->Location), "dpi") == 0 &&
+              dStrAsciiCasecmp(URL_SCHEME(entry->Url), "dpi") != 0)) {
+            /* Domain test, and forbid dpi GET and POST from non dpi-generated
+             * urls.
+             */
             MSG("Redirection not followed from %s to %s\n",
-                URL_HOST(entry->Url), URL_STR(location_url));
-            a_Url_free(location_url);
+                URL_HOST(entry->Url), URL_STR(entry->Location));
          } else {
             entry->Flags |= CA_Redirect;
             if (header[11] == '1')
                entry->Flags |= CA_ForceRedirect;  /* 301 Moved Permanently */
             else if (header[11] == '2')
                entry->Flags |= CA_TempRedirect;   /* 302 Temporary Redirect */
-
-            if (URL_FLAGS(location_url) & (URL_Post + URL_Get) &&
-                dStrAsciiCasecmp(URL_SCHEME(location_url), "dpi") == 0 &&
-                dStrAsciiCasecmp(URL_SCHEME(entry->Url), "dpi") != 0) {
-               /* Forbid dpi GET and POST from non dpi-generated urls */
-               MSG("Redirection Denied! '%s' -> '%s'\n",
-                   URL_STR(entry->Url), URL_STR(location_url));
-               a_Url_free(location_url);
-            } else {
-               entry->Location = location_url;
-            }
          }
          dFree(location_str);
       } else if (strncmp(header + 9, "401", 3) == 0) {
@@ -1142,6 +1135,27 @@ static void Cache_savelink_cb(void *vdata)
 }
 
 /*
+ * Let the client know that we're not following a redirection.
+ */
+static void Cache_provide_redirection_blocked_page(CacheEntry_t *entry,
+                                                   CacheClient_t *client)
+{
+   DilloWeb *clientWeb = client->Web;
+
+   a_Web_dispatch_by_type("text/html", clientWeb, &client->Callback,
+                          &client->CbData);
+   client->Buf = dStrconcat("<!doctype html><html><body>"
+                    "Dillo blocked a redirection attempt from <a href=\"",
+                    URL_STR(entry->Url), "\">", URL_STR(entry->Url),
+                    "</a> to <a href=\"", URL_STR(entry->Location), "\">",
+                    URL_STR(entry->Location), "</a> based on your domainrc "
+                    "settings.</body></html>", NULL);
+   client->BufSize = strlen(client->Buf);
+   (client->Callback)(CA_Send, client);
+   dFree(client->Buf);
+}
+
+/*
  * Update cache clients for a single cache-entry
  * Tasks:
  *   - Set the client function (if not already set)
@@ -1226,33 +1240,40 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
          /* Set the client function */
          if (!Client->Callback) {
             Client->Callback = Cache_null_client;
-            if (TypeMismatch) {
-               AbortEntry = TRUE;
+
+            if (entry->Location && !(entry->Flags & CA_Redirect)) {
+               /* Not following redirection, so don't display page body. */
             } else {
-               const char *curr_type = Cache_current_content_type(entry);
-               st = a_Web_dispatch_by_type(curr_type, ClientWeb,
-                                           &Client->Callback, &Client->CbData);
-               if (st == -1) {
-                  /* MIME type is not viewable */
-                  if (ClientWeb->flags & WEB_RootUrl) {
-                     MSG("Content-Type '%s' not viewable.\n", curr_type);
-                     /* prepare a download offer... */
-                     AbortEntry = OfferDownload = TRUE;
-                  } else {
-                     /* TODO: Resource Type not handled.
-                      * Not aborted to avoid multiple connections on the same
-                      * resource. A better idea is to abort the connection and
-                      * to keep a failed-resource flag in the cache entry. */
+               if (TypeMismatch) {
+                  AbortEntry = TRUE;
+               } else {
+                  const char *curr_type = Cache_current_content_type(entry);
+                  st = a_Web_dispatch_by_type(curr_type, ClientWeb,
+                                              &Client->Callback,
+                                              &Client->CbData);
+                  if (st == -1) {
+                     /* MIME type is not viewable */
+                     if (ClientWeb->flags & WEB_RootUrl) {
+                        MSG("Content-Type '%s' not viewable.\n", curr_type);
+                        /* prepare a download offer... */
+                        AbortEntry = OfferDownload = TRUE;
+                     } else {
+                        /* TODO: Resource Type not handled.
+                         * Not aborted to avoid multiple connections on the
+                         * same resource. A better idea is to abort the
+                         * connection and to keep a failed-resource flag in
+                         * the cache entry. */
+                     }
                   }
                }
-            }
-            if (AbortEntry) {
-               if (ClientWeb->flags & WEB_RootUrl)
-                  a_Nav_cancel_expect_if_eq(Client_bw, Client->Url);
-               a_Bw_remove_client(Client_bw, Client->Key);
-               Cache_client_dequeue(Client);
-               --i; /* Keep the index value in the next iteration */
-               continue;
+               if (AbortEntry) {
+                  if (ClientWeb->flags & WEB_RootUrl)
+                     a_Nav_cancel_expect_if_eq(Client_bw, Client->Url);
+                  a_Bw_remove_client(Client_bw, Client->Key);
+                  Cache_client_dequeue(Client);
+                  --i; /* Keep the index value in the next iteration */
+                  continue;
+               }
             }
          }
 
@@ -1276,6 +1297,11 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
          if (entry->Flags & CA_GotData) {
             /* Copy flags to a local var */
             int flags = ClientWeb->flags;
+
+            if (ClientWeb->flags & WEB_RootUrl && entry->Location &&
+                !(entry->Flags & CA_Redirect)) {
+               Cache_provide_redirection_blocked_page(entry, Client);
+            }
             /* We finished sending data, let the client know */
             (Client->Callback)(CA_Close, Client);
             if (ClientWeb->flags & WEB_RootUrl)
