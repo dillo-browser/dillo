@@ -1624,7 +1624,11 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
          html->DocTypeVersion = 2.0f;
       }
    } else if (!dStrAsciiCasecmp(ntag, "<!DOCTYPE html>") ||
-              !dStrAsciiCasecmp(ntag, "<!DOCTYPE html >")) {
+              !dStrAsciiCasecmp(ntag, "<!DOCTYPE html >") ||
+              !dStrAsciiCasecmp(ntag,
+                           "<!DOCTYPE html SYSTEM \"about:legacy-compat\">") ||
+              !dStrAsciiCasecmp(ntag,
+                             "<!DOCTYPE html SYSTEM 'about:legacy-compat'>")) {
       html->DocType = DT_HTML;
       html->DocTypeVersion = 5.0f;
    }
