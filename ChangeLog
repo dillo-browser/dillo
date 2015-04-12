@@ -36,10 +36,13 @@ dillo-3.1 [not released yet]
  - In location bar, tend toward showing beginning of URL instead of end.
  - Handle irix's version of vsnprintf().
  - INPUT, TEXTAREA placeholder attribute.
+ - Better notification when user's domainrc settings block page redirection.
    Patches: corvid
 +- Avoid requesting background images if an ancestor has display:none.
  - Ignore built-in search url if any are specified in dillorc.
    Patches: Johannes Hofmann
++- Doxygen fixes.
+   Patch: Jeremy Henty
 
 -----------------------------------------------------------------------------
 
