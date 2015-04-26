@@ -3506,7 +3506,7 @@ const TagInfo Tags[] = {
  {"a", B8(011101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
  {"abbr", B8(010101),'R',2, Html_tag_open_abbr, NULL, NULL},
  /* acronym 010101 -- obsolete in HTML5 */
- {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
+ {"address", B8(011110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
  {"article", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
