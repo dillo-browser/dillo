@@ -3396,8 +3396,13 @@ static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
 
    if (html->InFlags & IN_HEAD) {
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "href"))) {
-         BaseUrl = a_Html_url_new(html, attrbuf, "", 1);
-         if (URL_SCHEME_(BaseUrl)) {
+         bool_t html5 = html->DocType == DT_HTML &&
+                        html->DocTypeVersion >= 5.0f;
+
+         BaseUrl = html5 ? a_Html_url_new(html, attrbuf, NULL, 0) :
+                           a_Html_url_new(html, attrbuf, "", 1);
+
+         if (html5 || URL_SCHEME_(BaseUrl)) {
             /* Pass the URL_SpamSafe flag to the new base url */
             a_Url_set_flags(
                BaseUrl, URL_FLAGS(html->base_url) & URL_SpamSafe);
