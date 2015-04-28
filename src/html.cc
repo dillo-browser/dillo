@@ -3752,7 +3752,8 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
    int tag_idx;
 
    if (!(html->InFlags & IN_HTML) && html->DocType == DT_NONE)
-      BUG_MSG("The required DOCTYPE declaration is missing.");
+      BUG_MSG("The required DOCTYPE declaration is missing. "
+              "Handling as HTML4.");
 
    if (!(html->InFlags & IN_HTML)) {
       tag = "<html>";
