@@ -2481,7 +2481,6 @@ static void
       type = UNKNOWN;
    }
    if (type == RECTANGLE || type == CIRCLE || type == POLYGON) {
-      /* TODO: add support for coords in % */
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "coords"))) {
          coords = Html_read_coords(html, attrbuf);
 
