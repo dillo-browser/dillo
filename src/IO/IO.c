@@ -21,6 +21,7 @@
 #include "../klist.h"
 #include "IO.h"
 #include "iowatch.hh"
+#include "ssl.h"
 
 /*
  * Symbolic defines for shutdown() function
@@ -162,6 +163,7 @@ static bool_t IO_read(IOData_t *io)
    ssize_t St;
    bool_t ret = FALSE;
    int io_key = io->Key;
+   void *conn = a_Ssl_connection(io->FD);
 
    _MSG("  IO_read\n");
 
@@ -170,7 +172,8 @@ static bool_t IO_read(IOData_t *io)
    io->Status = 0;
 
    while (1) {
-      St = read(io->FD, Buf, IOBufLen);
+      St = conn ? a_Ssl_read(conn, Buf, IOBufLen)
+                : read(io->FD, Buf, IOBufLen);
       if (St > 0) {
          dStr_append_l(io->Buf, Buf, St);
          continue;
@@ -214,12 +217,14 @@ static bool_t IO_write(IOData_t *io)
 {
    ssize_t St;
    bool_t ret = FALSE;
+   void *conn = a_Ssl_connection(io->FD);
 
    _MSG("  IO_write\n");
    io->Status = 0;
 
    while (1) {
-      St = write(io->FD, io->Buf->str, io->Buf->len);
+      St = conn ? a_Ssl_write(conn, io->Buf->str, io->Buf->len)
+                : write(io->FD, io->Buf->str, io->Buf->len);
       if (St < 0) {
          /* Error */
          if (errno == EINTR) {
@@ -372,8 +377,8 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                char *newline = memchr(io->Buf->str, '\n', io->Buf->len);
                int msglen = newline ? newline - io->Buf->str : 2048;
 
-               MSG_WARN("IO_write, closing with pending data not sent: "
-                        "\"%s\"\n", dStr_printable(io->Buf, msglen));
+               MSG("IO_write, closing with pending data not sent: \"%s\"\n",
+                   dStr_printable(io->Buf, msglen));
             }
             /* close FD, remove from ValidIOs and remove its watch */
             IO_close_fd(io, Op == OpEnd ? IO_StopWr : IO_StopRdWr);
@@ -381,7 +386,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(Info);
             break;
          default:
-            MSG_WARN("Unused CCC\n");
+            MSG_WARN("Unused CCC IO 1B\n");
             break;
          }
       } else {  /* 1 FWD */
@@ -395,7 +400,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(Info);
             break;
          default:
-            MSG_WARN("Unused CCC\n");
+            MSG_WARN("Unused CCC IO 1F\n");
             break;
          }
       }
@@ -424,7 +429,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(Info);
             break;
          default:
-            MSG_WARN("Unused CCC\n");
+            MSG_WARN("Unused CCC IO 2B\n");
             break;
          }
       } else {  /* 2 FWD */
@@ -443,7 +448,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(Info);
             break;
          default:
-            MSG_WARN("Unused CCC\n");
+            MSG_WARN("Unused CCC IO 2F\n");
             break;
          }
       }

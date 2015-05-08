@@ -1,6 +1,9 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
-	-DDILLO_BINDIR='"$(bindir)/"'
+	-DDILLO_BINDIR='"$(bindir)/"' \
+	-DCA_CERTS_FILE='"@CA_CERTS_FILE@"' \
+	-DCA_CERTS_DIR='"@CA_CERTS_DIR@"'
+
 AM_CFLAGS = @LIBFLTK_CFLAGS@
 AM_CXXFLAGS = @LIBFLTK_CXXFLAGS@
 
@@ -12,6 +15,8 @@ libDiof_a_SOURCES = \
 	about.c \
 	Url.h \
 	http.c \
+	ssl.h \
+	ssl.c \
 	dpi.c \
 	IO.c \
 	iowatch.cc \

@@ -45,6 +45,7 @@
 
 #include "dns.h"
 #include "web.hh"
+#include "IO/ssl.h"
 #include "IO/Url.h"
 #include "IO/mime.h"
 #include "capi.h"
@@ -476,6 +477,7 @@ int main(int argc, char **argv)
    a_Dns_init();
    a_Web_init();
    a_Http_init();
+   a_Ssl_init();
    a_Mime_init();
    a_Capi_init();
    a_Dicache_init();
@@ -597,6 +599,7 @@ int main(int argc, char **argv)
    a_Cache_freeall();
    a_Dicache_freeall();
    a_Http_freeall();
+   a_Ssl_freeall();
    a_Dns_freeall();
    a_History_freeall();
    a_Prefs_freeall();

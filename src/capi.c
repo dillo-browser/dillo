@@ -18,6 +18,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "config.h"
 #include "msg.h"
 #include "capi.h"
 #include "IO/IO.h"    /* for IORead &friends */
@@ -269,6 +270,7 @@ static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
    Dstr *tmp;
 
    if ((dStrnAsciiCasecmp(url_str, "http:", 5) == 0) ||
+       (dStrnAsciiCasecmp(url_str, "https:", 6) == 0) ||
        (dStrnAsciiCasecmp(url_str, "about:", 6) == 0)) {
       /* URL doesn't use dpi (server = NULL) */
    } else if (dStrnAsciiCasecmp(url_str, "dpi:/", 5) == 0) {
@@ -299,39 +301,7 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 {
    char *cmd;
 
-   if (strcmp(server, "proto.https") == 0) {
-      /* Let's be kind and make the HTTP query string for the dpi */
-      char *proxy_connect = a_Http_make_connect_str(web->url);
-      Dstr *http_query = a_Http_make_query_str(web->url, web->requester,
-                                               web->flags, FALSE);
-
-      if ((uint_t) http_query->len > strlen(http_query->str)) {
-         /* Can't handle NULLs embedded in query data */
-         MSG_ERR("HTTPS query truncated!\n");
-      }
-
-      /* BUG: WORKAROUND: request to only check the root URL's certificate.
-       *  This avoids the dialog bombing that stems from loading multiple
-       * https images/resources in a single page. A proper fix would take
-       * either to implement the https-dpi as a server (with state),
-       * or to move back https handling into dillo. */
-      if (proxy_connect) {
-         const char *proxy_urlstr = a_Http_get_proxy_urlstr();
-         cmd = a_Dpip_build_cmd("cmd=%s proxy_url=%s proxy_connect=%s "
-                                "url=%s query=%s check_cert=%s",
-                                "open_url", proxy_urlstr,
-                                proxy_connect, URL_STR(web->url),
-                                http_query->str,
-                                (web->flags & WEB_RootUrl) ? "true" : "false");
-      } else {
-         cmd = a_Dpip_build_cmd("cmd=%s url=%s query=%s check_cert=%s",
-                                "open_url", URL_STR(web->url),http_query->str,
-                                (web->flags & WEB_RootUrl) ? "true" : "false");
-      }
-      dFree(proxy_connect);
-      dStr_free(http_query, 1);
-
-   } else if (strcmp(server, "downloads") == 0) {
+   if (strcmp(server, "downloads") == 0) {
       /* let the downloads server get it */
       cmd = a_Dpip_build_cmd("cmd=%s url=%s destination=%s",
                              "download", URL_STR(web->url), web->filename);
@@ -444,8 +414,19 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
          }
          dFree(server);
 
-      } else if (!dStrAsciiCasecmp(scheme, "http")) {
+      } else if (!dStrAsciiCasecmp(scheme, "http") ||
+                 !dStrAsciiCasecmp(scheme, "https")) {
          /* http request */
+
+#ifndef ENABLE_SSL
+         if (!dStrAsciiCasecmp(scheme, "https")) {
+            if (web->flags & WEB_RootUrl)
+               a_UIcmd_set_msg(web->bw,
+                               "HTTPS was disabled at compilation time");
+            a_Web_free(web);
+            return 0;
+         }
+#endif
          if (reload) {
             a_Capi_conn_abort_by_url(web->url);
             /* create a new connection and start the CCC operations */
@@ -633,7 +614,8 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             Capi_conn_ref(conn);
             Info->LocalKey = conn;
             conn->InfoSend = Info;
-            if (strcmp(conn->server, "http") == 0) {
+            if (strcmp(conn->server, "http") == 0 ||
+                strcmp(conn->server, "https") == 0) {
                a_Chain_link_new(Info, a_Capi_ccc, BCK, a_Http_ccc, 1, 1);
                a_Chain_bcb(OpStart, Info, Data2, NULL);
             } else {
@@ -660,7 +642,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(Info);
             break;
          default:
-            MSG_WARN("Unused CCC\n");
+            MSG_WARN("Unused CCC Capi 1B\n");
             break;
          }
       } else {  /* 1 FWD */
@@ -701,7 +683,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(Info);
             break;
          default:
-            MSG_WARN("Unused CCC\n");
+            MSG_WARN("Unused CCC Capi 1F\n");
             break;
          }
       }
@@ -738,7 +720,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(Info);
             break;
          default:
-            MSG_WARN("Unused CCC\n");
+            MSG_WARN("Unused CCC Capi 2B\n");
             break;
          }
       } else {  /* 2 FWD */
@@ -788,8 +770,24 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             Capi_conn_unref(conn);
             dFree(Info);
             break;
+         case OpAbort:
+            conn = Info->LocalKey;
+            conn->InfoRecv = NULL;
+            a_Cache_process_dbuf(IOAbort, NULL, 0, conn->url);
+            if (Data2) {
+               if (!strcmp(Data2, "Both") && conn->InfoSend) {
+                  /* abort the other branch too */
+                  a_Capi_ccc(OpAbort, 1, BCK, conn->InfoSend, NULL, NULL);
+               }
+            }
+            /* if URL == expect-url */         
+            a_Nav_cancel_expect_if_eq(conn->bw, conn->url);
+            /* finish conn */
+            Capi_conn_unref(conn);
+            dFree(Info);
+            break;
          default:
-            MSG_WARN("Unused CCC\n");
+            MSG_WARN("Unused CCC Capi 2F\n");
             break;
          }
       }

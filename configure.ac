@@ -24,6 +24,8 @@ AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Ins
                     , enable_insure=no)
 AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable ssl, https (ALPHA CODE)],
                     , enable_ssl=no)
+AC_ARG_WITH(ca-certs-file, [  --with-ca-certs-file=FILE  Specify where to find a bundle of trusted CA certificates for SSL], CA_CERTS_FILE=$withval)
+AC_ARG_WITH(ca-certs-dir, [  --with-ca-certs-dir=DIR     Specify where to find a directory containing trusted CA certificates for SSL], CA_CERTS_DIR=$withval)
 AC_ARG_ENABLE(ipv6,   [  --enable-ipv6           Build with support for IPv6], , )
 AC_ARG_ENABLE(cookies,[  --disable-cookies       Don't compile support for cookies],
                     , enable_cookies=yes)
@@ -506,6 +508,8 @@ AC_SUBST(LIBFLTK_CFLAGS)
 AC_SUBST(LIBFLTK_LIBS)
 AC_SUBST(LIBICONV_LIBS)
 AC_SUBST(LIBX11_LIBS)
+AC_SUBST(CA_CERTS_FILE)
+AC_SUBST(CA_CERTS_DIR)
 AC_SUBST(datadir)
 
 AC_CONFIG_FILES([
