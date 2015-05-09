@@ -429,12 +429,10 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                      fontAttrs.size = roundInt(24.2 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALLER:
-                     fontAttrs.size = roundInt(fontAttrs.size * 0.83 *
-                                               prefs.font_factor);
+                     fontAttrs.size = roundInt(fontAttrs.size * 0.83);
                      break;
                   case CSS_FONT_SIZE_LARGER:
-                     fontAttrs.size = roundInt(fontAttrs.size * 1.2 *
-                                               prefs.font_factor);
+                     fontAttrs.size = roundInt(fontAttrs.size * 1.2);
                      break;
                   default:
                      assert(false); // invalid font-size enum
