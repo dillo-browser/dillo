@@ -59,6 +59,7 @@ static const Mapping_t keyNames[] = {
    { "Home",        FL_Home      },
    { "Insert",      FL_Insert    },
    { "Left",        FL_Left      },
+   { "Menu",        FL_Menu      },
    { "PageDown",    FL_Page_Down },
    { "PageUp",      FL_Page_Up   },
    { "Print",       FL_Print     },
