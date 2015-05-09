@@ -38,6 +38,7 @@ dillo-3.1 [not released yet]
  - INPUT, TEXTAREA placeholder attribute.
  - Better notification when user's domainrc settings block page redirection.
  - Fix bug with font_factor preference and CSS font-size:(larger|smaller).
+ - Recognize Menu key in keysrc.
    Patches: corvid
 +- Avoid requesting background images if an ancestor has display:none.
  - Ignore built-in search url if any are specified in dillorc.
