@@ -1,5 +1,11 @@
 /** \page dw-grows GROWS - Grand Redesign Of Widget Sizes
 
+<div style="border: 2px solid #ffff00; margin: 1em 0;
+  padding: 0.5em 1em; background-color: #ffffe0">The complex "widget
+  sizes" is currently divided into three documents: \ref
+  dw-widget-sizes, **Grand Redesign Of Widget Sizes** (this document),
+  and \ref dw-size-request-pos. </div>
+
 This paper describes (will describe) some design changes to
 calculating widget sizes. Goals are:
 

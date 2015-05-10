@@ -141,7 +141,7 @@ Details are hidden by static inline methods of dw::OutOfFlowMgr.
 
 
 The sizeRequest/sizeAllocate problem
-========================================
+====================================
 
 *See also:* \ref dw-widget-sizes, especially the section *Rules for
 Methods Related to Resizing*.

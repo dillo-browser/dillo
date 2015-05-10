@@ -1,8 +1,14 @@
 /** \page dw-widget-sizes Sizes of Dillo Widgets
 
-<div style="border: 2px solid #ff4040; margin-bottom: 0.5em;
-padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
-Not up to date, see \ref dw-grows.</div>
+<div style="border: 2px solid #ffff00; margin: 1em 0;
+  padding: 0.5em 1em; background-color: #ffffe0">The complex "widget
+  sizes" is currently divided into three documents: **Sizes of Dillo
+  Widgets** (this document), \ref dw-grows, and \ref
+  dw-size-request-pos. </div>
+
+<div style="border: 2px solid #ff4040; margin: 1em 0;
+  padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
+  Not up to date, see other documents.</div>
 
 Allocation
 ==========
@@ -267,11 +273,5 @@ This could be done furthermore:
 - The tests could be refined.
 - Is it possible to define exacter rules, along with a proof that no
   problems (like endless recursion) can occur?
-
-
-See also
-========
-
-- \ref dw-grows
 
 */
