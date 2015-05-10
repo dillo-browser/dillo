@@ -12,7 +12,7 @@ calculating widget sizes. Goals are:
   - *max-width*, *max-height*, *min-width*, *min-height*;
   - correct aspect ratio for images with only one percentage size defined;
   - *display: inline-block*;
-  - <button>.
+  - &lt;button&gt;.
 
 
 A short sketch

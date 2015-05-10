@@ -264,7 +264,7 @@ the stretchability by changing the preference value
 (Comparison to T<sub>E</sub>X: Knuth and Plass describe a method for
 ragged borders, which is effectively the same as described here (Knuth
 1999, pp.&nbsp;93--94). The value for the stretchability of the line
-is slightly less, 1&nsbp;em (ibid., see also p.&nsbp;72 for the
+is slightly less, 1&nbsp;em (ibid., see also p.&nbsp;72 for the
 definition of the units). However, this article suggests a value for
 the hyphenation penalty, which is ten times larger than the value for
 justified text; this would suggest a larger value for
@@ -420,7 +420,7 @@ Notice that Liang's algorithm may behave different regarding hyphens:
 and "Stadt", but "Nordrhein-Westfalen" is divided into "Nord",
 "rhein-West", "fa", "len": the part containing the hyphen
 ("rhein-West") is untouched. (Sorry for the German words; if you have
-got English examples, send them me.)</div>
+got English examples, send them me.)
 
 **Solution for both:** This has been implemented in
 dw::Textblock::addText, in a similar way to soft hyphens. Liang's

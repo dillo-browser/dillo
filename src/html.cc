@@ -995,6 +995,14 @@ static const char *Html_parse_entity(DilloHtml *html, const char *token,
    const char *ret = NULL;
    char *tok;
 
+   if (toksize > 50) {
+      /* In pathological cases, attributes can be megabytes long and filled
+       * with character references. As of HTML5, the longest defined character
+       * reference is about 32 bytes long.
+       */
+      toksize = 50;
+   }
+
    token++;
    tok = dStrndup(token, (uint_t)toksize);
 
@@ -1575,7 +1583,7 @@ static int
  * rendering modes, so it may be better to chose another behaviour. --Jcid
  *
  * http://www.mozilla.org/docs/web-developer/quirks/doctypes.html
- * http://lists.auriga.wearlab.de/pipermail/dillo-dev/2004-October/002300.html
+ * http://lists.dillo.org/pipermail/dillo-dev/2004-October/002300.html
  *
  * This is not a full DOCTYPE parser, just enough for what Dillo uses.
  */
@@ -1647,7 +1655,11 @@ static void Html_parse_doctype(DilloHtml *html, const char *tag, int tagsize)
          html->DocTypeVersion = 2.0f;
       }
    } else if (!dStrAsciiCasecmp(ntag, "<!DOCTYPE html>") ||
-              !dStrAsciiCasecmp(ntag, "<!DOCTYPE html >")) {
+              !dStrAsciiCasecmp(ntag, "<!DOCTYPE html >") ||
+              !dStrAsciiCasecmp(ntag,
+                           "<!DOCTYPE html SYSTEM \"about:legacy-compat\">") ||
+              !dStrAsciiCasecmp(ntag,
+                             "<!DOCTYPE html SYSTEM 'about:legacy-compat'>")) {
       html->DocType = DT_HTML;
       html->DocTypeVersion = 5.0f;
    }
@@ -2469,7 +2481,6 @@ static void
       type = UNKNOWN;
    }
    if (type == RECTANGLE || type == CIRCLE || type == POLYGON) {
-      /* TODO: add support for coords in % */
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "coords"))) {
          coords = Html_read_coords(html, attrbuf);
 
@@ -3384,8 +3395,13 @@ static void Html_tag_open_base(DilloHtml *html, const char *tag, int tagsize)
 
    if (html->InFlags & IN_HEAD) {
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "href"))) {
-         BaseUrl = a_Html_url_new(html, attrbuf, "", 1);
-         if (URL_SCHEME_(BaseUrl)) {
+         bool_t html5 = html->DocType == DT_HTML &&
+                        html->DocTypeVersion >= 5.0f;
+
+         BaseUrl = html5 ? a_Html_url_new(html, attrbuf, NULL, 0) :
+                           a_Html_url_new(html, attrbuf, "", 1);
+
+         if (html5 || URL_SCHEME_(BaseUrl)) {
             /* Pass the URL_SpamSafe flag to the new base url */
             a_Url_set_flags(
                BaseUrl, URL_FLAGS(html->base_url) & URL_SpamSafe);
@@ -3494,7 +3510,7 @@ const TagInfo Tags[] = {
  {"a", B8(011101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
  {"abbr", B8(010101),'R',2, Html_tag_open_abbr, NULL, NULL},
  /* acronym 010101 -- obsolete in HTML5 */
- {"address", B8(010110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
+ {"address", B8(011110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
  {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
  {"article", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
@@ -3772,7 +3788,8 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
    int tag_idx;
 
    if (!(html->InFlags & IN_HTML) && html->DocType == DT_NONE)
-      BUG_MSG("The required DOCTYPE declaration is missing.");
+      BUG_MSG("The required DOCTYPE declaration is missing. "
+              "Handling as HTML4.");
 
    if (!(html->InFlags & IN_HTML)) {
       tag = "<html>";

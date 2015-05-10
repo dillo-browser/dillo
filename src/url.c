@@ -118,6 +118,12 @@ const char *a_Url_hostname(const DilloUrl *u)
       }
    }
 
+   if (!url->port) {
+      if (!dStrAsciiCasecmp(url->scheme, "http"))
+         url->port = URL_HTTP_PORT;
+      else if (!dStrAsciiCasecmp(url->scheme, "https"))
+         url->port = URL_HTTPS_PORT;
+   }
    return url->hostname;
 }
 
@@ -638,7 +644,7 @@ char *a_Url_string_strip_delimiters(const char *str)
 /*
  * Is the provided hostname an IP address?
  */
-static bool_t Url_host_is_ip(const char *host)
+bool_t a_Url_host_is_ip(const char *host)
 {
    uint_t len;
 
@@ -724,7 +730,7 @@ static const char *Url_host_find_public_suffix(const char *host)
    const char *s;
    uint_t dots;
 
-   if (!host || !*host || Url_host_is_ip(host))
+   if (!host || !*host || a_Url_host_is_ip(host))
       return host;
 
    s = host;

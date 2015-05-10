@@ -186,7 +186,7 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
 # Change this if you want Dillo to reuse HTTP connections to a server or proxy
 # when possible instead of making a new connection for every request for a new
-# page/image/stylesheet. Currently, HTTPS connections are never reused.
+# page/image/stylesheet.
 #http_persistent_conns=NO
 
 # Set the proxy information for http.

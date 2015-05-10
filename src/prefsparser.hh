@@ -15,7 +15,6 @@
 #ifdef __cplusplus
 class PrefsParser {
 public:
-   static int parseOption(char *name, char *value);
    static int parseLine(char *line, char *name, char *value);
    static void parse(FILE *fp);
 };

@@ -27,8 +27,8 @@ dillorc.
   Here's a list of some old well-known problems of dillo:
 
          * no FRAMES rendering
-         * no https (there's a barebones prototype, enable it with:
-                     ./configure --enable-ssl ).
+         * https code not yet fully trusted
+           (enable it with: ./configure --enable-ssl ).
 
 
 --------

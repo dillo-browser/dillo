@@ -430,12 +430,10 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                      fontAttrs.size = roundInt(24.2 * prefs.font_factor);
                      break;
                   case CSS_FONT_SIZE_SMALLER:
-                     fontAttrs.size = roundInt(fontAttrs.size * 0.83 *
-                                               prefs.font_factor);
+                     fontAttrs.size = roundInt(fontAttrs.size * 0.83);
                      break;
                   case CSS_FONT_SIZE_LARGER:
-                     fontAttrs.size = roundInt(fontAttrs.size * 1.2 *
-                                               prefs.font_factor);
+                     fontAttrs.size = roundInt(fontAttrs.size * 1.2);
                      break;
                   default:
                      assert(false); // invalid font-size enum
@@ -1040,7 +1038,7 @@ void StyleEngine::init () {
       "code, tt, pre, samp, kbd {font-family: monospace}"
       /* WORKAROUND: Reset font properties in tables as some
        * pages rely on it (e.g. gmail).
-       * http://developer.mozilla.org/En/Fixing_Table_Inheritance_in_Quirks_Mode
+       * http://developer.mozilla.org/en-US/Fixing_Table_Inheritance_in_Quirks_Mode
        * has a detailed description of the issue.
        */
       "table, caption {font-size: medium; font-weight: normal}";
