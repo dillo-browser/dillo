@@ -52,7 +52,6 @@ calculate its size independant of the position?)
 
 Resizing
 --------
-
 Currently, the size of a widget has to be recalculated, when
 
 1. it has called dw::core::Widget::queueResize, or
