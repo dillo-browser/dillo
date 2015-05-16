@@ -10,6 +10,65 @@ Motivation
 ==========
 
 As described in \ref dw-out-of-flow (*The sizeRequest/sizeAllocate
-problem*), ...
+problem*), the principle that the size of a widget depends only on the
+sizes of its children causes some problems with floats; the current
+solution is a frequent correction by calling
+dw::core::Widget::queueResize. In this document, an alternative
+approach is presented.
+
+
+General Idea
+============
+
+A widget size may depend on the position relative to an anchestor
+widget. If a widget wants to get the size of a child widget, it should
+
+1. call the new method **dw::core::Widget::sizeRequestReference**,
+   which returns NULL, when the child's size does not depend on the
+   position, or a widget relative to which the child's position must
+   be calculated;
+2. call dw::core::Widget::sizeRequest with the position relative to
+   this widget.
+
+The position passed to dw::core::Widget::sizeRequest must be the
+position at which this child will be allocated.
+
+There are situations where the parent widget is unable to determine
+this position before the size is known. An example: a textblock widget
+cannot determine the position of an inline widget (like an image, or
+an inline block) before the line is finished; on the other hand,
+finishing the line depends on knowing the sizes of the inline widgets.
+
+This may result in a conflict, when the size of an inline widgets
+depends on the position. Fortunately, this is not the case in dillo:
+the only widget whose size depends on the position is dw::Textblock
+(the size will depend on the position within its floats container); but
+an inline blocks constitute its own floats container, so that there is
+no dependance on a position within another widget.
+
+Generally, this case should be handled by providing a fallback
+strategy. (TODO: How does this look like? The widget is forced to
+calculate its size independant of the position?)
+
+Resizing
+--------
+
+Currently, the size of a widget has to be recalculated, when
+
+1. it has called dw::core::Widget::queueResize, or
+2. the size of a child widget has to be recalculated.
+
+Since for this new approach, the size does not only depend on the size
+of the children, the second condition must be modified. However,
+regarding changes of the position is not sufficient. Consider this
+example, where a float size changes as soon as the image is loaded:
+
+\image html dw-size-request-pos-01.png
+
+The second paragraph ("A longer paragraph" ...) stays at the same
+position, both absolute and relative to the float container, but has
+to be rewrapped because of the float.
+
+(TODO: A detailed design is yet to de developed.)
 
 */
