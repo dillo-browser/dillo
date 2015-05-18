@@ -466,7 +466,8 @@ static bool_t pattern_match (const char *pattern, const char *string)
   return *n == '\0';
 }
 
-static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url, int *choice)
+static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
+                                      int *choice)
 {
    dReturn_val_if_fail(cert && url, -1);
 
@@ -548,7 +549,7 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url, int *choi
       if (alt_name_checked == TRUE && i >= numaltnames)
         {
          success = FALSE;
-         msg = dStrconcat("no certificate subject alternative name matches"
+         msg = dStrconcat("No certificate subject alternative name matches"
                           " requested host name \n", host, NULL);
          *choice = a_Dialog_choice("Dillo SSL",
             msg, "Continue", "Cancel", NULL);
@@ -577,7 +578,8 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url, int *choi
       if (!pattern_match (common_name, host))
         {
           success = FALSE;
-         msg = dStrconcat("certificate common name ", common_name, " doesn't match requested host name ", host, NULL);
+         msg = dStrconcat("Certificate common name ", common_name,
+                          " doesn't match requested host name ", host, NULL);
          *choice = a_Dialog_choice("Dillo SSL",
             msg, "Continue", "Cancel", NULL);
          dFree(msg);
@@ -620,7 +622,10 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url, int *choi
           if (strlen (common_name) != (size_t)ASN1_STRING_length (sdata))
             {
               success = FALSE;
-         msg = dStrconcat("certificate common name is invalid (contains a NUL character). This may be an indication that the host is not who it claims to be -- that is, not the real ", host, NULL);
+         msg = dStrconcat("Certificate common name is invalid (contains a NUL "
+                          "character). This may be an indication that the "
+                          "host is not who it claims to be -- that is, not "
+                          "the real ", host, NULL);
          *choice = a_Dialog_choice("Dillo SSL",
             msg, "Continue", "Cancel", NULL);
          dFree(msg);
@@ -660,7 +665,7 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
    if (remote_cert == NULL){
       /* Inform user that remote system cannot be trusted */
       choice = a_Dialog_choice(title,
-         "The remote system is not presenting a certificate.\n"
+         "The remote system is not presenting a certificate. "
          "This site cannot be trusted. Sending data is not safe.",
          "Continue", "Cancel", NULL);
 
@@ -693,7 +698,7 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
             buf[cn_end - cn] = '\0';
          }
          msg = dStrconcat("The remote certificate is self-signed and "
-                          "untrusted.\nFor address: ", buf, NULL);
+                          "untrusted. For address: ", buf, NULL);
          choice = a_Dialog_choice(title,
             msg, "Continue", "Cancel", "Save Certificate", NULL);
          dFree(msg);
@@ -718,8 +723,8 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
       case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
       case X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY:
          choice = a_Dialog_choice(title,
-            "The issuer for the remote certificate cannot be found\n"
-            "The authenticity of the remote certificate cannot be trusted",
+            "The issuer for the remote certificate cannot be found. "
+            "The authenticity of the remote certificate cannot be trusted.",
             "Continue", "Cancel", NULL);
 
          if (choice == 1) {
@@ -732,7 +737,7 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
       case X509_V_ERR_CERT_SIGNATURE_FAILURE:
       case X509_V_ERR_CRL_SIGNATURE_FAILURE:
          choice = a_Dialog_choice(title,
-            "The remote certificate signature could not be read\n"
+            "The remote certificate signature could not be read "
             "or is invalid and should not be trusted",
             "Continue", "Cancel", NULL);
 
@@ -743,10 +748,10 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
       case X509_V_ERR_CERT_NOT_YET_VALID:
       case X509_V_ERR_CRL_NOT_YET_VALID:
          choice = a_Dialog_choice(title,
-            "Part of the remote certificate is not yet valid\n"
-            "Certificates usually have a range of dates over which\n"
-            "they are to be considered valid, and the certificate\n"
-            "presented has a starting validity after today's date\n"
+            "Part of the remote certificate is not yet valid. "
+            "Certificates usually have a range of dates over which "
+            "they are to be considered valid, and the certificate "
+            "presented has a starting validity after today's date "
             "You should be cautious about using this site",
             "Continue", "Cancel", NULL);
 
@@ -757,8 +762,8 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
       case X509_V_ERR_CERT_HAS_EXPIRED:
       case X509_V_ERR_CRL_HAS_EXPIRED:
          choice = a_Dialog_choice(title,
-            "The remote certificate has expired.  The certificate\n"
-            "wasn't designed to last this long. You should avoid \n"
+            "The remote certificate has expired.  The certificate "
+            "wasn't designed to last this long. You should avoid "
             "this site.",
             "Continue", "Cancel", NULL);
          if (choice == 1) {
@@ -770,9 +775,9 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
       case X509_V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD:
       case X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD:
          choice = a_Dialog_choice(title,
-            "There was an error in the certificate presented.\n"
-            "Some of the certificate data was improperly formatted\n"
-            "making it impossible to determine if the certificate\n"
+            "There was an error in the certificate presented. "
+            "Some of the certificate data was improperly formatted "
+            "making it impossible to determine if the certificate "
             "is valid.  You should not trust this certificate.",
             "Continue", "Cancel", NULL);
          if (choice == 1) {
@@ -785,9 +790,9 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
       case X509_V_ERR_CERT_REJECTED:
       case X509_V_ERR_KEYUSAGE_NO_CERTSIGN:
          choice = a_Dialog_choice(title,
-            "One of the certificates in the chain is being used\n"
-            "incorrectly (possibly due to configuration problems\n"
-            "with the remote system.  The connection should not\n"
+            "One of the certificates in the chain is being used "
+            "incorrectly (possibly due to configuration problems "
+            "with the remote system.  The connection should not "
             "be trusted",
             "Continue", "Cancel", NULL);
          if (choice == 1) {
@@ -798,8 +803,8 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
       case X509_V_ERR_AKID_SKID_MISMATCH:
       case X509_V_ERR_AKID_ISSUER_SERIAL_MISMATCH:
          choice = a_Dialog_choice(title,
-            "Some of the information presented by the remote system\n"
-            "does not match other information presented\n"
+            "Some of the information presented by the remote system "
+            "does not match other information presented. "
             "This may be an attempt to eavesdrop on communications",
             "Continue", "Cancel", NULL);
          if (choice == 1) {
