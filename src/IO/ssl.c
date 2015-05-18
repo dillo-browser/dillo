@@ -15,10 +15,10 @@
  * (at your option) any later version.
  *
  * As a special exception, permission is granted to link Dillo with the OpenSSL
- * project's "OpenSSL" library, and distribute the linked executables, without
- * including the source code for OpenSSL in the source distribution. You must
- * obey the GNU General Public License, version 3, in all respects for all of
- * the code used other than "OpenSSL".
+ * or LibreSSL library, and distribute the linked executables without
+ * including the source code for OpenSSL or LibreSSL in the source
+ * distribution. You must obey the GNU General Public License, version 3, in
+ * all respects for all of the code used other than OpenSSL or LibreSSL.
  */
 
 /* https://www.ssllabs.com/ssltest/viewMyClient.html */
