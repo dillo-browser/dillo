@@ -551,7 +551,7 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
          success = FALSE;
          msg = dStrconcat("No certificate subject alternative name matches"
                           " requested host name \n", host, NULL);
-         *choice = a_Dialog_choice("Dillo SSL",
+         *choice = a_Dialog_choice("Dillo SSL security warning",
             msg, "Continue", "Cancel", NULL);
          dFree(msg);
 
@@ -580,7 +580,7 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
           success = FALSE;
          msg = dStrconcat("Certificate common name ", common_name,
                           " doesn't match requested host name ", host, NULL);
-         *choice = a_Dialog_choice("Dillo SSL",
+         *choice = a_Dialog_choice("Dillo SSL security warning",
             msg, "Continue", "Cancel", NULL);
          dFree(msg);
 
@@ -626,7 +626,7 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
                           "character). This may be an indication that the "
                           "host is not who it claims to be -- that is, not "
                           "the real ", host, NULL);
-         *choice = a_Dialog_choice("Dillo SSL",
+         *choice = a_Dialog_choice("Dillo SSL security warning",
             msg, "Continue", "Cancel", NULL);
          dFree(msg);
 
@@ -658,7 +658,7 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
    long st;
    char buf[4096], *cn, *msg;
    int choice = -1, ret = -1;
-   char *title = dStrconcat("Dillo SSL: ", URL_HOST(url), NULL);
+   char *title = dStrconcat("Dillo SSL security warning: ",URL_HOST(url),NULL);
    Server_t *srv = dList_find_custom(servers, url, Ssl_servers_cmp);
 
    remote_cert = SSL_get_peer_certificate(ssl);
