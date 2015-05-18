@@ -354,7 +354,6 @@ int a_Dialog_choice(const char *title, const char *msg, ...)
    int gap = 8;
    int ww = 140 + n * 60, wh = 120;
    int bw = (ww - gap) / n - gap, bh = 45;
-   int ih = 50;
 
    Fl_Window *window = new Fl_Window(ww, wh, title);
    window->set_modal();
@@ -363,18 +362,8 @@ int a_Dialog_choice(const char *title, const char *msg, ...)
     ib->begin();
     window->resizable(ib);
 
-    /* '?' Icon */
-    Fl_Box *o = new Fl_Box(10, (wh - bh - ih) / 2, ih, ih);
-    o->box(FL_THIN_UP_BOX);
-    o->labelfont(FL_TIMES_BOLD);
-    o->labelsize(34);
-    o->color(FL_WHITE);
-    o->labelcolor(FL_BLUE);
-    o->label("?");
-    o->show();
-
     if (msg != NULL){
-       Fl_Box *box = new Fl_Box(60, 0, ww - 60, wh - bh, msg);
+       Fl_Box *box = new Fl_Box(0, 0, ww, wh - bh, msg);
        box->labelfont(FL_HELVETICA);
        box->labelsize(14);
        box->align(FL_ALIGN_WRAP);
