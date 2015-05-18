@@ -933,7 +933,7 @@ static int UIcmd_save_file_check(const char *name)
       int ch;
       ds = dStr_sized_new(128);
       dStr_sprintf(ds,
-                  "The file:\n  %s (%d Bytes)\nalready exists. What do we do?",
+                  "The file: %s (%d Bytes) already exists. What do we do?",
                    name, (int)ss.st_size);
       ch = a_Dialog_choice("Dillo Save: File exists!", ds->str,
                            "Abort", "Continue", "Rename", NULL);
