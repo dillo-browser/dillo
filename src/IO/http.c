@@ -679,9 +679,11 @@ static void Http_dns_cb(int Status, Dlist *addr_list, void *data)
          }
       }
       if (clean_up) {
+         ChainLink *info = S->Info;
+
          Http_socket_free(SKey);
-         a_Chain_bfcb(OpAbort, S->Info, NULL, "Both");
-         dFree(S->Info);
+         a_Chain_bfcb(OpAbort, info, NULL, "Both");
+         dFree(info);
       }
    }
 }
