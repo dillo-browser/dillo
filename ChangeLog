@@ -45,6 +45,11 @@ dillo-3.1 [not released yet]
    Patches: Johannes Hofmann
 +- Doxygen fixes.
    Patch: Jeremy Henty
++- Move HTTPS from dpi into the browser, enable SNI, add certificate hostname
+   checking from wget, check more locations for CA bundles, some improvement
+   to security warning popups, change cipher list from "ALL" to
+   "ALL:!aNULL:!eNULL:!LOW:!EXPORT40:!RC4", etc.
+   Patch: corvid, Benjamin Johnson
 
 -----------------------------------------------------------------------------
 
