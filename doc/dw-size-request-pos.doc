@@ -23,7 +23,7 @@ General Idea
 A widget size may depend on the position relative to an anchestor
 widget. If a widget wants to get the size of a child widget, it should
 
-1. call the new method **dw::core::Widget::sizeRequestReference**,
+1. call the new method dw::core::Widget::sizeRequestReference,
    which returns NULL, when the child's size does not depend on the
    position, or a widget relative to which the child's position must
    be calculated;

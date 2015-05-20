@@ -103,7 +103,8 @@ Table::~Table()
    DBG_OBJ_DELETE ();
 }
 
-void Table::sizeRequestImpl (core::Requisition *requisition)
+void Table::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
+                             int x, int y)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 

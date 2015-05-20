@@ -620,9 +620,10 @@ protected:
    int hoverLink;  /* The link under the mouse pointer */
 
    void queueDrawRange (int index1, int index2);
+   bool needsPositionForSize ();
    int calcVerticalBorder (int widgetPadding, int widgetBorder,
                            int widgetMargin, int lineBorderTotal,
-                           int lineMarginTotal);   
+                           int lineMarginTotal);
    void getWordExtremes (Word *word, core::Extremes *extremes);
    void justifyLine (Line *line, int diff);
    Line *addLine (int firstWord, int lastWord, int newLastOofPos,
@@ -814,7 +815,9 @@ protected:
    Widget *getWidgetAtPointLevel (int x, int y, int level,
                                   core::GettingWidgetAtPointContext *context);
 
-   void sizeRequestImpl (core::Requisition *requisition);
+   void sizeRequestImpl (core::Requisition *requisition, bool posDefined, int x,
+                         int y);
+   Widget *sizeRequestReference ();
    void getExtremesImpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
 

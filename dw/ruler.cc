@@ -39,7 +39,8 @@ Ruler::~Ruler ()
    DBG_OBJ_DELETE ();
 }
 
-void Ruler::sizeRequestImpl (core::Requisition *requisition)
+void Ruler::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
+                             int x, int y)
 {
    requisition->width = lout::misc::max (getAvailWidth (true), boxDiffWidth ());
    requisition->ascent = boxOffsetY ();

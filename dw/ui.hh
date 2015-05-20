@@ -228,7 +228,8 @@ private:
    Resource *resource;
 
 protected:
-   void sizeRequestImpl (Requisition *requisition);
+   void sizeRequestImpl (Requisition *requisition, bool posDefined, int x,
+                         int y);
    void getExtremesImpl (Extremes *extremes);
    void sizeAllocateImpl (Allocation *allocation);
 

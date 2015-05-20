@@ -567,7 +567,8 @@ bool Widget::usesAvailHeight ()
  *  \brief This method is a wrapper for Widget::sizeRequestImpl(); it calls
  *     the latter only when needed.
  */
-void Widget::sizeRequest (Requisition *requisition)
+void Widget::sizeRequest (Requisition *requisition, bool posDefined, int x,
+                          int y)
 {
    assert (!queueResizeEntered ());
 
@@ -587,7 +588,7 @@ void Widget::sizeRequest (Requisition *requisition)
    if (needsResize ()) {
       calcExtraSpace ();
       /** \todo Check requisition == &(this->requisition) and do what? */
-      sizeRequestImpl (requisition);
+      sizeRequestImpl (requisition, posDefined, x, y);
       this->requisition = *requisition;
       unsetFlags (NEEDS_RESIZE);
 
@@ -1051,7 +1052,11 @@ void Widget::calcExtraSpace ()
    DBG_OBJ_SET_NUM ("extraSpace.bottom", extraSpace.bottom);
    DBG_OBJ_SET_NUM ("extraSpace.left", extraSpace.left);
    DBG_OBJ_SET_NUM ("extraSpace.right", extraSpace.right);
-   
+}
+
+Widget *Widget::sizeRequestReference ()
+{
+   return NULL;
 }
 
 /**

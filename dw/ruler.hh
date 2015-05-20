@@ -20,7 +20,8 @@ namespace dw {
 class Ruler: public RegardingBorder
 {
 protected:
-   void sizeRequestImpl (core::Requisition *requisition);
+   void sizeRequestImpl (core::Requisition *requisition, bool posDefined, int x,
+                         int y);
    void getExtremesImpl (core::Extremes *extremes);
    void containerSizeChangedForChildren ();
    bool usesAvailWidth ();

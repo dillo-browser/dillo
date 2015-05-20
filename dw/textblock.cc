@@ -314,10 +314,13 @@ Textblock::~Textblock ()
  * padding/border/margin. This can be used to align the first lines
  * of several textblocks in a horizontal line.
  */
-void Textblock::sizeRequestImpl (core::Requisition *requisition)
+void Textblock::sizeRequestImpl (core::Requisition *requisition,
+                                 bool posDefined, int x, int y)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
+   assert (posDefined || !needsPositionForSize ());
+   
    int newLineBreakWidth = getAvailWidth (true);
    if (newLineBreakWidth != lineBreakWidth) {
       lineBreakWidth = newLineBreakWidth;
@@ -399,6 +402,16 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition)
    DBG_OBJ_MSGF ("resize", 1, "final: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
    DBG_OBJ_LEAVE ();
+}
+
+core::Widget *Textblock::sizeRequestReference ()
+{
+   return needsPositionForSize() ? oofContainer[OOFM_FLOATS] : NULL;
+}
+
+bool Textblock::needsPositionForSize ()
+{
+   return false;
 }
 
 int Textblock::calcVerticalBorder (int widgetPadding, int widgetBorder,

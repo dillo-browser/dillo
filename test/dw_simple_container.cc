@@ -160,7 +160,8 @@ SimpleContainer::~SimpleContainer ()
       delete child;
 }
 
-void SimpleContainer::sizeRequestImpl (Requisition *requisition)
+void SimpleContainer::sizeRequestImpl (Requisition *requisition,
+                                       bool posDefined, int x, int y)
 {
    Requisition childReq;
    if (child)

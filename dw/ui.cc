@@ -48,7 +48,8 @@ Embed::~Embed()
    DBG_OBJ_DELETE ();
 }
 
-void Embed::sizeRequestImpl (Requisition *requisition)
+void Embed::sizeRequestImpl (Requisition *requisition, bool posDefined, int x,
+                             int y)
 {
    resource->sizeRequest (requisition);
 }
