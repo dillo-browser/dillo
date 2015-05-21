@@ -276,7 +276,6 @@ private:
       int compareTo (int penaltyIndex, BadnessAndPenalty *other);
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);
-      void print ();
    };
 
    enum { PENALTY_HYPHEN, PENALTY_EM_DASH_LEFT, PENALTY_EM_DASH_RIGHT,
@@ -318,8 +317,6 @@ protected:
       void getRefArea (int *xRef, int *yRef, int *widthRef, int *heightRef);
       core::style::Style *getStyle ();
       void draw (int x, int y, int width, int height);
-
-      virtual void print ();
    };
 
    class SpaceImgRenderer: public WordImgRenderer
@@ -330,8 +327,6 @@ protected:
 
       void getBgArea (int *x, int *y, int *width, int *height);
       core::style::Style *getStyle ();
-
-      void print ();
    };
 
    struct Paragraph
@@ -454,8 +449,13 @@ protected:
          WORD_START                = 1 << 5,
          /* If a word represents a "real" text word, or (after
           * hyphenation) the last part of a "real" text word, this
-          * flag is set. Analogue to WORD_START.  */
-         WORD_END                  = 1 << 6
+          * flag is set. Analogue to WORD_START. */
+         WORD_END                  = 1 << 6,
+         /* This word is put at the top of the line. This is necessary
+          * if the size of a child widget depends on the position,
+          * which, on the other hand, cannot be determined before
+          * the whole line is broken. */
+         AT_TOP_OF_LINE            = 1 << 7
       };
 
       /* TODO: perhaps add a xLeft? */
@@ -497,11 +497,6 @@ protected:
       WordImgRenderer *wordImgRenderer;
       SpaceImgRenderer *spaceImgRenderer;
    };
-
-   void printWordShort (Word *word);
-   void printWordFlags (short flags);
-   void printWordWithFlags (Word *word);
-   void printWord (Word *word);
 
    struct Anchor
    {
@@ -682,6 +677,8 @@ protected:
                   core::style::Style *style, bool isStart, bool isEnd);
    void calcTextSize (const char *text, size_t len, core::style::Style *style,
                       core::Requisition *size, bool isStart, bool isEnd);
+   bool calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
+                                core::Requisition *size);
 
    /**
     * Of nested text blocks, only the most inner one must regard the

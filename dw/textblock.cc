@@ -105,16 +105,6 @@ void Textblock::WordImgRenderer::draw (int x, int y, int width, int height)
 
 }
 
-void Textblock::WordImgRenderer::print ()
-{
-   printf ("%p: word #%d, ", this, wordNo);
-   if (wordNo < textblock->words->size())
-      textblock->printWordShort (textblock->words->getRef(wordNo));
-   else
-      printf ("<word %d does not exist>", wordNo);
-   printf (", data set: %s", dataSet ? "yes" : "no");
-}
-
 void Textblock::SpaceImgRenderer::getBgArea (int *x, int *y, int *width,
                                              int *height)
 {
@@ -126,16 +116,6 @@ void Textblock::SpaceImgRenderer::getBgArea (int *x, int *y, int *width,
 core::style::Style *Textblock::SpaceImgRenderer::getStyle ()
 {
    return textblock->words->getRef(wordNo)->spaceStyle;
-}
-
-void Textblock::SpaceImgRenderer::print ()
-{
-   printf ("%p: word FOR SPACE #%d, ", this, wordNo);
-   if (wordNo < textblock->words->size())
-      textblock->printWordShort (textblock->words->getRef(wordNo));
-   else
-      printf ("<word %d does not exist>", wordNo);
-   printf (", data set: %s", dataSet ? "yes" : "no");
 }
 
 // ----------------------------------------------------------------------
@@ -411,7 +391,7 @@ core::Widget *Textblock::sizeRequestReference ()
 
 bool Textblock::needsPositionForSize ()
 {
-   return false;
+   return oofContainer[OOFM_FLOATS] != this;
 }
 
 int Textblock::calcVerticalBorder (int widgetPadding, int widgetBorder,
@@ -2259,15 +2239,39 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
 }
 
 /**
+ * Calculate the size of a widget, and return whether it has to be
+ * positioned at the top of the line.
+ */
+bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
+                                        core::Requisition *size)
+{
+   Widget *reference = widget->sizeRequestReference ();
+   
+   if (reference == NULL) {
+      widget->sizeRequest (size);
+      return false;
+   } else {
+      assert
+         (wordIndex == 0 ||
+          words->getRef(wordIndex - 1)->content.type == core::Content::BREAK);
+      assert (reference == oofContainer[OOFM_FLOATS]);
+
+      // TODO: x, y
+      widget->sizeRequest (size, true, 0, 0);
+      
+      return true;
+   }
+}
+
+/**
  * Add a word (without hyphens) to the page structure.
  */
 void Textblock::addText0 (const char *text, size_t len, short flags,
                           core::style::Style *style, core::Requisition *size)
 {
    DBG_OBJ_ENTER ("construct.word", 0, "addText0",
-                  "..., %d, %s:%s:%s:%s:%s:%s:%s, %p, %d * (%d + %d)",
+                  "..., %d, %s:%s:%s:%s:%s:%s:%s:%s, %p, %d * (%d + %d)",
                   (int)len,
-                  // Ugly copy&paste from printWordFlags:
                   (flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
                   (flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
                   (flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
@@ -2275,6 +2279,7 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
                   (flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--",
                   (flags & Word::WORD_START) ? "st" : "--",
                   (flags & Word::WORD_END) ? "en" : "--",
+                  (flags & Word::AT_TOP_OF_LINE) ? "at" : "--",
                   style, size->width, size->ascent, size->descent);
 
    //printf("[%p] addText0 ('", this);
@@ -2358,8 +2363,10 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       }
 
       core::Requisition size;
-      widget->sizeRequest (&size);
-      Word *word = addWord (size.width, size.ascent, size.descent, 0, style);
+      short flags = calcSizeOfWidgetInFlow (words->size (), widget, &size) ?
+         Word::AT_TOP_OF_LINE : 0;
+      Word *word =
+         addWord (size.width, size.ascent, size.descent, flags, style);
       word->content.type = core::Content::WIDGET_IN_FLOW;
       word->content.widget = widget;
    }

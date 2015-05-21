@@ -282,12 +282,7 @@ protected:
     */
    virtual void sizeRequestImpl (Requisition *requisition, bool posDefined,
                                  int x, int y) = 0;
-
-   /**
-    * \brief See \ref dw-widget-sizes (or \ref dw-size-request-pos).
-    */
-   virtual Widget *sizeRequestReference ();
-   
+ 
    /**
     * \brief See \ref dw-widget-sizes.
     */
@@ -448,6 +443,11 @@ public:
    inline int boxRestHeight ()
    { return extraSpace.bottom + getStyle()->boxRestHeight (); }
    inline int boxDiffHeight () { return boxOffsetY () + boxRestHeight (); }
+
+   /**
+    * \brief See \ref dw-widget-sizes (or \ref dw-size-request-pos).
+    */
+   virtual Widget *sizeRequestReference ();
 
    void sizeRequest (Requisition *requisition, bool posDefined = false,
                      int x = 0, int y = 0);

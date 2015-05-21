@@ -75,7 +75,7 @@ void Textblock::BadnessAndPenalty::calcBadness (int totalWidth, int idealWidth,
    this->totalShrinkability = totalShrinkability;
 #endif
 
-   ratio = 0; // because this is used in print()
+   ratio = 0;
 
    if (totalWidth == idealWidth) {
       badnessState = BADNESS_VALUE;
@@ -191,13 +191,6 @@ int Textblock::BadnessAndPenalty::compareTo (int penaltyIndex,
    return 0;
 }
 
-void Textblock::BadnessAndPenalty::print ()
-{
-   misc::StringBuffer sb;
-   intoStringBuffer(&sb);
-   printf ("%s", sb.getChars ());
-}
-
 void Textblock::BadnessAndPenalty::intoStringBuffer(misc::StringBuffer *sb)
 {
    switch (badnessState) {
@@ -245,42 +238,6 @@ void Textblock::BadnessAndPenalty::intoStringBuffer(misc::StringBuffer *sb)
          sb->append (", ");
    }
    sb->append (")");
-}
-
-void Textblock::printWordShort (Word *word)
-{
-   core::Content::print (&(word->content));
-}
-
-void Textblock::printWordFlags (short flags)
-{
-   printf ("%s:%s:%s:%s:%s:%s:%s",
-           (flags & Word::CAN_BE_HYPHENATED) ? "h?" : "--",
-           (flags & Word::DIV_CHAR_AT_EOL) ? "de" : "--",
-           (flags & Word::PERM_DIV_CHAR) ? "dp" : "--",
-           (flags & Word::DRAW_AS_ONE_TEXT) ? "t1" : "--",
-           (flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--",
-           (flags & Word::WORD_START) ? "st" : "--",
-           (flags & Word::WORD_END) ? "en" : "--");
-}
-
-void Textblock::printWordWithFlags (Word *word)
-{
-   printWordShort (word);
-   printf (" (flags = ");
-   printWordFlags (word->flags);
-   printf (")");
-}
-
-void Textblock::printWord (Word *word)
-{
-   printWordWithFlags (word);
-
-   printf (" [%d / %d + %d - %d => %d + %d - %d] => ",
-           word->size.width, word->origSpace, getSpaceStretchability(word),
-           getSpaceShrinkability(word), word->totalWidth,
-           word->totalSpaceStretchability, word->totalSpaceShrinkability);
-   word->badnessAndPenalty.print ();
 }
 
 /*
@@ -1925,7 +1882,7 @@ void Textblock::rewrap ()
 
          switch (word->content.type) {
          case core::Content::WIDGET_IN_FLOW:
-            word->content.widget->sizeRequest (&word->size);
+            calcSizeOfWidgetInFlow (i, word->content.widget,  &word->size);
             DBG_SET_WORD_SIZE (i);
             break;
             
