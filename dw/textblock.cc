@@ -37,6 +37,7 @@ static dw::core::style::Tooltip *hoverTooltip = NULL;
 
 
 using namespace lout;
+using namespace lout::misc;
 using namespace lout::unicode;
 
 namespace dw {
@@ -216,7 +217,9 @@ Textblock::Textblock (bool limitTextWidth)
    DBG_OBJ_SET_NUM ("redrawY", redrawY);
    lastWordDrawn = -1;
    DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
-
+   sizeRequestPosDefined = false;
+   DBG_OBJ_SET_BOOL ("sizeRequestPosDefined", sizeRequestPosDefined);
+         
    /*
     * The initial sizes of lines and words should not be
     * too high, since this will waste much memory with tables
@@ -300,6 +303,18 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition,
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
    assert (posDefined || !needsPositionForSize ());
+
+   sizeRequestPosDefined = true;
+   if (posDefined) {
+      sizeRequestX = x;
+      sizeRequestY = y;
+   } else {
+      sizeRequestX = 0;
+      sizeRequestY = 0;
+   }
+   DBG_OBJ_SET_BOOL ("sizeRequestPosDefined", sizeRequestPosDefined);
+   DBG_OBJ_SET_NUM ("sizeRequestX", sizeRequestX);
+   DBG_OBJ_SET_NUM ("sizeRequestY", sizeRequestY);
    
    int newLineBreakWidth = getAvailWidth (true);
    if (newLineBreakWidth != lineBreakWidth) {
@@ -611,28 +626,20 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                           "allocating widget in flow: line %d, word %d",
                           lineIndex, wordIndex);
 
+            // TODO For word->flags & Word::TOPLEFT_OF_LINE, make
+            // allocation consistent with calcSizeOfWidgetInFlow():
+
             childAllocation.x = xCursor + childBaseAllocation.x;
-
-            DBG_OBJ_MSGF ("resize", 1, "childAllocation.x = %d + %d = %d",
-                          xCursor, childBaseAllocation.x, childAllocation.x);
-
+            
             /** \todo Justification within the line is done here. */
-
             /* align=top:
                childAllocation.y = line->top + allocation->y;
             */
-
             /* align=bottom (base line) */
             /* Commented lines break the n2 and n3 test cases at
              * http://www.dillo.org/test/img/ */
             childAllocation.y = lineYOffsetCanvas (line)
                + (line->borderAscent - word->size.ascent);
-
-            DBG_OBJ_MSGF ("resize", 1,
-                          "childAllocation.y = %d + (%d - %d) = %d",
-                          lineYOffsetCanvas (line),
-                          line->borderAscent, word->size.ascent,
-                          childAllocation.y);
 
             childAllocation.width = word->size.width;
             childAllocation.ascent = word->size.ascent;
@@ -2245,22 +2252,53 @@ void Textblock::calcTextSizes (const char *text, size_t textLen,
 bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
                                         core::Requisition *size)
 {
+   DBG_OBJ_ENTER ("resize", 0, "calcSizeOfWidgetInFlow", "%d, %p, ...",
+                  wordIndex, widget);
+
+   int lastWord = lines->empty () ? -1 : lines->getLastRef()->lastWord;
+   assert (wordIndex > lastWord);
+   bool result;
+
    Widget *reference = widget->sizeRequestReference ();
    
    if (reference == NULL) {
       widget->sizeRequest (size);
-      return false;
+      result = false;
    } else {
+      assert (getParent () == NULL || sizeRequestPosDefined);
       assert
          (wordIndex == 0 ||
           words->getRef(wordIndex - 1)->content.type == core::Content::BREAK);
       assert (reference == oofContainer[OOFM_FLOATS]);
 
-      // TODO: x, y
-      widget->sizeRequest (size, true, 0, 0);
+      // The following assertion is always the case in dillo, and
+      // plausible (since floats are the reason why the size depends
+      // on the position); and it simplifies the calculation of x
+      // below.
+      assert (widget->instanceOf (RegardingBorder::CLASS_ID) &&
+              !isOOFContainer (widget, OOFM_FLOATS));
       
-      return true;
+      int xRef, yRef;
+      if (getParent () == NULL)
+         xRef = yRef = 0;
+      else {
+         xRef = sizeRequestX;
+         yRef = sizeRequestY;
+      }
+      
+      int x = xRef + boxOffsetX () + leftInnerPadding
+         + (lines->size () == 0 ? line1OffsetEff : 0);
+      int lastMargin, yLine = yOffsetOfLineToBeCreated (&lastMargin);
+      int y = yRef + yLine - lastMargin
+         + max (lastMargin, widget->getStyle()->margin.top);
+         
+      widget->sizeRequest (size, true, x, y);
+      
+      result = true;
    }
+
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (result));
+   return result;
 }
 
 /**
@@ -2279,7 +2317,7 @@ void Textblock::addText0 (const char *text, size_t len, short flags,
                   (flags & Word::UNBREAKABLE_FOR_MIN_WIDTH) ? "um" : "--",
                   (flags & Word::WORD_START) ? "st" : "--",
                   (flags & Word::WORD_END) ? "en" : "--",
-                  (flags & Word::AT_TOP_OF_LINE) ? "at" : "--",
+                  (flags & Word::TOPLEFT_OF_LINE) ? "00" : "--",
                   style, size->width, size->ascent, size->descent);
 
    //printf("[%p] addText0 ('", this);
@@ -2364,7 +2402,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 
       core::Requisition size;
       short flags = calcSizeOfWidgetInFlow (words->size (), widget, &size) ?
-         Word::AT_TOP_OF_LINE : 0;
+         Word::TOPLEFT_OF_LINE : 0;
       Word *word =
          addWord (size.width, size.ascent, size.descent, flags, style);
       word->content.type = core::Content::WIDGET_IN_FLOW;
@@ -3171,7 +3209,7 @@ RegardingBorder *Textblock::getWidgetRegardingBorderForLine (int firstWord,
 /**
  * Includes margin, border, and padding.
  */
-int Textblock::yOffsetOfLineToBeCreated ()
+int Textblock::yOffsetOfLineToBeCreated (int *lastMargin)
 {
    // This method does not return an exact result: the position of the
    // new line, which does not yet exist, cannot be calculated, since
@@ -3194,7 +3232,8 @@ int Textblock::yOffsetOfLineToBeCreated ()
       result = calcVerticalBorder (getStyle()->padding.top,
                                    getStyle()->borderWidth.top + extraSpace.top,
                                    getStyle()->margin.top, 0, 0);
-      DBG_OBJ_MSGF ("line.yoffset", 1, "first line: ... = %d", result);
+      if (lastMargin)
+         *lastMargin = getStyle()->margin.top;
    } else {
       Line *firstLine = lines->getRef (0), *lastLine = lines->getLastRef ();
       result = calcVerticalBorder (getStyle()->padding.top,
@@ -3203,10 +3242,14 @@ int Textblock::yOffsetOfLineToBeCreated ()
                                    firstLine->borderAscent,
                                    firstLine->marginAscent)
          - firstLine->borderAscent + lastLine->top + lastLine->totalHeight (0);
-      DBG_OBJ_MSGF ("line.yoffset", 1, "other line: ... = %d", result);
+      if (lastMargin)
+         *lastMargin = lastLine->marginDescent - lastLine->borderDescent;
    }
 
-   DBG_OBJ_LEAVE ();
+   if (lastMargin)
+      DBG_OBJ_LEAVE_VAL ("%d, %d", result, *lastMargin);
+   else
+      DBG_OBJ_LEAVE_VAL ("%d", result);
 
    return result;
 }

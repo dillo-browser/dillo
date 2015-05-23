@@ -451,11 +451,11 @@ protected:
           * hyphenation) the last part of a "real" text word, this
           * flag is set. Analogue to WORD_START. */
          WORD_END                  = 1 << 6,
-         /* This word is put at the top of the line. This is necessary
-          * if the size of a child widget depends on the position,
-          * which, on the other hand, cannot be determined before
-          * the whole line is broken. */
-         AT_TOP_OF_LINE            = 1 << 7
+         /* This word is put at the top of the line, and at the
+          * left. This is necessary if the size of a child widget
+          * depends on the position, which, on the other hand, cannot
+          * be determined before the whole line is broken. */
+         TOPLEFT_OF_LINE           = 1 << 7
       };
 
       /* TODO: perhaps add a xLeft? */
@@ -576,6 +576,9 @@ protected:
    int redrawY;
    int lastWordDrawn;
 
+   bool sizeRequestPosDefined;
+   int sizeRequestX, sizeRequestY;
+   
    /* This value is (currently) set by setAscent(). */
    int lineBreakWidth;
 
@@ -762,7 +765,7 @@ protected:
                                                      int lastWord);
    void printBorderChangedErrorAndAbort (int y, Widget *vloat,
                                          int wrapLineIndex);
-   int yOffsetOfLineToBeCreated ();
+   int yOffsetOfLineToBeCreated (int *lastMargin = NULL);
    int yOffsetOfLineCreated (Line *line);
 
    bool sendSelectionEvent (core::SelectionState::EventType eventType,

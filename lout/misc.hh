@@ -120,6 +120,8 @@ public:
     */
    inline int size() const { return this->num; }
 
+   inline bool empty() const { return size() == 0; }
+
    inline T* getArray() const { return array; }
 
    inline T* detachArray() {
@@ -379,6 +381,8 @@ public:
    }
 
    inline int size() const { return this->numMain + this->numExtra; }
+
+   inline bool empty() const { return size() == 0; }
 
    inline void increase() { setSize(size() + 1); }
 
