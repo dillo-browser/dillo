@@ -166,10 +166,10 @@
 # You can enable multiple search_url strings at once and select from among
 # them at runtime, with the first being the default.
 # (the prefix serves to search from the Location Bar. e.g. "dd dillo image")
-search_url="dd DuckDuckGo http://duckduckgo.com/lite/?kp=-1&q=%s"
+search_url="dd DuckDuckGo (https) https://duckduckgo.com/lite/?kp=-1&q=%s"
 search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&go=Go"
 search_url="Free Dictionary http://www.thefreedictionary.com/%s"
-search_url="Startpage http://www.startpage.com/do/search?query=%s"
+search_url="Startpage (https) https://www.startpage.com/do/search?query=%s"
 search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 
 # If set, dillo will ask web servers to send pages in this language.

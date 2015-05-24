@@ -41,7 +41,7 @@ TipWin::TipWin() : Fl_Menu_Window(1, 1)     // will autosize
 {
    bgcolor = fl_color_cube(FL_NUM_RED - 1, FL_NUM_GREEN - 1, FL_NUM_BLUE - 2);
    recent = 0;
-   strcpy(tip, "");
+   tip[0] = '\0';
    cur_widget = NULL;
    set_override(); // no border
    end();
