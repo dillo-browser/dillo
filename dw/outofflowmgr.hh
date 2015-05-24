@@ -52,8 +52,7 @@ public:
     * \brief Called after tellPosition1.
     *
     * An implementation should only implement either tellPosition1 or
-    * tellPosition2. Coordinates are relative to the allocation of the
-    * generator.
+    * tellPosition2. Coordinates are relative to the *container*.
     */
    virtual void tellPosition2 (core::Widget *widget, int x, int y) = 0;
    
@@ -65,8 +64,7 @@ public:
 
    /**
     * Get the left border for the vertical position of *y*, for a height
-    * of *h", based on floats; relative to the allocation of the calling
-    * textblock.
+    * of *h", based on floats; relative to the *container*.
     *
     * The border includes marging/border/padding of the calling textblock
     * but is 0 if there is no float, so a caller should also consider
@@ -77,7 +75,7 @@ public:
 
    /**
     * Get the right border for the vertical position of *y*, for a height
-    * of *h*, based on floats.
+    * of *h*, based on floats; relative to the *container*.
     *
     * See also getLeftBorder().
     */
@@ -85,7 +83,8 @@ public:
                                OOFAwareWidget *lastGen, int lastExtIndex) = 0;
 
    /**
-    * Return whether there is a float on the left side.
+    * Return whether there is a float on the left side. *y* is
+    * relative to the *container*.
     *
     * See also getLeftBorder().
     */
@@ -93,7 +92,8 @@ public:
                               OOFAwareWidget *lastGen, int lastExtIndex) = 0;
 
    /**
-    * Return whether there is a float on the right side.
+    * Return whether there is a float on the right side. *y* is
+    * relative to the *container*.
     *
     * See also hasFloatLeft(), getLeftBorder();
     */
@@ -102,7 +102,7 @@ public:
 
    /**
     * Assuming there is a float on the left side, return the rest
-    * height of it.
+    * height of it. *y* is relative to the *container*.
     *
     * See also getLeftBorder().
     */
@@ -112,7 +112,7 @@ public:
 
    /**
     * Assuming there is a float on the right side, return the rest
-    * height of it.
+    * height of it. *y* is relative to the *container*.
     *
     * See also getLeftFloatHeight(), getLeftBorder().
     */
