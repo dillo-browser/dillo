@@ -468,10 +468,12 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
          // See also Textblock::sizeAllocate, and notes there about
          // vertical alignment. Calculating the vertical position
          // should probably be centralized.
-         if (oofm)
-            oofm->tellPosition2 (widget, xWidget,
-                                 yLine + (line->borderAscent
-                                          - word->size.ascent));
+         if (oofm) {
+            assert (sizeRequestPosDefined);
+            oofm->tellPosition2 (widget, sizeRequestX + xWidget,
+                                 sizeRequestY + yLine + (line->borderAscent
+                                                         - word->size.ascent));
+         }
       }
 
       xWidget += word->size.width + word->effSpace;
@@ -757,8 +759,11 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                Widget *widget = words->getRef(lastFloatPos)->content.widget;
                oof::OutOfFlowMgr *oofm =
                   searchOutOfFlowMgr (getWidgetOOFIndex (widget));
-               if (oofm && oofm->mayAffectBordersAtAll ())
-                  oofm->tellPosition1 (widget, boxOffsetX (), yNewLine);
+               if (oofm && oofm->mayAffectBordersAtAll ()) {
+                  assert (sizeRequestPosDefined);
+                  oofm->tellPosition1 (widget, sizeRequestX + boxOffsetX (),
+                                       sizeRequestY + yNewLine);
+               }
 
                balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
                                          tempNewLine, penaltyIndex, false,
@@ -850,10 +855,13 @@ int Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
    oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (getWidgetOOFIndex (widget));
    DBG_OBJ_MSGF ("construct.word", 1, "parentRef = %d, oofm = %p",
                  widget->parentRef, oofm);
-   if (oofm && !oofm->mayAffectBordersAtAll ())
+   if (oofm && !oofm->mayAffectBordersAtAll ()) {
       // TODO Again, "x" is not correct (see above).
-      oofm->tellPosition1 (widget, boxOffsetX (), yNewLine);
-
+      assert (sizeRequestPosDefined);
+      oofm->tellPosition1 (widget, sizeRequestX + boxOffsetX (),
+                           sizeRequestY + yNewLine);
+   }
+   
    DBG_OBJ_LEAVE ();
 
    return 0; // Words list not changed.
@@ -2013,7 +2021,8 @@ void Textblock::calcBorders (int lastOofRef, int height)
       int firstWordOfLine =
          lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
       int effOofRef = misc::max (lastOofRef, firstWordOfLine - 1);
-      int y = yOffsetOfLineToBeCreated ();
+      assert (sizeRequestPosDefined);
+      int y = sizeRequestY + yOffsetOfLineToBeCreated ();
            
       for (int i = 0; i < NUM_OOFM; i++) {
          oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr(i);
