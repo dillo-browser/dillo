@@ -4,18 +4,18 @@
 padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
 Not up to date; incorporate these two changes: (i) there are different
 containing blocks for floats and absolutely (furthermore also fixedly)
-positioned elements; (ii) dw::OutOfFlowMgr is now only the base class;
-floats and absolutely positioned elements are seperated:
+positioned elements; (ii) dw::oof::OutOfFlowMgr is now only the base
+class; floats and absolutely positioned elements are seperated:
 \dot
 digraph G {
    node [shape=record, fontname=Helvetica, fontsize=10];
    edge [arrowhead="none", arrowtail="empty", dir="both"];
    fontname=Helvetica; fontsize=8;
 
-   OutOfFlowMgr [URL="\ref dw::oof::OutOfFlowMgr"];
+   OutOfFlowMgr [URL="\ref dw::oof::OutOfFlowMgr"; color="#a0a0a0"];
    OOFFloatsMgr [URL="\ref dw::oof::OOFFloatsMgr"];
-   OOFPositionedMgr [URL="\ref dw::oof::OOFPositionedMgr"];
-   OOFPosAbsLikeMgr [URL="\ref dw::oof::OOFPosAbsLikeMgr"];
+   OOFPositionedMgr [URL="\ref dw::oof::OOFPositionedMgr"; color="#a0a0a0"];
+   OOFPosAbsLikeMgr [URL="\ref dw::oof::OOFPosAbsLikeMgr"; color="#a0a0a0"];
    OOFPosAbsMgr [URL="\ref dw::oof::OOFPosAbsMgr"];
    OOFPosFixedMgr [URL="\ref dw::oof::OOFPosFixedMgr"];
    OOFPosRelMgr [URL="\ref dw::oof::OOFPosRelMgr"];
@@ -28,6 +28,11 @@ digraph G {
    OOFPositionedMgr -> OOFPosRelMgr;
 }
 \enddot
+</div>
+
+<div style="border: 2px solid #ffff00; margin: 1em 0;
+padding: 0.5em 1em; background-color: #ffffe0"><b>Info:</b>
+A simplification is ongoing, see \ref dw-size-request-pos.
 </div>
 
 Introduction
@@ -107,16 +112,16 @@ dw::Textblock::containingBlock appropriately, (according to rules
 which should be defined in this document).
 
 Handling widgets out of flow is partly the task of the new class
-dw::OutOfFlowMgr, which is stored by dw::Textblock::outOfFlowMgr, but
-only for containing blocks. Generating blocks should refer to
-*containingBlock->outOfFlowMgr*. (Perhaps dw::OutOfFlowMgr may become
-independent of dw::Textblock.)
+dw::oof::OutOfFlowMgr, which is stored by dw::Textblock::outOfFlowMgr,
+but only for containing blocks. Generating blocks should refer to
+*containingBlock->outOfFlowMgr*. (Perhaps dw::oof::OutOfFlowMgr may
+become independent of dw::Textblock.)
 
 dw::Textblock::addWidget is extended, so that floats and absolutely
 positioned elements can be added. Notice that not *this* widget, but
 the containing block becomes the parent of the newly added child, if
 it is out of flow. dw::Textblock::addWidget decides this by calling
-dw::OutOfFlowMgr::isOutOfFlow. (See new content types above.)
+dw::oof::OutOfFlowMgr::isOutOfFlow. (See new content types above.)
 
 dw::core::Widget::parentRef has become a new representation. Before,
 it represented the line numer. Now (least signifant bit left):
@@ -137,7 +142,7 @@ it represented the line numer. Now (least signifant bit left):
     |      absolutely positioned index      | 1 | 1 |
     +---+ - - - +---+---+- - - - - -+---+---+---+---+
 
-Details are hidden by static inline methods of dw::OutOfFlowMgr.
+Details are hidden by static inline methods of dw::oof::OutOfFlowMgr.
 
 
 The sizeRequest/sizeAllocate problem
@@ -161,7 +166,7 @@ steps:
 Especially for floats, this model becomes a bit difficult, for reasons
 described below. For the solutions, much is centralized at the level
 of the containing block, which delegates most to an instance of
-dw::OutOfFlowMgr (details below).
+dw::oof::OutOfFlowMgr (details below).
 
 **The size of a widget depends on the size not only of the children.**
 In the example above, the last list item (green, following the
@@ -174,7 +179,8 @@ section *Rules for Methods Related to Resizing*): *sizeRequest* can be
 called within *sizeRequestImpl* for other widgets that children (with
 some caution). Namely, dw::Textblock::sizeRequestImpl calls
 dw::core::Widget::sizeRequest for the float, via
-dw::OutOfFlowMgr::getBorder and dw::OutOfFlowMgr::ensureFloatSize.
+dw::oof::OutOfFlowMgr::getBorder and
+dw::oof::OutOfFlowMgr::ensureFloatSize.
 
 **The size of a widget depends on the allocation of another widget.**
 In the example above, both list items (blue and green) must know the
@@ -192,17 +198,18 @@ dw::core::Widget::queueResize, so that all border calculations are
 repeated. See below (*hasRelationChanged*) for details.
 
 Generally, this pattern (distinguishing between GB and CB) can be
-found everywhere in dw::OutOfFlowMgr.
+found everywhere in dw::oof::OutOfFlowMgr.
 
 For details see:
 
-- dw::OutOfFlowMgr::getLeftBorder, dw::OutOfFlowMgr::getRightBorder,
-  dw::OutOfFlowMgr::getBorder (called by the first two), and
-  especially, dw::OutOfFlowMgr::getFloatsListForTextblock (called by
-  the latter), where these three cases are distinguished;
-- dw::OutOfFlowMgr::sizeAllocateStart,
-  dw::OutOfFlowMgr::sizeAllocateEnd which are called by the containing
-  block.
+- dw::oof::OutOfFlowMgr::getLeftBorder,
+  dw::oof::OutOfFlowMgr::getRightBorder,
+  dw::oof::OutOfFlowMgr::getBorder (called by the first two), and
+  especially, dw::oof::OutOfFlowMgr::getFloatsListForTextblock (called
+  by the latter), where these three cases are distinguished;
+- dw::oof::OutOfFlowMgr::sizeAllocateStart,
+  dw::oof::OutOfFlowMgr::sizeAllocateEnd which are called by the
+  containing block.
 
 (This could be solved in a more simple, elegant way, when
 *sizeRequest* would depend on the position. This is, however, only a
