@@ -63,20 +63,59 @@ public:
    virtual void getExtremes (core::Extremes *containerExtr, int *oofMinWidth,
                              int *oofMaxWidth) = 0;
 
-
+   /**
+    * Get the left border for the vertical position of *y*, for a height
+    * of *h", based on floats; relative to the allocation of the calling
+    * textblock.
+    *
+    * The border includes marging/border/padding of the calling textblock
+    * but is 0 if there is no float, so a caller should also consider
+    * other borders.
+    */
    virtual int getLeftBorder (OOFAwareWidget *widget, int y, int h,
                               OOFAwareWidget *lastGen, int lastExtIndex) = 0;
+
+   /**
+    * Get the right border for the vertical position of *y*, for a height
+    * of *h*, based on floats.
+    *
+    * See also getLeftBorder().
+    */
    virtual int getRightBorder (OOFAwareWidget *widget, int y, int h,
                                OOFAwareWidget *lastGen, int lastExtIndex) = 0;
 
+   /**
+    * Return whether there is a float on the left side.
+    *
+    * See also getLeftBorder().
+    */
    virtual bool hasFloatLeft (OOFAwareWidget *widget, int y, int h,
                               OOFAwareWidget *lastGen, int lastExtIndex) = 0;
+
+   /**
+    * Return whether there is a float on the right side.
+    *
+    * See also hasFloatLeft(), getLeftBorder();
+    */
    virtual bool hasFloatRight (OOFAwareWidget *widget, int y, int h,
                                OOFAwareWidget *lastGen, int lastExtIndex) = 0;
 
+   /**
+    * Assuming there is a float on the left side, return the rest
+    * height of it.
+    *
+    * See also getLeftBorder().
+    */
    virtual int getLeftFloatHeight (OOFAwareWidget *widget, int y, int h,
                                    OOFAwareWidget *lastGen, int lastExtIndex)
       = 0;
+
+   /**
+    * Assuming there is a float on the right side, return the rest
+    * height of it.
+    *
+    * See also getLeftFloatHeight(), getLeftBorder().
+    */
    virtual int getRightFloatHeight (OOFAwareWidget *widget, int y, int h,
                                     OOFAwareWidget *lastGen, int lastExtIndex)
       = 0;

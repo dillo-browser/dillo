@@ -1988,15 +1988,6 @@ OOFFloatsMgr::TBInfo *OOFFloatsMgr::getOOFAwareWidget (OOFAwareWidget *widget)
    return tbInfo;
 }
 
-/**
- * Get the left border for the vertical position of *y*, for a height
- * of *h", based on floats; relative to the allocation of the calling
- * textblock.
- *
- * The border includes marging/border/padding of the calling textblock
- * but is 0 if there is no float, so a caller should also consider
- * other borders.
- */
 int OOFFloatsMgr::getLeftBorder (OOFAwareWidget *textblock, int y, int h,
                                  OOFAwareWidget *lastGB, int lastExtIndex)
 {
@@ -2006,12 +1997,6 @@ int OOFFloatsMgr::getLeftBorder (OOFAwareWidget *textblock, int y, int h,
    return b;
 }
 
-/**
- * Get the right border for the vertical position of *y*, for a height
- * of *h*, based on floats.
- *
- * See also getLeftBorder(int, int);
- */
 int OOFFloatsMgr::getRightBorder (OOFAwareWidget *textblock, int y, int h,
                                   OOFAwareWidget *lastGB, int lastExtIndex)
 {
@@ -2163,7 +2148,6 @@ int OOFFloatsMgr::getRightFloatHeight (OOFAwareWidget *textblock, int y, int h,
    return getFloatHeight (textblock, RIGHT, y, h, lastGB, lastExtIndex);
 }
 
-// Calculate height from the position *y*.
 int OOFFloatsMgr::getFloatHeight (OOFAwareWidget *textblock, Side side, int y,
                                   int h, OOFAwareWidget *lastGB,
                                   int lastExtIndex)
