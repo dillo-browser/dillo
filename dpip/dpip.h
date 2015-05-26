@@ -70,6 +70,7 @@ int a_Dpip_dsh_write_str(Dsh *dsh, int flush, const char *str);
 int a_Dpip_dsh_tryflush(Dsh *dsh);
 int a_Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize);
 char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking);
+char *a_Dpip_dsh_read_token2(Dsh *dsh, int blocking, int *DataSize);
 void a_Dpip_dsh_close(Dsh *dsh);
 void a_Dpip_dsh_free(Dsh *dsh);
 

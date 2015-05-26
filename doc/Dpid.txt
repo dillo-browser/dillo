@@ -285,9 +285,10 @@ commented code in hello.c and start making changes!
   Debugging a dpi
   ---------------
 
-  The  simplest  way  is  to add printf() feedback using the MSG*
+  The  simplest way is to add printf-like feedback using the MSG*
 macros.  You  can  start  the dpid by hand on a terminal to force
-messages to go there.
+messages  to  go  there.  Filter  dpis use sdterr and server dpis
+stdout. 
 
   Sometimes  more  complex dpis need more than MSG*. In this case
 you can use gdb like this.
