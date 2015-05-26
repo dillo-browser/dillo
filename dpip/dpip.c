@@ -1,7 +1,7 @@
 /*
  * File: dpip.c
  *
- * Copyright 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2005-2015 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -427,11 +427,13 @@ static void Dpip_dsh_read(Dsh *dsh, int blocking)
 
 /*
  * Return a newlly allocated string with the next dpip token in the socket.
- * Return value: token string on success, NULL otherwise
+ * Return value: token string and length on success, NULL otherwise.
+ * (useful for handling null characters in the data stream)
  */
-char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
+char *a_Dpip_dsh_read_token2(Dsh *dsh, int blocking, int *DataSize)
 {
    char *p, *ret = NULL;
+   *DataSize = 0;
 
    /* Read all available data without blocking */
    Dpip_dsh_read(dsh, 0);
@@ -462,6 +464,7 @@ char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
       /* return a full tag */
       if ((p = strstr(dsh->rdbuf->str, DPIP_TAG_END))) {
          ret = dStrndup(dsh->rdbuf->str, p - dsh->rdbuf->str + 3);
+         *DataSize = p - dsh->rdbuf->str + 3;
          dStr_erase(dsh->rdbuf, 0, p - dsh->rdbuf->str + 3);
          if (strstr(ret, DPIP_MODE_SWITCH_TAG))
             dsh->mode |= DPIP_LAST_TAG;
@@ -470,11 +473,23 @@ char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
       /* raw mode, return what we have "as is" */
       if (dsh->rdbuf->len > 0) {
          ret = dStrndup(dsh->rdbuf->str, dsh->rdbuf->len);
+         *DataSize = dsh->rdbuf->len;
          dStr_truncate(dsh->rdbuf, 0);
       }
    }
 
    return ret;
+}
+
+/*
+ * Return a newlly allocated string with the next dpip token in the socket.
+ * Return value: token string on success, NULL otherwise
+ */
+char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
+{
+   int token_size;
+
+   return a_Dpip_dsh_read_token2(dsh, blocking, &token_size);
 }
 
 /*
