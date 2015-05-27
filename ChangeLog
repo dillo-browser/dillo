@@ -26,6 +26,7 @@ dillo-3.1 [not released yet]
 +- Image buffer/cache improvements.
  - Fix for segfault when there's no dpid and view source is requested.
  - Fix view-source dpi to handle null characters correctly.
+ - Made view-source dpi use CSS formatting (it's shorter and cleaner).
    Patches: Jorge Arellano Cid
 +- Crosscompile/buildroot-friendly fltk-config test.
    Patch: Peter Seiderer
