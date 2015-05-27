@@ -118,7 +118,10 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
                      "\n"
                      "<html><head>\n"
                      "<title>Source for %s</title>\n"
-                     "<style type=\"text/css\">PRE {white-space: pre-wrap}\n"
+                     "<style type=\"text/css\">\n"
+                     " body {white-space: pre-wrap; font-family: monospace}\n"
+                     " td.r1 {background-color:#B87333}\n"
+                     " td.r2 {background-color:#DD7F32}\n"
                      "</style>\n"
                      "</head>\n"
                      "<body id=\"dillo_vs\">\n<table cellpadding='0'>\n", url);
@@ -131,10 +134,9 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
       while (*p) {
          if (line > old_line) {
             snprintf(line_str, 128,
-                     "%s<tr><td bgcolor='%s'>%d%s<td><pre>",
-                     (line > 1) ? "</pre>" : "",
-                     (line & 1) ? "#B87333" : "#DD7F32", line,
-                     (line == 1 || (line % 10) == 0) ? "&nbsp;&nbsp;" : "");
+                     "<tr><td class='%s'>%d%s<td>",
+                     (line & 1) ? "r1" : "r2", line,
+                     (line == 1 || (line % 10) == 0) ? "&nbsp;" : "");
             a_Dpip_dsh_write_str(sh, 0, line_str);
             old_line = line;
          }
@@ -158,8 +160,6 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
       dFree(token);
    }
 
-   if (data_size > 0)
-      a_Dpip_dsh_write_str(sh, 0, "</pre>");
    a_Dpip_dsh_write_str(sh, 1, "</table></body></html>");
 }
 
