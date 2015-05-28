@@ -11,7 +11,7 @@ dillo \- web browser
 Dillo is a lightweight graphical web browser that aims to be secure.
 It handles HTTP internally, and FILE, FTP, and
 DATA URIs are handled through a plugin system (dpi). In addition,
-.I INSECURE
+.I EXPERIMENTAL
 HTTPS support can be enabled. Both FTP and Dillo's download manager use the
 .BR wget (1)
 downloader.
@@ -68,7 +68,7 @@ Error in command line arguments.
 User's home directory.
 .TP
 .B http_proxy
-URL of proxy to send HTTP traffic through.
+URL of proxy to send HTTP/HTTPS traffic through.
 .SH FILES
 .TP
 .I dpid
