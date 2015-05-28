@@ -21,7 +21,7 @@
 #include "../klist.h"
 #include "IO.h"
 #include "iowatch.hh"
-#include "ssl.h"
+#include "tls.h"
 
 /*
  * Symbolic defines for shutdown() function
@@ -163,7 +163,7 @@ static bool_t IO_read(IOData_t *io)
    ssize_t St;
    bool_t ret = FALSE;
    int io_key = io->Key;
-   void *conn = a_Ssl_connection(io->FD);
+   void *conn = a_Tls_connection(io->FD);
 
    _MSG("  IO_read\n");
 
@@ -172,7 +172,7 @@ static bool_t IO_read(IOData_t *io)
    io->Status = 0;
 
    while (1) {
-      St = conn ? a_Ssl_read(conn, Buf, IOBufLen)
+      St = conn ? a_Tls_read(conn, Buf, IOBufLen)
                 : read(io->FD, Buf, IOBufLen);
       if (St > 0) {
          dStr_append_l(io->Buf, Buf, St);
@@ -217,13 +217,13 @@ static bool_t IO_write(IOData_t *io)
 {
    ssize_t St;
    bool_t ret = FALSE;
-   void *conn = a_Ssl_connection(io->FD);
+   void *conn = a_Tls_connection(io->FD);
 
    _MSG("  IO_write\n");
    io->Status = 0;
 
    while (1) {
-      St = conn ? a_Ssl_write(conn, io->Buf->str, io->Buf->len)
+      St = conn ? a_Tls_write(conn, io->Buf->str, io->Buf->len)
                 : write(io->FD, io->Buf->str, io->Buf->len);
       if (St < 0) {
          /* Error */

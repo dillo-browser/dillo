@@ -87,5 +87,5 @@ Non-Dillo code:
 * src/md5.[ch] contain code by L. Peter Deutsch whose copyright is held by
   Aladdin Enterprises.
 * src/tipwin.cc contains code by Greg Ercolano.
-* src/IO/ssl.c contains code from wget whose copyright is held by the
+* src/IO/tls.c contains code from wget whose copyright is held by the
   Free Software Foundation.

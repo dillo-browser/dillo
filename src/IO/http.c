@@ -27,7 +27,7 @@
 #include <arpa/inet.h>          /* for inet_ntop */
 
 #include "IO.h"
-#include "ssl.h"
+#include "tls.h"
 #include "Url.h"
 #include "../msg.h"
 #include "../klist.h"
@@ -52,7 +52,7 @@ D_STMT_START {                                                        \
 static const int HTTP_SOCKET_USE_PROXY   = 0x1;
 static const int HTTP_SOCKET_QUEUED      = 0x2;
 static const int HTTP_SOCKET_TO_BE_FREED = 0x4;
-static const int HTTP_SOCKET_SSL         = 0x8;
+static const int HTTP_SOCKET_TLS         = 0x8;
 
 /* 'web' is just a reference (no need to deallocate it here). */
 typedef struct {
@@ -251,16 +251,16 @@ static void Http_connect_queued_sockets(Server_t *srv)
       sd = dList_nth_data(srv->queue, i);
 
       if (!(sd->flags & HTTP_SOCKET_TO_BE_FREED)) {
-         int connect_ready = SSL_CONNECT_READY;
+         int connect_ready = TLS_CONNECT_READY;
 
-         if (sd->flags & HTTP_SOCKET_SSL)
-            connect_ready = a_Ssl_connect_ready(sd->url);
+         if (sd->flags & HTTP_SOCKET_TLS)
+            connect_ready = a_Tls_connect_ready(sd->url);
 
-         if (connect_ready == SSL_CONNECT_NEVER || !a_Web_valid(sd->web)) {
+         if (connect_ready == TLS_CONNECT_NEVER || !a_Web_valid(sd->web)) {
             int SKey = VOIDP2INT(sd->Info->LocalKey);
 
             Http_socket_free(SKey);
-         } else if (connect_ready == SSL_CONNECT_READY) {
+         } else if (connect_ready == TLS_CONNECT_READY) {
             i--;
             Http_socket_activate(srv, sd);
             Http_connect_socket(sd->Info);
@@ -295,12 +295,12 @@ static void Http_socket_free(int SKey)
       } else {
          if (S->SockFD != -1)
             Http_fd_map_remove_entry(S->SockFD);
-         a_Ssl_reset_server_state(S->url);
+         a_Tls_reset_server_state(S->url);
          if (S->connected_to) {
-            a_Ssl_close_by_fd(S->SockFD);
+            a_Tls_close_by_fd(S->SockFD);
 
             Server_t *srv = Http_server_get(S->connected_to, S->connect_port,
-                                            (S->flags & HTTP_SOCKET_SSL));
+                                            (S->flags & HTTP_SOCKET_TLS));
             srv->active_conns--;
             Http_connect_queued_sockets(srv);
             if (srv->active_conns == 0)
@@ -484,9 +484,9 @@ static void Http_send_query(SocketData_t *S)
 
 /*
  * Prepare an HTTPS connection.  If necessary, tunnel it through a proxy.
- * Then perform the SSL handshake.
+ * Then perform the TLS handshake.
  */
-static void Http_connect_ssl(ChainLink *info)
+static void Http_connect_tls(ChainLink *info)
 {
    int SKey = VOIDP2INT(info->LocalKey);
    SocketData_t *S = a_Klist_get_data(ValidSocks, SKey);
@@ -502,7 +502,7 @@ static void Http_connect_ssl(ChainLink *info)
       dFree(dbuf);
       dFree(connect_str);
    } else {
-      a_Ssl_handshake(S->SockFD, S->url);
+      a_Tls_handshake(S->SockFD, S->url);
    }
 }
 
@@ -573,8 +573,8 @@ static void Http_connect_socket(ChainLink *Info)
       if (status == -1 && errno != EINPROGRESS) {
          MSG("Http_connect_socket ERROR: %s\n", dStrerror(errno));
          a_Http_connect_done(S->SockFD, FALSE);
-      } else if (S->flags & HTTP_SOCKET_SSL) {
-         Http_connect_ssl(Info);
+      } else if (S->flags & HTTP_SOCKET_TLS) {
+         Http_connect_tls(Info);
       } else {
          a_Http_connect_done(S->SockFD, TRUE);
       }
@@ -677,7 +677,7 @@ static void Http_dns_cb(int Status, Dlist *addr_list, void *data)
             S->addr_list = addr_list;
             clean_up = FALSE;
             srv = Http_server_get(host, S->connect_port,
-                                 (S->flags & HTTP_SOCKET_SSL));
+                                 (S->flags & HTTP_SOCKET_TLS));
             Http_socket_enqueue(srv, S);
             Http_connect_queued_sockets(srv);
          } else {
@@ -725,7 +725,7 @@ static int Http_get(ChainLink *Info, void *Data1)
    S->connect_port = URL_PORT(url);
    S->url = a_Url_dup(S->web->url);
    if (!dStrAsciiCasecmp(URL_SCHEME(S->url), "https"))
-      S->flags |= HTTP_SOCKET_SSL;
+      S->flags |= HTTP_SOCKET_TLS;
 
    /* Let the user know what we'll do */
    MSG_BW(S->web, 1, "DNS resolving %s", hostname);
@@ -748,11 +748,11 @@ static bool_t Http_socket_reuse_compatible(SocketData_t *old,
                                            SocketData_t *new)
 {
    /*
-    * If we are using SSL through a proxy, we need to ensure that old and new
+    * If we are using TLS through a proxy, we need to ensure that old and new
     * are going through to the same host:port.
     */
    if (a_Web_valid(new->web) &&
-       ((old->flags & HTTP_SOCKET_SSL) == 0 ||
+       ((old->flags & HTTP_SOCKET_TLS) == 0 ||
         (old->flags & HTTP_SOCKET_USE_PROXY) == 0 ||
         ((URL_PORT(old->url) == URL_PORT(new->url)) &&
          !dStrAsciiCasecmp(URL_HOST(old->url), URL_HOST(new->url)))))
@@ -771,7 +771,7 @@ static void Http_socket_reuse(int SKey)
    if (old_sd) {
       Server_t *srv = Http_server_get(old_sd->connected_to,
                                       old_sd->connect_port,
-                                      (old_sd->flags & HTTP_SOCKET_SSL));
+                                      (old_sd->flags & HTTP_SOCKET_TLS));
       int i, n = dList_length(srv->queue);
 
       for (i = 0; i < n; i++) {
@@ -874,7 +874,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                          sd->https_proxy_reply->str);
                      dStr_free(sd->https_proxy_reply, 1);
                      sd->https_proxy_reply = NULL;
-                     a_Ssl_handshake(sd->SockFD, sd->url);
+                     a_Tls_handshake(sd->SockFD, sd->url);
                   } else {
                      MSG_BW(sd->web, 1, "Can't connect through proxy to %s",
                             URL_HOST(sd->url));

@@ -15,8 +15,8 @@ libDiof_a_SOURCES = \
 	about.c \
 	Url.h \
 	http.c \
-	ssl.h \
-	ssl.c \
+	tls.h \
+	tls.c \
 	dpi.c \
 	IO.c \
 	iowatch.cc \
