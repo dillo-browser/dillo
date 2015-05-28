@@ -209,7 +209,10 @@ if test "x$enable_png" = "xyes"; then
 
 dnl Check if the user hasn't set the variable $PNG_CONFIG
   if test -z "$PNG_CONFIG"; then
-    PNG_CONFIG=`which libpng14-config`
+    PNG_CONFIG=`which libpng16-config`
+    if test -z "$PNG_CONFIG"; then
+      PNG_CONFIG=`which libpng14-config`
+    fi
     if test -z "$PNG_CONFIG"; then
       PNG_CONFIG=`which libpng12-config`
     fi
@@ -235,7 +238,7 @@ dnl For debugging and to be user friendly
     AC_MSG_CHECKING([for libpng version])
     png_version=`$PNG_CONFIG --version`
     case $png_version in
-      1.[[024]].*) AC_MSG_RESULT([$png_version]) ;;
+      1.[[0246]].*) AC_MSG_RESULT([$png_version]) ;;
                 *) AC_MSG_RESULT([$png_version (unrecognised version)]) ;;
     esac
 
