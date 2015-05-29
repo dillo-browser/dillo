@@ -493,6 +493,10 @@ static bool_t Tls_check_cert_hostname(X509 *cert, const DilloUrl *url,
     {
       /* Test subject alternative names */
 
+      Dstr *err = dStr_new("");
+      dStr_sprintf(err, "Hostname %s does not match any of certificate's "
+                        "Subject Alternative Names: ", host);
+
       /* Do we want to check for dNSNAmes or ipAddresses (see RFC 2818)?
        * Signal it by host_in_octet_string. */
       ASN1_OCTET_STRING *host_in_octet_string = a2i_IPADDRESS (host);
@@ -516,6 +520,7 @@ static bool_t Tls_check_cert_hostname(X509 *cert, const DilloUrl *url,
                       if (!ASN1_STRING_cmp (host_in_octet_string,
                             name->d.iPAddress))
                         break;
+                      dStr_sprintfa(err, "%s ", name->d.iPAddress);
                     }
                 }
               else if (name->type == GEN_DNS)
@@ -537,6 +542,7 @@ static bool_t Tls_check_cert_hostname(X509 *cert, const DilloUrl *url,
                           OPENSSL_free (name_in_utf8);
                           break;
                         }
+                      dStr_sprintfa(err, "%s ", name_in_utf8);
                       OPENSSL_free (name_in_utf8);
                     }
                 }
@@ -549,11 +555,8 @@ static bool_t Tls_check_cert_hostname(X509 *cert, const DilloUrl *url,
       if (alt_name_checked == TRUE && i >= numaltnames)
         {
          success = FALSE;
-         msg = dStrconcat("No certificate subject alternative name matches"
-                          " requested host name \n", host, NULL);
          *choice = a_Dialog_choice("Dillo TLS security warning",
-            msg, "Continue", "Cancel", NULL);
-         dFree(msg);
+            err->str, "Continue", "Cancel", NULL);
 
          switch (*choice){
             case 1:
@@ -565,6 +568,7 @@ static bool_t Tls_check_cert_hostname(X509 *cert, const DilloUrl *url,
                break;
          }
         }
+      dStr_free(err, 1);
     }
 
   if (alt_name_checked == FALSE)
@@ -648,6 +652,46 @@ static bool_t Tls_check_cert_hostname(X509 *cert, const DilloUrl *url,
 /******************** END OF STUFF DERIVED FROM wget-1.16.3 */
 
 /*
+ * Get the certificate at the end of the chain, or NULL on failure.
+ *
+ * Rumor has it that the stack can be NULL if a connection has been reused
+ * and that the stack can then be reconstructed if necessary, but it doesn't
+ * sound like a case we'll encounter.
+ */
+static X509 *Tls_get_end_of_chain(SSL *ssl)
+{
+   STACK_OF(X509) *sk = SSL_get_peer_cert_chain(ssl);
+
+   return sk ? sk_X509_value(sk, sk_X509_num(sk) - 1) : NULL;
+}
+
+static void Tls_get_issuer_name(X509 *cert, char *buf, uint_t buflen)
+{
+   if (cert) {
+      X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
+   } else {
+      strncpy(buf, "(unknown)", buflen);
+      buf[buflen-1] = '\0';
+   }
+}
+
+static void Tls_get_expiration_str(X509 *cert, char *buf, uint_t buflen)
+{
+   ASN1_TIME *exp_date = X509_get_notAfter(cert);
+   BIO *b = BIO_new(BIO_s_mem());
+   int rc = ASN1_TIME_print(b, exp_date);
+
+   if (rc > 0) {
+      rc = BIO_gets(b, buf, buflen);
+   }
+   if (rc <= 0) {
+      strncpy(buf, "(unknown)", buflen);
+      buf[buflen-1] = '\0';
+   }
+   BIO_free(b);
+}
+
+/*
  * Examine the certificate, and, if problems are detected, ask the user what
  * to do.
  * Return: -1 if connection should be canceled, or 0 if it should continue.
@@ -656,7 +700,8 @@ static int Tls_examine_certificate(SSL *ssl, const DilloUrl *url)
 {
    X509 *remote_cert;
    long st;
-   char buf[4096], *cn, *msg;
+   const uint_t buflen = 4096;
+   char buf[buflen], *cn, *msg;
    int choice = -1, ret = -1;
    char *title = dStrconcat("Dillo TLS security warning: ",URL_HOST(url),NULL);
    Server_t *srv = dList_find_custom(servers, url, Tls_servers_cmp);
@@ -761,14 +806,15 @@ static int Tls_examine_certificate(SSL *ssl, const DilloUrl *url)
          break;
       case X509_V_ERR_CERT_HAS_EXPIRED:
       case X509_V_ERR_CRL_HAS_EXPIRED:
-         choice = a_Dialog_choice(title,
-            "The remote certificate has expired.  The certificate "
-            "wasn't designed to last this long. You should avoid "
-            "this site.",
-            "Continue", "Cancel", NULL);
+         Tls_get_expiration_str(remote_cert, buf, buflen);
+         msg = dStrconcat("The remote certificate expired on: ", buf,
+                          ". This site can no longer be trusted.", NULL);
+
+         choice = a_Dialog_choice(title, msg, "Continue", "Cancel", NULL);
          if (choice == 1) {
             ret = 0;
          }
+         dFree(msg);
          break;
       case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
       case X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD:
@@ -812,23 +858,24 @@ static int Tls_examine_certificate(SSL *ssl, const DilloUrl *url)
          }
          break;
       case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-         choice = a_Dialog_choice(title,
-            "Self signed certificate in certificate chain. The certificate "
-            "chain could be built up using the untrusted certificates but the "
-            "root could not be found locally.",
-            "Continue", "Cancel", NULL);
+         Tls_get_issuer_name(Tls_get_end_of_chain(ssl), buf, buflen);
+         msg = dStrconcat("Certificate chain led to a self-signed certificate "
+                          "instead of a trusted root. Name: ",  buf , NULL);
+         choice = a_Dialog_choice(title, msg, "Continue", "Cancel", NULL);
          if (choice == 1) {
             ret = 0;
          }
+         dFree(msg);
          break;
       case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
-         choice = a_Dialog_choice(title,
-            "Unable to get local issuer certificate. The issuer certificate "
-            "of an untrusted certificate cannot be found.",
-            "Continue", "Cancel", NULL);
+         Tls_get_issuer_name(Tls_get_end_of_chain(ssl), buf, buflen);
+         msg = dStrconcat("The issuer certificate of an untrusted certificate "
+                          "cannot be found. Issuer: ", buf, NULL);
+         choice = a_Dialog_choice(title, msg, "Continue", "Cancel", NULL);
          if (choice == 1) {
             ret = 0;
          }
+         dFree(msg);
          break;
       default:             /* Need to add more options later */
          snprintf(buf, 80,
