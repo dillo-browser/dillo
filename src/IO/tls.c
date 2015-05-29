@@ -466,10 +466,16 @@ static bool_t pattern_match (const char *pattern, const char *string)
   return *n == '\0';
 }
 
+/*
+ * Check that the certificate corresponds to the site it's presented for.
+ *
+ * Return TRUE if the hostname matched or the user indicated acceptance.
+ * FALSE on failure.
+ */
 static bool_t Tls_check_cert_hostname(X509 *cert, const DilloUrl *url,
                                       int *choice)
 {
-   dReturn_val_if_fail(cert && url, -1);
+   dReturn_val_if_fail(cert && url, FALSE);
 
    char *msg;
    const char *host = URL_HOST(url);
