@@ -13,7 +13,6 @@
  */
 #define _MSG(...)
 #define _MSG_WARN(...)
-#define _MSG_ERR(...)
 
 
 #define MSG(...)                                   \
