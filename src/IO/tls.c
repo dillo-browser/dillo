@@ -407,20 +407,6 @@ static int Tls_user_said_no(const DilloUrl *url)
    return s->cert_status == CERT_STATUS_BAD;
 }
 
-/*
- * Did we find problems with the certificate, and did the user proceed to
- * accept the connection anyway?
- */
-static int Tls_user_said_yes(const DilloUrl *url)
-{
-   Server_t *s = dList_find_custom(servers, url, Tls_servers_cmp);
-
-   if (!s)
-      return FALSE;
-
-   return s->cert_status == CERT_STATUS_USER_ACCEPTED;
-}
-
 /******************** BEGINNING OF STUFF DERIVED FROM wget-1.16.3 */
 
 #define ASTERISK_EXCLUDES_DOT   /* mandated by rfc2818 */
@@ -472,13 +458,12 @@ static bool_t pattern_match (const char *pattern, const char *string)
  * Return TRUE if the hostname matched or the user indicated acceptance.
  * FALSE on failure.
  */
-static bool_t Tls_check_cert_hostname(X509 *cert, const DilloUrl *url,
+static bool_t Tls_check_cert_hostname(X509 *cert, const char *host,
                                       int *choice)
 {
-   dReturn_val_if_fail(cert && url, FALSE);
+   dReturn_val_if_fail(cert && host, FALSE);
 
    char *msg;
-   const char *host = URL_HOST(url);
    GENERAL_NAMES *subjectAltNames;
    bool_t success = TRUE, alt_name_checked = FALSE;;
    char common_name[256];
@@ -702,15 +687,14 @@ static void Tls_get_expiration_str(X509 *cert, char *buf, uint_t buflen)
  * to do.
  * Return: -1 if connection should be canceled, or 0 if it should continue.
  */
-static int Tls_examine_certificate(SSL *ssl, const DilloUrl *url)
+static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
 {
    X509 *remote_cert;
    long st;
    const uint_t buflen = 4096;
    char buf[buflen], *cn, *msg;
    int choice = -1, ret = -1;
-   char *title = dStrconcat("Dillo TLS security warning: ",URL_HOST(url),NULL);
-   Server_t *srv = dList_find_custom(servers, url, Tls_servers_cmp);
+   char *title = dStrconcat("Dillo TLS security warning: ", host, NULL);
 
    remote_cert = SSL_get_peer_certificate(ssl);
    if (remote_cert == NULL){
@@ -725,7 +709,7 @@ static int Tls_examine_certificate(SSL *ssl, const DilloUrl *url)
          ret = 0;
       }
 
-   } else if (Tls_check_cert_hostname(remote_cert, url, &choice)) {
+   } else if (Tls_check_cert_hostname(remote_cert, host, &choice)) {
       /* Figure out if (and why) the remote system can't be trusted */
       st = SSL_get_verify_result(ssl);
       switch (st) {
@@ -1009,9 +993,21 @@ static void Tls_connect(int fd, int connkey)
          MSG("SSL_get_error() returned %d on a connect.\n", err1_ret);
       }
    } else {
-      if (Tls_user_said_yes(conn->url) ||
-          (Tls_examine_certificate(conn->ssl, conn->url) != -1))
+      Server_t *srv = dList_find_custom(servers, conn->url, Tls_servers_cmp);
+
+      if (srv->cert_status == CERT_STATUS_RECEIVING) {
+         /* Making first connection with the server */
+         const char *version = SSL_get_version(conn->ssl);
+         const SSL_CIPHER *cipher = SSL_get_current_cipher(conn->ssl);
+
+         MSG("%s: %s, cipher %s\n", URL_AUTHORITY(conn->url), version,
+             SSL_CIPHER_get_name(cipher));
+      }
+
+      if (srv->cert_status == CERT_STATUS_USER_ACCEPTED ||
+          (Tls_examine_certificate(conn->ssl, srv, URL_HOST(conn->url))!=-1)) {
          failed = FALSE;
+      }
    }
 
    /*
