@@ -932,6 +932,46 @@ static void Tls_close_by_key(int connkey)
    }
 }
 
+static void Tls_print_cert_chain(SSL *ssl)
+{
+   STACK_OF(X509) *sk = SSL_get_peer_cert_chain(ssl);
+
+   if (sk) {
+      const uint_t buflen = 4096;
+      char buf[buflen];
+      int i, n = sk_X509_num(sk);
+      X509 *cert;
+      EVP_PKEY *public_key;
+      int key_type, key_bits;
+      const char *type_str;
+
+      for (i = 0; i < n; i++) {
+         cert = sk_X509_value(sk, i);
+         public_key = X509_get_pubkey(cert);
+         key_type = EVP_PKEY_type(public_key->type);
+         type_str = key_type == EVP_PKEY_RSA ? "RSA" :
+                    key_type == EVP_PKEY_DSA ? "DSA" :
+                    key_type == EVP_PKEY_DH ? "DH" :
+                    key_type == EVP_PKEY_EC ? "EC" : "???";
+         key_bits = EVP_PKEY_bits(public_key);
+         X509_NAME_oneline(X509_get_subject_name(cert), buf, buflen);
+         buf[buflen-1] = '\0';
+         MSG("%d-bit %s: %s\n", key_bits, type_str, buf);
+         EVP_PKEY_free(public_key);
+
+         if (key_type == EVP_PKEY_RSA && key_bits <= 1024) {
+            /* TODO: Gather warnings into one popup. */
+            MSG_WARN("In 2014/5, browsers have been deprecating 1024-bit RSA "
+                     "keys.\n");
+         }
+      }
+
+      X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
+      buf[buflen-1] = '\0';
+      MSG("root: %s\n", buf);
+   }
+}
+
 /*
  * Connect, set a callback if it's still not completed. If completed, check
  * the certificate and report back to http.
@@ -999,12 +1039,14 @@ static void Tls_connect(int fd, int connkey)
       Server_t *srv = dList_find_custom(servers, conn->url, Tls_servers_cmp);
 
       if (srv->cert_status == CERT_STATUS_RECEIVING) {
-         /* Making first connection with the server */
-         const char *version = SSL_get_version(conn->ssl);
-         const SSL_CIPHER *cipher = SSL_get_current_cipher(conn->ssl);
+         /* Making first connection with the server. Show some information. */
+         SSL *ssl = conn->ssl;
+         const char *version = SSL_get_version(ssl);
+         const SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
 
          MSG("%s: %s, cipher %s\n", URL_AUTHORITY(conn->url), version,
              SSL_CIPHER_get_name(cipher));
+         Tls_print_cert_chain(ssl);
       }
 
       if (srv->cert_status == CERT_STATUS_USER_ACCEPTED ||
