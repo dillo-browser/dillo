@@ -185,8 +185,11 @@ static int Tls_conn_new(int fd, const DilloUrl *url, SSL *ssl)
 static void Tls_info_cb(const SSL *ssl, int where, int ret)
 {
    if (where & SSL_CB_ALERT) {
-      MSG("TLS ALERT on %s: %s\n", (where & SSL_CB_READ) ? "read" : "write",
-          SSL_alert_desc_string_long(ret));
+      const char *str = SSL_alert_desc_string_long(ret);
+
+      if (strcmp(str, "close notify"))
+         MSG("TLS ALERT on %s: %s\n", (where & SSL_CB_READ) ? "read" : "write",
+             str);
    }
 }
 
