@@ -857,17 +857,6 @@ static void Cache_finish_msg(CacheEntry_t *entry)
       MSG("Expected size: %d, Transfer size: %d\n",
           entry->ExpectedSize, entry->TransferSize);
    }
-   if (!entry->TransferSize && !(entry->Flags & CA_Redirect) &&
-       (entry->Flags & WEB_RootUrl)) {
-      char *eol = strchr(entry->Header->str, '\n');
-      if (eol) {
-         char *status_line = dStrndup(entry->Header->str,
-                                      eol - entry->Header->str);
-         MSG_HTTP("Body of %s was empty. Server sent status: %s\n",
-                  URL_STR_(entry->Url), status_line);
-         dFree(status_line);
-      }
-   }
    entry->Flags |= CA_GotData;
    entry->Flags &= ~CA_Stopped;          /* it may catch up! */
    if (entry->TransferDecoder) {
