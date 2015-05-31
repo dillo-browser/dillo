@@ -940,7 +940,7 @@ static void Tls_print_cert_chain(SSL *ssl)
       const uint_t buflen = 4096;
       char buf[buflen];
       int i, n = sk_X509_num(sk);
-      X509 *cert;
+      X509 *cert = NULL;
       EVP_PKEY *public_key;
       int key_type, key_bits;
       const char *type_str;
@@ -966,9 +966,11 @@ static void Tls_print_cert_chain(SSL *ssl)
          }
       }
 
-      X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
-      buf[buflen-1] = '\0';
-      MSG("root: %s\n", buf);
+      if (cert) {
+         X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
+         buf[buflen-1] = '\0';
+         MSG("root: %s\n", buf);
+      }
    }
 }
 
