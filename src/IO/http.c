@@ -76,6 +76,7 @@ typedef struct {
   bool_t https;
 
   int active_conns;
+  int running_the_queue;
   Dlist *queue;
 } Server_t;
 
@@ -244,13 +245,19 @@ static void Http_connect_queued_sockets(Server_t *srv)
    SocketData_t *sd;
    int i;
 
+   srv->running_the_queue++;
+
    for (i = 0;
         (i < dList_length(srv->queue) &&
          srv->active_conns < prefs.http_max_conns);
         i++) {
       sd = dList_nth_data(srv->queue, i);
 
-      if (!(sd->flags & HTTP_SOCKET_TO_BE_FREED)) {
+      if (sd->flags & HTTP_SOCKET_TO_BE_FREED) {
+         dList_remove(srv->queue, sd);
+         dFree(sd);
+         i--;
+      } else {
          int connect_ready = TLS_CONNECT_READY;
 
          if (sd->flags & HTTP_SOCKET_TLS)
@@ -266,15 +273,15 @@ static void Http_connect_queued_sockets(Server_t *srv)
             Http_connect_socket(sd->Info);
          }
       }
-      if (sd->flags & HTTP_SOCKET_TO_BE_FREED) {
-         dList_remove(srv->queue, sd);
-         dFree(sd);
-         i--;
-      }
    }
 
    _MSG("Queue http%s://%s:%u len %d\n", srv->https ? "s" : "", srv->host,
         srv->port, dList_length(srv->queue));
+
+   if (--srv->running_the_queue == 0) {
+      if (srv->active_conns == 0)
+         Http_server_remove(srv);
+   }
 }
 
 /*
@@ -303,8 +310,6 @@ static void Http_socket_free(int SKey)
                                             (S->flags & HTTP_SOCKET_TLS));
             srv->active_conns--;
             Http_connect_queued_sockets(srv);
-            if (srv->active_conns == 0)
-               Http_server_remove(srv);
          }
          a_Url_free(S->url);
          dFree(S);
@@ -980,6 +985,7 @@ static Server_t *Http_server_get(const char *host, uint_t port, bool_t https)
 
    srv = dNew0(Server_t, 1);
    srv->queue = dList_new(10);
+   srv->running_the_queue = 0;
    srv->host = dStrdup(host);
    srv->port = port;
    srv->https = https;
@@ -990,11 +996,16 @@ static Server_t *Http_server_get(const char *host, uint_t port, bool_t https)
 
 static void Http_server_remove(Server_t *srv)
 {
-    assert(dList_length(srv->queue) == 0);
-    dList_free(srv->queue);
-    dList_remove_fast(servers, srv);
-    dFree(srv->host);
-    dFree(srv);
+   SocketData_t *sd;
+
+   while ((sd = dList_nth_data(srv->queue, 0))) {
+      dList_remove_fast(srv->queue, sd);
+      dFree(sd);
+   }
+   dList_free(srv->queue);
+   dList_remove_fast(servers, srv);
+   dFree(srv->host);
+   dFree(srv);
 }
 
 static void Http_servers_remove_all()
