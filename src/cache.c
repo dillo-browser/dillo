@@ -751,6 +751,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
 
             if (!web->requester ||
                 a_Url_same_organization(entry->Url, web->requester)) {
+               /* If cookies are third party, don't even consider them. */
                char *server_date = Cache_parse_field(header, "Date");
 
                a_Cookies_set(Cookies, entry->Url, server_date);
@@ -759,10 +760,6 @@ static void Cache_parse_header(CacheEntry_t *entry)
             }
          }
       }
-      if (i >= dList_length(ClientQueue)) {
-         MSG("Cache: cookies not accepted from '%s'\n", URL_STR(entry->Url));
-      }
-
       for (i = 0; (data = dList_nth_data(Cookies, i)); ++i)
          dFree(data);
       dList_free(Cookies);
