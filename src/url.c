@@ -213,7 +213,6 @@ void a_Url_free(DilloUrl *url)
  * Resolve the URL as RFC3986 suggests.
  */
 static Dstr *Url_resolve_relative(const char *RelStr,
-                                  DilloUrl *BaseUrlPar,
                                   const char *BaseStr)
 {
    char *p, *s, *e;
@@ -224,9 +223,7 @@ static Dstr *Url_resolve_relative(const char *RelStr,
    /* parse relative URL */
    RelUrl = Url_object_new(RelStr);
 
-   if (BaseUrlPar) {
-      BaseUrl = BaseUrlPar;
-   } else if (RelUrl->scheme == NULL) {
+   if (RelUrl->scheme == NULL) {
       /* only required when there's no <scheme> in RelStr */
       BaseUrl = Url_object_new(BaseStr);
    }
@@ -336,8 +333,7 @@ static Dstr *Url_resolve_relative(const char *RelStr,
 done:
    dStr_free(Path, TRUE);
    a_Url_free(RelUrl);
-   if (BaseUrl != BaseUrlPar)
-      a_Url_free(BaseUrl);
+   a_Url_free(BaseUrl);
    return SolvedUrl;
 }
 
@@ -406,7 +402,7 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
    }
 
    /* Resolve the URL */
-   SolvedUrl = Url_resolve_relative(urlstr, NULL, base_url);
+   SolvedUrl = Url_resolve_relative(urlstr, base_url);
    _MSG("SolvedUrl = %s\n", SolvedUrl->str);
 
    /* Fill url data */
