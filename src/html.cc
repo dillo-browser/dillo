@@ -2514,8 +2514,6 @@ static void
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "href"))) {
          url = a_Html_url_new(html, attrbuf, NULL, 0);
          dReturn_if_fail ( url != NULL );
-         if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "alt")))
-            a_Url_set_alt(url, attrbuf);
 
          link = Html_set_new_link(html, &url);
       }

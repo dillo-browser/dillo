@@ -204,7 +204,6 @@ void a_Url_free(DilloUrl *url)
          dFree((char *)url->hostname);
       dFree((char *)url->buffer);
       dStr_free(url->data, 1);
-      dFree((char *)url->alt);
       dFree(url);
    }
 }
@@ -352,7 +351,6 @@ done:
  *     port               = 8080
  *     flags              = URL_Get
  *     data               = Dstr * ("")
- *     alt                = NULL
  *     ismap_url_len      = 0
  *  }
  *
@@ -431,7 +429,6 @@ DilloUrl* a_Url_dup(const DilloUrl *ori)
    url->url_string           = dStr_new(URL_STR(ori));
    url->port                 = ori->port;
    url->flags                = ori->flags;
-   url->alt                  = dStrdup(ori->alt);
    url->ismap_url_len        = ori->ismap_url_len;
    url->illegal_chars        = ori->illegal_chars;
    url->illegal_chars_spc    = ori->illegal_chars_spc;
@@ -487,17 +484,6 @@ void a_Url_set_data(DilloUrl *u, Dstr **data)
       dStr_free(u->data, 1);
       u->data = *data;
       *data = NULL;
-   }
-}
-
-/*
- * Set DilloUrl alt (alternate text to the URL. Used by image maps)
- */
-void a_Url_set_alt(DilloUrl *u, const char *alt)
-{
-   if (u) {
-      dFree((char *)u->alt);
-      u->alt = dStrdup(alt);
    }
 }
 
