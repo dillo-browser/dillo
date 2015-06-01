@@ -210,7 +210,7 @@ static void Tls_load_certificates()
     */
    uint_t u;
    char *userpath;
-   static const char *ca_files[] = {
+   static const char *const ca_files[] = {
       "/etc/ssl/certs/ca-certificates.crt",
       "/etc/pki/tls/certs/ca-bundle.crt",
       "/usr/share/ssl/certs/ca-bundle.crt",
@@ -219,7 +219,7 @@ static void Tls_load_certificates()
       CA_CERTS_FILE
    };
 
-   static const char *ca_paths[] = {
+   static const char *const ca_paths[] = {
       "/etc/ssl/certs/",
       CA_CERTS_DIR
    };
