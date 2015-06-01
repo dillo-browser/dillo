@@ -11,8 +11,8 @@ EXTRA_DIST = \
 	dw-widget-sizes.doc \
 	dw-changes.doc \
 	dw-images-and-backgrounds.doc \
-	dw-dw-out-of-flow.doc \
-	dw-dw-out-of-flow-2.doc \
+	dw-out-of-flow.doc \
+	dw-out-of-flow-2.doc \
 	fltk-problems.doc \
 	rounding-errors.doc \
 	uml-legend.doc \
@@ -38,9 +38,7 @@ EXTRA_DIST = \
 	HtmlParser.txt \
 	IO.txt \
 	Images.txt \
-	Imgbuf.txt \
 	NC_design.txt \
-	Selection.txt \
 	Dpid.txt \
 	CCCwork.txt \
 	README \
