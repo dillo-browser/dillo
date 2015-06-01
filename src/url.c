@@ -498,7 +498,6 @@ void a_Url_set_ismap_coords(DilloUrl *u, char *coord_str)
    if (!u->ismap_url_len) {
       /* Save base-url length (without coords) */
       u->ismap_url_len = URL_STR_(u) ? u->url_string->len : 0;
-      a_Url_set_flags(u, URL_FLAGS(u) | URL_Ismap);
    }
    if (u->url_string) {
       dStr_truncate(u->url_string, u->ismap_url_len);
