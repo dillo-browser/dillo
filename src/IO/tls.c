@@ -341,16 +341,30 @@ static int Tls_save_certificate_home(X509 * cert)
 }
 
 /*
- * Test whether a URL corresponds to a server.
+ * Ordered comparison of servers.
  */
 static int Tls_servers_cmp(const void *v1, const void *v2)
 {
-   Server_t *s = (Server_t *)v1;
-   const DilloUrl *url = (const DilloUrl *)v2;
-   const char *host = URL_HOST(url);
-   int port = URL_PORT(url);
+   const Server_t *s1 = (const Server_t *)v1, *s2 = (const Server_t *)v2;
+   int cmp = dStrAsciiCasecmp(s1->hostname, s2->hostname);
 
-   return (dStrAsciiCasecmp(s->hostname, host) || (port != s->port));
+   if (!cmp)
+      cmp = s1->port - s2->port;
+   return cmp;
+}
+/*
+ * Ordered comparison of server with URL.
+ */
+static int Tls_servers_by_url_cmp(const void *v1, const void *v2)
+{
+   const Server_t *s = (const Server_t *)v1;
+   const DilloUrl *url = (const DilloUrl *)v2;
+
+   int cmp = dStrAsciiCasecmp(s->hostname, URL_HOST(url));
+
+   if (!cmp)
+      cmp = s->port - URL_PORT(url);
+   return cmp;
 }
 
 /*
@@ -358,41 +372,31 @@ static int Tls_servers_cmp(const void *v1, const void *v2)
  * Once we have the certificate, know whether we like it -- and whether the
  * user accepts it -- HTTP can run through queued sockets as normal.
  *
- * Return: 1 means yes, 0 means not yet, -1 means never.
- * TODO: Something clearer or different.
+ * Return: TLS_CONNECT_READY or TLS_CONNECT_NOT_YET or TLS_CONNECT_NEVER.
  */
 int a_Tls_connect_ready(const DilloUrl *url)
 {
    Server_t *s;
-   int i, len;
-   const char *host = URL_HOST(url);
-   const int port = URL_PORT(url);
    int ret = TLS_CONNECT_READY;
 
    dReturn_val_if_fail(ssl_context, TLS_CONNECT_NEVER);
 
-   len = dList_length(servers);
+   if ((s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp))) {
+      if (s->cert_status == CERT_STATUS_RECEIVING)
+         ret = TLS_CONNECT_NOT_YET;
+      else if (s->cert_status == CERT_STATUS_BAD)
+         ret = TLS_CONNECT_NEVER;
 
-   for (i = 0; i < len; i++) {
-      s = dList_nth_data(servers, i);
+      if (s->cert_status == CERT_STATUS_NONE)
+         s->cert_status = CERT_STATUS_RECEIVING;
+   } else {
+      s = dNew(Server_t, 1);
 
-      if (!dStrAsciiCasecmp(s->hostname, host) && (port == s->port)) {
-         if (s->cert_status == CERT_STATUS_RECEIVING)
-            ret = TLS_CONNECT_NOT_YET;
-         else if (s->cert_status == CERT_STATUS_BAD)
-            ret = TLS_CONNECT_NEVER;
-
-         if (s->cert_status == CERT_STATUS_NONE)
-            s->cert_status = CERT_STATUS_RECEIVING;
-         return ret;
-      }
+      s->hostname = dStrdup(URL_HOST(url));
+      s->port = URL_PORT(url);
+      s->cert_status = CERT_STATUS_RECEIVING;
+      dList_insert_sorted(servers, s, Tls_servers_cmp);
    }
-   s = dNew(Server_t, 1);
-
-   s->port = port;
-   s->hostname = dStrdup(host);
-   s->cert_status = CERT_STATUS_RECEIVING;
-   dList_append(servers, s);
    return ret;
 }
 
@@ -402,7 +406,7 @@ int a_Tls_connect_ready(const DilloUrl *url)
  */
 static int Tls_user_said_no(const DilloUrl *url)
 {
-   Server_t *s = dList_find_custom(servers, url, Tls_servers_cmp);
+   Server_t *s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp);
 
    if (!s)
       return FALSE;
@@ -902,7 +906,7 @@ static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
 void a_Tls_reset_server_state(const DilloUrl *url)
 {
    if (servers) {
-      Server_t *s = dList_find_custom(servers, url, Tls_servers_cmp);
+      Server_t *s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp);
 
       if (s && s->cert_status == CERT_STATUS_RECEIVING)
          s->cert_status = CERT_STATUS_NONE;
@@ -1038,7 +1042,8 @@ static void Tls_connect(int fd, int connkey)
          MSG("SSL_get_error() returned %d on a connect.\n", err1_ret);
       }
    } else {
-      Server_t *srv = dList_find_custom(servers, conn->url, Tls_servers_cmp);
+      Server_t *srv = dList_find_sorted(servers, conn->url,
+                                        Tls_servers_by_url_cmp);
 
       if (srv->cert_status == CERT_STATUS_RECEIVING) {
          /* Making first connection with the server. Show some information. */
