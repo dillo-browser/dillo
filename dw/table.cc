@@ -1209,24 +1209,6 @@ void Table::apportionRowSpan ()
 
 
 /**
- * \brief Fills dw::Table::colExtremes, only if recalculation is necessary.
- *
- * \bug Some parts are missing.
- */
-void Table::_unused_calcColumnExtremes ()
-{
-   // This method is actually not used. Consider removal.
-
-   DBG_OBJ_ENTER0 ("resize", 0, "calcColumnExtremes");
-
-   if (extremesChanged () || extremesQueued ())
-      forceCalcColumnExtremes ();
-
-   DBG_OBJ_LEAVE ();
-}
-
-
-/**
  * \brief Fills dw::Table::colExtremes in all cases.
  */
 void Table::forceCalcColumnExtremes ()
