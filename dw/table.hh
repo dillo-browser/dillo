@@ -43,29 +43,26 @@ namespace dw {
  *    sizeRequestImpl [color="#0000ff", URL="\ref dw::Table::sizeRequestImpl"];
  *    sizeAllocateImpl [color="#0000ff",
  *                      URL="\ref dw::Table::sizeAllocateImpl"];
+ *    getExtremes [color="#0000ff", URL="\ref dw::core::Widget::getExtremes"];
  *    getExtremesImpl [color="#0000ff", URL="\ref dw::Table::getExtremesImpl"];
  *
- *    subgraph cluster_sizes {
- *       style="dashed"; color="#8080c0";
- *       calcCellSizes [URL="\ref dw::Table::calcCellSizes"];
- *       forceCalcCellSizes [URL="\ref dw::Table::forceCalcCellSizes"];
- *    }
- *
- *    subgraph cluster_extremes {
- *       style="dashed"; color="#8080c0";
- *       calcColumnExtremes [URL="\ref dw::Table::calcColumnExtremes"];
- *       forceCalcColumnExtremes[URL="\ref dw::Table::forceCalcColumnExtremes"];
- *    }
+ *    calcCellSizes [label="calcCellSizes (calcHeights = true)",
+ *                   URL="\ref dw::Table::calcCellSizes"];
+ *    forceCalcCellSizes [label="forceCalcCellSizes (calcHeights = true)",
+ *                        URL="\ref dw::Table::forceCalcCellSizes"];
+ *    actuallyCalcCellSizes[label="actuallyCalcCellSizes (calcHeights = true)",
+ *                          URL="\ref dw::Table::actuallyCalcCellSizes"];
+ *    forceCalcColumnExtremes[URL="\ref dw::Table::forceCalcColumnExtremes"];
  *
  *    sizeRequestImpl -> forceCalcCellSizes [label="[B]"];
  *    sizeAllocateImpl -> calcCellSizes [label="[A]"];
  *    getExtremesImpl -> forceCalcColumnExtremes [label="[B]"];
  *
- *    forceCalcCellSizes -> calcColumnExtremes;
+ *    forceCalcCellSizes -> actuallyCalcCellSizes;
+ *    actuallyCalcCellSizes-> getExtremes;
+ *    getExtremes -> getExtremesImpl [style="dashed", label="[C]"];
  *
  *    calcCellSizes -> forceCalcCellSizes [style="dashed", label="[C]"];
- *    calcColumnExtremes -> forceCalcColumnExtremes [style="dashed",
- *                                                   label="[C]"];
  * }
  * \enddot
  *
@@ -78,6 +75,12 @@ namespace dw {
  * [C] Whether this function is called, depends on NEEDS_RESIZE /
  * RESIZE_QUEUED / EXTREMES_CHANGED / EXTREMES_QUEUED.
  *
+ * **TODO:**
+ *
+ * - Are <tt>*[cC]alcCellSizes (calcHeights = *false*)</tt> not
+ *   necessary anymore?
+ * - Calculating available sizes (Table::getAvailWidthOfChild) should
+ *   be documented in this diagram, too.
  *
  * <h4>Apportionment</h4>
  *

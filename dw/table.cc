@@ -831,7 +831,7 @@ void Table::actuallyCalcCellSizes (bool calcHeights)
    int childHeight;
    core::Extremes extremes;
 
-   // Will also call calcColumnExtremes(), when needed.
+   // Will also call forceCalcColumnExtremes(), when needed.
    getExtremes (&extremes);
 
    int availWidth = getAvailWidth (true);
