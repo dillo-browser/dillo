@@ -24,10 +24,10 @@ AC_ARG_ENABLE(gprof,  [  --enable-gprof          Try to compile and run with pro
                     , enable_gprof=no)
 AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Insure++],
                     , enable_insure=no)
-AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable ssl, https (ALPHA CODE)],
+AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable SSL/HTTPS/TLS (EXPERIMENTAL CODE)],
                     , enable_ssl=no)
-AC_ARG_WITH(ca-certs-file, [  --with-ca-certs-file=FILE  Specify where to find a bundle of trusted CA certificates for SSL], CA_CERTS_FILE=$withval)
-AC_ARG_WITH(ca-certs-dir, [  --with-ca-certs-dir=DIR     Specify where to find a directory containing trusted CA certificates for SSL], CA_CERTS_DIR=$withval)
+AC_ARG_WITH(ca-certs-file, [  --with-ca-certs-file=FILE  Specify where to find a bundle of trusted CA certificates for TLS], CA_CERTS_FILE=$withval)
+AC_ARG_WITH(ca-certs-dir, [  --with-ca-certs-dir=DIR     Specify where to find a directory containing trusted CA certificates for TLS], CA_CERTS_DIR=$withval)
 AC_ARG_ENABLE(ipv6,   [  --enable-ipv6           Build with support for IPv6], , )
 AC_ARG_ENABLE(cookies,[  --disable-cookies       Don't compile support for cookies],
                     , enable_cookies=yes)
@@ -221,7 +221,10 @@ if test "x$enable_png" = "xyes"; then
 
 dnl Check if the user hasn't set the variable $PNG_CONFIG
   if test -z "$PNG_CONFIG"; then
-    PNG_CONFIG=`which libpng14-config`
+    PNG_CONFIG=`which libpng16-config`
+    if test -z "$PNG_CONFIG"; then
+      PNG_CONFIG=`which libpng14-config`
+    fi
     if test -z "$PNG_CONFIG"; then
       PNG_CONFIG=`which libpng12-config`
     fi
@@ -247,7 +250,7 @@ dnl For debugging and to be user friendly
     AC_MSG_CHECKING([for libpng version])
     png_version=`$PNG_CONFIG --version`
     case $png_version in
-      1.[[024]].*) AC_MSG_RESULT([$png_version]) ;;
+      1.[[0246]].*) AC_MSG_RESULT([$png_version]) ;;
                 *) AC_MSG_RESULT([$png_version (unrecognised version)]) ;;
     esac
 
@@ -287,7 +290,7 @@ if test "x$enable_gif" = "xyes"; then
 fi
 
 dnl --------------------------
-dnl  Test for support for SSL
+dnl  Test for support for SSL/TLS
 dnl --------------------------
 dnl
 if test "x$enable_ssl" = "xyes"; then
@@ -301,14 +304,14 @@ if test "x$enable_ssl" = "xyes"; then
 
   if test "x$ssl_ok" = "xyes"; then
     LIBSSL_LIBS="-lcrypto -lssl"
-    AC_MSG_WARN([*** Enabling ssl support. THIS IS ALPHA CODE!***])
+    AC_MSG_WARN([*** Enabling SSL/HTTPS/TLS support. THIS IS EXPERIMENTAL CODE ***])
   else
-    AC_MSG_WARN([*** No libssl found. Disabling ssl support.***])
+    AC_MSG_WARN([*** No libssl found. Disabling SSL/HTTPS/TLS support. ***])
   fi
 fi
 
 if test "x$ssl_ok" = "xyes"; then
-  AC_DEFINE([ENABLE_SSL], [1], [Enable SSL support])
+  AC_DEFINE([ENABLE_SSL], [1], [Enable SSL/HTTPS/TLS support])
 fi
 
 dnl --------------------------------------------------------------

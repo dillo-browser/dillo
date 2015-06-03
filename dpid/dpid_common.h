@@ -18,7 +18,6 @@
  */
 #define _MSG(...)
 #define MSG(...)  printf("[dpid]: " __VA_ARGS__)
-#define _MSG_ERR(...)
 #define MSG_ERR(...)  fprintf(stderr, "[dpid]: " __VA_ARGS__)
 
 #define dotDILLO_DPI ".dillo/dpi"

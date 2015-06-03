@@ -1,5 +1,5 @@
 /*
- * File: ssl.c
+ * File: tls.c
  *
  * Copyright 2004 Garrett Kajmowicz <gkajmowi@tbaytel.net>
  * (for some bits derived from the https dpi, e.g., certificate handling)
@@ -33,9 +33,9 @@
 
 #ifndef ENABLE_SSL
 
-void a_Ssl_init()
+void a_Tls_init()
 {
-   MSG("SSL: Disabled at compilation time.\n");
+   MSG("TLS: Disabled at compilation time.\n");
 }
 
 #else
@@ -52,7 +52,7 @@ void a_Ssl_init()
 #include "../dialog.hh"
 #include "../klist.h"
 #include "iowatch.hh"
-#include "ssl.h"
+#include "tls.h"
 #include "Url.h"
 
 #include <openssl/ssl.h>
@@ -78,7 +78,7 @@ typedef struct {
 } FdMapEntry_t;
 
 /*
- * Data type for SSL connection information
+ * Data type for TLS connection information
  */
 typedef struct {
    int fd;
@@ -87,22 +87,22 @@ typedef struct {
    bool_t connecting;
 } Conn_t;
 
-/* List of active SSL connections */
+/* List of active TLS connections */
 static Klist_t *conn_list = NULL;
 
 /*
- * If ssl_context is still NULL, this corresponds to SSL being disabled.
+ * If ssl_context is still NULL, this corresponds to TLS being disabled.
  */
 static SSL_CTX *ssl_context;
 static Dlist *servers;
 static Dlist *fd_map;
 
-static void Ssl_connect_cb(int fd, void *vssl);
+static void Tls_connect_cb(int fd, void *vconnkey);
 
 /*
  * Compare by FD.
  */
-static int Ssl_fd_map_cmp(const void *v1, const void *v2)
+static int Tls_fd_map_cmp(const void *v1, const void *v2)
 {
    int fd = VOIDP2INT(v2);
    const FdMapEntry_t *e = v1;
@@ -110,14 +110,14 @@ static int Ssl_fd_map_cmp(const void *v1, const void *v2)
    return (fd != e->fd);
 }
 
-static void Ssl_fd_map_add_entry(int fd, int connkey)
+static void Tls_fd_map_add_entry(int fd, int connkey)
 {
    FdMapEntry_t *e = dNew0(FdMapEntry_t, 1);
    e->fd = fd;
    e->connkey = connkey;
 
-   if (dList_find_custom(fd_map, INT2VOIDP(e->fd), Ssl_fd_map_cmp)) {
-      MSG_ERR("SSL FD ENTRY ALREADY FOUND FOR %d\n", e->fd);
+   if (dList_find_custom(fd_map, INT2VOIDP(e->fd), Tls_fd_map_cmp)) {
+      MSG_ERR("TLS FD ENTRY ALREADY FOUND FOR %d\n", e->fd);
       assert(0);
    }
 
@@ -128,30 +128,30 @@ static void Ssl_fd_map_add_entry(int fd, int connkey)
 /*
  * Remove and free entry from fd_map.
  */
-static void Ssl_fd_map_remove_entry(int fd)
+static void Tls_fd_map_remove_entry(int fd)
 {
-   void *data = dList_find_custom(fd_map, INT2VOIDP(fd), Ssl_fd_map_cmp);
+   void *data = dList_find_custom(fd_map, INT2VOIDP(fd), Tls_fd_map_cmp);
 
 //MSG("REMOVE ENTRY %d\n", fd);
    if (data) {
       dList_remove_fast(fd_map, data);
       dFree(data);
    } else {
-      MSG("SSL FD ENTRY NOT FOUND FOR %d\n", fd);
+      MSG("TLS FD ENTRY NOT FOUND FOR %d\n", fd);
    }
 }
 
 /*
- * Return SSL connection information for a given file
- * descriptor, or NULL if no SSL connection was found.
+ * Return TLS connection information for a given file
+ * descriptor, or NULL if no TLS connection was found.
  */
-void *a_Ssl_connection(int fd)
+void *a_Tls_connection(int fd)
 {
    Conn_t *conn;
 
    if (fd_map) {
       FdMapEntry_t *fme = dList_find_custom(fd_map, INT2VOIDP(fd),
-                                            Ssl_fd_map_cmp);
+                                            Tls_fd_map_cmp);
 
       if (fme && (conn = a_Klist_get_data(conn_list, fme->connkey)))
          return conn;
@@ -160,9 +160,9 @@ void *a_Ssl_connection(int fd)
 }
 
 /*
- * Add a new SSL connection information node.
+ * Add a new TLS connection information node.
  */
-static int Ssl_conn_new(int fd, const DilloUrl *url, SSL *ssl)
+static int Tls_conn_new(int fd, const DilloUrl *url, SSL *ssl)
 {
    int key;
 
@@ -174,19 +174,22 @@ static int Ssl_conn_new(int fd, const DilloUrl *url, SSL *ssl)
 
    key = a_Klist_insert(&conn_list, conn);
 
-   Ssl_fd_map_add_entry(fd, key);
+   Tls_fd_map_add_entry(fd, key);
 
    return key;
 }
 
 /*
- * Let's monitor for ssl alerts.
+ * Let's monitor for TLS alerts.
  */
-static void Ssl_info_cb(const SSL *ssl, int where, int ret)
+static void Tls_info_cb(const SSL *ssl, int where, int ret)
 {
    if (where & SSL_CB_ALERT) {
-      MSG("SSL ALERT on %s: %s\n", (where & SSL_CB_READ) ? "read" : "write",
-          SSL_alert_desc_string_long(ret));
+      const char *str = SSL_alert_desc_string_long(ret);
+
+      if (strcmp(str, "close notify"))
+         MSG("TLS ALERT on %s: %s\n", (where & SSL_CB_READ) ? "read" : "write",
+             str);
    }
 }
 
@@ -197,7 +200,7 @@ static void Ssl_info_cb(const SSL *ssl, int where, int ret)
  * abysmal openssl documentation, this was worked out from reading discussion
  * on the web and then reading openssl source to see what it normally does.
  */
-static void Ssl_load_certificates()
+static void Tls_load_certificates()
 {
    /* curl-7.37.1 says that the following bundle locations are used on "Debian
     * systems", "Redhat and Mandriva", "old(er) Redhat", "FreeBSD", and
@@ -207,7 +210,7 @@ static void Ssl_load_certificates()
     */
    uint_t u;
    char *userpath;
-   static const char *ca_files[] = {
+   static const char *const ca_files[] = {
       "/etc/ssl/certs/ca-certificates.crt",
       "/etc/pki/tls/certs/ca-bundle.crt",
       "/usr/share/ssl/certs/ca-bundle.crt",
@@ -216,7 +219,7 @@ static void Ssl_load_certificates()
       CA_CERTS_FILE
    };
 
-   static const char *ca_paths[] = {
+   static const char *const ca_paths[] = {
       "/etc/ssl/certs/",
       CA_CERTS_DIR
    };
@@ -247,7 +250,7 @@ static void Ssl_load_certificates()
 /*
  * Initialize the OpenSSL library.
  */
-void a_Ssl_init(void)
+void a_Tls_init(void)
 {
    SSL_library_init();
    SSL_load_error_strings();
@@ -266,7 +269,7 @@ void a_Ssl_init(void)
       return;
    }
 
-   SSL_CTX_set_info_callback(ssl_context, Ssl_info_cb);
+   SSL_CTX_set_info_callback(ssl_context, Tls_info_cb);
 
    /* Don't want: eNULL, which has no encryption; aNULL, which has no
     * authentication; LOW, which as of 2014 use 64 or 56-bit encryption;
@@ -285,7 +288,7 @@ void a_Ssl_init(void)
    /* This lets us deal with self-signed certificates */
    SSL_CTX_set_verify(ssl_context, SSL_VERIFY_NONE, NULL);
 
-   Ssl_load_certificates();
+   Tls_load_certificates();
 
    fd_map = dList_new(20);
    servers = dList_new(8);
@@ -295,7 +298,7 @@ void a_Ssl_init(void)
  * Save certificate with a hashed filename.
  * Return: 0 on success, 1 on failure.
  */
-static int Ssl_save_certificate_home(X509 * cert)
+static int Tls_save_certificate_home(X509 * cert)
 {
    char buf[4096];
 
@@ -338,16 +341,30 @@ static int Ssl_save_certificate_home(X509 * cert)
 }
 
 /*
- * Test whether a URL corresponds to a server.
+ * Ordered comparison of servers.
  */
-static int Ssl_servers_cmp(const void *v1, const void *v2)
+static int Tls_servers_cmp(const void *v1, const void *v2)
 {
-   Server_t *s = (Server_t *)v1;
-   const DilloUrl *url = (const DilloUrl *)v2;
-   const char *host = URL_HOST(url);
-   int port = URL_PORT(url);
+   const Server_t *s1 = (const Server_t *)v1, *s2 = (const Server_t *)v2;
+   int cmp = dStrAsciiCasecmp(s1->hostname, s2->hostname);
 
-   return (dStrAsciiCasecmp(s->hostname, host) || (port != s->port));
+   if (!cmp)
+      cmp = s1->port - s2->port;
+   return cmp;
+}
+/*
+ * Ordered comparison of server with URL.
+ */
+static int Tls_servers_by_url_cmp(const void *v1, const void *v2)
+{
+   const Server_t *s = (const Server_t *)v1;
+   const DilloUrl *url = (const DilloUrl *)v2;
+
+   int cmp = dStrAsciiCasecmp(s->hostname, URL_HOST(url));
+
+   if (!cmp)
+      cmp = s->port - URL_PORT(url);
+   return cmp;
 }
 
 /*
@@ -355,41 +372,31 @@ static int Ssl_servers_cmp(const void *v1, const void *v2)
  * Once we have the certificate, know whether we like it -- and whether the
  * user accepts it -- HTTP can run through queued sockets as normal.
  *
- * Return: 1 means yes, 0 means not yet, -1 means never.
- * TODO: Something clearer or different.
+ * Return: TLS_CONNECT_READY or TLS_CONNECT_NOT_YET or TLS_CONNECT_NEVER.
  */
-int a_Ssl_connect_ready(const DilloUrl *url)
+int a_Tls_connect_ready(const DilloUrl *url)
 {
    Server_t *s;
-   int i, len;
-   const char *host = URL_HOST(url);
-   const int port = URL_PORT(url);
-   int ret = SSL_CONNECT_READY;
+   int ret = TLS_CONNECT_READY;
 
-   dReturn_val_if_fail(ssl_context, SSL_CONNECT_NEVER);
+   dReturn_val_if_fail(ssl_context, TLS_CONNECT_NEVER);
 
-   len = dList_length(servers);
+   if ((s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp))) {
+      if (s->cert_status == CERT_STATUS_RECEIVING)
+         ret = TLS_CONNECT_NOT_YET;
+      else if (s->cert_status == CERT_STATUS_BAD)
+         ret = TLS_CONNECT_NEVER;
 
-   for (i = 0; i < len; i++) {
-      s = dList_nth_data(servers, i);
+      if (s->cert_status == CERT_STATUS_NONE)
+         s->cert_status = CERT_STATUS_RECEIVING;
+   } else {
+      s = dNew(Server_t, 1);
 
-      if (!dStrAsciiCasecmp(s->hostname, host) && (port == s->port)) {
-         if (s->cert_status == CERT_STATUS_RECEIVING)
-            ret = SSL_CONNECT_NOT_YET;
-         else if (s->cert_status == CERT_STATUS_BAD)
-            ret = SSL_CONNECT_NEVER;
-
-         if (s->cert_status == CERT_STATUS_NONE)
-            s->cert_status = CERT_STATUS_RECEIVING;
-         return ret;
-      }
+      s->hostname = dStrdup(URL_HOST(url));
+      s->port = URL_PORT(url);
+      s->cert_status = CERT_STATUS_RECEIVING;
+      dList_insert_sorted(servers, s, Tls_servers_cmp);
    }
-   s = dNew(Server_t, 1);
-
-   s->port = port;
-   s->hostname = dStrdup(host);
-   s->cert_status = CERT_STATUS_RECEIVING;
-   dList_append(servers, s);
    return ret;
 }
 
@@ -397,28 +404,14 @@ int a_Ssl_connect_ready(const DilloUrl *url)
  * Did we find problems with the certificate, and did the user proceed to
  * reject the connection?
  */
-static int Ssl_user_said_no(const DilloUrl *url)
+static int Tls_user_said_no(const DilloUrl *url)
 {
-   Server_t *s = dList_find_custom(servers, url, Ssl_servers_cmp);
+   Server_t *s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp);
 
    if (!s)
       return FALSE;
 
    return s->cert_status == CERT_STATUS_BAD;
-}
-
-/*
- * Did we find problems with the certificate, and did the user proceed to
- * accept the connection anyway?
- */
-static int Ssl_user_said_yes(const DilloUrl *url)
-{
-   Server_t *s = dList_find_custom(servers, url, Ssl_servers_cmp);
-
-   if (!s)
-      return FALSE;
-
-   return s->cert_status == CERT_STATUS_USER_ACCEPTED;
 }
 
 /******************** BEGINNING OF STUFF DERIVED FROM wget-1.16.3 */
@@ -466,13 +459,18 @@ static bool_t pattern_match (const char *pattern, const char *string)
   return *n == '\0';
 }
 
-static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
+/*
+ * Check that the certificate corresponds to the site it's presented for.
+ *
+ * Return TRUE if the hostname matched or the user indicated acceptance.
+ * FALSE on failure.
+ */
+static bool_t Tls_check_cert_hostname(X509 *cert, const char *host,
                                       int *choice)
 {
-   dReturn_val_if_fail(cert && url, -1);
+   dReturn_val_if_fail(cert && host, FALSE);
 
    char *msg;
-   const char *host = URL_HOST(url);
    GENERAL_NAMES *subjectAltNames;
    bool_t success = TRUE, alt_name_checked = FALSE;;
    char common_name[256];
@@ -492,6 +490,10 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
   if (subjectAltNames)
     {
       /* Test subject alternative names */
+
+      Dstr *err = dStr_new("");
+      dStr_sprintf(err, "Hostname %s does not match any of certificate's "
+                        "Subject Alternative Names: ", host);
 
       /* Do we want to check for dNSNAmes or ipAddresses (see RFC 2818)?
        * Signal it by host_in_octet_string. */
@@ -516,6 +518,7 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
                       if (!ASN1_STRING_cmp (host_in_octet_string,
                             name->d.iPAddress))
                         break;
+                      dStr_sprintfa(err, "%s ", name->d.iPAddress);
                     }
                 }
               else if (name->type == GEN_DNS)
@@ -537,6 +540,7 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
                           OPENSSL_free (name_in_utf8);
                           break;
                         }
+                      dStr_sprintfa(err, "%s ", name_in_utf8);
                       OPENSSL_free (name_in_utf8);
                     }
                 }
@@ -549,11 +553,8 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
       if (alt_name_checked == TRUE && i >= numaltnames)
         {
          success = FALSE;
-         msg = dStrconcat("No certificate subject alternative name matches"
-                          " requested host name \n", host, NULL);
-         *choice = a_Dialog_choice("Dillo SSL security warning",
-            msg, "Continue", "Cancel", NULL);
-         dFree(msg);
+         *choice = a_Dialog_choice("Dillo TLS security warning",
+            err->str, "Continue", "Cancel", NULL);
 
          switch (*choice){
             case 1:
@@ -565,6 +566,7 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
                break;
          }
         }
+      dStr_free(err, 1);
     }
 
   if (alt_name_checked == FALSE)
@@ -580,7 +582,7 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
           success = FALSE;
          msg = dStrconcat("Certificate common name ", common_name,
                           " doesn't match requested host name ", host, NULL);
-         *choice = a_Dialog_choice("Dillo SSL security warning",
+         *choice = a_Dialog_choice("Dillo TLS security warning",
             msg, "Continue", "Cancel", NULL);
          dFree(msg);
 
@@ -626,7 +628,7 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
                           "character). This may be an indication that the "
                           "host is not who it claims to be -- that is, not "
                           "the real ", host, NULL);
-         *choice = a_Dialog_choice("Dillo SSL security warning",
+         *choice = a_Dialog_choice("Dillo TLS security warning",
             msg, "Continue", "Cancel", NULL);
          dFree(msg);
 
@@ -648,18 +650,58 @@ static bool_t Ssl_check_cert_hostname(X509 *cert, const DilloUrl *url,
 /******************** END OF STUFF DERIVED FROM wget-1.16.3 */
 
 /*
+ * Get the certificate at the end of the chain, or NULL on failure.
+ *
+ * Rumor has it that the stack can be NULL if a connection has been reused
+ * and that the stack can then be reconstructed if necessary, but it doesn't
+ * sound like a case we'll encounter.
+ */
+static X509 *Tls_get_end_of_chain(SSL *ssl)
+{
+   STACK_OF(X509) *sk = SSL_get_peer_cert_chain(ssl);
+
+   return sk ? sk_X509_value(sk, sk_X509_num(sk) - 1) : NULL;
+}
+
+static void Tls_get_issuer_name(X509 *cert, char *buf, uint_t buflen)
+{
+   if (cert) {
+      X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
+   } else {
+      strncpy(buf, "(unknown)", buflen);
+      buf[buflen-1] = '\0';
+   }
+}
+
+static void Tls_get_expiration_str(X509 *cert, char *buf, uint_t buflen)
+{
+   ASN1_TIME *exp_date = X509_get_notAfter(cert);
+   BIO *b = BIO_new(BIO_s_mem());
+   int rc = ASN1_TIME_print(b, exp_date);
+
+   if (rc > 0) {
+      rc = BIO_gets(b, buf, buflen);
+   }
+   if (rc <= 0) {
+      strncpy(buf, "(unknown)", buflen);
+      buf[buflen-1] = '\0';
+   }
+   BIO_free(b);
+}
+
+/*
  * Examine the certificate, and, if problems are detected, ask the user what
  * to do.
  * Return: -1 if connection should be canceled, or 0 if it should continue.
  */
-static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
+static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
 {
    X509 *remote_cert;
    long st;
-   char buf[4096], *cn, *msg;
+   const uint_t buflen = 4096;
+   char buf[buflen], *cn, *msg;
    int choice = -1, ret = -1;
-   char *title = dStrconcat("Dillo SSL security warning: ",URL_HOST(url),NULL);
-   Server_t *srv = dList_find_custom(servers, url, Ssl_servers_cmp);
+   char *title = dStrconcat("Dillo TLS security warning: ", host, NULL);
 
    remote_cert = SSL_get_peer_certificate(ssl);
    if (remote_cert == NULL){
@@ -674,7 +716,7 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
          ret = 0;
       }
 
-   } else if (Ssl_check_cert_hostname(remote_cert, url, &choice)) {
+   } else if (Tls_check_cert_hostname(remote_cert, host, &choice)) {
       /* Figure out if (and why) the remote system can't be trusted */
       st = SSL_get_verify_result(ssl);
       switch (st) {
@@ -713,7 +755,7 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
                /* Save certificate to a file here and recheck the chain */
                /* Potential security problems because we are writing
                 * to the filesystem */
-               Ssl_save_certificate_home(remote_cert);
+               Tls_save_certificate_home(remote_cert);
                ret = 1;
                break;
             default:
@@ -761,14 +803,15 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
          break;
       case X509_V_ERR_CERT_HAS_EXPIRED:
       case X509_V_ERR_CRL_HAS_EXPIRED:
-         choice = a_Dialog_choice(title,
-            "The remote certificate has expired.  The certificate "
-            "wasn't designed to last this long. You should avoid "
-            "this site.",
-            "Continue", "Cancel", NULL);
+         Tls_get_expiration_str(remote_cert, buf, buflen);
+         msg = dStrconcat("The remote certificate expired on: ", buf,
+                          ". This site can no longer be trusted.", NULL);
+
+         choice = a_Dialog_choice(title, msg, "Continue", "Cancel", NULL);
          if (choice == 1) {
             ret = 0;
          }
+         dFree(msg);
          break;
       case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
       case X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD:
@@ -812,23 +855,24 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
          }
          break;
       case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-         choice = a_Dialog_choice(title,
-            "Self signed certificate in certificate chain. The certificate "
-            "chain could be built up using the untrusted certificates but the "
-            "root could not be found locally.",
-            "Continue", "Cancel", NULL);
+         Tls_get_issuer_name(Tls_get_end_of_chain(ssl), buf, buflen);
+         msg = dStrconcat("Certificate chain led to a self-signed certificate "
+                          "instead of a trusted root. Name: ",  buf , NULL);
+         choice = a_Dialog_choice(title, msg, "Continue", "Cancel", NULL);
          if (choice == 1) {
             ret = 0;
          }
+         dFree(msg);
          break;
       case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
-         choice = a_Dialog_choice(title,
-            "Unable to get local issuer certificate. The issuer certificate "
-            "of an untrusted certificate cannot be found.",
-            "Continue", "Cancel", NULL);
+         Tls_get_issuer_name(Tls_get_end_of_chain(ssl), buf, buflen);
+         msg = dStrconcat("The issuer certificate of an untrusted certificate "
+                          "cannot be found. Issuer: ", buf, NULL);
+         choice = a_Dialog_choice(title, msg, "Continue", "Cancel", NULL);
          if (choice == 1) {
             ret = 0;
          }
+         dFree(msg);
          break;
       default:             /* Need to add more options later */
          snprintf(buf, 80,
@@ -859,10 +903,10 @@ static int Ssl_examine_certificate(SSL *ssl, const DilloUrl *url)
  * If the connection was closed before we got the certificate, we need to
  * reset state so that we'll try again.
  */
-void a_Ssl_reset_server_state(const DilloUrl *url)
+void a_Tls_reset_server_state(const DilloUrl *url)
 {
    if (servers) {
-      Server_t *s = dList_find_custom(servers, url, Ssl_servers_cmp);
+      Server_t *s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp);
 
       if (s && s->cert_status == CERT_STATUS_RECEIVING)
          s->cert_status = CERT_STATUS_NONE;
@@ -870,14 +914,14 @@ void a_Ssl_reset_server_state(const DilloUrl *url)
 }
 
 /*
- * Close an open SSL connection.
+ * Close an open TLS connection.
  */
-static void Ssl_close_by_key(int connkey)
+static void Tls_close_by_key(int connkey)
 {
    Conn_t *c;
 
    if ((c = a_Klist_get_data(conn_list, connkey))) {
-      a_Ssl_reset_server_state(c->url);
+      a_Tls_reset_server_state(c->url);
       if (c->connecting) {
          a_IOwatch_remove_fd(c->fd, -1);
          dClose(c->fd);
@@ -886,9 +930,85 @@ static void Ssl_close_by_key(int connkey)
       SSL_free(c->ssl);
 
       a_Url_free(c->url);
-      Ssl_fd_map_remove_entry(c->fd);
+      Tls_fd_map_remove_entry(c->fd);
       a_Klist_remove(conn_list, connkey);
       dFree(c);
+   }
+}
+
+static void Tls_print_cert_chain(SSL *ssl)
+{
+   STACK_OF(X509) *sk = SSL_get_peer_cert_chain(ssl);
+
+   if (sk) {
+      const uint_t buflen = 4096;
+      char buf[buflen];
+      int rc, i, n = sk_X509_num(sk);
+      X509 *cert = NULL;
+      EVP_PKEY *public_key;
+      int key_type, key_bits;
+      const char *type_str;
+      BIO *b;
+
+      for (i = 0; i < n; i++) {
+         cert = sk_X509_value(sk, i);
+         public_key = X509_get_pubkey(cert);
+
+         /* We are trying to find a way to get the hash function used
+          * with a certificate. This way, which is not very pleasant, puts
+          * a string such as "sha256WithRSAEncryption" in our buffer and we
+          * then trim off the "With..." part.
+          */
+         b = BIO_new(BIO_s_mem());
+         rc = i2a_ASN1_OBJECT(b, cert->sig_alg->algorithm);
+
+         if (rc > 0) {
+            rc = BIO_gets(b, buf, buflen);
+         }
+         if (rc <= 0) {
+            strcpy(buf, "(unknown)");
+            buf[buflen-1] = '\0';
+         } else {
+            char *s = strstr(buf, "With");
+
+            if (s) {
+               *s = '\0';
+               if (!strcmp(buf, "sha1")) {
+                  MSG_WARN("In 2015, browsers have begun to deprecate SHA1 "
+                           "certificates.\n");
+               } else if (!strncmp(buf, "md", 2)) {
+                  MSG_ERR("Browsers stopped accepting MD5 certificates around "
+                          "2012.\n");
+               }
+            }
+         }
+         BIO_free(b);
+         MSG("%s ", buf);
+
+
+         key_type = EVP_PKEY_type(public_key->type);
+         type_str = key_type == EVP_PKEY_RSA ? "RSA" :
+                    key_type == EVP_PKEY_DSA ? "DSA" :
+                    key_type == EVP_PKEY_DH ? "DH" :
+                    key_type == EVP_PKEY_EC ? "EC" : "???";
+         key_bits = EVP_PKEY_bits(public_key);
+         X509_NAME_oneline(X509_get_subject_name(cert), buf, buflen);
+         buf[buflen-1] = '\0';
+         MSG("%d-bit %s: %s\n", key_bits, type_str, buf);
+         EVP_PKEY_free(public_key);
+
+         if (key_type == EVP_PKEY_RSA && key_bits <= 1024) {
+            /* TODO: Gather warnings into one popup. */
+            MSG_WARN("In 2014/5, browsers have been deprecating 1024-bit RSA "
+                     "keys.\n");
+         }
+      }
+
+      if (cert) {
+         X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
+         buf[buflen-1] = '\0';
+         MSG("root: %s\n", buf);
+      }
    }
 }
 
@@ -896,14 +1016,14 @@ static void Ssl_close_by_key(int connkey)
  * Connect, set a callback if it's still not completed. If completed, check
  * the certificate and report back to http.
  */
-static void Ssl_connect(int fd, int connkey)
+static void Tls_connect(int fd, int connkey)
 {
    int ret;
    bool_t ongoing = FALSE, failed = TRUE;
    Conn_t *conn;
 
    if (!(conn = a_Klist_get_data(conn_list, connkey))) {
-      MSG("Ssl_connect: conn for fd %d not valid\n", fd);
+      MSG("Tls_connect: conn for fd %d not valid\n", fd);
       return;
    }
 
@@ -917,10 +1037,10 @@ static void Ssl_connect(int fd, int connkey)
           err1_ret == SSL_ERROR_WANT_WRITE) {
          int want = err1_ret == SSL_ERROR_WANT_READ ? DIO_READ : DIO_WRITE;
 
-         _MSG("iowatching fd %d for ssl -- want %s\n", fd,
+         _MSG("iowatching fd %d for tls -- want %s\n", fd,
              err1_ret == SSL_ERROR_WANT_READ ? "read" : "write");
          a_IOwatch_remove_fd(fd, -1);
-         a_IOwatch_add_fd(fd, want, Ssl_connect_cb, INT2VOIDP(connkey));
+         a_IOwatch_add_fd(fd, want, Tls_connect_cb, INT2VOIDP(connkey));
          ongoing = TRUE;
          failed = FALSE;
       } else if (err1_ret == SSL_ERROR_SYSCALL || err1_ret == SSL_ERROR_SSL) {
@@ -934,14 +1054,14 @@ static void Ssl_connect(int fd, int connkey)
          } else {
             /* nothing in the error queue */
             if (ret == 0) {
-               MSG("SSL connect error: \"an EOF was observed that violates "
+               MSG("TLS connect error: \"an EOF was observed that violates "
                    "the protocol\"\n");
                /*
                 * I presume we took too long on our side and the server grew
                 * impatient.
                 */
             } else if (ret == -1) {
-               MSG("SSL connect error: %s\n", dStrerror(errno));
+               MSG("TLS connect error: %s\n", dStrerror(errno));
 
                /* If the following can happen, I'll add code to handle it, but
                 * I don't want to add code blindly if it isn't getting used
@@ -956,9 +1076,24 @@ static void Ssl_connect(int fd, int connkey)
          MSG("SSL_get_error() returned %d on a connect.\n", err1_ret);
       }
    } else {
-      if (Ssl_user_said_yes(conn->url) ||
-          (Ssl_examine_certificate(conn->ssl, conn->url) != -1))
+      Server_t *srv = dList_find_sorted(servers, conn->url,
+                                        Tls_servers_by_url_cmp);
+
+      if (srv->cert_status == CERT_STATUS_RECEIVING) {
+         /* Making first connection with the server. Show some information. */
+         SSL *ssl = conn->ssl;
+         const char *version = SSL_get_version(ssl);
+         const SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
+
+         MSG("%s: %s, cipher %s\n", URL_AUTHORITY(conn->url), version,
+             SSL_CIPHER_get_name(cipher));
+         Tls_print_cert_chain(ssl);
+      }
+
+      if (srv->cert_status == CERT_STATUS_USER_ACCEPTED ||
+          (Tls_examine_certificate(conn->ssl, srv, URL_HOST(conn->url))!=-1)) {
          failed = FALSE;
+      }
    }
 
    /*
@@ -970,7 +1105,7 @@ static void Ssl_connect(int fd, int connkey)
       if (a_Klist_get_data(conn_list, connkey)) {
          conn->connecting = FALSE;
          if (failed) {
-            Ssl_close_by_key(connkey);
+            Tls_close_by_key(connkey);
          }
          a_IOwatch_remove_fd(fd, DIO_READ|DIO_WRITE);
          a_Http_connect_done(fd, failed ? FALSE : TRUE);
@@ -980,15 +1115,15 @@ static void Ssl_connect(int fd, int connkey)
    }
 }
 
-static void Ssl_connect_cb(int fd, void *vconnkey)
+static void Tls_connect_cb(int fd, void *vconnkey)
 {
-   Ssl_connect(fd, VOIDP2INT(vconnkey));
+   Tls_connect(fd, VOIDP2INT(vconnkey));
 }
 
 /*
- * Perform the SSL handshake on an open socket.
+ * Perform the TLS handshake on an open socket.
  */
-void a_Ssl_handshake(int fd, const DilloUrl *url)
+void a_Tls_handshake(int fd, const DilloUrl *url)
 {
    SSL *ssl;
    bool_t success = TRUE;
@@ -997,7 +1132,7 @@ void a_Ssl_handshake(int fd, const DilloUrl *url)
    if (!ssl_context)
       success = FALSE;
 
-   if (success && Ssl_user_said_no(url)) {
+   if (success && Tls_user_said_no(url)) {
       success = FALSE;
    }
 
@@ -1011,7 +1146,7 @@ void a_Ssl_handshake(int fd, const DilloUrl *url)
       success = FALSE;
    }
 
-   /* assign SSL connection to this file descriptor */
+   /* assign TLS connection to this file descriptor */
    if (success && !SSL_set_fd(ssl, fd)) {
       unsigned long err_ret = ERR_get_error();
       do {
@@ -1021,7 +1156,7 @@ void a_Ssl_handshake(int fd, const DilloUrl *url)
    }
 
    if (success)
-      connkey = Ssl_conn_new(fd, url, ssl);
+      connkey = Tls_conn_new(fd, url, ssl);
 
 #ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
    /* Server Name Indication. From the openssl changelog, it looks like this
@@ -1032,42 +1167,42 @@ void a_Ssl_handshake(int fd, const DilloUrl *url)
 #endif
 
    if (!success) {
-      a_Ssl_reset_server_state(url);
+      a_Tls_reset_server_state(url);
       a_Http_connect_done(fd, success);
    } else {
-      Ssl_connect(fd, connkey);
+      Tls_connect(fd, connkey);
    }
 }
 
 /*
- * Read data from an open SSL connection.
+ * Read data from an open TLS connection.
  */
-int a_Ssl_read(void *conn, void *buf, size_t len)
+int a_Tls_read(void *conn, void *buf, size_t len)
 {
    Conn_t *c = (Conn_t*)conn;
    return SSL_read(c->ssl, buf, len);
 }
 
 /*
- * Write data to an open SSL connection.
+ * Write data to an open TLS connection.
  */
-int a_Ssl_write(void *conn, void *buf, size_t len)
+int a_Tls_write(void *conn, void *buf, size_t len)
 {
    Conn_t *c = (Conn_t*)conn;
    return SSL_write(c->ssl, buf, len);
 }
 
-void a_Ssl_close_by_fd(int fd)
+void a_Tls_close_by_fd(int fd)
 {
    FdMapEntry_t *fme = dList_find_custom(fd_map, INT2VOIDP(fd),
-                                         Ssl_fd_map_cmp);
+                                         Tls_fd_map_cmp);
 
    if (fme) {
-      Ssl_close_by_key(fme->connkey);
+      Tls_close_by_key(fme->connkey);
    }
 }
 
-static void Ssl_servers_freeall()
+static void Tls_servers_freeall()
 {
    if (servers) {
       Server_t *s;
@@ -1082,7 +1217,7 @@ static void Ssl_servers_freeall()
    }
 }
 
-static void Ssl_fd_map_remove_all()
+static void Tls_fd_map_remove_all()
 {
    if (fd_map) {
       FdMapEntry_t *fme;
@@ -1099,12 +1234,12 @@ static void Ssl_fd_map_remove_all()
 /*
  * Clean up the OpenSSL library
  */
-void a_Ssl_freeall(void)
+void a_Tls_freeall(void)
 {
    if (ssl_context)
       SSL_CTX_free(ssl_context);
-   Ssl_fd_map_remove_all();
-   Ssl_servers_freeall();
+   Tls_fd_map_remove_all();
+   Tls_servers_freeall();
 }
 
 #endif /* ENABLE_SSL */

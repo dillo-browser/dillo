@@ -1,0 +1,51 @@
+README: Last update Jul 2009
+
+These documents cover dillo's internals.
+For user help, see http://www.dillo.org/dillo3-help.html
+
+--------------------------------------------------------------------------
+
+These documents need a review.
+*.txt were current with Dillo1, but many have since become more or
+      less out-of-date.
+*.doc are doxygen source for the Dillo Widget (dw) component, and
+      were written for Dillo2.
+
+They will give you an overview of what's going on, but take them
+with a pinch of salt.
+
+ Of course I'd like to have *.txt as doxygen files too!
+If somebody wants to make this conversion, please let me know
+to assign higher priority to updating these docs.
+
+--
+Jorge.-
+
+ --------------------------------------------------------------------------
+       FILE                    DESCRIPTION                   STATE
+ --------------------------------------------------------------------------
+   NC_design.txt       Naming&Coding design (Be sure to     Current
+                       read it before any other doc)
+   Dillo.txt           General overview of the program      Current
+   IO.txt              Extensive introduction               Current
+   Cache.txt           Informative description              Current
+   Images.txt          Image handling and processing        Current
+   HtmlParser.txt      A versatile parser                   Current
+   Dw.txt              The New Dillo Widget (Overview)      Current
+   Imgbuf.txt          Image buffers                        Pending
+   Selection.txt       Selections, and link activation      Current (?)
+   Cookies.txt         Explains how to enable cookies       Current
+   Dpid.txt            Dillo plugin daemon                  Current
+ --------------------------------------------------------------------------
+
+
+ * BTW, there's a small program (srch) within the src/ dir. It searches
+ tokens within the whole code (*.[ch]). It has proven very useful.
+ Ex:  ./srch a_Image_write
+      ./srch todo:
+
+ * Please submit your patches with 'hg diff'.
+
+
+ Happy coding!
+ --Jcid

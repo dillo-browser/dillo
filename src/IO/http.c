@@ -27,7 +27,7 @@
 #include <arpa/inet.h>          /* for inet_ntop */
 
 #include "IO.h"
-#include "ssl.h"
+#include "tls.h"
 #include "Url.h"
 #include "../msg.h"
 #include "../klist.h"
@@ -52,18 +52,18 @@ D_STMT_START {                                                        \
 static const int HTTP_SOCKET_USE_PROXY   = 0x1;
 static const int HTTP_SOCKET_QUEUED      = 0x2;
 static const int HTTP_SOCKET_TO_BE_FREED = 0x4;
-static const int HTTP_SOCKET_SSL         = 0x8;
+static const int HTTP_SOCKET_TLS         = 0x8;
 
 /* 'web' is just a reference (no need to deallocate it here). */
 typedef struct {
    int SockFD;
-   uint_t connect_port;
    uint_t flags;
    DilloWeb *web;          /* reference to client's web structure */
    DilloUrl *url;
    Dlist *addr_list;       /* Holds the DNS answer */
    ChainLink *Info;        /* Used for CCC asynchronous operations */
-   char *connected_to;     /* Used for per-host connection limit */
+   char *connected_to;     /* Used for per-server connection limit */
+   uint_t connect_port;
    Dstr *https_proxy_reply;
 } SocketData_t;
 
@@ -72,19 +72,23 @@ typedef struct {
  */
 typedef struct {
   char *host;
+  uint_t port;
+  bool_t https;
+
   int active_conns;
+  int running_the_queue;
   Dlist *queue;
-} HostConnection_t;
+} Server_t;
 
 typedef struct {
    int fd;
    int skey;
 } FdMapEntry_t;
 
-static void Http_socket_enqueue(HostConnection_t *hc, SocketData_t* sock);
-static HostConnection_t *Http_host_connection_get(const char *host);
-static void Http_host_connection_remove(HostConnection_t *hc);
-static void Http_connect_socket(ChainLink *Info, HostConnection_t *hc);
+static void Http_socket_enqueue(Server_t *srv, SocketData_t* sock);
+static Server_t *Http_server_get(const char *host, uint_t port, bool_t https);
+static void Http_server_remove(Server_t *srv);
+static void Http_connect_socket(ChainLink *Info);
 static char *Http_get_connect_str(const DilloUrl *url);
 static void Http_send_query(SocketData_t *S);
 static void Http_socket_free(int SKey);
@@ -97,7 +101,7 @@ static Klist_t *ValidSocks = NULL; /* Active sockets list. It holds pointers to
 static DilloUrl *HTTP_Proxy = NULL;
 static char *HTTP_Proxy_Auth_base64 = NULL;
 static char *HTTP_Language_hdr = NULL;
-static Dlist *host_connections;
+static Dlist *servers;
 
 /* TODO: If fd_map will stick around in its present form (FDs and SocketData_t)
  * then consider whether having both this and ValidSocks is necessary.
@@ -127,7 +131,7 @@ int a_Http_init(void)
       HTTP_Proxy_Auth_base64 = a_Misc_encode_base64(prefs.http_proxyuser);
  */
 
-   host_connections = dList_new(5);
+   servers = dList_new(5);
    fd_map = dList_new(20);
 
    return 0;
@@ -211,12 +215,14 @@ void a_Http_connect_done(int fd, bool_t success)
 
    if (fme && (sd = a_Klist_get_data(ValidSocks, fme->skey))) {
       ChainLink *info = sd->Info;
+      bool_t valid_web = a_Web_valid(sd->web);
 
-      if (success) {
+      if (success && valid_web) {
          a_Chain_bfcb(OpSend, info, &sd->SockFD, "FD");
          Http_send_query(sd);
       } else {
-         MSG_BW(sd->web, 1, "Could not establish connection.");
+         if (valid_web)
+            MSG_BW(sd->web, 1, "Could not establish connection.");
          MSG("fd %d is done and failed\n", sd->SockFD);
          dClose(fd);
          Http_socket_free(VOIDP2INT(info->LocalKey)); /* free sd */
@@ -228,48 +234,56 @@ void a_Http_connect_done(int fd, bool_t success)
    }
 }
 
-static void Http_socket_activate(HostConnection_t *hc, SocketData_t *sd)
+static void Http_socket_activate(Server_t *srv, SocketData_t *sd)
 {
-   dList_remove(hc->queue, sd);
+   dList_remove(srv->queue, sd);
    sd->flags &= ~HTTP_SOCKET_QUEUED;
-   hc->active_conns++;
-   sd->connected_to = hc->host;
+   srv->active_conns++;
+   sd->connected_to = srv->host;
 }
 
-static void Http_connect_queued_sockets(HostConnection_t *hc)
+static void Http_connect_queued_sockets(Server_t *srv)
 {
    SocketData_t *sd;
    int i;
 
+   srv->running_the_queue++;
+
    for (i = 0;
-        i < dList_length(hc->queue) && hc->active_conns < prefs.http_max_conns;
+        (i < dList_length(srv->queue) &&
+         srv->active_conns < prefs.http_max_conns);
         i++) {
-      sd = dList_nth_data(hc->queue, i);
+      sd = dList_nth_data(srv->queue, i);
 
-      if (!(sd->flags & HTTP_SOCKET_TO_BE_FREED)) {
-         int connect_ready = SSL_CONNECT_READY;
+      if (sd->flags & HTTP_SOCKET_TO_BE_FREED) {
+         dList_remove(srv->queue, sd);
+         dFree(sd);
+         i--;
+      } else {
+         int connect_ready = TLS_CONNECT_READY;
 
-         if (sd->flags & HTTP_SOCKET_SSL)
-            connect_ready = a_Ssl_connect_ready(sd->url);
+         if (sd->flags & HTTP_SOCKET_TLS)
+            connect_ready = a_Tls_connect_ready(sd->url);
 
-         if (connect_ready == SSL_CONNECT_NEVER || !a_Web_valid(sd->web)) {
+         if (connect_ready == TLS_CONNECT_NEVER || !a_Web_valid(sd->web)) {
             int SKey = VOIDP2INT(sd->Info->LocalKey);
 
             Http_socket_free(SKey);
-         } else if (connect_ready == SSL_CONNECT_READY) {
+         } else if (connect_ready == TLS_CONNECT_READY) {
             i--;
-            Http_socket_activate(hc, sd);
-            Http_connect_socket(sd->Info, hc);
+            Http_socket_activate(srv, sd);
+            Http_connect_socket(sd->Info);
          }
-      }
-      if (sd->flags & HTTP_SOCKET_TO_BE_FREED) {
-         dList_remove(hc->queue, sd);
-         dFree(sd);
-         i--;
       }
    }
 
-   _MSG("Queue %s len %d\n", hc->host, dList_length(hc->queue));
+   _MSG("Queue http%s://%s:%u len %d\n", srv->https ? "s" : "", srv->host,
+        srv->port, dList_length(srv->queue));
+
+   if (--srv->running_the_queue == 0) {
+      if (srv->active_conns == 0)
+         Http_server_remove(srv);
+   }
 }
 
 /*
@@ -290,15 +304,14 @@ static void Http_socket_free(int SKey)
       } else {
          if (S->SockFD != -1)
             Http_fd_map_remove_entry(S->SockFD);
-         a_Ssl_reset_server_state(S->url);
+         a_Tls_reset_server_state(S->url);
          if (S->connected_to) {
-            a_Ssl_close_by_fd(S->SockFD);
+            a_Tls_close_by_fd(S->SockFD);
 
-            HostConnection_t *hc = Http_host_connection_get(S->connected_to);
-            hc->active_conns--;
-            Http_connect_queued_sockets(hc);
-            if (hc->active_conns == 0)
-               Http_host_connection_remove(hc);
+            Server_t *srv = Http_server_get(S->connected_to, S->connect_port,
+                                            (S->flags & HTTP_SOCKET_TLS));
+            srv->active_conns--;
+            Http_connect_queued_sockets(srv);
          }
          a_Url_free(S->url);
          dFree(S);
@@ -478,9 +491,9 @@ static void Http_send_query(SocketData_t *S)
 
 /*
  * Prepare an HTTPS connection.  If necessary, tunnel it through a proxy.
- * Then perform the SSL handshake.
+ * Then perform the TLS handshake.
  */
-static void Http_connect_ssl(ChainLink *info)
+static void Http_connect_tls(ChainLink *info)
 {
    int SKey = VOIDP2INT(info->LocalKey);
    SocketData_t *S = a_Klist_get_data(ValidSocks, SKey);
@@ -496,7 +509,7 @@ static void Http_connect_ssl(ChainLink *info)
       dFree(dbuf);
       dFree(connect_str);
    } else {
-      a_Ssl_handshake(S->SockFD, S->url);
+      a_Tls_handshake(S->SockFD, S->url);
    }
 }
 
@@ -504,7 +517,7 @@ static void Http_connect_ssl(ChainLink *info)
  * This function is called after the DNS succeeds in solving a hostname.
  * Task: Finish socket setup and start connecting the socket.
  */
-static void Http_connect_socket(ChainLink *Info, HostConnection_t *hc)
+static void Http_connect_socket(ChainLink *Info)
 {
    int i, status;
    SocketData_t *S;
@@ -542,7 +555,7 @@ static void Http_connect_socket(ChainLink *Info, HostConnection_t *hc)
          sin->sin_port = htons(S->connect_port);
          memcpy(&sin->sin_addr, dh->data, (size_t)dh->alen);
          if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
-            MSG("Connecting to %s:%d\n", inet_ntoa(sin->sin_addr),
+            MSG("Connecting to %s:%u\n", inet_ntoa(sin->sin_addr),
                 S->connect_port);
          break;
       }
@@ -557,7 +570,7 @@ static void Http_connect_socket(ChainLink *Info, HostConnection_t *hc)
          memcpy(&sin6->sin6_addr, dh->data, dh->alen);
          inet_ntop(dh->af, dh->data, buf, sizeof(buf));
          if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
-            MSG("Connecting to %s:%d\n", buf, S->connect_port);
+            MSG("Connecting to %s:%u\n", buf, S->connect_port);
          break;
       }
 #endif
@@ -567,8 +580,8 @@ static void Http_connect_socket(ChainLink *Info, HostConnection_t *hc)
       if (status == -1 && errno != EINPROGRESS) {
          MSG("Http_connect_socket ERROR: %s\n", dStrerror(errno));
          a_Http_connect_done(S->SockFD, FALSE);
-      } else if (S->flags & HTTP_SOCKET_SSL) {
-         Http_connect_ssl(Info);
+      } else if (S->flags & HTTP_SOCKET_TLS) {
+         Http_connect_tls(Info);
       } else {
          a_Http_connect_done(S->SockFD, TRUE);
       }
@@ -658,7 +671,7 @@ static void Http_dns_cb(int Status, Dlist *addr_list, void *data)
    int SKey = VOIDP2INT(data);
    bool_t clean_up = TRUE;
    SocketData_t *S;
-   HostConnection_t *hc;
+   Server_t *srv;
 
    S = a_Klist_get_data(ValidSocks, SKey);
    if (S) {
@@ -670,9 +683,10 @@ static void Http_dns_cb(int Status, Dlist *addr_list, void *data)
             /* Successful DNS answer; save the IP */
             S->addr_list = addr_list;
             clean_up = FALSE;
-            hc = Http_host_connection_get(host);
-            Http_socket_enqueue(hc, S);
-            Http_connect_queued_sockets(hc);
+            srv = Http_server_get(host, S->connect_port,
+                                 (S->flags & HTTP_SOCKET_TLS));
+            Http_socket_enqueue(srv, S);
+            Http_connect_queued_sockets(srv);
          } else {
             /* DNS wasn't able to resolve the hostname */
             MSG_BW(S->web, 0, "ERROR: DNS can't resolve %s", host);
@@ -718,7 +732,7 @@ static int Http_get(ChainLink *Info, void *Data1)
    S->connect_port = URL_PORT(url);
    S->url = a_Url_dup(S->web->url);
    if (!dStrAsciiCasecmp(URL_SCHEME(S->url), "https"))
-      S->flags |= HTTP_SOCKET_SSL;
+      S->flags |= HTTP_SOCKET_TLS;
 
    /* Let the user know what we'll do */
    MSG_BW(S->web, 1, "DNS resolving %s", hostname);
@@ -734,16 +748,18 @@ static int Http_get(ChainLink *Info, void *Data1)
 /*
  * Can the old socket's fd be reused for the new socket?
  *
- * NOTE: old and new must come from the same HostConnection_t.
+ * NOTE: old and new must come from the same Server_t.
  * This is not built to accept arbitrary sockets.
  */
 static bool_t Http_socket_reuse_compatible(SocketData_t *old,
                                            SocketData_t *new)
 {
+   /*
+    * If we are using TLS through a proxy, we need to ensure that old and new
+    * are going through to the same host:port.
+    */
    if (a_Web_valid(new->web) &&
-       old->connect_port == new->connect_port &&
-       ((old->flags & HTTP_SOCKET_SSL) == (new->flags & HTTP_SOCKET_SSL)) &&
-       ((old->flags & HTTP_SOCKET_SSL) == 0 ||
+       ((old->flags & HTTP_SOCKET_TLS) == 0 ||
         (old->flags & HTTP_SOCKET_USE_PROXY) == 0 ||
         ((URL_PORT(old->url) == URL_PORT(new->url)) &&
          !dStrAsciiCasecmp(URL_HOST(old->url), URL_HOST(new->url)))))
@@ -760,11 +776,13 @@ static void Http_socket_reuse(int SKey)
    SocketData_t *new_sd, *old_sd = a_Klist_get_data(ValidSocks, SKey);
 
    if (old_sd) {
-      HostConnection_t *hc = Http_host_connection_get(old_sd->connected_to);
-      int i, n = dList_length(hc->queue);
+      Server_t *srv = Http_server_get(old_sd->connected_to,
+                                      old_sd->connect_port,
+                                      (old_sd->flags & HTTP_SOCKET_TLS));
+      int i, n = dList_length(srv->queue);
 
       for (i = 0; i < n; i++) {
-         new_sd = dList_nth_data(hc->queue, i);
+         new_sd = dList_nth_data(srv->queue, i);
 
          if (!(new_sd->flags & HTTP_SOCKET_TO_BE_FREED) &&
              Http_socket_reuse_compatible(old_sd, new_sd)) {
@@ -773,11 +791,11 @@ static void Http_socket_reuse(int SKey)
             new_sd->SockFD = old_sd->SockFD;
 
             old_sd->connected_to = NULL;
-            hc->active_conns--;
+            srv->active_conns--;
             Http_socket_free(SKey);
 
             MSG("Reusing fd %d for %s\n", new_sd->SockFD,URL_STR(new_sd->url));
-            Http_socket_activate(hc, new_sd);
+            Http_socket_activate(srv, new_sd);
             Http_fd_map_add_entry(new_sd);
             a_Http_connect_done(new_sd->SockFD, success);
             return;
@@ -863,7 +881,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                          sd->https_proxy_reply->str);
                      dStr_free(sd->https_proxy_reply, 1);
                      sd->https_proxy_reply = NULL;
-                     a_Ssl_handshake(sd->SockFD, sd->url);
+                     a_Tls_handshake(sd->SockFD, sd->url);
                   } else {
                      MSG_BW(sd->web, 1, "Can't connect through proxy to %s",
                             URL_HOST(sd->url));
@@ -935,68 +953,77 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
  * Add socket data to the queue. Pages/stylesheets/etc. have higher priority
  * than images.
  */
-static void Http_socket_enqueue(HostConnection_t *hc, SocketData_t* sock)
+static void Http_socket_enqueue(Server_t *srv, SocketData_t* sock)
 {
    sock->flags |= HTTP_SOCKET_QUEUED;
 
    if ((sock->web->flags & WEB_Image) == 0) {
-      int i, n = dList_length(hc->queue);
+      int i, n = dList_length(srv->queue);
 
       for (i = 0; i < n; i++) {
-         SocketData_t *curr = dList_nth_data(hc->queue, i);
+         SocketData_t *curr = dList_nth_data(srv->queue, i);
 
          if (a_Web_valid(curr->web) && (curr->web->flags & WEB_Image)) {
-            dList_insert_pos(hc->queue, sock, i);
+            dList_insert_pos(srv->queue, sock, i);
             return;
          }
       }
    }
-   dList_append(hc->queue, sock);
+   dList_append(srv->queue, sock);
 }
 
-static HostConnection_t *Http_host_connection_get(const char *host)
+static Server_t *Http_server_get(const char *host, uint_t port, bool_t https)
 {
    int i;
-   HostConnection_t *hc;
+   Server_t *srv;
 
-   for (i = 0; i < dList_length(host_connections); i++) {
-      hc = (HostConnection_t*) dList_nth_data(host_connections, i);
+   for (i = 0; i < dList_length(servers); i++) {
+      srv = (Server_t*) dList_nth_data(servers, i);
 
-      if (dStrAsciiCasecmp(host, hc->host) == 0)
-         return hc;
+      if (port == srv->port && https == srv->https &&
+          !dStrAsciiCasecmp(host, srv->host))
+         return srv;
    }
 
-   hc = dNew0(HostConnection_t, 1);
-   hc->queue = dList_new(10);
-   hc->host = dStrdup(host);
-   dList_append(host_connections, hc);
+   srv = dNew0(Server_t, 1);
+   srv->queue = dList_new(10);
+   srv->running_the_queue = 0;
+   srv->host = dStrdup(host);
+   srv->port = port;
+   srv->https = https;
+   dList_append(servers, srv);
 
-   return hc;
+   return srv;
 }
 
-static void Http_host_connection_remove(HostConnection_t *hc)
+static void Http_server_remove(Server_t *srv)
 {
-    assert(dList_length(hc->queue) == 0);
-    dList_free(hc->queue);
-    dList_remove_fast(host_connections, hc);
-    dFree(hc->host);
-    dFree(hc);
-}
-
-static void Http_host_connection_remove_all()
-{
-   HostConnection_t *hc;
    SocketData_t *sd;
 
-   while (dList_length(host_connections) > 0) {
-      hc = (HostConnection_t*) dList_nth_data(host_connections, 0);
-      while ((sd = dList_nth_data(hc->queue, 0))) {
-         dList_remove(hc->queue, sd);
+   while ((sd = dList_nth_data(srv->queue, 0))) {
+      dList_remove_fast(srv->queue, sd);
+      dFree(sd);
+   }
+   dList_free(srv->queue);
+   dList_remove_fast(servers, srv);
+   dFree(srv->host);
+   dFree(srv);
+}
+
+static void Http_servers_remove_all()
+{
+   Server_t *srv;
+   SocketData_t *sd;
+
+   while (dList_length(servers) > 0) {
+      srv = (Server_t*) dList_nth_data(servers, 0);
+      while ((sd = dList_nth_data(srv->queue, 0))) {
+         dList_remove(srv->queue, sd);
          dFree(sd);
       }
-      Http_host_connection_remove(hc);
+      Http_server_remove(srv);
    }
-   dList_free(host_connections);
+   dList_free(servers);
 }
 
 static void Http_fd_map_remove_all()
@@ -1017,7 +1044,7 @@ static void Http_fd_map_remove_all()
  */
 void a_Http_freeall(void)
 {
-   Http_host_connection_remove_all();
+   Http_servers_remove_all();
    Http_fd_map_remove_all();
    a_Klist_free(&ValidSocks);
    a_Url_free(HTTP_Proxy);

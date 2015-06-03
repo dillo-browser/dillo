@@ -907,7 +907,7 @@ void Table::actuallyCalcCellSizes (bool calcHeights)
    int childHeight;
    core::Extremes extremes;
 
-   // Will also call calcColumnExtremes(), when needed.
+   // Will also call forceCalcColumnExtremes(), when needed.
    getExtremes (&extremes);
 
    int availWidth = getAvailWidth (true);
@@ -1279,24 +1279,6 @@ void Table::apportionRowSpan ()
          setCumHeight (i+1, cumHeight->get(i) + rowHeight[i]);
    }
    delete[] rowHeight;
-
-   DBG_OBJ_LEAVE ();
-}
-
-
-/**
- * \brief Fills dw::Table::colExtremes, only if recalculation is necessary.
- *
- * \bug Some parts are missing.
- */
-void Table::_unused_calcColumnExtremes ()
-{
-   // This method is actually not used. Consider removal.
-
-   DBG_OBJ_ENTER0 ("resize", 0, "calcColumnExtremes");
-
-   if (extremesChanged () || extremesQueued ())
-      forceCalcColumnExtremes ();
 
    DBG_OBJ_LEAVE ();
 }

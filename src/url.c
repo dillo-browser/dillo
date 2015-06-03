@@ -204,7 +204,6 @@ void a_Url_free(DilloUrl *url)
          dFree((char *)url->hostname);
       dFree((char *)url->buffer);
       dStr_free(url->data, 1);
-      dFree((char *)url->alt);
       dFree(url);
    }
 }
@@ -213,7 +212,6 @@ void a_Url_free(DilloUrl *url)
  * Resolve the URL as RFC3986 suggests.
  */
 static Dstr *Url_resolve_relative(const char *RelStr,
-                                  DilloUrl *BaseUrlPar,
                                   const char *BaseStr)
 {
    char *p, *s, *e;
@@ -224,9 +222,7 @@ static Dstr *Url_resolve_relative(const char *RelStr,
    /* parse relative URL */
    RelUrl = Url_object_new(RelStr);
 
-   if (BaseUrlPar) {
-      BaseUrl = BaseUrlPar;
-   } else if (RelUrl->scheme == NULL) {
+   if (RelUrl->scheme == NULL) {
       /* only required when there's no <scheme> in RelStr */
       BaseUrl = Url_object_new(BaseStr);
    }
@@ -336,8 +332,7 @@ static Dstr *Url_resolve_relative(const char *RelStr,
 done:
    dStr_free(Path, TRUE);
    a_Url_free(RelUrl);
-   if (BaseUrl != BaseUrlPar)
-      a_Url_free(BaseUrl);
+   a_Url_free(BaseUrl);
    return SolvedUrl;
 }
 
@@ -356,7 +351,6 @@ done:
  *     port               = 8080
  *     flags              = URL_Get
  *     data               = Dstr * ("")
- *     alt                = NULL
  *     ismap_url_len      = 0
  *  }
  *
@@ -406,7 +400,7 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
    }
 
    /* Resolve the URL */
-   SolvedUrl = Url_resolve_relative(urlstr, NULL, base_url);
+   SolvedUrl = Url_resolve_relative(urlstr, base_url);
    _MSG("SolvedUrl = %s\n", SolvedUrl->str);
 
    /* Fill url data */
@@ -435,7 +429,6 @@ DilloUrl* a_Url_dup(const DilloUrl *ori)
    url->url_string           = dStr_new(URL_STR(ori));
    url->port                 = ori->port;
    url->flags                = ori->flags;
-   url->alt                  = dStrdup(ori->alt);
    url->ismap_url_len        = ori->ismap_url_len;
    url->illegal_chars        = ori->illegal_chars;
    url->illegal_chars_spc    = ori->illegal_chars_spc;
@@ -495,17 +488,6 @@ void a_Url_set_data(DilloUrl *u, Dstr **data)
 }
 
 /*
- * Set DilloUrl alt (alternate text to the URL. Used by image maps)
- */
-void a_Url_set_alt(DilloUrl *u, const char *alt)
-{
-   if (u) {
-      dFree((char *)u->alt);
-      u->alt = dStrdup(alt);
-   }
-}
-
-/*
  * Set DilloUrl ismap coordinates
  * (this is optimized for not hogging the CPU)
  */
@@ -516,7 +498,6 @@ void a_Url_set_ismap_coords(DilloUrl *u, char *coord_str)
    if (!u->ismap_url_len) {
       /* Save base-url length (without coords) */
       u->ismap_url_len = URL_STR_(u) ? u->url_string->len : 0;
-      a_Url_set_flags(u, URL_FLAGS(u) | URL_Ismap);
    }
    if (u->url_string) {
       dStr_truncate(u->url_string, u->ismap_url_len);

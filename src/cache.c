@@ -756,6 +756,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
 
             if (!web->requester ||
                 a_Url_same_organization(entry->Url, web->requester)) {
+               /* If cookies are third party, don't even consider them. */
                char *server_date = Cache_parse_field(header, "Date");
 
                a_Cookies_set(Cookies, entry->Url, server_date);
@@ -764,10 +765,6 @@ static void Cache_parse_header(CacheEntry_t *entry)
             }
          }
       }
-      if (i >= dList_length(ClientQueue)) {
-         MSG("Cache: cookies not accepted from '%s'\n", URL_STR(entry->Url));
-      }
-
       for (i = 0; (data = dList_nth_data(Cookies, i)); ++i)
          dFree(data);
       dList_free(Cookies);
@@ -856,17 +853,6 @@ static void Cache_finish_msg(CacheEntry_t *entry)
                "%s\n", URL_STR_(entry->Url));
       MSG("Expected size: %d, Transfer size: %d\n",
           entry->ExpectedSize, entry->TransferSize);
-   }
-   if (!entry->TransferSize && !(entry->Flags & CA_Redirect) &&
-       (entry->Flags & WEB_RootUrl)) {
-      char *eol = strchr(entry->Header->str, '\n');
-      if (eol) {
-         char *status_line = dStrndup(entry->Header->str,
-                                      eol - entry->Header->str);
-         MSG_HTTP("Body of %s was empty. Server sent status: %s\n",
-                  URL_STR_(entry->Url), status_line);
-         dFree(status_line);
-      }
    }
    entry->Flags |= CA_GotData;
    entry->Flags &= ~CA_Stopped;          /* it may catch up! */
