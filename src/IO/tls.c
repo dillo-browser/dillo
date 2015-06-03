@@ -943,15 +943,49 @@ static void Tls_print_cert_chain(SSL *ssl)
    if (sk) {
       const uint_t buflen = 4096;
       char buf[buflen];
-      int i, n = sk_X509_num(sk);
+      int rc, i, n = sk_X509_num(sk);
       X509 *cert = NULL;
       EVP_PKEY *public_key;
       int key_type, key_bits;
       const char *type_str;
+      BIO *b;
 
       for (i = 0; i < n; i++) {
          cert = sk_X509_value(sk, i);
          public_key = X509_get_pubkey(cert);
+
+         /* We are trying to find a way to get the hash function used
+          * with a certificate. This way, which is not very pleasant, puts
+          * a string such as "sha256WithRSAEncryption" in our buffer and we
+          * then trim off the "With..." part.
+          */
+         b = BIO_new(BIO_s_mem());
+         rc = i2a_ASN1_OBJECT(b, cert->sig_alg->algorithm);
+
+         if (rc > 0) {
+            rc = BIO_gets(b, buf, buflen);
+         }
+         if (rc <= 0) {
+            strcpy(buf, "(unknown)");
+            buf[buflen-1] = '\0';
+         } else {
+            char *s = strstr(buf, "With");
+
+            if (s) {
+               *s = '\0';
+               if (!strcmp(buf, "sha1")) {
+                  MSG_WARN("In 2015, browsers have begun to deprecate SHA1 "
+                           "certificates.\n");
+               } else if (!strncmp(buf, "md", 2)) {
+                  MSG_ERR("Browsers stopped accepting MD5 certificates around "
+                          "2012.\n");
+               }
+            }
+         }
+         BIO_free(b);
+         MSG("%s ", buf);
+
+
          key_type = EVP_PKEY_type(public_key->type);
          type_str = key_type == EVP_PKEY_RSA ? "RSA" :
                     key_type == EVP_PKEY_DSA ? "DSA" :
