@@ -215,12 +215,14 @@ void a_Http_connect_done(int fd, bool_t success)
 
    if (fme && (sd = a_Klist_get_data(ValidSocks, fme->skey))) {
       ChainLink *info = sd->Info;
+      bool_t valid_web = a_Web_valid(sd->web);
 
-      if (success) {
+      if (success && valid_web) {
          a_Chain_bfcb(OpSend, info, &sd->SockFD, "FD");
          Http_send_query(sd);
       } else {
-         MSG_BW(sd->web, 1, "Could not establish connection.");
+         if (valid_web)
+            MSG_BW(sd->web, 1, "Could not establish connection.");
          MSG("fd %d is done and failed\n", sd->SockFD);
          dClose(fd);
          Http_socket_free(VOIDP2INT(info->LocalKey)); /* free sd */
