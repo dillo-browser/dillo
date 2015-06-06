@@ -16,7 +16,8 @@ class Bullet: public core::Widget
 protected:
    void sizeRequestImpl (core::Requisition *requisition, bool posDefined, int x,
                          int y);
-   void getExtremesImpl (core::Extremes *extremes);
+   void getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
+                         int y);
    void containerSizeChangedForChildren ();
    void draw (core::View *view, core::Rectangle *area,
               core::DrawingContext *context);

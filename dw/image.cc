@@ -238,7 +238,8 @@ void Image::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
    DBG_OBJ_LEAVE ();
 }
 
-void Image::getExtremesImpl (core::Extremes *extremes)
+void Image::getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
+                             int y)
 {
    int contentWidth;
    if (buffer)

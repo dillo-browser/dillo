@@ -446,7 +446,8 @@ void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
          word->size.width;
 }
 
-void Textblock::getExtremesImpl (core::Extremes *extremes)
+void Textblock::getExtremesImpl (core::Extremes *extremes, bool posDefined,
+                                 int x, int y)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "getExtremesImpl");
 

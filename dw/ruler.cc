@@ -47,7 +47,8 @@ void Ruler::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
    requisition->descent = boxRestHeight ();
 }
 
-void Ruler::getExtremesImpl (core::Extremes *extremes)
+void Ruler::getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
+                             int y)
 {
    extremes->minWidth = extremes->maxWidth = boxDiffWidth ();
    extremes->minWidthIntrinsic = extremes->minWidth;

@@ -54,7 +54,7 @@ void Embed::sizeRequestImpl (Requisition *requisition, bool posDefined, int x,
    resource->sizeRequest (requisition);
 }
 
-void Embed::getExtremesImpl (Extremes *extremes)
+void Embed::getExtremesImpl (Extremes *extremes, bool posDefined, int x, int y)
 {
    resource->getExtremes (extremes);
    correctExtremes (extremes, false);

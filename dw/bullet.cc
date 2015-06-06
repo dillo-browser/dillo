@@ -43,7 +43,8 @@ void Bullet::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
    requisition->descent = 0;
 }
 
-void Bullet::getExtremesImpl (core::Extremes *extremes)
+void Bullet::getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
+                              int y)
 {
    extremes->minWidth = extremes->maxWidth = extremes->adjustmentWidth =
       extremes->minWidthIntrinsic = extremes->maxWidthIntrinsic =

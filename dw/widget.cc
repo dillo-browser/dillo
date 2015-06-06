@@ -988,7 +988,7 @@ int Widget::calcHeight (style::Length cssValue, bool usePercentage,
 /**
  * \brief Wrapper for Widget::getExtremesImpl().
  */
-void Widget::getExtremes (Extremes *extremes)
+void Widget::getExtremes (Extremes *extremes, bool posDefined, int x, int y)
 {
    assert (!queueResizeEntered ());
 
@@ -1011,7 +1011,7 @@ void Widget::getExtremes (Extremes *extremes)
       // For backward compatibility (part 1/2):
       extremes->minWidthIntrinsic = extremes->maxWidthIntrinsic = -1;
 
-      getExtremesImpl (extremes);
+      getExtremesImpl (extremes, posDefined, x, y);
 
       // For backward compatibility (part 2/2):
       if (extremes->minWidthIntrinsic == -1)
@@ -1055,6 +1055,11 @@ void Widget::calcExtraSpace ()
 }
 
 Widget *Widget::sizeRequestReference ()
+{
+   return NULL;
+}
+
+Widget *Widget::getExtremesReference ()
 {
    return NULL;
 }

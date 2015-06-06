@@ -286,7 +286,8 @@ protected:
    /**
     * \brief See \ref dw-widget-sizes.
     */
-   virtual void getExtremesImpl (Extremes *extremes) = 0;
+   virtual void getExtremesImpl (Extremes *extremes, bool posDefined, int x,
+                                 int y) = 0;
 
    virtual void calcExtraSpaceImpl ();
 
@@ -449,9 +450,15 @@ public:
     */
    virtual Widget *sizeRequestReference ();
 
+   /**
+    * \brief See \ref dw-widget-sizes (or \ref dw-size-request-pos).
+    */
+   virtual Widget *getExtremesReference ();
+
    void sizeRequest (Requisition *requisition, bool posDefined = false,
                      int x = 0, int y = 0);
-   void getExtremes (Extremes *extremes);
+   void getExtremes (Extremes *extremes, bool posDefined = false, int x = 0,
+                     int y = 0);
    void sizeAllocate (Allocation *allocation);
 
    void calcExtraSpace ();

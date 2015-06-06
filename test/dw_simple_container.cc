@@ -177,7 +177,8 @@ void SimpleContainer::sizeRequestImpl (Requisition *requisition,
 }
 
 
-void SimpleContainer::getExtremesImpl (Extremes *extremes)
+void SimpleContainer::getExtremesImpl (Extremes *extremes, bool posDefined,
+                                       int x, int y)
 {
    Extremes childExtr;
    if (child)
