@@ -55,7 +55,14 @@ public:
     * tellPosition2. Coordinates are relative to the *container*.
     */
    virtual void tellPosition2 (core::Widget *widget, int x, int y) = 0;
-   
+
+   virtual void tellIncompletePosition1 (core::Widget *generator,
+                                         core::Widget *widget, int x, int y)
+      = 0;
+   virtual void tellIncompletePosition2 (core::Widget *generator,
+                                         core::Widget *widget, int x, int y)
+      = 0;
+
    virtual void getSize (core::Requisition *containerReq, int *oofWidth,
                          int *oofHeight) = 0;
    virtual bool containerMustAdjustExtraSpace ()= 0;

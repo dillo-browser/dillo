@@ -39,16 +39,14 @@ Ruler::~Ruler ()
    DBG_OBJ_DELETE ();
 }
 
-void Ruler::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
-                             int x, int y)
+void Ruler::sizeRequestSimpl (core::Requisition *requisition)
 {
    requisition->width = lout::misc::max (getAvailWidth (true), boxDiffWidth ());
    requisition->ascent = boxOffsetY ();
    requisition->descent = boxRestHeight ();
 }
 
-void Ruler::getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
-                             int y)
+void Ruler::getExtremesSimpl (core::Extremes *extremes)
 {
    extremes->minWidth = extremes->maxWidth = boxDiffWidth ();
    extremes->minWidthIntrinsic = extremes->minWidth;

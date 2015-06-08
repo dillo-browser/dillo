@@ -172,8 +172,7 @@ Image::~Image()
    DBG_OBJ_DELETE ();
 }
 
-void Image::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
-                             int x, int y)
+void Image::sizeRequestSimpl (core::Requisition *requisition)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
@@ -238,8 +237,7 @@ void Image::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
    DBG_OBJ_LEAVE ();
 }
 
-void Image::getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
-                             int y)
+void Image::getExtremesSimpl (core::Extremes *extremes)
 {
    int contentWidth;
    if (buffer)

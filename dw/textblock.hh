@@ -576,10 +576,11 @@ protected:
    int redrawY;
    int lastWordDrawn;
 
-   bool sizeRequestPosDefined;
-   int sizeRequestX, sizeRequestY;
+   int sizeRequestNumPos;
+   Widget **sizeRequestReferences;
+   int *sizeRequestX, *sizeRequestY;
    
-   /* This value is (currently) set by setAscent(). */
+   /* This value is currently) set by setAscent(). */
    int lineBreakWidth;
 
    int wrapRefLines, wrapRefParagraphs;  /* 0-based. Important: Both
@@ -618,7 +619,6 @@ protected:
    int hoverLink;  /* The link under the mouse pointer */
 
    void queueDrawRange (int index1, int index2);
-   bool needsPositionForSize ();
    int calcVerticalBorder (int widgetPadding, int widgetBorder,
                            int widgetMargin, int lineBorderTotal,
                            int lineMarginTotal);
@@ -682,6 +682,11 @@ protected:
                       core::Requisition *size, bool isStart, bool isEnd);
    bool calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
                                 core::Requisition *size);
+   bool findSizeRequestReference (Widget *reference, int *xRef = NULL,
+                                  int *yRef = NULL);
+   bool findSizeRequestReference (int oofmIndex, int *xRef = NULL,
+                                  int *yRef = NULL)
+   { return findSizeRequestReference (oofContainer[oofmIndex], xRef, yRef); }
 
    /**
     * Of nested text blocks, only the most inner one must regard the
@@ -815,11 +820,11 @@ protected:
    Widget *getWidgetAtPointLevel (int x, int y, int level,
                                   core::GettingWidgetAtPointContext *context);
 
-   void sizeRequestImpl (core::Requisition *requisition, bool posDefined, int x,
-                         int y);
-   Widget *sizeRequestReference ();
-   void getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
-                         int y);
+   void sizeRequestImpl (core::Requisition *requisition, int numPos,
+                         Widget **references, int *x, int *y);
+   int numSizeRequestReferences ();
+   Widget *sizeRequestReference (int index);
+   void getExtremesSimpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
 
    void calcExtraSpaceImpl ();

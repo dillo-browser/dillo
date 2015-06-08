@@ -35,16 +35,14 @@ Bullet::~Bullet ()
    DBG_OBJ_DELETE ();
 }
 
-void Bullet::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
-                              int x, int y)
+void Bullet::sizeRequestSimpl (core::Requisition *requisition)
 {
    requisition->width = lout::misc::max (getStyle()->font->xHeight * 4 / 5, 1);
    requisition->ascent = lout::misc::max (getStyle()->font->xHeight, 1);
    requisition->descent = 0;
 }
 
-void Bullet::getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
-                              int y)
+void Bullet::getExtremesSimpl (core::Extremes *extremes)
 {
    extremes->minWidth = extremes->maxWidth = extremes->adjustmentWidth =
       extremes->minWidthIntrinsic = extremes->maxWidthIntrinsic =

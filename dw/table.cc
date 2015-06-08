@@ -103,8 +103,7 @@ Table::~Table()
    DBG_OBJ_DELETE ();
 }
 
-void Table::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
-                             int x, int y)
+void Table::sizeRequestSimpl (core::Requisition *requisition)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
@@ -130,8 +129,7 @@ void Table::sizeRequestImpl (core::Requisition *requisition, bool posDefined,
    DBG_OBJ_LEAVE ();
 }
 
-void Table::getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
-                             int y)
+void Table::getExtremesSimpl (core::Extremes *extremes)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "getExtremesImpl");
 

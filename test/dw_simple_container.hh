@@ -34,10 +34,8 @@ private:
    Widget *child;
 
 protected:
-   void sizeRequestImpl (core::Requisition *requisition, bool posDefined, int x,
-                         int y);
-   void getExtremesImpl (core::Extremes *extremes, bool posDefined, int x,
-                         int y);
+   void sizeRequestSimpl (core::Requisition *requisition);
+   void getExtremesSimpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
 
 public:

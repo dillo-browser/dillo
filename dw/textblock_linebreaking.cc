@@ -463,16 +463,19 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
 
       if (word->content.type == core::Content::WIDGET_OOF_REF) {
          Widget *widget = word->content.widget;
-         oof::OutOfFlowMgr *oofm =
-            searchOutOfFlowMgr (getWidgetOOFIndex (widget));
+         int oofmIndex = getWidgetOOFIndex (widget);
+         oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (oofmIndex);
          // See also Textblock::sizeAllocate, and notes there about
          // vertical alignment. Calculating the vertical position
          // should probably be centralized.
          if (oofm) {
-            assert (sizeRequestPosDefined);
-            oofm->tellPosition2 (widget, sizeRequestX + xWidget,
-                                 sizeRequestY + yLine + (line->borderAscent
-                                                         - word->size.ascent));
+            int xRel = xWidget;
+            int yRel = yLine + (line->borderAscent - word->size.ascent);
+            int xRef, yRef;
+            if (findSizeRequestReference (oofmIndex, &xRef, &yRef))
+               oofm->tellPosition2 (widget, xRef + xRel, yRef + yRel);
+            else
+               oofm->tellIncompletePosition2 (widget, this, xRel, yRel);
          }
       }
 
@@ -757,12 +760,14 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                lastFloatPos = newFloatPos;
                
                Widget *widget = words->getRef(lastFloatPos)->content.widget;
-               oof::OutOfFlowMgr *oofm =
-                  searchOutOfFlowMgr (getWidgetOOFIndex (widget));
+               int oofmIndex = getWidgetOOFIndex (widget);
+               oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (oofmIndex);
                if (oofm && oofm->mayAffectBordersAtAll ()) {
-                  assert (sizeRequestPosDefined);
-                  oofm->tellPosition1 (widget, sizeRequestX + boxOffsetX (),
-                                       sizeRequestY + yNewLine);
+                  int xRel = boxOffsetX (), yRel = yNewLine, xRef, yRef;
+                  if (findSizeRequestReference (oofmIndex, &xRef, &yRef))
+                     oofm->tellPosition1 (widget, xRef + xRel, yRef + yRel);
+                  else
+                     oofm->tellIncompletePosition1 (widget, this, xRel, yRel);
                }
 
                balanceBreakPosAndHeight (wordIndex, firstIndex, &searchUntil,
@@ -852,16 +857,19 @@ int Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
    // Floats, which affect either border, are handled in wrapWordInFlow; this
    // is rather for positioned elements (but only for completeness:
    // tellPosition1 is not implemented for positioned elements).
-   oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (getWidgetOOFIndex (widget));
+   int oofmIndex = getWidgetOOFIndex (widget);
+   oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (oofmIndex);
    DBG_OBJ_MSGF ("construct.word", 1, "parentRef = %d, oofm = %p",
                  widget->parentRef, oofm);
    if (oofm && !oofm->mayAffectBordersAtAll ()) {
       // TODO Again, "x" is not correct (see above).
-      assert (sizeRequestPosDefined);
-      oofm->tellPosition1 (widget, sizeRequestX + boxOffsetX (),
-                           sizeRequestY + yNewLine);
+      int xRel = boxOffsetX (), yRel = yNewLine, xRef, yRef;
+      if (findSizeRequestReference (oofmIndex, &xRef, &yRef))
+         oofm->tellPosition1 (widget, xRef + xRel, yRef + yRel);
+      else
+         oofm->tellIncompletePosition1 (widget, this, xRel, yRel);
    }
-   
+
    DBG_OBJ_LEAVE ();
 
    return 0; // Words list not changed.
@@ -2014,19 +2022,19 @@ void Textblock::calcBorders (int lastOofRef, int height)
 
    bool oofmDefined = false;
    for (int i = 0; i < NUM_OOFM && !oofmDefined; i++)
-      if (searchOutOfFlowMgr(i))
+      if (findSizeRequestReference (i))
          oofmDefined = true;
 
    if (oofmDefined) {
       int firstWordOfLine =
          lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
       int effOofRef = misc::max (lastOofRef, firstWordOfLine - 1);
-      assert (sizeRequestPosDefined);
-      int y = sizeRequestY + yOffsetOfLineToBeCreated ();
+      int yRel = yOffsetOfLineToBeCreated (), yRef;
            
       for (int i = 0; i < NUM_OOFM; i++) {
-         oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr(i);
-         if (oofm) {
+         oof::OutOfFlowMgr *oofm;
+         if ((oofm = searchOutOfFlowMgr (i)) &&
+             findSizeRequestReference (i, NULL, &yRef)) {
             // Consider the example:
             //
             // <div>
@@ -2059,6 +2067,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
             // than the first word of the new line, so a solution is to use
             // the maximum of both.
 
+            int y = yRef + yRel;
             bool thisHasLeft, thisHasRight;
             
             thisHasLeft = oofm->hasFloatLeft (this, y, height, this, effOofRef);

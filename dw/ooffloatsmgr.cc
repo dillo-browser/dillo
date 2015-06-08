@@ -1608,6 +1608,19 @@ void OOFFloatsMgr::tellPosition1 (Widget *widget, int x, int y)
 
 void OOFFloatsMgr::tellPosition2 (Widget *widget, int x, int y)
 {
+   // Nothing to do.
+}
+
+void OOFFloatsMgr::tellIncompletePosition1 (Widget *generator, Widget *widget,
+                                            int x, int y)
+{
+   assertNotReached ();
+}
+
+void OOFFloatsMgr::tellIncompletePosition2 (Widget *generator, Widget *widget,
+                                            int x, int y)
+{
+   assertNotReached ();
 }
 
 bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, SFVType type,

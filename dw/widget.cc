@@ -567,8 +567,8 @@ bool Widget::usesAvailHeight ()
  *  \brief This method is a wrapper for Widget::sizeRequestImpl(); it calls
  *     the latter only when needed.
  */
-void Widget::sizeRequest (Requisition *requisition, bool posDefined, int x,
-                          int y)
+void Widget::sizeRequest (Requisition *requisition, int numPos,
+                          Widget **references, int *x, int *y)
 {
    assert (!queueResizeEntered ());
 
@@ -588,7 +588,7 @@ void Widget::sizeRequest (Requisition *requisition, bool posDefined, int x,
    if (needsResize ()) {
       calcExtraSpace ();
       /** \todo Check requisition == &(this->requisition) and do what? */
-      sizeRequestImpl (requisition, posDefined, x, y);
+      sizeRequestImpl (requisition, numPos, references, x, y);
       this->requisition = *requisition;
       unsetFlags (NEEDS_RESIZE);
 
@@ -988,7 +988,8 @@ int Widget::calcHeight (style::Length cssValue, bool usePercentage,
 /**
  * \brief Wrapper for Widget::getExtremesImpl().
  */
-void Widget::getExtremes (Extremes *extremes, bool posDefined, int x, int y)
+void Widget::getExtremes (Extremes *extremes, int numPos, Widget **references,
+                          int *x, int *y)
 {
    assert (!queueResizeEntered ());
 
@@ -1011,7 +1012,7 @@ void Widget::getExtremes (Extremes *extremes, bool posDefined, int x, int y)
       // For backward compatibility (part 1/2):
       extremes->minWidthIntrinsic = extremes->maxWidthIntrinsic = -1;
 
-      getExtremesImpl (extremes, posDefined, x, y);
+      getExtremesImpl (extremes, numPos, references, x, y);
 
       // For backward compatibility (part 2/2):
       if (extremes->minWidthIntrinsic == -1)
@@ -1054,13 +1055,25 @@ void Widget::calcExtraSpace ()
    DBG_OBJ_SET_NUM ("extraSpace.right", extraSpace.right);
 }
 
-Widget *Widget::sizeRequestReference ()
+int Widget::numSizeRequestReferences ()
 {
+   return 0;
+}
+
+Widget *Widget::sizeRequestReference (int index)
+{
+   misc::assertNotReached ();
    return NULL;
 }
 
-Widget *Widget::getExtremesReference ()
+int Widget::numGetExtremesReferences ()
 {
+   return 0;
+}
+
+Widget *Widget::getExtremesReference (int index)
+{
+   misc::assertNotReached ();
    return NULL;
 }
 
@@ -1541,6 +1554,32 @@ void Widget::getPaddingArea (int *xPad, int *yPad, int *widthPad,
    *yPad += style->borderWidth.top;
    *widthPad -= style->borderWidth.left + style->borderWidth.right;
    *heightPad -= style->borderWidth.top + style->borderWidth.bottom;
+}
+
+void Widget::sizeRequestImpl (Requisition *requisition, int numPos,
+                              Widget **references, int *x, int *y)
+{
+   // Use the simple variant.
+   sizeRequestSimpl (requisition);
+}
+
+void Widget::sizeRequestSimpl (Requisition *requisition)
+{
+   // Either variant should be implemented.
+   misc::assertNotReached ();
+}
+
+void Widget::getExtremesImpl (Extremes *extremes, int numPos,
+                              Widget **references, int *x, int *y)
+{
+   // Use the simple variant.
+   getExtremesSimpl (extremes);
+}
+
+void Widget::getExtremesSimpl (Extremes *extremes)
+{
+    // Either variant should be implemented.
+   misc::assertNotReached ();
 }
 
 void Widget::sizeAllocateImpl (Allocation *allocation)

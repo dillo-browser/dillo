@@ -160,8 +160,7 @@ SimpleContainer::~SimpleContainer ()
       delete child;
 }
 
-void SimpleContainer::sizeRequestImpl (Requisition *requisition,
-                                       bool posDefined, int x, int y)
+void SimpleContainer::sizeRequestSimpl (Requisition *requisition)
 {
    Requisition childReq;
    if (child)
@@ -177,8 +176,7 @@ void SimpleContainer::sizeRequestImpl (Requisition *requisition,
 }
 
 
-void SimpleContainer::getExtremesImpl (Extremes *extremes, bool posDefined,
-                                       int x, int y)
+void SimpleContainer::getExtremesSimpl (Extremes *extremes)
 {
    Extremes childExtr;
    if (child)

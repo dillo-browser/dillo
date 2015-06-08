@@ -217,8 +217,11 @@ Textblock::Textblock (bool limitTextWidth)
    DBG_OBJ_SET_NUM ("redrawY", redrawY);
    lastWordDrawn = -1;
    DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
-   sizeRequestPosDefined = false;
-   DBG_OBJ_SET_BOOL ("sizeRequestPosDefined", sizeRequestPosDefined);
+
+   sizeRequestNumPos = 0;
+   sizeRequestReferences = NULL;
+   sizeRequestX = sizeRequestY = NULL;
+   DBG_OBJ_SET_BOOL ("sizeRequestNumPos", sizeRequestNumPos);
          
    /*
     * The initial sizes of lines and words should not be
@@ -285,6 +288,13 @@ Textblock::~Textblock ()
    delete words;
    delete anchors;
 
+   if (sizeRequestReferences)
+      delete[] sizeRequestReferences;
+   if (sizeRequestX)
+      delete[] sizeRequestX;
+   if (sizeRequestY)
+      delete[] sizeRequestY;
+   
    /* Make sure we don't own widgets anymore. Necessary before call of
       parent class destructor. (???) */
    words = NULL;
@@ -297,24 +307,32 @@ Textblock::~Textblock ()
  * padding/border/margin. This can be used to align the first lines
  * of several textblocks in a horizontal line.
  */
-void Textblock::sizeRequestImpl (core::Requisition *requisition,
-                                 bool posDefined, int x, int y)
+void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
+                                 Widget **references, int *x, int *y)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
-   assert (posDefined || !needsPositionForSize ());
+   if (sizeRequestReferences)
+      delete[] sizeRequestReferences;
+   if (sizeRequestX)
+      delete[] sizeRequestX;
+   if (sizeRequestY)
+      delete[] sizeRequestY;
 
-   sizeRequestPosDefined = true;
-   if (posDefined) {
-      sizeRequestX = x;
-      sizeRequestY = y;
-   } else {
-      sizeRequestX = 0;
-      sizeRequestY = 0;
+   sizeRequestNumPos = numPos;
+   DBG_OBJ_SET_BOOL ("sizeRequestNumPos", sizeRequestNumPos);
+
+   sizeRequestReferences = new Widget*[numPos];
+   sizeRequestX = new int[numPos];
+   sizeRequestY = new int[numPos];
+   for (int i = 0; i < numPos; i++) {
+      sizeRequestReferences[i] = references[i];
+      sizeRequestX[i] = x[i];
+      sizeRequestY[i] = y[i];
+      DBG_OBJ_ARRSET_PTR ("sizeRequestReferences", i, sizeRequestReferences[i]);
+      DBG_OBJ_ARRSET_NUM ("sizeRequestX", i, sizeRequestX[i]);
+      DBG_OBJ_ARRSET_NUM ("sizeRequestY", i, sizeRequestY[i]);
    }
-   DBG_OBJ_SET_BOOL ("sizeRequestPosDefined", sizeRequestPosDefined);
-   DBG_OBJ_SET_NUM ("sizeRequestX", sizeRequestX);
-   DBG_OBJ_SET_NUM ("sizeRequestY", sizeRequestY);
    
    int newLineBreakWidth = getAvailWidth (true);
    if (newLineBreakWidth != lineBreakWidth) {
@@ -399,14 +417,14 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition,
    DBG_OBJ_LEAVE ();
 }
 
-core::Widget *Textblock::sizeRequestReference ()
+int Textblock::numSizeRequestReferences ()
 {
-   return needsPositionForSize() ? oofContainer[OOFM_FLOATS] : NULL;
+   return 0;
 }
 
-bool Textblock::needsPositionForSize ()
+core::Widget *Textblock::sizeRequestReference (int index)
 {
-   return oofContainer[OOFM_FLOATS] != this;
+   return NULL;
 }
 
 int Textblock::calcVerticalBorder (int widgetPadding, int widgetBorder,
@@ -446,8 +464,7 @@ void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
          word->size.width;
 }
 
-void Textblock::getExtremesImpl (core::Extremes *extremes, bool posDefined,
-                                 int x, int y)
+void Textblock::getExtremesSimpl (core::Extremes *extremes)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "getExtremesImpl");
 
@@ -1160,9 +1177,9 @@ core::Iterator *Textblock::iterator (core::Content::Type mask, bool atEnd)
 /*
  * Draw the decorations on a word.
  */
-void Textblock::decorateText(core::View *view, core::style::Style *style,
-                             core::style::Color::Shading shading,
-                             int x, int yBase, int width)
+void Textblock::decorateText (core::View *view, core::style::Style *style,
+                              core::style::Color::Shading shading,
+                              int x, int yBase, int width)
 {
    int y, height;
 
@@ -2256,52 +2273,89 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
    DBG_OBJ_ENTER ("resize", 0, "calcSizeOfWidgetInFlow", "%d, %p, ...",
                   wordIndex, widget);
 
-   int lastWord = lines->empty () ? -1 : lines->getLastRef()->lastWord;
-   assert (wordIndex > lastWord);
    bool result;
 
-   Widget *reference = widget->sizeRequestReference ();
-   
-   if (reference == NULL) {
-      widget->sizeRequest (size);
-      result = false;
-   } else {
-      assert (getParent () == NULL || sizeRequestPosDefined);
-      assert
-         (wordIndex == 0 ||
-          words->getRef(wordIndex - 1)->content.type == core::Content::BREAK);
-      assert (reference == oofContainer[OOFM_FLOATS]);
+   if ((wordIndex == 0 ||
+        words->getRef(wordIndex - 1)->content.type == core::Content::BREAK) &&
+       (widget->getStyle()->display == core::style::DISPLAY_BLOCK ||
+        widget->getStyle()->display == core::style::DISPLAY_LIST_ITEM ||
+        widget->getStyle()->display == core::style::DISPLAY_TABLE)) {
+      // pass positions
+      int lastWord = lines->empty () ? -1 : lines->getLastRef()->lastWord;
+      assert (wordIndex > lastWord);
 
-      // The following assertion is always the case in dillo, and
-      // plausible (since floats are the reason why the size depends
-      // on the position); and it simplifies the calculation of x
-      // below.
-      assert (widget->instanceOf (RegardingBorder::CLASS_ID) &&
-              !isOOFContainer (widget, OOFM_FLOATS));
-      
-      int xRef, yRef;
-      if (getParent () == NULL)
-         xRef = yRef = 0;
-      else {
-         xRef = sizeRequestX;
-         yRef = sizeRequestY;
-      }
-      
-      int x = xRef + boxOffsetX () + leftInnerPadding
+      int xRel = boxOffsetX () + leftInnerPadding
          + (lines->size () == 0 ? line1OffsetEff : 0);
       int lastMargin, yLine = yOffsetOfLineToBeCreated (&lastMargin);
-      int y = yRef + yLine - lastMargin
+      int yRel = yLine - lastMargin
          + max (lastMargin, widget->getStyle()->margin.top);
-         
-      widget->sizeRequest (size, true, x, y);
       
+      int numPos = 0;
+      int numChildReferences = widget->numSizeRequestReferences ();
+      Widget **references = new Widget*[numChildReferences];
+      int *x = new int[numChildReferences];
+      int *y = new int[numChildReferences];
+
+      for (int i = 0; i < numChildReferences; i++) {
+         Widget *childReference = widget->sizeRequestReference (i);
+         if (childReference == this) {
+            references[numPos] = childReference;
+            x[numPos] = xRel;
+            y[numPos] = yRel;
+            numPos++;
+         } else {
+            for (int j = 0; j < sizeRequestNumPos; j++) {
+               if (childReference == sizeRequestReferences[j]) {
+                  references[numPos] = childReference;
+                  x[numPos] = sizeRequestX[j] + xRel;
+                  y[numPos] = sizeRequestY[j] + yRel;
+                  numPos++;
+               } 
+            }
+         }
+      }
+
+      widget->sizeRequest (size, numPos, references, x, y);
+
+      delete references;
+      delete x;
+      delete y;
+
       result = true;
+   } else {
+      // do not pass positions (inline elements etc)
+      widget->sizeRequest (size);
+      result = false;
    }
 
    DBG_OBJ_LEAVE_VAL ("%s", boolToStr (result));
    return result;
 }
 
+bool Textblock::findSizeRequestReference (Widget *reference, int *xRef,
+                                          int *yRef)
+{
+   if (reference == this) {
+      if (xRef)
+         *xRef = 0;
+      if (yRef)
+         *yRef = 0;
+      return true;
+   } else {
+      for (int i = 0; i < sizeRequestNumPos; i++) {
+         if (reference == sizeRequestReferences[i]) {
+            if (xRef)
+               *xRef = sizeRequestX[i];
+            if (yRef)
+               *yRef = sizeRequestY[i];
+            return true;
+         }
+      }
+
+      return false;
+   }
+}
+   
 /**
  * Add a word (without hyphens) to the page structure.
  */

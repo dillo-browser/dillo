@@ -280,14 +280,26 @@ protected:
    /**
     * \brief See \ref dw-widget-sizes.
     */
-   virtual void sizeRequestImpl (Requisition *requisition, bool posDefined,
-                                 int x, int y) = 0;
- 
+   virtual void sizeRequestImpl (Requisition *requisition, int numPos,
+                                 Widget **references, int *x, int *y);
+
+   /**
+    * \brief Simple variant, to be implemented by widgets with sizes
+    *    not depending on positions.
+    */
+   virtual void sizeRequestSimpl (Requisition *requisition);
+
    /**
     * \brief See \ref dw-widget-sizes.
     */
-   virtual void getExtremesImpl (Extremes *extremes, bool posDefined, int x,
-                                 int y) = 0;
+   virtual void getExtremesImpl (Extremes *extremes, int numPos,
+                                 Widget **references, int *x, int *y);
+
+   /**
+    * \brief Simple variant, to be implemented by widgets with
+    *    extremes not depending on positions.
+    */
+   virtual void getExtremesSimpl (Extremes *extremes);
 
    virtual void calcExtraSpaceImpl ();
 
@@ -444,21 +456,31 @@ public:
    inline int boxRestHeight ()
    { return extraSpace.bottom + getStyle()->boxRestHeight (); }
    inline int boxDiffHeight () { return boxOffsetY () + boxRestHeight (); }
+   
+   /**
+    * \brief See \ref dw-widget-sizes (or \ref dw-size-request-pos).
+    */
+   virtual int numSizeRequestReferences ();
 
    /**
     * \brief See \ref dw-widget-sizes (or \ref dw-size-request-pos).
     */
-   virtual Widget *sizeRequestReference ();
+   virtual Widget *sizeRequestReference (int index);
 
    /**
     * \brief See \ref dw-widget-sizes (or \ref dw-size-request-pos).
     */
-   virtual Widget *getExtremesReference ();
+   virtual int numGetExtremesReferences ();
 
-   void sizeRequest (Requisition *requisition, bool posDefined = false,
-                     int x = 0, int y = 0);
-   void getExtremes (Extremes *extremes, bool posDefined = false, int x = 0,
-                     int y = 0);
+   /**
+    * \brief See \ref dw-widget-sizes (or \ref dw-size-request-pos).
+    */
+   virtual Widget *getExtremesReference (int index);
+
+   void sizeRequest (Requisition *requisition, int numPos = 0,
+                     Widget **references = NULL, int *x = NULL, int *y = NULL);
+   void getExtremes (Extremes *extremes, int numPos = 0,
+                     Widget **references = NULL, int *x = NULL, int *y = NULL);
    void sizeAllocate (Allocation *allocation);
 
    void calcExtraSpace ();

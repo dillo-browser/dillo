@@ -270,6 +270,18 @@ void OOFPositionedMgr::tellPosition2 (Widget *widget, int x, int y)
    DBG_OBJ_LEAVE ();
 }
 
+void OOFPositionedMgr::tellIncompletePosition1 (Widget *generator,
+                                                Widget *widget, int x, int y)
+{
+   // Nothing to do.
+}
+
+void OOFPositionedMgr::tellIncompletePosition2 (Widget *generator,
+                                                Widget *widget, int x, int y)
+{
+   // TODO
+}
+
 bool OOFPositionedMgr::containerMustAdjustExtraSpace ()
 {
    return true;

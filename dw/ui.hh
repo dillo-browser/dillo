@@ -228,10 +228,8 @@ private:
    Resource *resource;
 
 protected:
-   void sizeRequestImpl (Requisition *requisition, bool posDefined, int x,
-                         int y);
-   void getExtremesImpl (Extremes *extremes, bool posDefined, int x,
-                         int y);
+   void sizeRequestSimpl (Requisition *requisition);
+   void getExtremesSimpl (Extremes *extremes);
    void sizeAllocateImpl (Allocation *allocation);
 
    int getAvailWidthOfChild (Widget *child, bool forceValue);

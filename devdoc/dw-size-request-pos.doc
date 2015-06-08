@@ -6,6 +6,10 @@
   dw-widget-sizes, \ref dw-grows, and **Size requisitions depending on
   positions** (this document). </div>
 
+<div style="border: 2px solid #ff4040; margin: 1em 0;
+  padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
+  May not be up to date, needs a review.</div>
+
 Motivation
 ==========
 
@@ -23,32 +27,57 @@ General Idea
 A widget size may depend on the position relative to an anchestor
 widget. If a widget wants to get the size of a child widget, it should
 
-1. call the new method dw::core::Widget::sizeRequestReference,
-   which returns NULL, when the child's size does not depend on the
-   position, or a widget relative to which the child's position must
-   be calculated;
-2. call dw::core::Widget::sizeRequest with the position relative to
-   this widget.
+1. call the new methods dw::core::Widget::numSizeRequestReferences and
+   dw::core::Widget::sizeRequestReference, which return all widgets
+   relative to which the child's position must be calculated;
+2. call dw::core::Widget::sizeRequest with the positions relative to
+   these widgets.
 
-The position passed to dw::core::Widget::sizeRequest must be the
-position at which this child will be allocated.
+All positions passed to dw::core::Widget::sizeRequest must costitute
+the position at which this child will be allocated.
 
 There are situations where the parent widget is unable to determine
-this position before the size is known. An example: a textblock widget
-cannot determine the position of an inline widget (like an image, or
-an inline block) before the line is finished; on the other hand,
-finishing the line depends on knowing the sizes of the inline widgets.
+these positions before the size is known. An example: a textblock
+widget cannot determine the positions of an inline widget (like an
+image, or an inline block) before the line is finished; on the other
+hand, finishing the line depends on knowing the sizes of the inline
+widgets.
 
-This may result in a conflict, when the size of an inline widgets
-depends on the position. Fortunately, this is not the case in dillo:
-the only widget whose size depends on the position is dw::Textblock
-(the size will depend on the position within its floats container); but
-an inline blocks constitute its own floats container, so that there is
-no dependance on a position within another widget.
+This may result in a conflict, when the size of an inline widget
+depends on positions. Generally, the only widget whose size depends on
+positions is dw::Textblock (the size will depend on the positions
+within its oof container, see \ref dw-out-of-flow), so this conflict
+occurs with inline blocks.
 
-Generally, this case should be handled by providing a fallback
-strategy. (TODO: How does this look like? The widget is forced to
-calculate its size independant of the position?)
+This conflict is handled in different ways:
+
+1. Fortunately, this case is irrelevat for floats: an inline blocks
+   constitute its own floats container, so that there is no dependance
+   on a position within another widget.
+
+2. For positioned elements, this case is relevant, since an inline
+   block is in most cases not a container for positioned element. In
+   this case, a generator will call the methods
+   dw::oof::OutOfFlowMgr::tellIncompletePosition1 and
+   dw::oof::OutOfFlowMgr::tellIncompletePosition2, instead of
+   dw::oof::OutOfFlowMgr::tellPosition and
+   dw::oof::OutOfFlowMgr::tellPosition2, respectively. (Since this
+   case is irrelevant for floats,
+   dw::oof::OOFFloatsMgr::tellIncompletePosition1 and
+   dw::oof::OOFFloatsMgr::tellIncompletePosition2 are not implemented but
+   simply abort.)
+
+(This is not (yet) considered for borders: borders are only relevant
+for floats, but conflicts do not occur for floats.)
+
+
+Extremes
+--------
+Extremes may depend on the position in an analogue way, see:
+
+- dw::core::Widget::numGetExtremesReferences,
+- dw::core::Widget::getExtremesReference, and
+- dw::core::Widget::getExtremes.
 
 Resizing
 --------
@@ -101,5 +130,15 @@ Plan
 
 6. Implement step 3 for positioned elements (affects only
    dw::oof:OOFPositionedMgr). *INCOMPLETE.*
+
+
+Issues
+======
+
+- Since the signature of dw::core::Widget::sizeRequestImpl changes
+  quite often during the development of *size requisitions depending
+  on positions*, a simpler option dw::core::Widget::sizeRequestSimpl
+  has been added. May be removed again, after the design is stable.
+
 
 */
