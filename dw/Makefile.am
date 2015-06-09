@@ -27,6 +27,8 @@ libDw_core_a_SOURCES = \
 	stackingcontextmgr.cc \
 	style.cc \
 	style.hh \
+	tools.cc \
+	tools.hh \
 	types.cc \
 	types.hh \
 	ui.cc \

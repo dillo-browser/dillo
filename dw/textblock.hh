@@ -4,6 +4,7 @@
 #include <limits.h>
 
 #include "regardingborder.hh"
+#include "tools.hh"
 #include "../lout/misc.hh"
 
 // These were used when improved line breaking and hyphenation were implemented.
@@ -576,9 +577,7 @@ protected:
    int redrawY;
    int lastWordDrawn;
 
-   int sizeRequestNumPos;
-   Widget **sizeRequestReferences;
-   int *sizeRequestX, *sizeRequestY;
+   core::SizeParams sizeRequestParams;
    
    /* This value is currently) set by setAscent(). */
    int lineBreakWidth;

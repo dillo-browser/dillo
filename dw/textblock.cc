@@ -218,11 +218,8 @@ Textblock::Textblock (bool limitTextWidth)
    lastWordDrawn = -1;
    DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
 
-   sizeRequestNumPos = 0;
-   sizeRequestReferences = NULL;
-   sizeRequestX = sizeRequestY = NULL;
-   DBG_OBJ_SET_BOOL ("sizeRequestNumPos", sizeRequestNumPos);
-         
+   DBG_SET_SIZE_PARAMS ("sizeRequestParams", sizeRequestParams);
+        
    /*
     * The initial sizes of lines and words should not be
     * too high, since this will waste much memory with tables
@@ -287,14 +284,7 @@ Textblock::~Textblock ()
    delete lines;
    delete words;
    delete anchors;
-
-   if (sizeRequestReferences)
-      delete[] sizeRequestReferences;
-   if (sizeRequestX)
-      delete[] sizeRequestX;
-   if (sizeRequestY)
-      delete[] sizeRequestY;
-   
+ 
    /* Make sure we don't own widgets anymore. Necessary before call of
       parent class destructor. (???) */
    words = NULL;
@@ -312,27 +302,8 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
 {
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
-   if (sizeRequestReferences)
-      delete[] sizeRequestReferences;
-   if (sizeRequestX)
-      delete[] sizeRequestX;
-   if (sizeRequestY)
-      delete[] sizeRequestY;
-
-   sizeRequestNumPos = numPos;
-   DBG_OBJ_SET_BOOL ("sizeRequestNumPos", sizeRequestNumPos);
-
-   sizeRequestReferences = new Widget*[numPos];
-   sizeRequestX = new int[numPos];
-   sizeRequestY = new int[numPos];
-   for (int i = 0; i < numPos; i++) {
-      sizeRequestReferences[i] = references[i];
-      sizeRequestX[i] = x[i];
-      sizeRequestY[i] = y[i];
-      DBG_OBJ_ARRSET_PTR ("sizeRequestReferences", i, sizeRequestReferences[i]);
-      DBG_OBJ_ARRSET_NUM ("sizeRequestX", i, sizeRequestX[i]);
-      DBG_OBJ_ARRSET_NUM ("sizeRequestY", i, sizeRequestY[i]);
-   }
+   sizeRequestParams.fill (numPos, references, x, y);
+   DBG_SET_SIZE_PARAMS ("sizeRequestParams", sizeRequestParams);
    
    int newLineBreakWidth = getAvailWidth (true);
    if (newLineBreakWidth != lineBreakWidth) {
@@ -2289,37 +2260,12 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
       int lastMargin, yLine = yOffsetOfLineToBeCreated (&lastMargin);
       int yRel = yLine - lastMargin
          + max (lastMargin, widget->getStyle()->margin.top);
-      
-      int numPos = 0;
-      int numChildReferences = widget->numSizeRequestReferences ();
-      Widget **references = new Widget*[numChildReferences];
-      int *x = new int[numChildReferences];
-      int *y = new int[numChildReferences];
 
-      for (int i = 0; i < numChildReferences; i++) {
-         Widget *childReference = widget->sizeRequestReference (i);
-         if (childReference == this) {
-            references[numPos] = childReference;
-            x[numPos] = xRel;
-            y[numPos] = yRel;
-            numPos++;
-         } else {
-            for (int j = 0; j < sizeRequestNumPos; j++) {
-               if (childReference == sizeRequestReferences[j]) {
-                  references[numPos] = childReference;
-                  x[numPos] = sizeRequestX[j] + xRel;
-                  y[numPos] = sizeRequestY[j] + yRel;
-                  numPos++;
-               } 
-            }
-         }
-      }
-
-      widget->sizeRequest (size, numPos, references, x, y);
-
-      delete references;
-      delete x;
-      delete y;
+      core::SizeParams childParams;
+      sizeRequestParams.forChild (this, widget, xRel, yRel, &childParams);
+      widget->sizeRequest (size, childParams.getNumPos (),
+                           childParams.getReferences (), childParams.getX (),
+                           childParams.getY ());
 
       result = true;
    } else {
@@ -2341,19 +2287,8 @@ bool Textblock::findSizeRequestReference (Widget *reference, int *xRef,
       if (yRef)
          *yRef = 0;
       return true;
-   } else {
-      for (int i = 0; i < sizeRequestNumPos; i++) {
-         if (reference == sizeRequestReferences[i]) {
-            if (xRef)
-               *xRef = sizeRequestX[i];
-            if (yRef)
-               *yRef = sizeRequestY[i];
-            return true;
-         }
-      }
-
-      return false;
-   }
+   } else
+      return sizeRequestParams.findReference (reference, xRef, yRef);
 }
    
 /**
