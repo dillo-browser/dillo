@@ -193,9 +193,11 @@ static void yes_ssl_support(void)
    if (exit_error == 0){
       /* Don't want: eNULL, which has no encryption; aNULL, which has no
        * authentication; LOW, which as of 2014 use 64 or 56-bit encryption;
-       * EXPORT40, which uses 40-bit encryption.
+       * EXPORT40, which uses 40-bit encryption; RC4, for which methods were
+       * found in 2013 to defeat it somewhat too easily.
        */
-      SSL_CTX_set_cipher_list(ssl_context, "ALL:!aNULL:!eNULL:!LOW:!EXPORT40");
+      SSL_CTX_set_cipher_list(ssl_context,
+                              "ALL:!aNULL:!eNULL:!LOW:!EXPORT40:!RC4");
 
       /* Need to do this if we want to have the option of dealing
        * with self-signed certs
