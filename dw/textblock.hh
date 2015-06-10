@@ -617,6 +617,9 @@ protected:
 
    int hoverLink;  /* The link under the mouse pointer */
 
+   int numSizeReferences;
+   Widget *sizeReferences[NUM_OOFM];
+   
    void queueDrawRange (int index1, int index2);
    int calcVerticalBorder (int widgetPadding, int widgetBorder,
                            int widgetMargin, int lineBorderTotal,
@@ -823,7 +826,15 @@ protected:
                          Widget **references, int *x, int *y);
    int numSizeRequestReferences ();
    Widget *sizeRequestReference (int index);
+
    void getExtremesSimpl (core::Extremes *extremes);
+
+   int numGetExtremesReferences ();
+   Widget *getExtremesReference (int index);
+
+   void notifySetAsTopLevel ();
+   void notifySetParent ();
+
    void sizeAllocateImpl (core::Allocation *allocation);
 
    void calcExtraSpaceImpl ();

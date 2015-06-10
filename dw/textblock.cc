@@ -263,6 +263,8 @@ Textblock::Textblock (bool limitTextWidth)
       DBG_OBJ_ARRATTRSET_NUM ("hlEnd", layer, "nChar", hlEnd[layer].nChar);
    }
 
+   numSizeReferences = 0;
+
    initNewLine ();
 }
 
@@ -390,12 +392,12 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
 
 int Textblock::numSizeRequestReferences ()
 {
-   return 0;
+   return numSizeReferences;
 }
 
 core::Widget *Textblock::sizeRequestReference (int index)
 {
-   return NULL;
+   return sizeReferences[index];
 }
 
 int Textblock::calcVerticalBorder (int widgetPadding, int widgetBorder,
@@ -509,6 +511,46 @@ void Textblock::getExtremesSimpl (core::Extremes *extremes)
    DBG_OBJ_LEAVE ();
 }
 
+int Textblock::numGetExtremesReferences ()
+{
+   return numSizeReferences;
+}
+
+core::Widget *Textblock::getExtremesReference (int index)
+{
+   return sizeReferences[index];
+}
+
+void Textblock::notifySetAsTopLevel ()
+{
+   OOFAwareWidget::notifySetAsTopLevel ();
+
+   numSizeReferences = 0;
+   DBG_OBJ_SET_NUM ("numSizeReferences", numSizeReferences);
+}
+
+void Textblock::notifySetParent ()
+{
+   OOFAwareWidget::notifySetParent ();
+
+   numSizeReferences = 0;
+   for (int i = 0; i < NUM_OOFM; i++) {
+      if (oofContainer[i] != this) {
+         // avoid dublicates
+         bool found = false;
+         for (int j = 0; !found && j < numSizeReferences; j++)
+            if (oofContainer[i] == oofContainer[i])
+               found = true;
+
+         if (!found)
+            sizeReferences[numSizeReferences++] = oofContainer[i];
+      }
+   }
+
+   DBG_OBJ_SET_NUM ("numSizeReferences", numSizeReferences);
+   for (int i = 0; i < numSizeReferences; i++)
+      DBG_OBJ_ARRSET_NUM ("sizeReferences", i, sizeReferences[i]);
+}
 
 void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 {
