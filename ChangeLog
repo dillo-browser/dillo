@@ -6,6 +6,29 @@ Here we list changes that are relatively significant and/or visible to the
 user. For a history of changes in full detail, see our Mercurial repository
 at http://hg.dillo.org/dillo
 
+dillo-3.0.5 [not released yet]
+
++- Fix for segfault when there's no dpid and view source is requested.
+ - Fix view-source dpi to handle null characters correctly.
+ - Made view-source dpi use CSS formatting (it's shorter and cleaner).
+   Patches: Jorge Arellano Cid
++- Crosscompile/buildroot-friendly fltk-config test.
+   Patch: Peter Seiderer
++- Fix X11 icon name.
+ - In location bar, tend toward showing beginning of URL instead of end.
+ - Handle irix's version of vsnprintf().
+ - INPUT, TEXTAREA placeholder attribute.
+ - Fix bug with font_factor preference and CSS font-size:(larger|smaller).
+ - Recognize Menu key in keysrc.
+ - HTTPS: change cipher list to "ALL:!aNULL:!eNULL:!LOW:!EXPORT40:!RC4",
+   disable SSL3, disable TLS compression.
+   Patches: corvid
++- Avoid requesting background images if an ancestor has display:none.
+ - Ignore built-in search url if any are specified in dillorc.
+   Patches: Johannes Hofmann
+
+-----------------------------------------------------------------------------
+
 dillo-3.0.4.1 [December 24, 2014]
 
 +- Avoid a corner case segfault when no search URL is found in dillorc.
