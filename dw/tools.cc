@@ -5,12 +5,15 @@ namespace core {
 
 SizeParams::SizeParams ()
 {
+   DBG_OBJ_CREATE ("dw::core::SizeParams");
    init ();
+   debugPrint ();
 }
    
 SizeParams::~SizeParams ()
 {
    cleanup ();
+   DBG_OBJ_DELETE ();
 }
 
 void SizeParams::init ()
@@ -47,6 +50,8 @@ void SizeParams::fill (int numPos, Widget **references, int *x, int *y)
       this->x[i] = x[i];
       this->y[i] = y[i];
    }
+
+   debugPrint ();
 }
 
 void SizeParams::forChild (Widget *parent, Widget *child, int xRel, int yRel,
@@ -80,6 +85,7 @@ void SizeParams::forChild (Widget *parent, Widget *child, int xRel, int yRel,
       }
    }
 
+   childParams->debugPrint ();
 }
 
 bool SizeParams::findReference (Widget *reference, int *x, int *y)

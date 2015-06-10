@@ -218,7 +218,7 @@ Textblock::Textblock (bool limitTextWidth)
    lastWordDrawn = -1;
    DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
 
-   DBG_SET_SIZE_PARAMS ("sizeRequestParams", sizeRequestParams);
+   DBG_OBJ_ASSOC_CHILD (&sizeRequestParams);
         
    /*
     * The initial sizes of lines and words should not be
@@ -302,10 +302,9 @@ Textblock::~Textblock ()
 void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
                                  Widget **references, int *x, int *y)
 {
-   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
+   DBG_OBJ_ENTER ("resize", 0, "sizeRequestImpl", "%d, ...", numPos);
 
    sizeRequestParams.fill (numPos, references, x, y);
-   DBG_SET_SIZE_PARAMS ("sizeRequestParams", sizeRequestParams);
    
    int newLineBreakWidth = getAvailWidth (true);
    if (newLineBreakWidth != lineBreakWidth) {
@@ -2304,6 +2303,8 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
          + max (lastMargin, widget->getStyle()->margin.top);
 
       core::SizeParams childParams;
+      DBG_OBJ_ASSOC_CHILD (&childParams);
+
       sizeRequestParams.forChild (this, widget, xRel, yRel, &childParams);
       widget->sizeRequest (size, childParams.getNumPos (),
                            childParams.getReferences (), childParams.getX (),

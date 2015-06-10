@@ -20,6 +20,17 @@ private:
 
    void init ();
    void cleanup ();
+
+   inline void debugPrint () {
+      DBG_IF_RTFL {
+         DBG_OBJ_SET_NUM ("numPos", numPos);
+         for (int i = 0; i < numPos; i++) {
+            DBG_OBJ_ARRSET_PTR ("references", i, references[i]);
+            DBG_OBJ_ARRSET_NUM ("x", i, x[i]);
+            DBG_OBJ_ARRSET_NUM ("y", i, y[i]);
+         }
+      }
+   }
    
 public:
    SizeParams ();
@@ -38,21 +49,7 @@ public:
    inline int getX (int i) { return x[i]; }
    inline int getY (int i) { return y[i]; }
 };
-
-#define DBG_SET_SIZE_PARAMS(prefix, params) \
-   D_STMT_START { \
-      DBG_IF_RTFL { \
-         DBG_OBJ_SET_NUM (prefix ".numPos", params.getNumPos ()); \
-         for (int i = 0; i < params.getNumPos (); i++) { \
-            DBG_OBJ_ARRSET_PTR (prefix ".references", i, \
-                                params.getReference (i)); \
-            DBG_OBJ_ARRSET_NUM (prefix ".x", i, params.getX (i)); \
-            DBG_OBJ_ARRSET_NUM (prefix ".y", i, params.getY (i)); \
-         } \
-      } \
-   } D_STMT_END
-
-   
+ 
 } // namespace core
 } // namespace dw
 

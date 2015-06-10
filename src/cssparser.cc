@@ -19,7 +19,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "lout/debug.hh"
 #include "msg.h"
 #include "colors.h"
 #include "html_common.hh"

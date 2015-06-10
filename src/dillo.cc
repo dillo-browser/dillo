@@ -55,7 +55,6 @@
 #include "auth.h"
 #include "styleengine.hh"
 
-#include "lout/debug.hh"
 #include "dw/fltkcore.hh"
 #include "dw/widget.hh"
 #include "dw/textblock.hh"
@@ -380,19 +379,6 @@ static DilloUrl *makeStartUrl(char *str, bool local)
  */
 int main(int argc, char **argv)
 {
-   DBG_OBJ_CLASS_COLOR ("dw::*", "#c0ff80");
-   DBG_OBJ_CLASS_COLOR ("dw::fltk::*", "#c0c0ff");
-   DBG_OBJ_CLASS_COLOR ("dw::core::*", "#ffa0a0");
-   DBG_OBJ_CLASS_COLOR ("dw::core::style::*", "#ffe0a0");
-
-   DBG_OBJ_CLASS_COLOR ("dw::Image", "#80ffa0");
-   DBG_OBJ_CLASS_COLOR ("dw::Textblock", "#f0ff80");
-   DBG_OBJ_CLASS_COLOR ("dw::OutOfFlowMgr", "#d0ff80");
-   DBG_OBJ_CLASS_COLOR ("dw::AlignedTextblock", "#e0ff80");
-   DBG_OBJ_CLASS_COLOR ("dw::ListItem", "#b0ff80");
-   DBG_OBJ_CLASS_COLOR ("dw::TableCell", "#80ff80");
-   DBG_OBJ_CLASS_COLOR ("dw::Table", "#80ffc0");
-
    uint_t opt_id;
    uint_t options_got = 0;
    uint32_t xid = 0;

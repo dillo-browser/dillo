@@ -572,7 +572,7 @@ void Widget::sizeRequest (Requisition *requisition, int numPos,
 {
    assert (!queueResizeEntered ());
 
-   DBG_OBJ_ENTER0 ("resize", 0, "sizeRequest");
+   DBG_OBJ_ENTER ("resize", 0, "sizeRequest", "%d, ...", numPos);
 
    enterSizeRequest ();
 
