@@ -62,7 +62,7 @@ void SizeParams::forChild (Widget *parent, Widget *child, int xRel, int yRel,
    for (int i = 0; i < numChildReferences; i++) {
       Widget *childReference = child->sizeRequestReference (i);
       if (childReference == parent) {
-         references[numPos] = childReference;
+         childParams->references[numPos] = childReference;
          childParams->x[numPos] = xRel;
          childParams->y[numPos] = yRel;
          numPos++;
