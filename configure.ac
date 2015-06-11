@@ -1,6 +1,6 @@
 dnl Process this file with aclocal, autoconf and automake.
 
-AC_INIT([dillo], [3.0.4.1])
+AC_INIT([dillo], [3.0.5-pre])
 
 dnl Detect the canonical target build environment
 AC_CANONICAL_TARGET
