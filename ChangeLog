@@ -19,6 +19,7 @@ dillo-3.0.5 [not released yet]
  - In location bar, tend toward showing beginning of URL instead of end.
  - Handle irix's version of vsnprintf().
  - INPUT, TEXTAREA placeholder attribute.
+ - Better notification when user's domainrc settings block page redirection.
  - Fix bug with font_factor preference and CSS font-size:(larger|smaller).
  - Recognize Menu key in keysrc.
  - HTTPS: change cipher list to "ALL:!aNULL:!eNULL:!LOW:!EXPORT40:!RC4",
