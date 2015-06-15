@@ -22,11 +22,12 @@
  * (at your option) any later version.
  *
  * As a special exception permission is granted to link the code of
- * the https dillo plugin with the OpenSSL project's "OpenSSL"
- * library, and distribute the linked executables, without including
- * the source code for OpenSSL in the source distribution. You must
- * obey the GNU General Public License, version 3, in all respects
- * for all of the code used other than "OpenSSL".
+ * the https dillo plugin with the OpenSSL project's OpenSSL library
+ * (or a modified version of that library), and distribute the linked
+ * executables, without including the source code for the SSL library
+ * in the source distribution. You must obey the GNU General Public
+ * License, version 3, in all respects for all of the code used other
+ * than the SSL library.
  *
  */
 
