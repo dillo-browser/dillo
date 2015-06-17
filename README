@@ -53,8 +53,8 @@ FLTK-1.3
 Dillo3
 ------
 
-     tar jxvf dillo-3.0.4.1.tar.bz2
-     cd dillo-3.0.4.1
+     tar jxvf dillo-3.0.5.tar.bz2
+     cd dillo-3.0.5
      ./configure; make
      sudo make install-strip
 
