@@ -2203,9 +2203,9 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
       return NULL;
 
    alt_ptr = a_Html_get_attr_wdef(html, tag, tagsize, "alt", NULL);
-   if ((!alt_ptr || !*alt_ptr) && !prefs.load_images) {
+   if (!alt_ptr || !*alt_ptr) {
       dFree(alt_ptr);
-      alt_ptr = dStrdup("[IMG]"); // Place holder for img_off mode
+      alt_ptr = dStrdup("[IMG]");
    }
 
    dw::Image *dw = new dw::Image(alt_ptr);
