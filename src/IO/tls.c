@@ -21,7 +21,9 @@
  * all respects for all of the code used other than OpenSSL or LibreSSL.
  */
 
-/* https://www.ssllabs.com/ssltest/viewMyClient.html */
+/* https://www.ssllabs.com/ssltest/viewMyClient.html
+ * https://github.com/lgarron/badssl.com
+ */
 
 /*
  * Using TLS in Applications: http://datatracker.ietf.org/wg/uta/documents/
