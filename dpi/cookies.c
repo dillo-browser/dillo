@@ -45,6 +45,7 @@ int main(void)
 #include <stdio.h>
 #include <time.h>       /* for time() and time_t */
 #include <ctype.h>
+#include <limits.h>
 #include <netdb.h>
 #include <signal.h>
 #include "dpiutil.h"
@@ -835,11 +836,20 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
       } else if (dStrAsciiCasecmp(attr, "Max-Age") == 0) {
          value = Cookies_parse_value(&str);
          if (isdigit(*value) || *value == '-') {
+            long age;
             time_t now = time(NULL);
-            long age = strtol(value, NULL, 10);
             struct tm *tm = gmtime(&now);
 
-            tm->tm_sec += age;
+            errno = 0;
+            age = (*value == '-') ? 0 : strtol(value, NULL, 10);
+
+            if (errno == ERANGE ||
+                (age > 0 && (age > INT_MAX - tm->tm_sec))) {
+               /* let's not overflow */
+               tm->tm_sec = INT_MAX;
+            } else {
+               tm->tm_sec += age;
+            }
             cookie->expires_at = mktime(tm);
             if (age > 0 && cookie->expires_at == (time_t) -1) {
                cookie->expires_at = cookies_future_time;
