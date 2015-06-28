@@ -608,7 +608,7 @@ static void Cookies_too_many(DomainNode *node)
 {
    CookieData_t *lru = Cookies_get_LRU(node ? node->cookies : all_cookies);
 
-   MSG("Too many cookies!\n"
+   MSG("Too many cookies! "
        "Removing LRU cookie for \'%s\': \'%s=%s\'\n", lru->domain,
        lru->name, lru->value);
    if (!node)
