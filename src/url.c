@@ -46,6 +46,7 @@
 #include <ctype.h>
 
 #include "url.h"
+#include "hsts.h"
 #include "msg.h"
 
 static const char *HEX = "0123456789ABCDEF";
@@ -140,10 +141,17 @@ static DilloUrl *Url_object_new(const char *uri_str)
 
    url = dNew0(DilloUrl, 1);
 
-   /* remove leading & trailing space from buffer */
-   url->buffer = dStrstrip(dStrdup(uri_str));
+   /* url->buffer is given a little extra room in case HSTS needs to transform
+    * a URL string ending in ":80" to ":443".
+    */
+   int len = strlen(uri_str)+2;
+   s = dNew(char, len);
+   memcpy(s, uri_str, len-1);
+   s = dStrstrip(s);
 
-   s = (char *) url->buffer;
+   /* remove leading & trailing space from buffer */
+   url->buffer = s;
+
    p = strpbrk(s, ":/?#");
    if (p && p[0] == ':' && p > s) {                /* scheme */
       *p = 0;
@@ -412,6 +420,32 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
 
    dFree(str1);
    dFree(str2);
+
+   /*
+    * A site's HTTP Strict Transport Security policy may direct us to transform
+    * URLs like "http://en.wikipedia.org:80" to "https://en.wikipedia.org:443".
+    */
+   if (url->scheme && !dStrAsciiCasecmp(url->scheme, "http") &&
+       a_Hsts_require_https(a_Url_hostname(url))) {
+      const char *const scheme = "https";
+
+      MSG("url: HSTS transformation for %s.\n", url->url_string->str);
+      url->scheme = scheme;
+      if (url->port == URL_HTTP_PORT)
+         url->port = URL_HTTPS_PORT;
+
+      if (url->authority) {
+         int len = strlen(url->authority);
+
+         if (len >= 3 && !strcmp(url->authority + len-3, ":80")) {
+            strcpy((char *)url->authority + len-2, "443");
+         }
+      }
+      
+      dStr_free(url->url_string, TRUE);
+      url->url_string = NULL;
+   }
+
    return url;
 }
 

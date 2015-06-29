@@ -51,6 +51,7 @@
 #include "capi.h"
 #include "dicache.h"
 #include "cookies.h"
+#include "hsts.h"
 #include "domain.h"
 #include "auth.h"
 #include "styleengine.hh"
@@ -483,6 +484,7 @@ int main(int argc, char **argv)
    a_Dicache_init();
    a_Bw_init();
    a_Cookies_init();
+   a_Hsts_init(Paths::getPrefsFP(PATHS_HSTS_PRELOAD));
    a_Auth_init();
    a_UIcmd_init();
    StyleEngine::init();
@@ -596,6 +598,7 @@ int main(int argc, char **argv)
     */
    a_Domain_freeall();
    a_Cookies_freeall();
+   a_Hsts_freeall();
    a_Cache_freeall();
    a_Dicache_freeall();
    a_Http_freeall();

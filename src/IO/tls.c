@@ -64,7 +64,7 @@ void a_Tls_init()
 
 #define CERT_STATUS_NONE 0
 #define CERT_STATUS_RECEIVING 1
-#define CERT_STATUS_GOOD 2
+#define CERT_STATUS_CLEAN 2
 #define CERT_STATUS_BAD 3
 #define CERT_STATUS_USER_ACCEPTED 4
 
@@ -402,18 +402,29 @@ int a_Tls_connect_ready(const DilloUrl *url)
    return ret;
 }
 
+static int Tls_cert_status(const DilloUrl *url)
+{
+   Server_t *s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp);
+
+   return s ? s->cert_status : CERT_STATUS_NONE;
+}
+
 /*
  * Did we find problems with the certificate, and did the user proceed to
  * reject the connection?
  */
 static int Tls_user_said_no(const DilloUrl *url)
 {
-   Server_t *s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp);
+   return Tls_cert_status(url) == CERT_STATUS_BAD;
+}
 
-   if (!s)
-      return FALSE;
-
-   return s->cert_status == CERT_STATUS_BAD;
+/*
+ * Did everything seem proper with the certificate -- no warnings to
+ * click through?
+ */
+int a_Tls_certificate_is_clean(const DilloUrl *url)
+{
+   return Tls_cert_status(url) == CERT_STATUS_CLEAN;
 }
 
 /******************** BEGINNING OF STUFF DERIVED FROM wget-1.16.3 */
@@ -894,7 +905,7 @@ static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
    if (choice == 2)
       srv->cert_status = CERT_STATUS_BAD;
    else if (choice == -1)
-      srv->cert_status = CERT_STATUS_GOOD;
+      srv->cert_status = CERT_STATUS_CLEAN;
    else
       srv->cert_status = CERT_STATUS_USER_ACCEPTED;
 

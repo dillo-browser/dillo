@@ -15,6 +15,7 @@ void a_Tls_init();
 
 
 #ifdef ENABLE_SSL
+int a_Tls_certificate_is_clean(const DilloUrl *url);
 int a_Tls_connect_ready(const DilloUrl *url);
 void a_Tls_reset_server_state(const DilloUrl *url);
 
@@ -30,6 +31,7 @@ int a_Tls_read(void *conn, void *buf, size_t len);
 int a_Tls_write(void *conn, void *buf, size_t len);
 #else
 
+#define a_Tls_certificate_is_clean(host) 0
 #define a_Tls_connect_ready(url) TLS_CONNECT_NEVER
 #define a_Tls_reset_server_state(url) ;
 #define a_Tls_handshake(fd, url) ;

@@ -26,6 +26,7 @@
 #include "dicache.h"
 #include "nav.h"
 #include "cookies.h"
+#include "hsts.h"
 #include "misc.h"
 #include "capi.h"
 #include "decode.h"
@@ -653,7 +654,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
 {
    char *header = entry->Header->str;
    bool_t server1point0 = !strncmp(entry->Header->str, "HTTP/1.0", 8);
-   char *Length, *Type, *location_str, *encoding, *connection;
+   char *Length, *Type, *location_str, *encoding, *connection, *hsts;
 #ifndef DISABLE_COOKIES
    Dlist *Cookies;
 #endif
@@ -719,6 +720,13 @@ static void Cache_parse_header(CacheEntry_t *entry)
       else if (server1point0 && !dStrAsciiCasecmp(connection, "keep-alive"))
          entry->Flags |= CA_KeepAlive;
       dFree(connection);
+   }
+
+   if (!dStrAsciiCasecmp(URL_SCHEME(entry->Url), "https") &&
+       !a_Url_host_is_ip(URL_HOST(entry->Url)) &&
+       (hsts = Cache_parse_field(header, "Strict-Transport-Security"))) {
+      a_Hsts_set(hsts, entry->Url);
+      dFree(hsts);
    }
 
    /*
