@@ -425,7 +425,8 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
     * A site's HTTP Strict Transport Security policy may direct us to transform
     * URLs like "http://en.wikipedia.org:80" to "https://en.wikipedia.org:443".
     */
-   if (url->scheme && !dStrAsciiCasecmp(url->scheme, "http") &&
+   if (prefs.http_strict_transport_security &&
+       url->scheme && !dStrAsciiCasecmp(url->scheme, "http") &&
        a_Hsts_require_https(a_Url_hostname(url))) {
       const char *const scheme = "https";
 

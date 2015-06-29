@@ -49,14 +49,16 @@ static void Hsts_free_policy(HstsData_t *p)
 
 void a_Hsts_freeall()
 {
-   HstsData_t *policy;
-   int i, n = dList_length(domains);
+   if (prefs.http_strict_transport_security) {
+      HstsData_t *policy;
+      int i, n = dList_length(domains);
 
-   for (i = 0; i < n; i++) {
-      policy = dList_nth_data(domains, i);
-      Hsts_free_policy(policy);
+      for (i = 0; i < n; i++) {
+         policy = dList_nth_data(domains, i);
+         Hsts_free_policy(policy);
+      }
+      dList_free(domains);
    }
-   dList_free(domains);
 }
 
 /*
@@ -349,12 +351,14 @@ static void Hsts_preload(FILE *stream)
 
 void a_Hsts_init(FILE *preload_file)
 {
-   struct tm future_tm = {7, 14, 3, 19, 0, 138, 0, 0, 0, 0, 0};
+   if (prefs.http_strict_transport_security) {
+      struct tm future_tm = {7, 14, 3, 19, 0, 138, 0, 0, 0, 0, 0};
 
-   hsts_latest_representable_time = mktime(&future_tm);
-   domains = dList_new(32);
+      hsts_latest_representable_time = mktime(&future_tm);
+      domains = dList_new(32);
 
-   if (preload_file)
-      Hsts_preload(preload_file);
+      if (preload_file)
+         Hsts_preload(preload_file);
+   }
 }
 
