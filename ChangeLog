@@ -6,7 +6,7 @@ Here we list changes that are relatively significant and/or visible to the
 user. For a history of changes in full detail, see our Mercurial repository
 at http://hg.dillo.org/dillo
 
-dillo-3.0.5 [not released yet]
+dillo-3.0.5 [June 30, 2015]
 
 +- Image buffer/cache improvements.
  - Fix for segfault when there's no dpid and view source is requested.
