@@ -23,6 +23,23 @@ dillo-3.1 [not released yet]
  - Work on collapsing spaces: more cases supported.
  - Fix crash that's possible searching for text while page still being built.
    Patches: Sebastian Geerken
++- HTML5 character references.
+ - Give images lower priority when requesting resources (responsiveness).
+ - Reuse of connections for HTTP (enable w/ http_persistent_conns in dillorc).
+ - Abort failed queries.
+   Patches: corvid
++- Doxygen fixes.
+   Patch: Jeremy Henty
++- Move HTTPS from dpi into the browser, enable SNI, add certificate hostname
+   checking from wget, check more locations for CA bundles and add
+   --with-ca-certs-file and --with-ca-certs-dir to configure, some improvement
+   to security warning popups, etc.
+   Patch: corvid, Benjamin Johnson
+
+-----------------------------------------------------------------------------
+
+dillo-3.0.5 [June 30, 2015]
+
 +- Image buffer/cache improvements.
  - Fix for segfault when there's no dpid and view source is requested.
  - Fix view-source dpi to handle null characters correctly.
@@ -30,30 +47,19 @@ dillo-3.1 [not released yet]
    Patches: Jorge Arellano Cid
 +- Crosscompile/buildroot-friendly fltk-config test.
    Patch: Peter Seiderer
-+- HTML5 character references.
- - Give images lower priority when requesting resources (responsiveness).
- - Reuse of connections for HTTP (enable w/ http_persistent_conns in dillorc).
- - Fix X11 icon name.
- - Abort failed queries.
++- Fix X11 icon name.
  - In location bar, tend toward showing beginning of URL instead of end.
  - Handle irix's version of vsnprintf().
  - INPUT, TEXTAREA placeholder attribute.
  - Better notification when user's domainrc settings block page redirection.
  - Fix bug with font_factor preference and CSS font-size:(larger|smaller).
  - Recognize Menu key in keysrc.
+ - HTTPS: change cipher list to "ALL:!aNULL:!eNULL:!LOW:!EXPORT40:!RC4",
+   disable SSL3, disable TLS compression.
    Patches: corvid
 +- Avoid requesting background images if an ancestor has display:none.
  - Ignore built-in search url if any are specified in dillorc.
    Patches: Johannes Hofmann
-+- Doxygen fixes.
-   Patch: Jeremy Henty
-+- Move HTTPS from dpi into the browser, enable SNI, add certificate hostname
-   checking from wget, check more locations for CA bundles and add
-   --with-ca-certs-file and --with-ca-certs-dir to configure, some improvement
-   to security warning popups, change cipher list from "ALL" to
-   "ALL:!aNULL:!eNULL:!LOW:!EXPORT40:!RC4", disable SSL3, disable TLS
-   compression, etc.
-   Patch: corvid, Benjamin Johnson
 
 -----------------------------------------------------------------------------
 
