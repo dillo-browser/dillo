@@ -340,6 +340,34 @@ static void Capi_dpi_send_source(BrowserWindow *bw, DilloUrl *url)
 }
 
 /*
+ * Shall we permit this request to open a URL?
+ */
+static bool_t Capi_request_permitted(DilloWeb *web)
+{
+   bool_t permit = FALSE;
+
+   /* web->requester is NULL if the action is initiated by user */
+   if (!web->requester)
+      return TRUE;
+
+   if (!dStrAsciiCasecmp(URL_SCHEME(web->requester), "https")) {
+      const char *s = URL_SCHEME(web->url);
+
+      if (dStrAsciiCasecmp(s, "https") && dStrAsciiCasecmp(s, "data")) {
+         MSG("capi: Blocked mixed content: %s -> %s\n",
+             URL_STR(web->requester), URL_STR(web->url));
+         return FALSE;
+      }
+   }
+
+   if (a_Capi_get_flags(web->url) & CAPI_IsCached ||
+       a_Domain_permit(web->requester, web->url)) {
+      permit = TRUE;
+   }
+   return permit;
+}
+
+/*
  * Most used function for requesting a URL.
  * TODO: clean up the ad-hoc bindings with an API that allows dynamic
  *       addition of new plugins.
@@ -355,11 +383,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    const char *scheme = URL_SCHEME(web->url);
    int safe = 0, ret = 0, use_cache = 0;
 
-   /* web->requester is NULL if the action is initiated by user */
-   if (a_Capi_get_flags(web->url) & CAPI_IsCached ||
-       web->requester == NULL ||
-       a_Domain_permit(web->requester, web->url)) {
-
+   if (Capi_request_permitted(web)) {
       /* reload test */
       reload = (!(a_Capi_get_flags(web->url) & CAPI_IsCached) ||
                 (URL_FLAGS(web->url) & URL_E2EQuery));
