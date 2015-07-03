@@ -192,7 +192,7 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # This mechanism allows servers to specify that they are only to be contacted
 # through HTTPS and not HTTP.
 #
-# On the whole, this is a valuable security measure against TLS stripping
+# Overall, this is a valuable security measure against TLS stripping
 # attacks, etc., but in principle a site could contrive to use this as a
 # tracking mechanism. The term is "HSTS super cookie", although note that these
 * HSTS directives are not saved between browser sessions.

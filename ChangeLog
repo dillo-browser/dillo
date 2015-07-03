@@ -27,6 +27,8 @@ dillo-3.1 [not released yet]
  - Give images lower priority when requesting resources (responsiveness).
  - Reuse of connections for HTTP (enable w/ http_persistent_conns in dillorc).
  - Abort failed queries.
+ - HTTP Strict Transport Security (disable with http_strict_transport_security
+   preference in dillorc).
    Patches: corvid
 +- Doxygen fixes.
    Patch: Jeremy Henty
