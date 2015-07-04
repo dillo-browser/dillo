@@ -350,9 +350,21 @@ static bool_t Capi_request_permitted(DilloWeb *web)
    if (!web->requester)
       return TRUE;
 
-   if (!dStrAsciiCasecmp(URL_SCHEME(web->requester), "https")) {
+   if (web->flags & ~WEB_RootUrl &&
+       !dStrAsciiCasecmp(URL_SCHEME(web->requester), "https")) {
       const char *s = URL_SCHEME(web->url);
 
+      /* As of 2015, blocking of "active" mixed content is widespread
+       * (style sheets, javascript, fonts, etc.), but the big browsers aren't
+       * quite in a position to block "passive" mixed content (images) yet.
+       * (Not clear whether there's consensus on which category to place
+       * background images in.)
+       *
+       * We are blocking both, and only permitting secure->insecure page
+       * redirection for now (e.g., duckduckgo has been seen providing links
+       * to https URLs that redirect to http). As the web security landscape
+       * evolves, we may be able to remove that permission.
+       */
       if (dStrAsciiCasecmp(s, "https") && dStrAsciiCasecmp(s, "data")) {
          MSG("capi: Blocked mixed content: %s -> %s\n",
              URL_STR(web->requester), URL_STR(web->url));
