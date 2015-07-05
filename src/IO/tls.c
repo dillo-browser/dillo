@@ -781,7 +781,7 @@ static void Tls_get_issuer_name(X509 *cert, char *buf, uint_t buflen)
    if (cert) {
       X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
    } else {
-      strncpy(buf, "(unknown)", buflen);
+      strcpy(buf, "(unknown)");
       buf[buflen-1] = '\0';
    }
 }
@@ -796,7 +796,7 @@ static void Tls_get_expiration_str(X509 *cert, char *buf, uint_t buflen)
       rc = BIO_gets(b, buf, buflen);
    }
    if (rc <= 0) {
-      strncpy(buf, "(unknown)", buflen);
+      strcpy(buf, "(unknown)");
       buf[buflen-1] = '\0';
    }
    BIO_free(b);
