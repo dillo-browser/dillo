@@ -807,14 +807,14 @@ static void Tls_get_expiration_str(X509 *cert, char *buf, uint_t buflen)
  * to do.
  * Return: -1 if connection should be canceled, or 0 if it should continue.
  */
-static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
+static int Tls_examine_certificate(SSL *ssl, Server_t *srv)
 {
    X509 *remote_cert;
    long st;
    const uint_t buflen = 4096;
    char buf[buflen], *cn, *msg;
    int choice = -1, ret = -1;
-   char *title = dStrconcat("Dillo TLS security warning: ", host, NULL);
+   char *title = dStrconcat("Dillo TLS security warning: ",srv->hostname,NULL);
 
    remote_cert = SSL_get_peer_certificate(ssl);
    if (remote_cert == NULL){
@@ -829,7 +829,7 @@ static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
          ret = 0;
       }
    } else if (Tls_check_cert_strength(ssl, srv, &choice) &&
-              Tls_check_cert_hostname(remote_cert, host, &choice)) {
+              Tls_check_cert_hostname(remote_cert, srv->hostname, &choice)) {
       /* Figure out if (and why) the remote system can't be trusted */
       st = SSL_get_verify_result(ssl);
       switch (st) {
@@ -865,11 +865,9 @@ static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
             case 2:
                break;
             case 3:
-               /* Save certificate to a file here and recheck the chain */
-               /* Potential security problems because we are writing
-                * to the filesystem */
+               /* Save certificate to a file */
                Tls_save_certificate_home(remote_cert);
-               ret = 1;
+               ret = 0;
                break;
             default:
                break;
@@ -1131,7 +1129,7 @@ static void Tls_connect(int fd, int connkey)
       }
 
       if (srv->cert_status == CERT_STATUS_USER_ACCEPTED ||
-          (Tls_examine_certificate(conn->ssl, srv, URL_HOST(conn->url))!=-1)) {
+          (Tls_examine_certificate(conn->ssl, srv) != -1)) {
          failed = FALSE;
       }
    }
