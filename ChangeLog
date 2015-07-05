@@ -29,6 +29,7 @@ dillo-3.1 [not released yet]
  - Abort failed queries.
  - HTTP Strict Transport Security (disable with http_strict_transport_security
    preference in dillorc).
+ - Fix bug when closing popup using window manager (bug introduced in 3.0.3).
    Patches: corvid
 +- Doxygen fixes.
    Patch: Jeremy Henty

@@ -382,6 +382,8 @@ int a_Dialog_choice(const char *title, const char *msg, ...)
     va_end(ap);
    window->end();
 
+   choice_answer = 0;
+
    window->show();
    while (window->shown())
       Fl::wait();
