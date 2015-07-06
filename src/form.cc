@@ -23,6 +23,7 @@
 #include "msg.h"
 #include "prefs.h"
 #include "uicmd.hh"
+#include "dialog.hh"
 
 using namespace lout;
 using namespace dw;
@@ -1037,6 +1038,16 @@ void DilloHtmlForm::eventHandler(Resource *resource, EventButton *event)
  */
 void DilloHtmlForm::submit(DilloHtmlInput *active_input, EventButton *event)
 {
+   if (!dStrAsciiCasecmp(URL_SCHEME(html->page_url), "https") &&
+       dStrAsciiCasecmp(URL_SCHEME(action), "https")) {
+      int choice = a_Dialog_choice("Dillo: Insecure form submission",
+                                   "A form on a SECURE page wants to use an "
+                                   "INSECURE protocol to submit data.",
+                                   "Continue", "Cancel", NULL);
+      if (choice != 1)
+         return;
+   }
+
    DilloUrl *url = buildQueryUrl(active_input);
    if (url) {
       if (event && event->button == 2) {

@@ -21,7 +21,9 @@
  * all respects for all of the code used other than OpenSSL or LibreSSL.
  */
 
-/* https://www.ssllabs.com/ssltest/viewMyClient.html */
+/* https://www.ssllabs.com/ssltest/viewMyClient.html
+ * https://github.com/lgarron/badssl.com
+ */
 
 /*
  * Using TLS in Applications: http://datatracker.ietf.org/wg/uta/documents/
@@ -62,7 +64,7 @@ void a_Tls_init()
 
 #define CERT_STATUS_NONE 0
 #define CERT_STATUS_RECEIVING 1
-#define CERT_STATUS_GOOD 2
+#define CERT_STATUS_CLEAN 2
 #define CERT_STATUS_BAD 3
 #define CERT_STATUS_USER_ACCEPTED 4
 
@@ -400,18 +402,129 @@ int a_Tls_connect_ready(const DilloUrl *url)
    return ret;
 }
 
+static int Tls_cert_status(const DilloUrl *url)
+{
+   Server_t *s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp);
+
+   return s ? s->cert_status : CERT_STATUS_NONE;
+}
+
 /*
  * Did we find problems with the certificate, and did the user proceed to
  * reject the connection?
  */
 static int Tls_user_said_no(const DilloUrl *url)
 {
-   Server_t *s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp);
+   return Tls_cert_status(url) == CERT_STATUS_BAD;
+}
 
-   if (!s)
-      return FALSE;
+/*
+ * Did everything seem proper with the certificate -- no warnings to
+ * click through?
+ */
+int a_Tls_certificate_is_clean(const DilloUrl *url)
+{
+   return Tls_cert_status(url) == CERT_STATUS_CLEAN;
+}
 
-   return s->cert_status == CERT_STATUS_BAD;
+/*
+ * We are both checking whether the certificates are using a strong enough
+ * hash algorithm and key as well as printing out certificate information the
+ * first time that we see it. Mixing these two actions together is generally
+ * not good practice, but feels justified by the fact that it's so much
+ * trouble to get this information out of openssl even once.
+ *
+ * Return FALSE if MD5 (MD*) hash is found and user does not accept it,
+ * otherwise TRUE.
+ */
+static bool_t Tls_check_cert_strength(SSL *ssl, Server_t *srv, int *choice)
+{
+   /* print for first connection to server */
+   const bool_t print_chain = srv->cert_status == CERT_STATUS_RECEIVING;
+   bool_t success = TRUE;
+
+   STACK_OF(X509) *sk = SSL_get_peer_cert_chain(ssl);
+
+   if (sk) {
+      const uint_t buflen = 4096;
+      char buf[buflen];
+      int rc, i, n = sk_X509_num(sk);
+      X509 *cert = NULL;
+      EVP_PKEY *public_key;
+      int key_type, key_bits;
+      const char *type_str;
+      BIO *b;
+
+      for (i = 0; i < n; i++) {
+         cert = sk_X509_value(sk, i);
+         public_key = X509_get_pubkey(cert);
+
+         /* We are trying to find a way to get the hash function used
+          * with a certificate. This way, which is not very pleasant, puts
+          * a string such as "sha256WithRSAEncryption" in our buffer and we
+          * then trim off the "With..." part.
+          */
+         b = BIO_new(BIO_s_mem());
+         rc = i2a_ASN1_OBJECT(b, cert->sig_alg->algorithm);
+
+         if (rc > 0) {
+            rc = BIO_gets(b, buf, buflen);
+         }
+         if (rc <= 0) {
+            strcpy(buf, "(unknown)");
+            buf[buflen-1] = '\0';
+         } else {
+            char *s = strstr(buf, "With");
+
+            if (s) {
+               *s = '\0';
+               if (!strcmp(buf, "sha1")) {
+                  if (print_chain)
+                     MSG_WARN("In 2015, browsers have begun to deprecate SHA1 "
+                              "certificates.\n");
+               } else if (!strncmp(buf, "md", 2) && success == TRUE) {
+                  const char *msg = "A certificate in the chain uses the MD5 "
+                                    "signature algorithm, which is too weak "
+                                    "to trust.";
+                  *choice = a_Dialog_choice("Dillo TLS security warning", msg,
+                                            "Continue", "Cancel", NULL);
+                  if (*choice != 1)
+                     success = FALSE;
+               }
+            }
+         }
+         BIO_free(b);
+
+         if (print_chain)
+            MSG("%s ", buf);
+
+         key_type = EVP_PKEY_type(public_key->type);
+         type_str = key_type == EVP_PKEY_RSA ? "RSA" :
+                    key_type == EVP_PKEY_DSA ? "DSA" :
+                    key_type == EVP_PKEY_DH ? "DH" :
+                    key_type == EVP_PKEY_EC ? "EC" : "???";
+         key_bits = EVP_PKEY_bits(public_key);
+         X509_NAME_oneline(X509_get_subject_name(cert), buf, buflen);
+         buf[buflen-1] = '\0';
+         if (print_chain)
+            MSG("%d-bit %s: %s\n", key_bits, type_str, buf);
+         EVP_PKEY_free(public_key);
+
+         if (key_type == EVP_PKEY_RSA && key_bits <= 1024) {
+            if (print_chain)
+               MSG_WARN("In 2014/5, browsers have been deprecating 1024-bit "
+                        "RSA keys.\n");
+         }
+      }
+
+      if (cert) {
+         X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
+         buf[buflen-1] = '\0';
+         if (print_chain)
+            MSG("root: %s\n", buf);
+      }
+   }
+   return success;
 }
 
 /******************** BEGINNING OF STUFF DERIVED FROM wget-1.16.3 */
@@ -668,7 +781,7 @@ static void Tls_get_issuer_name(X509 *cert, char *buf, uint_t buflen)
    if (cert) {
       X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
    } else {
-      strncpy(buf, "(unknown)", buflen);
+      strcpy(buf, "(unknown)");
       buf[buflen-1] = '\0';
    }
 }
@@ -683,7 +796,7 @@ static void Tls_get_expiration_str(X509 *cert, char *buf, uint_t buflen)
       rc = BIO_gets(b, buf, buflen);
    }
    if (rc <= 0) {
-      strncpy(buf, "(unknown)", buflen);
+      strcpy(buf, "(unknown)");
       buf[buflen-1] = '\0';
    }
    BIO_free(b);
@@ -694,14 +807,14 @@ static void Tls_get_expiration_str(X509 *cert, char *buf, uint_t buflen)
  * to do.
  * Return: -1 if connection should be canceled, or 0 if it should continue.
  */
-static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
+static int Tls_examine_certificate(SSL *ssl, Server_t *srv)
 {
    X509 *remote_cert;
    long st;
    const uint_t buflen = 4096;
    char buf[buflen], *cn, *msg;
    int choice = -1, ret = -1;
-   char *title = dStrconcat("Dillo TLS security warning: ", host, NULL);
+   char *title = dStrconcat("Dillo TLS security warning: ",srv->hostname,NULL);
 
    remote_cert = SSL_get_peer_certificate(ssl);
    if (remote_cert == NULL){
@@ -715,8 +828,8 @@ static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
       if (choice == 1){
          ret = 0;
       }
-
-   } else if (Tls_check_cert_hostname(remote_cert, host, &choice)) {
+   } else if (Tls_check_cert_strength(ssl, srv, &choice) &&
+              Tls_check_cert_hostname(remote_cert, srv->hostname, &choice)) {
       /* Figure out if (and why) the remote system can't be trusted */
       st = SSL_get_verify_result(ssl);
       switch (st) {
@@ -752,11 +865,9 @@ static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
             case 2:
                break;
             case 3:
-               /* Save certificate to a file here and recheck the chain */
-               /* Potential security problems because we are writing
-                * to the filesystem */
+               /* Save certificate to a file */
                Tls_save_certificate_home(remote_cert);
-               ret = 1;
+               ret = 0;
                break;
             default:
                break;
@@ -889,13 +1000,17 @@ static int Tls_examine_certificate(SSL *ssl, Server_t *srv,const char *host)
    }
    dFree(title);
 
-   if (choice == 2)
+   if (choice == -1) {
+      srv->cert_status = CERT_STATUS_CLEAN;          /* no warning popups */
+   } else if (choice == 1) {
+      srv->cert_status = CERT_STATUS_USER_ACCEPTED;  /* clicked Continue */
+   } else {
+      /* 2 for Cancel, or 0 when window closed. Treating 0 as meaning 'No' is
+       * probably not exactly correct, but adding complexity to handle this
+       * obscure case does not seem justifiable.
+       */
       srv->cert_status = CERT_STATUS_BAD;
-   else if (choice == -1)
-      srv->cert_status = CERT_STATUS_GOOD;
-   else
-      srv->cert_status = CERT_STATUS_USER_ACCEPTED;
-
+   }
    return ret;
 }
 
@@ -933,82 +1048,6 @@ static void Tls_close_by_key(int connkey)
       Tls_fd_map_remove_entry(c->fd);
       a_Klist_remove(conn_list, connkey);
       dFree(c);
-   }
-}
-
-static void Tls_print_cert_chain(SSL *ssl)
-{
-   STACK_OF(X509) *sk = SSL_get_peer_cert_chain(ssl);
-
-   if (sk) {
-      const uint_t buflen = 4096;
-      char buf[buflen];
-      int rc, i, n = sk_X509_num(sk);
-      X509 *cert = NULL;
-      EVP_PKEY *public_key;
-      int key_type, key_bits;
-      const char *type_str;
-      BIO *b;
-
-      for (i = 0; i < n; i++) {
-         cert = sk_X509_value(sk, i);
-         public_key = X509_get_pubkey(cert);
-
-         /* We are trying to find a way to get the hash function used
-          * with a certificate. This way, which is not very pleasant, puts
-          * a string such as "sha256WithRSAEncryption" in our buffer and we
-          * then trim off the "With..." part.
-          */
-         b = BIO_new(BIO_s_mem());
-         rc = i2a_ASN1_OBJECT(b, cert->sig_alg->algorithm);
-
-         if (rc > 0) {
-            rc = BIO_gets(b, buf, buflen);
-         }
-         if (rc <= 0) {
-            strcpy(buf, "(unknown)");
-            buf[buflen-1] = '\0';
-         } else {
-            char *s = strstr(buf, "With");
-
-            if (s) {
-               *s = '\0';
-               if (!strcmp(buf, "sha1")) {
-                  MSG_WARN("In 2015, browsers have begun to deprecate SHA1 "
-                           "certificates.\n");
-               } else if (!strncmp(buf, "md", 2)) {
-                  MSG_ERR("Browsers stopped accepting MD5 certificates around "
-                          "2012.\n");
-               }
-            }
-         }
-         BIO_free(b);
-         MSG("%s ", buf);
-
-
-         key_type = EVP_PKEY_type(public_key->type);
-         type_str = key_type == EVP_PKEY_RSA ? "RSA" :
-                    key_type == EVP_PKEY_DSA ? "DSA" :
-                    key_type == EVP_PKEY_DH ? "DH" :
-                    key_type == EVP_PKEY_EC ? "EC" : "???";
-         key_bits = EVP_PKEY_bits(public_key);
-         X509_NAME_oneline(X509_get_subject_name(cert), buf, buflen);
-         buf[buflen-1] = '\0';
-         MSG("%d-bit %s: %s\n", key_bits, type_str, buf);
-         EVP_PKEY_free(public_key);
-
-         if (key_type == EVP_PKEY_RSA && key_bits <= 1024) {
-            /* TODO: Gather warnings into one popup. */
-            MSG_WARN("In 2014/5, browsers have been deprecating 1024-bit RSA "
-                     "keys.\n");
-         }
-      }
-
-      if (cert) {
-         X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
-         buf[buflen-1] = '\0';
-         MSG("root: %s\n", buf);
-      }
    }
 }
 
@@ -1080,18 +1119,17 @@ static void Tls_connect(int fd, int connkey)
                                         Tls_servers_by_url_cmp);
 
       if (srv->cert_status == CERT_STATUS_RECEIVING) {
-         /* Making first connection with the server. Show some information. */
+         /* Making first connection with the server. Show cipher used. */
          SSL *ssl = conn->ssl;
          const char *version = SSL_get_version(ssl);
          const SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
 
          MSG("%s: %s, cipher %s\n", URL_AUTHORITY(conn->url), version,
              SSL_CIPHER_get_name(cipher));
-         Tls_print_cert_chain(ssl);
       }
 
       if (srv->cert_status == CERT_STATUS_USER_ACCEPTED ||
-          (Tls_examine_certificate(conn->ssl, srv, URL_HOST(conn->url))!=-1)) {
+          (Tls_examine_certificate(conn->ssl, srv) != -1)) {
          failed = FALSE;
       }
    }

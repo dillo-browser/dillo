@@ -37,6 +37,8 @@ dillo_SOURCES = \
 	bw.c \
 	cookies.c \
 	cookies.h \
+        hsts.c \
+        hsts.h \
 	auth.c \
 	auth.h \
 	md5.c \
@@ -128,5 +130,5 @@ dillo_SOURCES = \
 	xembed.cc \
 	xembed.hh
 
-dist_sysconf_DATA = domainrc keysrc
+dist_sysconf_DATA = domainrc keysrc hsts_preload
 EXTRA_DIST = chg srch

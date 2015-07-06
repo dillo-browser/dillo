@@ -539,14 +539,33 @@ static void maxage()
    a_Cookies_set("name=val; max-age=0", "maxage0.com", "/", NULL);
    expect(__LINE__, "", "http", "maxage0.com", "/");
 
+   a_Cookies_set("name=val; max-age=-0", "maxage-0.com", "/", NULL);
+   expect(__LINE__, "", "http", "maxage-0.com", "/");
+
    a_Cookies_set("name=val; max-age=100", "maxage100.com", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "maxage100.com", "/");
 
    a_Cookies_set("name=val; max-age=-100", "maxage-100.com", "/", NULL);
    expect(__LINE__, "", "http", "maxage-100.com", "/");
 
-   a_Cookies_set("name=val; max-age=2000000000", "maxage-huge.com", "/", NULL);
-   expect(__LINE__, "Cookie: name=val\r\n", "http", "maxage-huge.com", "/");
+   a_Cookies_set("name=val; max-age=2000000000", "maxage2bil.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "maxage2bil.com", "/");
+
+   a_Cookies_set("name=val; max-age=3000000000", "maxage3bil.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "maxage3bil.com", "/");
+
+   a_Cookies_set("name=val; max-age=7000000000", "maxage7bil.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "maxage7bil.com", "/");
+
+   a_Cookies_set("name=val; max-age=-2000000000", "maxage-2bil.com", "/",NULL);
+   expect(__LINE__, "", "http", "maxage-2bil.com", "/");
+
+   a_Cookies_set("name=val; max-age=-3000000000", "maxage-3bil.com", "/",NULL);
+   expect(__LINE__, "", "http", "maxage-3bil.com", "/");
+
+   a_Cookies_set("name=val; max-age=-7000000000", "maxage-7bil.com", "/",NULL);
+   expect(__LINE__, "", "http", "maxage-7bil.com", "/");
+
    /* just having a server date shouldn't matter */
 
    a_Cookies_set("name=val; max-age=0", "maxage0s.com", "/", server_date);

@@ -353,6 +353,7 @@ void a_Nav_push(BrowserWindow *bw, const DilloUrl *url,
    a_Nav_cancel_expect(bw);
    a_Bw_expect(bw, url);
    Nav_open_url(bw, url, requester, 0);
+   a_UIcmd_set_location_text(bw, URL_STR(url));
 }
 
 /*

@@ -15,6 +15,7 @@
 #define PATHS_RC_PREFS  "dillorc"
 #define PATHS_RC_KEYS   "keysrc"
 #define PATHS_RC_DOMAIN "domainrc"
+#define PATHS_HSTS_PRELOAD "hsts_preload"
 
 class Paths {
 public:
