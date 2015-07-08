@@ -688,16 +688,20 @@ static void expires_extremes()
    time_t t;
    char *server_date;
 
-   a_Cookies_set("name=val; expires=Fri Dec 13 20:45:52 1901", "expmin.com",
+   a_Cookies_set("name=val; expires=Fri Dec 13 20:45:52 1801", "expmin.com",
                  "/", NULL);
    expect(__LINE__, "", "http", "expmin.com", "/");
+
+   a_Cookies_set("name=val; expires=Fri Dec 13 20:45:52 1901", "expmin2.com",
+                 "/", NULL);
+   expect(__LINE__, "", "http", "expmin2.com", "/");
 
    a_Cookies_set("name=val; expires=Wed Dec 31 23:59:59 1969", "expneg.com",
                  "/", NULL);
    expect(__LINE__, "", "http", "expneg.com", "/");
 
-   a_Cookies_set("name=val; expires=Thu Jan  1 00:00:00 1970", "expepoch.com",
-                 "/", NULL);
+   a_Cookies_set("name=val; expires=Thu, 01-January-70 00:00:00 GMT",
+                 "expepoch.com", "/", NULL);
    expect(__LINE__, "", "http", "expepoch.com", "/");
 
    /* TODO: revisit these tests in a few decades */
@@ -705,8 +709,8 @@ static void expires_extremes()
                  "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "expmax.com", "/");
 
-   a_Cookies_set("name=val; expires=Sun Jan  1 00:00:00 2040", "pastmax.com",
-                 "/", NULL);
+   a_Cookies_set("name=val; expires=Sun January  1 00:00:00 2040",
+                 "pastmax.com", "/", NULL);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "pastmax.com", "/");
 
    t = time(NULL)+1000;
@@ -728,8 +732,8 @@ static void expires_extremes()
                  "/", server_date);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "expmaxa.com", "/");
 
-   a_Cookies_set("name=val; expires=Sun Jan  1 00:00:00 2040", "pastmaxa.com",
-                 "/", server_date);
+   a_Cookies_set("name=val; expires=Thu, 01-Jan-40 00:00:00 GMT",
+                 "pastmaxa.com", "/", server_date);
    expect(__LINE__, "Cookie: name=val\r\n", "http", "pastmaxa.com", "/");
 
    t = time(NULL)-1000;
@@ -757,6 +761,99 @@ static void expires_extremes()
    expect(__LINE__, "Cookie: name=val\r\n", "http", "pastmaxb.com", "/");
 
    dFree(server_date);
+}
+
+/*
+ * On 11 Aug 2009, Dan Winship posted to the http-state list with a bunch of
+ * date formats he'd gathered. Let's work from that. I'll include his comments
+ * below in double quotes.
+ */
+static void expires_date_formats()
+{
+   /* "Revised Netscape spec format" */
+   a_Cookies_set("name=val; expires=Mon, 10-Dec-2037 17:02:24 GMT",
+                 "format1.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "format1.com", "/");
+
+   /* "rfc1123-date" */
+   a_Cookies_set("name=val; expires=Wed, 09 Dec 2037 16:27:23 GMT",
+                 "format2.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "format2.com", "/");
+
+   /* "4-digit-year version of Netscape spec example (see below).
+    * Seems to only come from sites using PHP, but it's not PHP
+    * itself; maybe some framework?"
+    */
+   a_Cookies_set("name=val; expires=Thursday, 01-Jan-2036 00:00:00 GMT",
+                 "format3.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "format3.com", "/");
+
+   /* "The not-quite-asctime format used by Amazon." */
+   a_Cookies_set("name=val; expires=Mon Dec 10 16:32:30 2037 GMT",
+                 "format4.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "format4.com", "/");
+
+   /* "The syntax used by the example text in the Netscape spec,
+    * although the actual grammar uses abbreviated weekday names"
+    */
+   a_Cookies_set("name=val; expires=Wednesday, 01-Jan-37 00:00:00 GMT",
+                 "format5.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "format5.com", "/");
+ 
+   /* "Original Netscape spec" */
+   a_Cookies_set("name=val; expires=Mon, 10-Dec-37 20:35:03 GMT",
+                 "format6.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "format6.com", "/");
+
+   /* "If this had '01 Jan' it would be an rfc1123-date. This *is* a
+    * legitimate rfc822 date, though not an rfc2822 date because 'GMT'
+    * is deprecated in favor of '+0000' there."
+    */
+   a_Cookies_set("name=val; expires=Wed, 1 Jan 2035 00:00:00 GMT",
+                 "format7.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "format7.com", "/");
+
+   /* "Would match the 'weird php' syntax above if it was '08-Dec'" */
+   a_Cookies_set("name=val; expires=Saturday, 8-Dec-2035 21:24:09 GMT",
+                 "format8.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "format8.com", "/");
+
+   /* "God only knows what they were thinking. This came from a hit-tracker
+    * site, and it's possible that it's just totally broken and no one parses
+    * it 'correctly'"
+    */
+   a_Cookies_set("name=val; expires=Thu, 31 Dec 23:55:55 2037 GMT",
+                 "format9.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "format9.com", "/");
+
+   /* "Another kind of rfc822 / nearly-rfc1123 date, using superfluous
+    * whitespace."
+    */
+   a_Cookies_set("name=val; expires=Sun,  9 Dec 2036 13:42:05 GMT",
+                 "formata.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "formata.com", "/");
+
+   /* "Another kind of 'lets throw components together at random'. The
+    * site that this cookie came has apparently been fixed since then.
+    * (It uses the Netscape spec format now.)"
+    */
+   a_Cookies_set("name=val; expires=Wed Dec 12 2037 08:44:07 GMT-0500 (EST)",
+                 "formatb.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "formatb.com", "/");
+
+   a_Cookies_set("name=val; expires=Sun, 1-Jan-2035 00:00:00 GMT",
+                 "formatc.com", "/", NULL); 
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "formatc.com", "/");
+
+   /* ...and the remaining handful that he encountered once or twice were
+    * far too broken to deserve our attention (e.g., times like "13:57:2").
+    */
+
+   /* Now here's what github was sending in 2015. */
+   a_Cookies_set("name=val; expires=Sat, 07 Jul 2035 21:41:24 -0000",
+                 "formatd.com", "/", NULL);
+   expect(__LINE__, "Cookie: name=val\r\n", "http", "formatd.com", "/");
+
 }
 
 static void path()
@@ -887,6 +984,7 @@ int main()
    expires_server_ahead();
    expires_server_behind();
    expires_extremes();
+   expires_date_formats();
 
    a_Cookies_set("name=val; expires=\"Sun Jan 10 00:00:00 2038\"",
                  "quoted-date.org", "/", NULL);
