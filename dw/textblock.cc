@@ -548,7 +548,7 @@ void Textblock::notifySetParent ()
 
    DBG_OBJ_SET_NUM ("numSizeReferences", numSizeReferences);
    for (int i = 0; i < numSizeReferences; i++)
-      DBG_OBJ_ARRSET_NUM ("sizeReferences", i, sizeReferences[i]);
+      DBG_OBJ_ARRSET_PTR ("sizeReferences", i, sizeReferences[i]);
 }
 
 void Textblock::sizeAllocateImpl (core::Allocation *allocation)

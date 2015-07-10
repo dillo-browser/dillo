@@ -37,6 +37,8 @@ void SizeParams::cleanup ()
 
 void SizeParams::fill (int numPos, Widget **references, int *x, int *y)
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "fill");
+
    cleanup ();
    
    this->numPos = numPos;
@@ -52,11 +54,16 @@ void SizeParams::fill (int numPos, Widget **references, int *x, int *y)
    }
 
    debugPrint ();
+
+   DBG_OBJ_LEAVE ();
 }
 
 void SizeParams::forChild (Widget *parent, Widget *child, int xRel, int yRel,
                            SizeParams *childParams)
 {
+   DBG_OBJ_ENTER ("resize", 0, "forChild", "%p, %p, %d, %d, %p",
+                  parent, child, xRel, yRel, childParams);
+   
    int numChildReferences = child->numSizeRequestReferences ();
 
    childParams->numPos = 0;
@@ -86,21 +93,38 @@ void SizeParams::forChild (Widget *parent, Widget *child, int xRel, int yRel,
    }
 
    childParams->debugPrint ();
+
+   DBG_OBJ_LEAVE ();
 }
 
 bool SizeParams::findReference (Widget *reference, int *x, int *y)
 {
-   for (int i = 0; i < numPos; i++) {
+   DBG_OBJ_ENTER ("resize", 0, "findReference", "%p", reference);
+
+   bool found = false;
+   for (int i = 0; i < numPos && !found; i++) {
       if (reference == references[i]) {
          if (x)
             *x = this->x[i];
          if (y)
             *y = this->y[i];
-         return true;
+         found = true;
       }
    }
 
-   return false;
+   if (found) {
+      if (x && y)
+         DBG_OBJ_LEAVE_VAL ("true, x = %d, y = %d", *x, *y);
+      else if (x)
+         DBG_OBJ_LEAVE_VAL ("true, x = %d", *x);
+      else if (y)
+         DBG_OBJ_LEAVE_VAL ("true, y = %d", *y);
+      else
+         DBG_OBJ_LEAVE_VAL ("%s", "true");
+   } else
+      DBG_OBJ_LEAVE_VAL ("%s", "false");
+
+   return found;
 }
   
 
