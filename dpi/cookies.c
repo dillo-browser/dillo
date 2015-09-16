@@ -455,10 +455,9 @@ static void Cookies_save_and_free()
 }
 
 /*
- * Take a month's name and return a number between 0-11.
- * E.g. 'April' -> 3
+ * Month parsing
  */
-static int Cookies_get_month(const char *month_name)
+static bool_t Cookies_get_month(struct tm *tm, const char **str)
 {
    static const char *const months[] =
    { "Jan", "Feb", "Mar",
@@ -469,76 +468,178 @@ static int Cookies_get_month(const char *month_name)
    int i;
 
    for (i = 0; i < 12; i++) {
-      if (!dStrnAsciiCasecmp(months[i], month_name, 3))
-         return i;
+      if (!dStrnAsciiCasecmp(months[i], *str, 3)) {
+         _MSG("Found month: %s\n", months[i]);
+         tm->tm_mon = i;
+         *str += 3; 
+         return TRUE;
+      }
    }
-   return -1;
+   return FALSE;
 }
 
 /*
- * Accept: RFC-1123 | RFC-850 | ANSI asctime | Old Netscape format date string.
+ * As seen in the production below, it's just one digit or two.
+ * Return the value, or -1 if no proper value found.
+ */
+static int Cookies_get_timefield(const char **str)
+{
+   int n;
+   const char *s = *str;
+
+   if (!isdigit(*s))
+      return -1;
+
+   n = *(s++) - '0';
+   if (isdigit(*s)) {
+      n *= 10;
+      n += *(s++) - '0';
+      if (isdigit(*s))
+         return -1;
+   }
+   *str = s;
+   return n;
+}
+
+/*
+ * Time parsing: 'time-field ":" time-field ":" time-field'
+ *               'time-field = 1*2DIGIT'
+ */
+static bool_t Cookies_get_time(struct tm *tm, const char **str)
+{
+   const char *s = *str;
+
+   if ((tm->tm_hour = Cookies_get_timefield(&s)) == -1)
+      return FALSE;
+
+   if (*(s++) != ':')
+      return FALSE;
+
+   if ((tm->tm_min = Cookies_get_timefield(&s)) == -1)
+      return FALSE;
+
+   if (*(s++) != ':')
+      return FALSE;
+
+   if ((tm->tm_sec = Cookies_get_timefield(&s)) == -1)
+      return FALSE;
+
+   *str = s;
+   return TRUE;
+}
+
+/*
+ * Day parsing: "day-of-month    = 1*2DIGIT"
+ */
+static bool_t Cookies_get_day(struct tm *tm, const char **str)
+{
+   const char *s = *str;
+
+   if ((tm->tm_mday = Cookies_get_timefield(&s)) == -1)
+      return FALSE;
+
+   *str = s;
+   return TRUE;
+}
+
+/*
+ * Date parsing: "year = 2*4DIGIT"
+ */
+static bool_t Cookies_get_year(struct tm *tm, const char **str)
+{
+   int n;
+   const char *s = *str;
+
+   if (isdigit(*s))
+      n = *(s++) - '0';
+   else
+      return FALSE;
+   if (isdigit(*s)) {
+      n *= 10;
+      n += *(s++) - '0';
+   } else
+      return FALSE;
+   if (isdigit(*s)) {
+      n *= 10;
+      n += *(s++) - '0';
+   }
+   if (isdigit(*s)) {
+      n *= 10;
+      n += *(s++) - '0';
+   }
+   if (isdigit(*s)) {
+      /* Sorry, users of prehistoric software in the year 10000! */
+      return FALSE;
+   }
+   if (n >= 70 && n <= 99)
+      n += 1900;
+   else if (n <= 69)
+      n += 2000;
+
+   tm->tm_year = n - 1900;
+
+   *str = s;
+   return TRUE;
+}
+
+/*
+ * As given in RFC 6265.
+ */
+static bool_t Cookies_date_delim(char c)
+{
+   return (c == '\x09' ||
+           (c >= '\x20' && c <= '\x2F') ||
+           (c >= '\x3B' && c <= '\x40') ||
+           (c >= '\x5B' && c <= '\x60') ||
+           (c >= '\x7B' && c <= '\x7E'));
+}
+
+/*
+ * Parse date string.
  *
- *   Wdy, DD-Mon-YY HH:MM:SS GMT
- *   Wdy, DD-Mon-YYYY HH:MM:SS GMT
- *   Weekday, DD-Mon-YY HH:MM:SS GMT
- *   Weekday, DD-Mon-YYYY HH:MM:SS GMT
- *   Tue May 21 13:46:22 1991\n
- *   Tue May 21 13:46:22 1991
- *
- *   Let's add:
- *   Mon Jan 11 08:00:00 2010 GMT
+ * A true nightmare of date formats appear in cookies, so one basically
+ * has to paw through the soup and look for anything that looks sufficiently
+ * like any of the date fields.
  *
  * Return a pointer to a struct tm, or NULL on error.
- *
- * NOTE that the RFC wants user agents to be more flexible in what
- * they accept. For now, let's hack in special cases when they're encountered.
- * Why? Because this function is currently understandable, and I don't want to
- * abandon that (or at best decrease that -- see section 5.1.1) until there
- * is known to be good reason.
  */
 static struct tm *Cookies_parse_date(const char *date)
 {
-   struct tm *tm;
-   char *cp = strchr(date, ',');
+   bool_t found_time = FALSE, found_day = FALSE, found_month = FALSE,
+          found_year = FALSE, matched;
+   struct tm *tm = dNew0(struct tm, 1);
+   const char *s = date;
 
-   if (!cp && strlen(date)>20 && date[13] == ':' && date[16] == ':') {
-      /* Looks like ANSI asctime format... */
-      tm = dNew0(struct tm, 1);
+   while (*s) {
+      matched = FALSE;
 
-      cp = (char *)date;
-      tm->tm_mon = Cookies_get_month(cp + 4);
-      tm->tm_mday = strtol(cp + 8, NULL, 10);
-      tm->tm_hour = strtol(cp + 11, NULL, 10);
-      tm->tm_min = strtol(cp + 14, NULL, 10);
-      tm->tm_sec = strtol(cp + 17, NULL, 10);
-      tm->tm_year = strtol(cp + 20, NULL, 10) - 1900;
-
-   } else if (cp && (cp - date == 3 || cp - date > 5) &&
-                    (strlen(cp) == 24 || strlen(cp) == 26)) {
-      /* RFC-1123 | RFC-850 format | Old Netscape format */
-      tm = dNew0(struct tm, 1);
-
-      tm->tm_mday = strtol(cp + 2, NULL, 10);
-      tm->tm_mon = Cookies_get_month(cp + 5);
-      tm->tm_year = strtol(cp + 9, &cp, 10);
-      /* tm_year is the number of years since 1900 */
-      if (tm->tm_year < 70)
-         tm->tm_year += 100;
-      else if (tm->tm_year > 100)
-         tm->tm_year -= 1900;
-      tm->tm_hour = strtol(cp + 1, NULL, 10);
-      tm->tm_min = strtol(cp + 4, NULL, 10);
-      tm->tm_sec = strtol(cp + 7, NULL, 10);
-
-   } else {
+      if (!found_time)
+         matched = found_time = Cookies_get_time(tm, &s);
+      if (!matched && !found_day)
+         matched = found_day = Cookies_get_day(tm, &s);
+      if (!matched && !found_month)
+         matched = found_month = Cookies_get_month(tm, &s);
+      if (!matched && !found_year)
+         matched = found_year = Cookies_get_year(tm, &s);
+      while (*s && !Cookies_date_delim(*s))
+         s++;
+      while (*s && Cookies_date_delim(*s))
+         s++;
+   }
+   if (!found_time || !found_day || !found_month || !found_year) {
+      dFree(tm);
       tm = NULL;
       MSG("In date \"%s\", format not understood.\n", date);
    }
 
-   /* Error checks. This may be overkill. */
+   /* Error checks. This may be overkill.
+    *
+    * RFC 6265: "Note that leap seconds cannot be represented in this
+    * syntax." I'm not sure whether that's good, but that's what it says.
+    */
    if (tm &&
        !(tm->tm_mday > 0 && tm->tm_mday < 32 && tm->tm_mon >= 0 &&
-         tm->tm_mon < 12 && tm->tm_year >= 70 && tm->tm_hour >= 0 &&
+         tm->tm_mon < 12 && tm->tm_year >= 0 && tm->tm_hour >= 0 &&
          tm->tm_hour < 24 && tm->tm_min >= 0 && tm->tm_min < 60 &&
          tm->tm_sec >= 0 && tm->tm_sec < 60)) {
       MSG("Date \"%s\" values not in range.\n", date);
