@@ -73,20 +73,21 @@ void SizeParams::forChild (Widget *parent, Widget *child, int xRel, int yRel,
 
    for (int i = 0; i < numChildReferences; i++) {
       Widget *childReference = child->sizeRequestReference (i);
+      
       if (childReference == parent) {
-         childParams->references[numPos] = childReference;
-         childParams->x[numPos] = xRel;
-         childParams->y[numPos] = yRel;
-         numPos++;
+         childParams->references[childParams->numPos] = childReference;
+         childParams->x[childParams->numPos] = xRel;
+         childParams->y[childParams->numPos] = yRel;
+         childParams->numPos++;
       } else {
          bool found = false;
          for (int j = 0; !found && j < numPos; j++) {
             if (childReference == references[j]) {
                found = true;
-               references[numPos] = childReference;
-               childParams->x[numPos] = x[j] + xRel;
-               childParams->y[numPos] = y[j] + yRel;
-               numPos++;
+               childParams->references[childParams->numPos] = childReference;
+               childParams->x[childParams->numPos] = x[j] + xRel;
+               childParams->y[childParams->numPos] = y[j] + yRel;
+               childParams->numPos++;
             } 
          }
       }
