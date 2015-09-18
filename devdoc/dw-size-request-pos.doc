@@ -33,7 +33,7 @@ widget. If a widget wants to get the size of a child widget, it should
 2. call dw::core::Widget::sizeRequest with the positions relative to
    these widgets.
 
-All positions passed to dw::core::Widget::sizeRequest must costitute
+All positions passed to dw::core::Widget::sizeRequest must constitute
 the position at which this child will be allocated.
 
 There are situations where the parent widget is unable to determine
