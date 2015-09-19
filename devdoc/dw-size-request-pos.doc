@@ -134,7 +134,7 @@ Plan
 5. Implement step 3 for floats (affects dw::oof::OOFFloatsMgr). **INCOMPLETE.**
 
 6. Implement step 3 for positioned elements (affects only
-   dw::oof:OOFPositionedMgr). **INCOMPLETE.**
+   dw::oof::OOFPositionedMgr). **INCOMPLETE.**
 
 
 Issues
