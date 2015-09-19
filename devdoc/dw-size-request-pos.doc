@@ -4,7 +4,7 @@
   padding: 0.5em 1em; background-color: #ffffe0">The complex "widget
   sizes" is currently divided into three documents: \ref
   dw-widget-sizes, \ref dw-grows, and **Size requisitions depending on
-  positions** (this document). </div>
+  positions** (this document).</div>
 
 <div style="border: 2px solid #ff4040; margin: 1em 0;
   padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
@@ -32,6 +32,12 @@ widget. If a widget wants to get the size of a child widget, it should
    relative to which the child's position must be calculated;
 2. call dw::core::Widget::sizeRequest with the positions relative to
    these widgets.
+
+<div style="border: 2px solid #ffff00; margin: 1em 0;
+  padding: 0.5em 1em; background-color: #ffffe0">It is not sufficient
+  to work with *absolute* positions, since there may be an
+  interruption passing the positions so that absolute positions are
+  often not known.</div>
 
 All positions passed to dw::core::Widget::sizeRequest must constitute
 the position at which this child will be allocated.
@@ -106,7 +112,7 @@ Plan
 1. General design (dw::core::Widget::sizeRequestReference, changes to
    dw::core::Widget::sizeRequest). **COMPLETED.**
 
-2. Implementation for dw::Textblock. **COMPLETED** (except for some bugs).
+2. Implementation for dw::Textblock. **COMPLETED**.
 
 3. Change interface of dw::oof::OutOfFlowMgr (this affects mostly
    only comments). **COMPLETED.**
