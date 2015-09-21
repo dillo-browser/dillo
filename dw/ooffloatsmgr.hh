@@ -32,10 +32,6 @@ private:
    class WidgetInfo: public lout::object::Object
    {
    private:
-      bool wasAllocated;
-      int xCB, yCB; // relative to the containing block
-      int width, height;
-
       OOFFloatsMgr *oofm;
       core::Widget *widget;
 
@@ -44,15 +40,6 @@ private:
 
    public:
       WidgetInfo (OOFFloatsMgr *oofm, core::Widget *widget);
-
-      inline bool wasThenAllocated () { return wasAllocated; }
-      inline int getOldXCB () { return xCB; }
-      inline int getOldYCB () { return yCB; }
-      inline int getOldWidth () { return width; }
-      inline int getOldHeight () { return height; }
-
-
-      void update (bool wasAllocated, int xCB, int yCB, int width, int height);
 
       inline core::Widget *getWidget () { return widget; }
    };
@@ -111,7 +98,6 @@ private:
       inline int getNewWidth () { return getWidget()->getAllocation()->width; }
       inline int getNewHeight () { return getWidget()->getAllocation()->ascent +
             getWidget()->getAllocation()->descent; }
-      void updateAllocation ();
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);
 
@@ -199,7 +185,6 @@ private:
          core::Allocation *allocation =
             getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ());
          return allocation->ascent + allocation->descent; }
-      void updateAllocation ();
 
       inline OOFAwareWidget *getOOFAwareWidget ()
       { return (OOFAwareWidget*)getWidget (); }
@@ -241,7 +226,6 @@ private:
    int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth);
 
    bool doFloatsExceedCB (Side side);
-   bool haveExtremesChanged (Side side);
 
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area, core::DrawingContext *context);

@@ -37,28 +37,6 @@ OOFFloatsMgr::WidgetInfo::WidgetInfo (OOFFloatsMgr *oofm, Widget *widget)
 {
    this->oofm = oofm;
    this->widget = widget;
-   wasAllocated = false;
-   xCB = yCB = width = height = -1;
-}
-
-void OOFFloatsMgr::WidgetInfo::update (bool wasAllocated, int xCB, int yCB,
-                                       int width, int height)
-{
-   DBG_OBJ_ENTER_O ("resize.oofm", 0, widget, "update", "%s, %d, %d, %d, %d",
-                    wasAllocated ? "true" : "false", xCB, yCB, width, height);
-
-   this->wasAllocated = wasAllocated;
-   this->xCB = xCB;
-   this->yCB = yCB;
-   this->width = width;
-   this->height = height;
-
-   DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.xCB", xCB);
-   DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.yCB", yCB);
-   DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.width", width);
-   DBG_OBJ_SET_NUM_O (widget, "<WidgetInfo>.height", height);
-
-   DBG_OBJ_LEAVE_O (widget);
 }
 
 // ----------------------------------------------------------------------
@@ -88,16 +66,6 @@ OOFFloatsMgr::Float::Float (OOFFloatsMgr *oofm, Widget *widget,
       DBG_OBJ_SET_BOOL_O (widget, "<Float>.sizeChangedSinceLastAllocation",
                          sizeChangedSinceLastAllocation);
    }
-}
-
-void OOFFloatsMgr::Float::updateAllocation ()
-{
-   DBG_OBJ_ENTER0_O ("resize.oofm", 0, getWidget (), "updateAllocation");
-
-   update (isNowAllocated (), getNewXCB (), getNewYCB (), getNewWidth (),
-           getNewHeight ());
-
-   DBG_OBJ_LEAVE_O (getWidget ());
 }
 
 void OOFFloatsMgr::Float::intoStringBuffer(StringBuffer *sb)
@@ -487,16 +455,6 @@ OOFFloatsMgr::TBInfo::~TBInfo ()
    delete rightFloats;
 }
 
-void OOFFloatsMgr::TBInfo::updateAllocation ()
-{
-   DBG_OBJ_ENTER0_O ("resize.oofm", 0, getWidget (), "updateAllocation");
-
-   update (isNowAllocated (), getNewXCB (), getNewYCB (), getNewWidth (),
-           getNewHeight ());
-
-   DBG_OBJ_LEAVE_O (getWidget ());
-}
-
 OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container)
 {
    DBG_OBJ_CREATE ("dw::OOFFloatsMgr");
@@ -565,7 +523,7 @@ void OOFFloatsMgr::sizeAllocateStart (OOFAwareWidget *caller,
       containerWasAllocated = true;
       containerAllocation = *allocation;
    }
-
+   
    DBG_OBJ_LEAVE ();
 }
 
@@ -605,25 +563,15 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
             TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (key);
             OOFAwareWidget *tb = key->getTypedValue();
 
-            tbInfo->updateAllocation ();
             tbInfo->lineBreakWidth = tb->getLineBreakWidth ();
          }
 
          // There are cases where some allocated floats exceed the CB size.
+         // TODO Still needed after SRDOP?
          bool sizeChanged = doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT);
 
-         // Similar for extremes.
-         bool extremesChanged =
-            haveExtremesChanged (LEFT) || haveExtremesChanged (RIGHT);
-
-         for (int i = 0; i < leftFloats->size(); i++)
-            leftFloats->get(i)->updateAllocation ();
-
-         for (int i = 0; i < rightFloats->size(); i++)
-            rightFloats->get(i)->updateAllocation ();
-
-         if (sizeChanged || extremesChanged)
-            container->oofSizeChanged (extremesChanged);
+         if (sizeChanged)
+            container->oofSizeChanged (false);
       }
    }
 
@@ -652,6 +600,7 @@ bool OOFFloatsMgr::doFloatsExceedCB (Side side)
    // against the *requisition* of the CB, which may (e. g. within
    // tables) differ from the new allocation. (Generally, a widget may
    // allocated at a different size.)
+  
    core::Requisition cbReq;
    container->sizeRequest (&cbReq);
 
@@ -686,73 +635,6 @@ bool OOFFloatsMgr::doFloatsExceedCB (Side side)
    DBG_OBJ_LEAVE ();
 
    return exceeds;
-}
-
-bool OOFFloatsMgr::haveExtremesChanged (Side side)
-{
-   DBG_OBJ_ENTER ("resize.oofm", 0, "haveExtremesChanged", "%s",
-                  side == LEFT ? "LEFT" : "RIGHT");
-
-   // This is quite different from doFloatsExceedCB, since there is no
-   // counterpart to getExtremes, as sizeAllocate is a counterpart to
-   // sizeRequest. So we have to determine whether the allocation has
-   // changed the extremes, which is done by examining the part of the
-   // allocation which is part of the extremes calculation (see
-   // getFloatsExtremes). Changes of the extremes are handled by the
-   // normal queueResize mechanism.
-
-   // (This may refer to the old implementation of doFloatsExceedCB,
-   // which checked the container *allocation*, not the *requisition*.
-   //
-   // TODO: (i) Correct the comment. (ii) Is this implementation still
-   // correct, considering the reasoning behind the change of
-   // doFloatsExceedCB?
-   //
-   // See also OOFPositionedMgr::haveExtremesChanged.)
-
-   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
-   bool changed = false;
-
-   for (int i = 0; i < list->size () && !changed; i++) {
-      Float *vloat = list->get (i);
-      // When the GB is the CB, an allocation change does not play a
-      // role here.
-      if (vloat->generatingBlock != container) {
-         if (!vloat->wasThenAllocated () && vloat->isNowAllocated ())
-            changed = true;
-         else {
-            // This method is called within sizeAllocateEnd, where
-            // containinBlock->getAllocation() (old value) and
-            // containinBlockAllocation (new value) are different.
-
-            Allocation *oldCBA = container->getAllocation ();
-            Allocation *newCBA = &containerAllocation;
-
-            // Compare also to getFloatsExtremes. The box difference
-            // of the GB (from style) has not changed in this context,
-            // so it is ignored.
-
-            int oldDiffLeft = vloat->getOldXCB ();
-            int newDiffLeft = vloat->getNewXCB ();
-            int oldDiffRight =
-               oldCBA->width - (vloat->getOldXCB () + vloat->getOldWidth ());
-            int newDiffRight =
-               newCBA->width - (vloat->getNewXCB () + vloat->getNewWidth ());
-
-            if (// regarding minimum
-                (side == LEFT && oldDiffLeft != newDiffLeft) ||
-                (side == RIGHT && oldDiffRight != newDiffRight) ||
-                // regarding maximum
-                oldDiffLeft + oldDiffRight != newDiffLeft + newDiffRight)
-               changed = true;
-         }
-      }
-   }
-
-   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", changed ? "true" : "false");
-   DBG_OBJ_LEAVE ();
-
-   return changed;
 }
 
 void OOFFloatsMgr::sizeAllocateFloats (Side side)
