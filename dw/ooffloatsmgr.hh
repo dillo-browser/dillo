@@ -1,6 +1,7 @@
 #ifndef __DW_OOFFLOATSMGR_HH__
 #define __DW_OOFFLOATSMGR_HH__
 
+
 #include "outofflowmgr.hh"
 
 namespace dw {
@@ -20,7 +21,6 @@ class OOFFloatsMgr: public OutOfFlowMgr
 
 private:
    enum Side { LEFT, RIGHT };
-   enum SFVType { GB, CB };
 
    OOFAwareWidget *container;
 
@@ -65,12 +65,10 @@ private:
       private:
          OOFFloatsMgr *oofm;
          OOFAwareWidget *refTB;
-         SFVType type; // actually only used for debugging
 
       public:
-         ComparePosition (OOFFloatsMgr *oofm, OOFAwareWidget *refTB,
-                          SFVType type)
-         { this->oofm = oofm; this->refTB = refTB; this->type = type; }
+         ComparePosition (OOFFloatsMgr *oofm, OOFAwareWidget *refTB)
+         { this->oofm = oofm; this->refTB = refTB; }
          int compare(Object *o1, Object *o2);
       };
 
@@ -84,22 +82,17 @@ private:
       {
       private:
          OOFFloatsMgr *oofm;
-         SFVType type; // actually only used for debugging
 
       public:
-         CompareGBAndExtIndex (OOFFloatsMgr *oofm, SFVType type)
-         { this->oofm = oofm; this->type = type; }
+         CompareGBAndExtIndex (OOFFloatsMgr *oofm)
+         { this->oofm = oofm; }
          int compare(Object *o1, Object *o2);
       };
 
       OOFAwareWidget *generatingBlock;
       int externalIndex;
+      int index; // TODO Needed after SRDOP?
       int yReq, yReal; // relative to generator, not container
-      int indexGBList; /* Refers to TBInfo::leftFloatsGB or
-                          TBInfo::rightFloatsGB, respectively. -1
-                          initially. */
-      int indexCBList; /* Refers to leftFloatsCB or rightFloatsCB,
-                          respectively. -1 initially. */
       int sideSpanningIndex, mark;
       core::Requisition size;
       int cbLineBreakWidth; /* On which the calculation of relative sizes
@@ -120,12 +113,6 @@ private:
             getWidget()->getAllocation()->descent; }
       void updateAllocation ();
 
-      inline int *getIndexRef (SFVType type) {
-         return type == GB ? &indexGBList : &indexCBList; }
-      inline int getIndex (SFVType type) { return *(getIndexRef (type)); }
-      inline void setIndex (SFVType type, int value) {
-         *(getIndexRef (type)) = value; }
-
       void intoStringBuffer(lout::misc::StringBuffer *sb);
 
       bool covers (OOFAwareWidget *textblock, int y, int h);
@@ -145,17 +132,14 @@ private:
     */
    class SortedFloatsVector: private lout::container::typed::Vector<Float>
    {
-   public:
-      SFVType type;
-
    private:
       OOFFloatsMgr *oofm;
       Side side;
 
    public:
-      inline SortedFloatsVector (OOFFloatsMgr *oofm, Side side, SFVType type) :
+      inline SortedFloatsVector (OOFFloatsMgr *oofm, Side side) :
          lout::container::typed::Vector<Float> (1, false)
-      { this->oofm = oofm; this->side = side; this->type = type; }
+      { this->oofm = oofm; this->side = side; }
 
       int findFloatIndex (OOFAwareWidget *lastGB, int lastExtIndex);
       int find (OOFAwareWidget *textblock, int y, int start, int end);
@@ -262,7 +246,6 @@ private:
                              int diff);
    Float *findFloatByWidget (core::Widget *widget);
 
-   void moveFromGBToCB (Side side);
    void sizeAllocateFloats (Side side, int newLastAllocatedFloat);
    int getGBWidthForAllocation (Float *vloat);
    int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth);
@@ -276,9 +259,8 @@ private:
                                         core::GettingWidgetAtPointContext
                                         *context);
 
-   bool collidesV (Float *vloat, Float *other, SFVType type, int *yReal,
-                   bool useAllocation);
-   bool collidesH (Float *vloat, Float *other, SFVType type);
+   bool collidesV (Float *vloat, Float *other, int *yReal);
+   bool collidesH (Float *vloat, Float *other);
 
    void getFloatsListsAndSide (Float *vloat, SortedFloatsVector **listSame,
                                SortedFloatsVector **listOpp, Side *side);

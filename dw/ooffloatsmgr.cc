@@ -72,7 +72,7 @@ OOFFloatsMgr::Float::Float (OOFFloatsMgr *oofm, Widget *widget,
 
    yReq = yReal = size.width = size.ascent = size.descent = 0;
    dirty = sizeChangedSinceLastAllocation = true;
-   indexGBList = indexCBList = -1;
+   index = -1;
 
    // Sometimes a float with widget = NULL is created as a key; this
    // is not interesting for RTFL.
@@ -111,10 +111,8 @@ void OOFFloatsMgr::Float::intoStringBuffer(StringBuffer *sb)
       sb->append (")");
    }
 
-   sb->append (", indexGBList = ");
-   sb->appendInt (indexGBList);
-   sb->append (", indexCBList = ");
-   sb->appendInt (indexCBList);
+   sb->append (", index = ");
+   sb->appendInt (index);
    sb->append (", sideSpanningIndex = ");
    sb->appendInt (sideSpanningIndex);
    sb->append (", generatingBlock = ");
@@ -194,7 +192,7 @@ int OOFFloatsMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
 
    DBG_OBJ_ENTER_O ("border", 1, oofm,
                     "ComparePosition/compare", "(#%d, #%d) [refTB = %p]",
-                    fl1->getIndex (type), fl2->getIndex (type), refTB);
+                    fl1->index, fl2->index, refTB);
 
    if (refTB == fl1->generatingBlock && refTB == fl2->generatingBlock) {
       DBG_OBJ_MSG_O ("border", 2, oofm, "refTB is generating both floats");
@@ -281,8 +279,8 @@ int OOFFloatsMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
 
    DBG_OBJ_ENTER_O ("border", 1, oofm, "CompareGBAndExtIndex::compare",
                     "#%d -> %p/%d, #%d -> %p/#%d",
-                    f1->getIndex (type), f1->generatingBlock, f1->externalIndex,
-                    f2->getIndex (type), f2->generatingBlock,
+                    f1->index, f1->generatingBlock, f1->externalIndex,
+                    f2->index, f2->generatingBlock,
                     f2->externalIndex);
 
    if (f1->generatingBlock == f2->generatingBlock) {
@@ -338,8 +336,8 @@ int OOFFloatsMgr::SortedFloatsVector::findFloatIndex (OOFAwareWidget *lastGB,
                     lastGB, lastExtIndex);
 
    Float key (oofm, NULL, lastGB, lastExtIndex);
-   key.setIndex (type, -1); // for debugging
-   Float::CompareGBAndExtIndex comparator (oofm, type);
+   key.index = -1; // for debugging
+   Float::CompareGBAndExtIndex comparator (oofm);
    int i = bsearch (&key, false, &comparator);
 
    // At position i is the next larger element, so element i should
@@ -383,8 +381,8 @@ int OOFFloatsMgr::SortedFloatsVector::find (OOFAwareWidget *textblock, int y,
    Float key (oofm, NULL, NULL, 0);
    key.generatingBlock = textblock;
    key.yReal = y;
-   key.setIndex (type, -1); // for debugging
-   Float::ComparePosition comparator (oofm, textblock, type);
+   key.index = -1; // for debugging
+   Float::ComparePosition comparator (oofm, textblock);
    int result = bsearch (&key, false, start, end, &comparator);
 
    DBG_OBJ_MSGF_O ("border", 1, oofm, "=> result = %d", result);
@@ -409,7 +407,7 @@ int OOFFloatsMgr::SortedFloatsVector::findFirst (OOFAwareWidget *textblock,
          DBG_OBJ_MSGF_O ("border", 2, oofm,
                          "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d)), "
                          "%s, %s, ext = %d, GB = %p); widget at (%d, %d)",
-                         i, get(i)->getWidget (), get(i)->getIndex (type),
+                         i, get(i)->getWidget (), get(i)->index,
                          get(i)->sideSpanningIndex, get(i)->yReq, get(i)->yReal,
                          get(i)->size.width, get(i)->size.ascent,
                          get(i)->size.descent,
@@ -465,7 +463,7 @@ int OOFFloatsMgr::SortedFloatsVector::findLastBeforeSideSpanningIndex
 void OOFFloatsMgr::SortedFloatsVector::put (Float *vloat)
 {
    lout::container::typed::Vector<Float>::put (vloat);
-   vloat->setIndex (type, size() - 1);
+   vloat->index = size() - 1;
 }
 
 OOFFloatsMgr::TBInfo::TBInfo (OOFFloatsMgr *oofm, OOFAwareWidget *textblock,
@@ -475,8 +473,8 @@ OOFFloatsMgr::TBInfo::TBInfo (OOFFloatsMgr *oofm, OOFAwareWidget *textblock,
    this->parent = parent;
    this->parentExtIndex = parentExtIndex;
 
-   leftFloatsGB = new SortedFloatsVector (oofm, LEFT, GB);
-   rightFloatsGB = new SortedFloatsVector (oofm, RIGHT, GB);
+   leftFloatsGB = new SortedFloatsVector (oofm, LEFT);
+   rightFloatsGB = new SortedFloatsVector (oofm, RIGHT);
 
    wasAllocated = getWidget()->wasAllocated ();
    allocation = *(getWidget()->getAllocation ());
@@ -505,8 +503,8 @@ OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container)
 
    this->container = (OOFAwareWidget*)container;
 
-   leftFloatsCB = new SortedFloatsVector (this, LEFT, CB);
-   rightFloatsCB = new SortedFloatsVector (this, RIGHT, CB);
+   leftFloatsCB = new SortedFloatsVector (this, LEFT);
+   rightFloatsCB = new SortedFloatsVector (this, RIGHT);
 
    DBG_OBJ_SET_NUM ("leftFloatsCB.size", leftFloatsCB->size());
    DBG_OBJ_SET_NUM ("rightFloatsCB.size", rightFloatsCB->size());
@@ -579,10 +577,6 @@ void OOFFloatsMgr::sizeAllocateStart (OOFAwareWidget *caller,
 
       containerWasAllocated = true;
       containerAllocation = *allocation;
-
-      // Move floats from GB lists to the one CB list.
-      moveFromGBToCB (LEFT);
-      moveFromGBToCB (RIGHT);
 
       // These attributes are used to keep track which floats have
       // been allocated (referring to leftFloatsCB and rightFloatsCB).
@@ -781,45 +775,6 @@ bool OOFFloatsMgr::haveExtremesChanged (Side side)
    DBG_OBJ_LEAVE ();
 
    return changed;
-}
-
-void OOFFloatsMgr::moveFromGBToCB (Side side)
-{
-   DBG_OBJ_ENTER ("oofm.resize", 0, "moveFromGBToCB", "%s",
-                  side == LEFT ? "LEFT" : "RIGHT");
-
-   SortedFloatsVector *dest = side == LEFT ? leftFloatsCB : rightFloatsCB;
-   int *floatsMark = side == LEFT ? &leftFloatsMark : &rightFloatsMark;
-
-   for (int mark = 0; mark <= *floatsMark; mark++)
-      for (lout::container::typed::Iterator<TBInfo> it = tbInfos->iterator ();
-           it.hasNext (); ) {
-         TBInfo *tbInfo = it.getNext ();
-         SortedFloatsVector *src =
-            side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
-         for (int i = 0; i < src->size (); i++) {
-            Float *vloat = src->get (i);
-            // "vloat->indexCBList == -1": prevent copying the vloat twice.
-            if (vloat->indexCBList == -1 && vloat->mark == mark) {
-               dest->put (vloat);
-               DBG_OBJ_MSGF ("oofm.resize", 1,
-                             "moving float %p (mark %d) to CB list\n",
-                             vloat->getWidget (), vloat->mark);
-               DBG_OBJ_SET_NUM (side == LEFT ?
-                                "leftFloatsCB.size" : "rightFloatsCB.size",
-                                dest->size());
-               DBG_OBJ_ARRATTRSET_PTR (side == LEFT ?
-                                       "leftFloatsCB" : "rightFloatsCB",
-                                       dest->size() - 1, "widget",
-                                       vloat->getWidget ());
-
-            }
-         }
-      }
-
-   *floatsMark = 0;
-
-   DBG_OBJ_LEAVE ();
 }
 
 void OOFFloatsMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
@@ -1183,10 +1138,9 @@ void OOFFloatsMgr::tellPosition1 (Widget *widget, int x, int y)
    // tested; especially since searching and border calculation would
    // be confused. For this reaspn, only the previous float is
    // relevant. (Cf. below, collisions on the other side.)
-   int index = vloat->getIndex (listSame->type), yRealNew;
-   if (index >= 1 &&
-       collidesV (vloat, listSame->get (index - 1), listSame->type,
-                  &yRealNew, false)) {
+   int yRealNew;
+   if (vloat->index >= 1 &&
+       collidesV (vloat, listSame->get (vloat->index - 1), &yRealNew)) {
       vloat->yReal = yRealNew;
       DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
    }
@@ -1223,12 +1177,11 @@ void OOFFloatsMgr::tellPosition1 (Widget *widget, int x, int y)
    // ...
    for (bool foundColl = false;
         !foundColl && oppFloatIndex >= 0 &&
-           collidesV (vloat, listOpp->get (oppFloatIndex), listSame->type,
-                      &yRealNew, false);
+           collidesV (vloat, listOpp->get (oppFloatIndex), &yRealNew);
         oppFloatIndex--) {
       // ... but stop the loop as soon as the horizontal dimensions
       // test is positive.
-      if (collidesH (vloat, listOpp->get (oppFloatIndex), listSame->type)) {
+      if (collidesH (vloat, listOpp->get (oppFloatIndex))) {
          vloat->yReal = yRealNew;
          DBG_OBJ_SET_NUM_O (vloat->getWidget (), "<Float>.yReal", vloat->yReal);
          foundColl = true;
@@ -1258,16 +1211,15 @@ void OOFFloatsMgr::tellIncompletePosition2 (Widget *generator, Widget *widget,
    assertNotReached ();
 }
 
-bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, SFVType type,
-                              int *yReal, bool useAllocation)
+bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, int *yReal)
 {
    // Only checks vertical (possible) collisions, and only refers to
    // vloat->yReal; never to vloat->allocation->y, even when the GBs are
    // different. Used only in tellPosition.
 
    DBG_OBJ_ENTER ("resize.oofm", 0, "collidesV", "#%d [%p], #%d [%p], ...",
-                  vloat->getIndex (type), vloat->getWidget (),
-                  other->getIndex (type), other->getWidget ());
+                  vloat->index, vloat->getWidget (), other->index,
+                  other->getWidget ());
 
    bool result;
 
@@ -1298,6 +1250,10 @@ bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, SFVType type,
          Allocation *gba = getAllocation (vloat->generatingBlock),
             *flaOther = other->getWidget()->getAllocation ();
 
+         // TODO: The following comment is wrong after SRDOP. What is still
+         // relevant (especially in the second paragraph)? (Also, usage of
+         // allocation has to be reworked generally.)
+         //
          // We distinguish two cases (by different values of useAllocation):
          // (i) within tellPosition, GB allocation + yReal is used for the
          // y position of the other float, while (ii) in checkAllocatedFloat-
@@ -1320,7 +1276,7 @@ bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, SFVType type,
          // case, corrected in sizeAllocateEnd, either because hasRelation-
          // Changed returns true, or in checkAllocatedFloatCollisions.
 
-         int otherFloatY = useAllocation ? flaOther->y : 
+         int otherFloatY =
             getAllocation(other->generatingBlock)->y + other->yReal;
          int otherBottomGB =
             otherFloatY + flaOther->ascent + flaOther->descent - gba->y;
@@ -1349,7 +1305,7 @@ bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, SFVType type,
 }
 
 
-bool OOFFloatsMgr::collidesH (Float *vloat, Float *other, SFVType type)
+bool OOFFloatsMgr::collidesH (Float *vloat, Float *other)
 {
    // Only checks horizontal collision. For a complete test, use
    // collidesV (...) && collidesH (...).
