@@ -473,8 +473,8 @@ OOFFloatsMgr::TBInfo::TBInfo (OOFFloatsMgr *oofm, OOFAwareWidget *textblock,
    this->parent = parent;
    this->parentExtIndex = parentExtIndex;
 
-   leftFloatsGB = new SortedFloatsVector (oofm, LEFT);
-   rightFloatsGB = new SortedFloatsVector (oofm, RIGHT);
+   leftFloats = new Vector<Float> (1, false);
+   rightFloats = new Vector<Float> (1, false);
 
    wasAllocated = getWidget()->wasAllocated ();
    allocation = *(getWidget()->getAllocation ());
@@ -483,8 +483,8 @@ OOFFloatsMgr::TBInfo::TBInfo (OOFFloatsMgr *oofm, OOFAwareWidget *textblock,
 
 OOFFloatsMgr::TBInfo::~TBInfo ()
 {
-   delete leftFloatsGB;
-   delete rightFloatsGB;
+   delete leftFloats;
+   delete rightFloats;
 }
 
 void OOFFloatsMgr::TBInfo::updateAllocation ()
@@ -503,17 +503,11 @@ OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container)
 
    this->container = (OOFAwareWidget*)container;
 
-   leftFloatsCB = new SortedFloatsVector (this, LEFT);
-   rightFloatsCB = new SortedFloatsVector (this, RIGHT);
+   leftFloats = new SortedFloatsVector (this, LEFT);
+   rightFloats = new SortedFloatsVector (this, RIGHT);
 
-   DBG_OBJ_SET_NUM ("leftFloatsCB.size", leftFloatsCB->size());
-   DBG_OBJ_SET_NUM ("rightFloatsCB.size", rightFloatsCB->size());
-
-   leftFloatsAll = new Vector<Float> (1, true);
-   rightFloatsAll = new Vector<Float> (1, true);
-
-   DBG_OBJ_SET_NUM ("leftFloatsAll.size", leftFloatsAll->size());
-   DBG_OBJ_SET_NUM ("rightFloatsAll.size", rightFloatsAll->size());
+   DBG_OBJ_SET_NUM ("leftFloats.size", leftFloats->size());
+   DBG_OBJ_SET_NUM ("rightFloats.size", rightFloats->size());
 
    floatsByWidget = new HashTable <TypedPointer <Widget>, Float> (true, false);
 
@@ -532,23 +526,16 @@ OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container)
 
 OOFFloatsMgr::~OOFFloatsMgr ()
 {
-   //printf ("OOFFloatsMgr::~OOFFloatsMgr\n");
-
-   delete leftFloatsCB;
-   delete rightFloatsCB;
-
    // Order is important: tbInfosByOOFAwareWidget is owner of the instances
-   // of TBInfo.tbInfosByOOFAwareWidget
+   // of TBInfo.tbInfosByOOFAwareWidget. Also, leftFloats and rightFloats are
+   // owners of the floats.
    delete tbInfos;
    delete tbInfosByOOFAwareWidget;
 
-   delete floatsByWidget;
+   delete leftFloats;
+   delete rightFloats;
 
-   // Order is important, since the instances of Float are owned by
-   // leftFloatsAll and rightFloatsAll, so these should be deleted
-   // last.
-   delete leftFloatsAll;
-   delete rightFloatsAll;
+   delete floatsByWidget;
 
    DBG_OBJ_DELETE ();
 }
@@ -577,10 +564,6 @@ void OOFFloatsMgr::sizeAllocateStart (OOFAwareWidget *caller,
 
       containerWasAllocated = true;
       containerAllocation = *allocation;
-
-      // These attributes are used to keep track which floats have
-      // been allocated (referring to leftFloatsCB and rightFloatsCB).
-      lastAllocatedLeftFloat = lastAllocatedRightFloat = -1;
    }
 
    DBG_OBJ_LEAVE ();
@@ -590,13 +573,7 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateEnd", "%p", caller);
 
-   if (isOOFAwareWidgetRegistered (caller)) {
-      if (caller != container) {
-         // Allocate all floats "before" this textblock.
-         sizeAllocateFloats (LEFT, leftFloatsCB->findFloatIndex (caller, -1));
-         sizeAllocateFloats (RIGHT, rightFloatsCB->findFloatIndex (caller, -1));
-      }
-      
+   if (isOOFAwareWidgetRegistered (caller)) {     
       // The checks below do not cover "clear position" in all cases,
       // so this is done here separately. This position is stored in
       // TBInfo and calculated at this points; changes will be noticed
@@ -613,10 +590,11 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
          // is sizeAllocateEnd, with the containing block as an
          // argument. So this is the correct point to finish size
          // allocation.
+         
+         // TODO: After SRDOP, the comment above is probably non-sense.
 
-         // Allocate all remaining floats.
-         sizeAllocateFloats (LEFT, leftFloatsCB->size () - 1);
-         sizeAllocateFloats (RIGHT, rightFloatsCB->size () - 1);
+         sizeAllocateFloats (LEFT);
+         sizeAllocateFloats (RIGHT);
 
          // Store some information for later use.
          // TODO still used with SRDOP?
@@ -638,11 +616,11 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
          bool extremesChanged =
             haveExtremesChanged (LEFT) || haveExtremesChanged (RIGHT);
 
-         for (int i = 0; i < leftFloatsCB->size(); i++)
-            leftFloatsCB->get(i)->updateAllocation ();
+         for (int i = 0; i < leftFloats->size(); i++)
+            leftFloats->get(i)->updateAllocation ();
 
-         for (int i = 0; i < rightFloatsCB->size(); i++)
-            rightFloatsCB->get(i)->updateAllocation ();
+         for (int i = 0; i < rightFloats->size(); i++)
+            rightFloats->get(i)->updateAllocation ();
 
          if (sizeChanged || extremesChanged)
             container->oofSizeChanged (extremesChanged);
@@ -656,10 +634,10 @@ void OOFFloatsMgr::containerSizeChangedForChildren ()
 {
    DBG_OBJ_ENTER0 ("resize", 0, "containerSizeChangedForChildren");
 
-   for (int i = 0; i < leftFloatsAll->size (); i++)
-      leftFloatsAll->get(i)->getWidget()->containerSizeChanged ();
-   for (int i = 0; i < rightFloatsAll->size (); i++)
-      rightFloatsAll->get(i)->getWidget()->containerSizeChanged ();
+   for (int i = 0; i < leftFloats->size (); i++)
+      leftFloats->get(i)->getWidget()->containerSizeChanged ();
+   for (int i = 0; i < rightFloats->size (); i++)
+      rightFloats->get(i)->getWidget()->containerSizeChanged ();
 
    DBG_OBJ_LEAVE ();
 }
@@ -677,7 +655,7 @@ bool OOFFloatsMgr::doFloatsExceedCB (Side side)
    core::Requisition cbReq;
    container->sizeRequest (&cbReq);
 
-   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
    bool exceeds = false;
 
    DBG_OBJ_MSG_START ();
@@ -732,7 +710,7 @@ bool OOFFloatsMgr::haveExtremesChanged (Side side)
    //
    // See also OOFPositionedMgr::haveExtremesChanged.)
 
-   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
    bool changed = false;
 
    for (int i = 0; i < list->size () && !changed; i++) {
@@ -777,20 +755,16 @@ bool OOFFloatsMgr::haveExtremesChanged (Side side)
    return changed;
 }
 
-void OOFFloatsMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
+void OOFFloatsMgr::sizeAllocateFloats (Side side)
 {
-   SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
-   int *lastAllocatedFloat =
-      side == LEFT ? &lastAllocatedLeftFloat : &lastAllocatedRightFloat;
+   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
 
-   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateFloats",
-                  "%s, [%d ->] %d [size = %d]",
-                  side == LEFT ? "LEFT" : "RIGHT", *lastAllocatedFloat,
-                  newLastAllocatedFloat, list->size ());
+   DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateFloats", "%s",
+                  side == LEFT ? "LEFT" : "RIGHT");
 
    Allocation *cba = &containerAllocation;
 
-   for (int i = *lastAllocatedFloat + 1; i <= newLastAllocatedFloat; i++) {
+   for (int i = 0; i < list->size (); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
 
@@ -806,8 +780,6 @@ void OOFFloatsMgr::sizeAllocateFloats (Side side, int newLastAllocatedFloat)
 
       vloat->getWidget()->sizeAllocate (&childAllocation);
    }
-
-   *lastAllocatedFloat = newLastAllocatedFloat;
 
    DBG_OBJ_LEAVE ();
 }
@@ -887,8 +859,8 @@ void OOFFloatsMgr::draw (View *view, Rectangle *area, DrawingContext *context)
    DBG_OBJ_ENTER ("draw", 0, "draw", "%d, %d, %d * %d",
                   area->x, area->y, area->width, area->height);
 
-   drawFloats (leftFloatsCB, view, area, context);
-   drawFloats (rightFloatsCB, view, area, context);
+   drawFloats (leftFloats, view, area, context);
+   drawFloats (rightFloats, view, area, context);
 
    DBG_OBJ_LEAVE ();
 }
@@ -947,50 +919,24 @@ int OOFFloatsMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generatingBlock,
 
    switch (widget->getStyle()->vloat) {
    case FLOAT_LEFT:
-      leftFloatsAll->put (vloat);
-      DBG_OBJ_SET_NUM ("leftFloatsAll.size", leftFloatsAll->size());
-      DBG_OBJ_ARRATTRSET_PTR ("leftFloatsAll", leftFloatsAll->size() - 1,
+      leftFloats->put (vloat);
+      DBG_OBJ_SET_NUM ("leftFloats.size", leftFloats->size());
+      DBG_OBJ_ARRATTRSET_PTR ("leftFloats", leftFloats->size() - 1,
                               "widget", vloat->getWidget ());
+      tbInfo->leftFloats->put (vloat);
       
-      subRef = createSubRefLeftFloat (leftFloatsAll->size() - 1);
-      tbInfo->leftFloatsGB->put (vloat);
-      
-      if (wasAllocated (generatingBlock)) {
-         leftFloatsCB->put (vloat);
-         DBG_OBJ_SET_NUM ("leftFloatsCB.size", leftFloatsCB->size());
-         DBG_OBJ_ARRATTRSET_PTR ("leftFloatsCB", leftFloatsCB->size() - 1,
-                                 "widget", vloat->getWidget ());
-      } else {
-         if (tbInfo->index < lastLeftTBIndex)
-            leftFloatsMark++;
-         
-         vloat->mark = leftFloatsMark;        
-         lastLeftTBIndex = tbInfo->index;
-      }
+      subRef = createSubRefLeftFloat (leftFloats->size() - 1);
+
       break;
       
    case FLOAT_RIGHT:
-      rightFloatsAll->put (vloat);
-      DBG_OBJ_SET_NUM ("rightFloatsAll.size", rightFloatsAll->size());
-      DBG_OBJ_ARRATTRSET_PTR ("rightFloatsAll", rightFloatsAll->size() - 1,
+      rightFloats->put (vloat);
+      DBG_OBJ_SET_NUM ("rightFloats.size", rightFloats->size());
+      DBG_OBJ_ARRATTRSET_PTR ("rightFloats", rightFloats->size() - 1,
                               "widget", vloat->getWidget ());
+      tbInfo->rightFloats->put (vloat);
       
-      subRef = createSubRefRightFloat (rightFloatsAll->size() - 1);
-      tbInfo->rightFloatsGB->put (vloat);
-
-      if (wasAllocated (generatingBlock)) {
-         rightFloatsCB->put (vloat);
-         DBG_OBJ_SET_NUM ("rightFloatsCB.size", rightFloatsCB->size());
-         DBG_OBJ_ARRATTRSET_PTR ("rightFloatsCB", rightFloatsCB->size() - 1,
-                                 "widget", vloat->getWidget ());
-      } else {
-         if (tbInfo->index < lastRightTBIndex)
-            rightFloatsMark++;
-
-         vloat->mark = rightFloatsMark;
-         lastRightTBIndex = tbInfo->index;
-      }
-
+      subRef = createSubRefRightFloat (rightFloats->size() - 1);
       break;
 
    default:
@@ -999,15 +945,13 @@ int OOFFloatsMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generatingBlock,
 
    // "sideSpanningIndex" is only compared, so this simple assignment
    // is sufficient; differenciation between GB and CB lists is not
-   // neccessary. TODO: Can this also be applied to "index", to
-   // simplify the current code? Check: where is "index" used.
+   // neccessary.
    vloat->sideSpanningIndex =
-      leftFloatsAll->size() + rightFloatsAll->size() - 1;
+      leftFloats->size() + rightFloats->size() - 1;
       
    floatsByWidget->put (new TypedPointer<Widget> (widget), vloat);
 
-   DBG_OBJ_MSGF ("construct.oofm", 1, "=> %d", subRef);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d", subRef);
    return subRef;
 }
 
@@ -1020,14 +964,14 @@ void OOFFloatsMgr::moveExternalIndices (OOFAwareWidget *generatingBlock,
                                         int oldStartIndex, int diff)
 {
    TBInfo *tbInfo = getOOFAwareWidget (generatingBlock);
-   moveExternalIndices (tbInfo->leftFloatsGB, oldStartIndex, diff);
-   moveExternalIndices (tbInfo->rightFloatsGB, oldStartIndex, diff);
+   moveExternalIndices (tbInfo->leftFloats, oldStartIndex, diff);
+   moveExternalIndices (tbInfo->rightFloats, oldStartIndex, diff);
 }
 
-void OOFFloatsMgr::moveExternalIndices (SortedFloatsVector *list,
-                                        int oldStartIndex, int diff)
+void OOFFloatsMgr::moveExternalIndices (Vector<Float> *list, int oldStartIndex,
+                                        int diff)
 {
-   // Could be faster with binary search, but the GB (not CB!) lists
+   // Could be faster with binary search, but the number of floats per generator
    // should be rather small.
    for (int i = 0; i < list->size (); i++) {
       Float *vloat = list->get (i);
@@ -1054,9 +998,9 @@ void OOFFloatsMgr::markSizeChange (int ref)
    Float *vloat;
 
    if (isSubRefLeftFloat (ref))
-      vloat = leftFloatsAll->get (getFloatIndexFromSubRef (ref));
+      vloat = leftFloats->get (getFloatIndexFromSubRef (ref));
    else if (isSubRefRightFloat (ref))
-      vloat = rightFloatsAll->get (getFloatIndexFromSubRef (ref));
+      vloat = rightFloats->get (getFloatIndexFromSubRef (ref));
    else {
       assertNotReached();
       vloat = NULL; // compiler happiness
@@ -1088,9 +1032,9 @@ Widget *OOFFloatsMgr::getWidgetAtPoint (int x, int y,
 {
    Widget *widgetAtPoint = NULL;
 
-   widgetAtPoint = getFloatWidgetAtPoint (rightFloatsCB, x, y, context);
+   widgetAtPoint = getFloatWidgetAtPoint (rightFloats, x, y, context);
    if (widgetAtPoint == NULL)
-      widgetAtPoint = getFloatWidgetAtPoint (leftFloatsCB, x, y, context);
+      widgetAtPoint = getFloatWidgetAtPoint (leftFloats, x, y, context);
 
    return widgetAtPoint;
 }
@@ -1352,28 +1296,16 @@ void OOFFloatsMgr::getFloatsListsAndSide (Float *vloat,
                                           SortedFloatsVector **listOpp,
                                           Side *side)
 {
-   TBInfo *tbInfo = getOOFAwareWidget (vloat->generatingBlock);
-
    switch (vloat->getWidget()->getStyle()->vloat) {
    case FLOAT_LEFT:
-      if (wasAllocated (vloat->generatingBlock)) {
-         if (listSame) *listSame = leftFloatsCB;
-         if (listOpp) *listOpp = rightFloatsCB;
-      } else {
-         if (listSame) *listSame = tbInfo->leftFloatsGB;
-         if (listOpp) *listOpp = tbInfo->rightFloatsGB;
-      }
+      if (listSame) *listSame = leftFloats;
+      if (listOpp) *listOpp = rightFloats;
       if (side) *side = LEFT;
       break;
 
    case FLOAT_RIGHT:
-      if (wasAllocated (vloat->generatingBlock)) {
-         if (listSame) *listSame = rightFloatsCB;
-         if (listOpp) *listOpp = leftFloatsCB;
-      } else {
-         if (listSame) *listSame = tbInfo->rightFloatsGB;
-         if (listOpp) *listOpp = tbInfo->leftFloatsGB;
-      }
+      if (listSame) *listSame = rightFloats;
+      if (listOpp) *listOpp = leftFloats;
       if (side) *side = RIGHT;
       break;
 
@@ -1414,7 +1346,7 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
                   cbReq->width, cbReq->ascent, cbReq->descent,
                   side == LEFT ? "LEFT" : "RIGHT");
 
-   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (container, side);
+   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
 
    *width = *height = 0;
 
@@ -1517,7 +1449,7 @@ void OOFFloatsMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
 
    *minWidth = *maxWidth = 0;
 
-   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (container, side);
+   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
    DBG_OBJ_MSGF ("resize.oofm", 1, "%d floats to be examined", list->size());
 
    for (int i = 0; i < list->size(); i++) {
@@ -1617,7 +1549,7 @@ int OOFFloatsMgr::getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
                   textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
                   lastGB, lastExtIndex);
 
-   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (textblock, side);
+   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
    int last;   
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, &last);
 
@@ -1684,29 +1616,6 @@ int OOFFloatsMgr::getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
    }
 }
 
-
-OOFFloatsMgr::SortedFloatsVector *OOFFloatsMgr::getFloatsListForOOFAwareWidget
-   (OOFAwareWidget *textblock, Side side)
-{
-   DBG_OBJ_ENTER ("oofm.common", 1, "getFloatsListForOOFAwareWidget", "%p, %s",
-                  textblock, side == LEFT ? "LEFT" : "RIGHT");
-
-   OOFFloatsMgr::SortedFloatsVector *list;
-
-   if (wasAllocated (textblock)) {
-      DBG_OBJ_MSG ("oofm.common", 2, "returning <b>CB</b> list");
-      list = side == LEFT ? leftFloatsCB : rightFloatsCB;
-   } else {
-      DBG_OBJ_MSG ("oofm.common", 2, "returning <b>GB</b> list");
-      TBInfo *tbInfo = getOOFAwareWidget (textblock);
-      list = side == LEFT ? tbInfo->leftFloatsGB : tbInfo->rightFloatsGB;
-   }
-
-   DBG_OBJ_LEAVE ();
-   return list;
-}
-
-
 bool OOFFloatsMgr::hasFloatLeft (OOFAwareWidget *textblock, int y, int h,
                                  OOFAwareWidget *lastGB, int lastExtIndex)
 {
@@ -1732,7 +1641,7 @@ bool OOFFloatsMgr::hasFloat (OOFAwareWidget *textblock, Side side, int y, int h,
                   textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
                   lastGB, lastExtIndex);
 
-   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (textblock, side);
+   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, NULL);
 
    DBG_OBJ_MSGF ("border", 1, "first = %d", first);
@@ -1760,7 +1669,7 @@ int OOFFloatsMgr::getFloatHeight (OOFAwareWidget *textblock, Side side, int y,
                   textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
                   lastGB, lastExtIndex);
 
-   SortedFloatsVector *list = getFloatsListForOOFAwareWidget (textblock, side);
+   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
    int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, NULL);
    assert (first != -1);   /* This method must not be called when there is no
                               float on the respective side. */
@@ -1859,7 +1768,7 @@ int OOFFloatsMgr::calcClearPosition (OOFAwareWidget *textblock, Side side)
       // the "clear" property.
       pos = 0;
    else {
-      SortedFloatsVector *list = side == LEFT ? leftFloatsCB : rightFloatsCB;
+      SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
 
       // Search the last float before (therfore -1) this textblock.
       int i = list->findFloatIndex (textblock, -1);
@@ -1945,15 +1854,15 @@ int OOFFloatsMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
 
 int OOFFloatsMgr::getNumWidgets ()
 {
-   return leftFloatsAll->size() + rightFloatsAll->size();
+   return leftFloats->size() + rightFloats->size();
 }
 
 Widget *OOFFloatsMgr::getWidget (int i)
 {
-   if (i < leftFloatsAll->size())
-      return leftFloatsAll->get(i)->getWidget ();
+   if (i < leftFloats->size())
+      return leftFloats->get(i)->getWidget ();
    else
-      return rightFloatsAll->get(i - leftFloatsAll->size())->getWidget ();
+      return rightFloats->get(i - leftFloats->size())->getWidget ();
 }
 
 } // namespace oof
