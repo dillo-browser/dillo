@@ -80,7 +80,7 @@ private:
       int externalIndex;
       int index; // TODO Needed after SRDOP?
       int yReq, yReal; // relative to generator, not container
-      int sideSpanningIndex, mark;
+      int sideSpanningIndex;
       core::Requisition size;
       bool dirty, sizeChangedSinceLastAllocation;
 
