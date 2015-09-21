@@ -82,9 +82,6 @@ private:
       int yReq, yReal; // relative to generator, not container
       int sideSpanningIndex, mark;
       core::Requisition size;
-      int cbLineBreakWidth; /* On which the calculation of relative sizes
-                               is based. Height not yet used, and probably
-                               not added before size redesign. */
       bool dirty, sizeChangedSinceLastAllocation;
 
       Float (OOFFloatsMgr *oofm, core::Widget *widget,

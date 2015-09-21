@@ -1697,7 +1697,6 @@ void OOFFloatsMgr::ensureFloatSize (Float *vloat)
       DBG_OBJ_MSG ("resize.oofm", 1, "dirty: recalculation");
 
       vloat->getWidget()->sizeRequest (&vloat->size);
-      vloat->cbLineBreakWidth = container->getLineBreakWidth ();
       vloat->dirty = false;
       DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
 
