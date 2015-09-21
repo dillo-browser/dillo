@@ -267,20 +267,6 @@ private:
    int getGBWidthForAllocation (Float *vloat);
    int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth);
 
-   bool hasRelationChanged (TBInfo *tbInfo,int *minFloatPos,
-                            core::Widget **minFloat);
-   bool hasRelationChanged (TBInfo *tbInfo, Side side, int *minFloatPos,
-                            core::Widget **minFloat);
-   bool hasRelationChanged (bool oldTBAlloc,
-                            int oldTBx, int oldTBy, int oldTBw, int oldTBh,
-                            int newTBx, int newTBy, int newTBw, int newTBh,
-                            bool oldFlAlloc,
-                            int oldFlx, int oldFly, int oldFlw, int oldFlh,
-                            int newFlx, int newFly, int newFlw, int newFlh,
-                            Side side, int *floatPos);
-
-   void checkAllocatedFloatCollisions (Side side);
-
    bool doFloatsExceedCB (Side side);
    bool haveExtremesChanged (Side side);
 
