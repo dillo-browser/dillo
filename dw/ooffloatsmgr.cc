@@ -102,136 +102,24 @@ void OOFFloatsMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->append (" }");
 }
 
-bool OOFFloatsMgr::Float::covers (OOFAwareWidget *textblock, int y, int h)
+/**
+ * `y` is given relative to the container.
+ */
+bool OOFFloatsMgr::Float::covers (int y, int h)
 {
    DBG_OBJ_ENTER_O ("border", 0, getOOFFloatsMgr (), "covers",
-                    "%p, %d, %d [vloat: %p]",
-                    textblock, y, h, getWidget ());
+                    "%d, %d [vloat: %p]", y, h, getWidget ());
 
-   bool b;
+   getOOFFloatsMgr()->ensureFloatSize (this);
+   bool b = yReal + size.ascent + size.descent > y && yReal < y + h;
 
-   if (textblock == generatingBlock) {
-      int reqyGB = y;
-      int flyGB = yReal;
-      getOOFFloatsMgr()->ensureFloatSize (this);
-      int flh = size.ascent + size.descent;
-      b = flyGB + flh > reqyGB && flyGB < reqyGB + h;
-
-      DBG_OBJ_MSGF_O ("border", 1, getOOFFloatsMgr (),
-                      "for generator: reqyGB = %d, flyGB = %d, "
-                      "flh = %d + %d = %d => %s",
-                      reqyGB, flyGB, size.ascent, size.descent, flh,
-                      b ? "true" : "false");
-   } else {
-      // (If the textblock were not allocated, the GB list would have
-      // been choosen instead of the CB list, and so this else-branch
-      // would not have been not executed.)
-      assert (getOOFFloatsMgr()->wasAllocated (textblock));
-
-      if (!getWidget()->wasAllocated ()) {
-         DBG_OBJ_MSG_O ("border", 1, getOOFFloatsMgr (),
-                        "not generator (not allocated) => false");
-         b = false;
-      } else {
-         Allocation *tba = getOOFFloatsMgr()->getAllocation(textblock),
-            *fla = getWidget()->getAllocation ();
-         int reqyCanv = tba->y + y;
-         int flyCanv = fla->y;
-         int flh = fla->ascent + fla->descent;
-         b = flyCanv + flh > reqyCanv && flyCanv < reqyCanv + h;
-
-         DBG_OBJ_MSGF_O ("border", 1, getOOFFloatsMgr (),
-                         "not generator (allocated): reqyCanv = %d + %d = %d, "
-                         "flyCanv = %d, flh = %d + %d = %d => %s",
-                         tba->y, y, reqyCanv, flyCanv,
-                         fla->ascent, fla->descent, flh, b ? "true" : "false");
-      }
-   }
-
-   DBG_OBJ_LEAVE_O (getOOFFloatsMgr ());
-
+   DBG_OBJ_LEAVE_VAL_O (getOOFFloatsMgr (), "%s", b ? "true" : "false");
    return b;
 }
 
 int OOFFloatsMgr::Float::ComparePosition::compare (Object *o1, Object *o2)
 {
-   Float *fl1 = (Float*)o1, *fl2 = (Float*)o2;
-   int r;
-
-   DBG_OBJ_ENTER_O ("border", 1, oofm,
-                    "ComparePosition/compare", "(#%d, #%d) [refTB = %p]",
-                    fl1->index, fl2->index, refTB);
-
-   if (refTB == fl1->generatingBlock && refTB == fl2->generatingBlock) {
-      DBG_OBJ_MSG_O ("border", 2, oofm, "refTB is generating both floats");
-      r = fl1->yReal - fl2->yReal;
-   } else {
-      DBG_OBJ_MSG_O ("border", 2, oofm, "refTB is not generating both floats");
-      DBG_OBJ_MSG_START_O (oofm);
-
-      DBG_OBJ_MSGF_O ("border", 2, oofm, "generators are %p and %p",
-                      fl1->generatingBlock, fl2->generatingBlock);
-
-      // (i) Floats may not yet been allocated. Non-allocated floats
-      // do not have an effect yet, they are considered "at the end"
-      // of the list.
-
-      // (ii) Float::widget is NULL for the key used for binary
-      // search. In this case, Float::yReal is used instead (which is
-      // set in SortedFloatsVector::find, too). The generator is the
-      // textblock, and should be allocated. (If not, the GB list
-      // would have been choosen instead of the CB list, and so this
-      // else-branch would not have been not executed.)
-
-      bool a1 = fl1->getWidget () ? fl1->getWidget()->wasAllocated () : true;
-      bool a2 = fl2->getWidget () ? fl2->getWidget()->wasAllocated () : true;
-
-      DBG_OBJ_MSGF_O ("border", 2, oofm,
-                      "float 1 (%p) allocated: %s; float 2 (%p) allocated: %s",
-                      fl1->getWidget (), a1 ? "yes" : "no", fl2->getWidget (),
-                      a2 ? "yes" : "no");
-
-      if (a1 && a2) {
-         int fly1, fly2;
-         
-         if (fl1->getWidget()) {
-            fly1 = fl1->getWidget()->getAllocation()->y;
-            DBG_OBJ_MSGF_O ("border", 2, oofm, "fly1 = %d", fly1);
-         } else {
-            assert (oofm->wasAllocated (fl1->generatingBlock));
-            fly1 = oofm->getAllocation(fl1->generatingBlock)->y + fl1->yReal;
-            DBG_OBJ_MSGF_O ("border", 2, oofm, "fly1 = %d + %d = %d",
-                            oofm->getAllocation(fl1->generatingBlock)->y,
-                            fl1->yReal, fly1);
-         }
-
-         if (fl2->getWidget()) {
-            fly2 = fl2->getWidget()->getAllocation()->y;
-            DBG_OBJ_MSGF_O ("border", 2, oofm, "fly2 = %d", fly2);
-         } else {
-            assert (oofm->wasAllocated (fl2->generatingBlock));
-            fly2 = oofm->getAllocation(fl2->generatingBlock)->y + fl2->yReal;
-            DBG_OBJ_MSGF_O ("border", 2, oofm, "fly2 = %d + %d = %d",
-                            oofm->getAllocation(fl2->generatingBlock)->y,
-                            fl2->yReal, fly2);
-         }
-
-         r = fly1 - fly2;
-
-         DBG_OBJ_MSGF_O ("border", 2, oofm, "r = %d - %d = %d", fly1, fly2, r);
-      } else if (a1 && !a2)
-         r = -1;
-      else if (!a1 && a2)
-         r = +1;
-      else // if (!a1 && !a2)
-         return 0;
-
-      DBG_OBJ_MSG_END_O (oofm);
-   }
-
-   DBG_OBJ_MSGF_O ("border", 1, oofm, "result: %d", r);
-   DBG_OBJ_LEAVE_O (oofm);
-   return r;
+   return ((Float*)o1)->yReal - ((Float*)o2)->yReal;
 }
 
 int OOFFloatsMgr::Float::CompareSideSpanningIndex::compare (Object *o1,
@@ -340,55 +228,29 @@ int OOFFloatsMgr::SortedFloatsVector::findFloatIndex (OOFAwareWidget *lastGB,
    return r;
 }
 
-int OOFFloatsMgr::SortedFloatsVector::find (OOFAwareWidget *textblock, int y,
-                                            int start, int end)
+/**
+ * `y` is given relative to the container.
+ */
+int OOFFloatsMgr::SortedFloatsVector::find (int y, int start, int end)
 {
-   DBG_OBJ_ENTER_O ("border", 0, oofm, "find", "%p, %d, %d, %d",
-                    textblock, y, start, end);
+   DBG_OBJ_ENTER_O ("border", 0, oofm, "find", "%d, %d, %d", y, start, end);
 
    Float key (oofm, NULL, NULL, 0);
-   key.generatingBlock = textblock;
    key.yReal = y;
-   key.index = -1; // for debugging
-   Float::ComparePosition comparator (oofm, textblock);
+   Float::ComparePosition comparator;
    int result = bsearch (&key, false, start, end, &comparator);
 
-   DBG_OBJ_MSGF_O ("border", 1, oofm, "=> result = %d", result);
-   DBG_OBJ_LEAVE_O (oofm);
+   DBG_OBJ_LEAVE_VAL_O (oofm, "%d", result);
    return result;
 }
 
-int OOFFloatsMgr::SortedFloatsVector::findFirst (OOFAwareWidget *textblock,
-                                                 int y, int h,
+int OOFFloatsMgr::SortedFloatsVector::findFirst (int y, int h,
                                                  OOFAwareWidget *lastGB,
                                                  int lastExtIndex,
                                                  int *lastReturn)
 {
-   DBG_OBJ_ENTER_O ("border", 0, oofm, "findFirst", "%p, %d, %d, %p, %d",
-                    textblock, y, h, lastGB, lastExtIndex);
-
-   DBG_IF_RTFL {
-      DBG_OBJ_MSG_O ("border", 2, oofm, "searching in list:");
-      DBG_OBJ_MSG_START_O (oofm);
-
-      for (int i = 0; i < size(); i++) {
-         DBG_OBJ_MSGF_O ("border", 2, oofm,
-                         "%d: (%p, i = %d/%d, y = %d/%d, s = (%d * (%d + %d)), "
-                         "%s, %s, ext = %d, GB = %p); widget at (%d, %d)",
-                         i, get(i)->getWidget (), get(i)->index,
-                         get(i)->sideSpanningIndex, get(i)->yReq, get(i)->yReal,
-                         get(i)->size.width, get(i)->size.ascent,
-                         get(i)->size.descent,
-                         get(i)->dirty ? "dirty" : "clean",
-                         get(i)->sizeChangedSinceLastAllocation ? "scsla"
-                         : "sNcsla",
-                         get(i)->externalIndex, get(i)->generatingBlock,
-                         get(i)->getWidget()->getAllocation()->x,
-                         get(i)->getWidget()->getAllocation()->y);
-      }
-
-      DBG_OBJ_MSG_END_O (oofm);
-   }
+   DBG_OBJ_ENTER_O ("border", 0, oofm, "findFirst", "%d, %d, %p, %d",
+                    y, h, lastGB, lastExtIndex);
 
    int last = findFloatIndex (lastGB, lastExtIndex);
    DBG_OBJ_MSGF_O ("border", 1, oofm, "last = %d", last);
@@ -398,7 +260,7 @@ int OOFFloatsMgr::SortedFloatsVector::findFirst (OOFAwareWidget *textblock,
    if (lastReturn)
       *lastReturn = last;
 
-   int i = find (textblock, y, 0, last), result;
+   int i = find (y, 0, last), result;
    DBG_OBJ_MSGF_O ("border", 1, oofm, "i = %d", i);
 
    // Note: The smallest value of "i" is 0, which means that "y" is before or
@@ -407,15 +269,14 @@ int OOFFloatsMgr::SortedFloatsVector::findFirst (OOFAwareWidget *textblock,
    // respectively, float is a candidate. Generally, both floats, before and
    // at the search position, are candidates.
 
-   if (i > 0 && get(i - 1)->covers (textblock, y, h))
+   if (i > 0 && get(i - 1)->covers (y, h))
       result = i - 1;
-   else if (i <= last && get(i)->covers (textblock, y, h))
+   else if (i <= last && get(i)->covers (y, h))
       result = i;
    else
       result = -1;
 
-   DBG_OBJ_MSGF_O ("border", 1, oofm, "=> result = %d", result);
-   DBG_OBJ_LEAVE_O (oofm);
+   DBG_OBJ_LEAVE_VAL_O (oofm, "%d", result);
    return result;
 }
 
@@ -455,11 +316,12 @@ OOFFloatsMgr::TBInfo::~TBInfo ()
    delete rightFloats;
 }
 
-OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container)
+OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container, int oofmIndex)
 {
    DBG_OBJ_CREATE ("dw::OOFFloatsMgr");
 
-   this->container = (OOFAwareWidget*)container;
+   this->container = container;
+   this->oofmIndex = oofmIndex;
 
    leftFloats = new SortedFloatsVector (this, LEFT);
    rightFloats = new SortedFloatsVector (this, RIGHT);
@@ -655,7 +517,7 @@ void OOFFloatsMgr::sizeAllocateFloats (Side side)
       Allocation childAllocation;
       childAllocation.x = cba->x + calcFloatX (vloat, side, gba->x - cba->x,
                                                getGBWidthForAllocation (vloat));
-      childAllocation.y = gba->y + vloat->yReal;
+      childAllocation.y = cba->y + vloat->yReal;
       childAllocation.width = vloat->size.width;
       childAllocation.ascent = vloat->size.ascent;
       childAllocation.descent = vloat->size.descent;
@@ -683,7 +545,7 @@ int OOFFloatsMgr::getGBWidthForAllocation (Float *vloat)
 /**
  * \brief ...
  *
- * gbX is given relative to the CB, as is the return value.
+ * gbX is given relative to the container, as is the return value.
  */
 int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth)
 {
@@ -703,7 +565,7 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth)
       // container, it is corrected (but not left of the container).
       // This way, we save space and, especially within tables, avoid
       // some problems.
-      if (wasAllocated (container) &&
+      if (wasAllocated (container) /* TODO: obsolete after SRDOP? */ &&
           x + vloat->size.width > container->getLineBreakWidth ()) {
          x = max (0, container->getLineBreakWidth () - vloat->size.width);
          DBG_OBJ_MSGF ("resize.common", 1,
@@ -895,10 +757,10 @@ void OOFFloatsMgr::markSizeChange (int ref)
                        "<Float>.sizeChangedSinceLastAllocation",
                        vloat->sizeChangedSinceLastAllocation);
 
-   // The generating block is told directly about this. (Others later, in
-   // sizeAllocateEnd.) Could be faster (cf. hasRelationChanged, which
-   // differentiates many special cases), but the size is not known yet,
-   vloat->generatingBlock->borderChanged (vloat->yReal, vloat->getWidget ());
+   for (int i = 0; i < tbInfos->size (); i++)
+      tbInfos->get(i)->getOOFAwareWidget()->borderChanged (oofmIndex,
+                                                           vloat->yReal,
+                                                           vloat->getWidget ());
 
    DBG_OBJ_LEAVE ();
 }
@@ -1039,10 +901,6 @@ void OOFFloatsMgr::tellIncompletePosition2 (Widget *generator, Widget *widget,
 
 bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, int *yReal)
 {
-   // Only checks vertical (possible) collisions, and only refers to
-   // vloat->yReal; never to vloat->allocation->y, even when the GBs are
-   // different. Used only in tellPosition.
-
    DBG_OBJ_ENTER ("resize.oofm", 0, "collidesV", "#%d [%p], #%d [%p], ...",
                   vloat->index, vloat->getWidget (), other->index,
                   other->getWidget ());
@@ -1051,82 +909,24 @@ bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, int *yReal)
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "initial yReal = %d", vloat->yReal);
 
-   if (vloat->generatingBlock == other->generatingBlock) {
-      ensureFloatSize (other);
-      int otherBottomGB =
-         other->yReal + other->size.ascent + other->size.descent;
+   ensureFloatSize (other);
+   int otherBottomGB = other->yReal + other->size.ascent + other->size.descent;
 
-      DBG_OBJ_MSGF ("resize.oofm", 1,
-                    "same generators: otherBottomGB = %d + (%d + %d) = %d",
-                    other->yReal, other->size.ascent, other->size.descent,
-                    otherBottomGB);
+   DBG_OBJ_MSGF ("resize.oofm", 1, "otherBottomGB = %d + (%d + %d) = %d",
+                 other->yReal, other->size.ascent, other->size.descent,
+                 otherBottomGB);
 
-      if (vloat->yReal <  otherBottomGB) {
-         *yReal = otherBottomGB;
-         result = true;
-      } else
-         result = false;
-   } else {
-      // If the other float is not allocated, there is no collision. The
-      // allocation of this float (vloat) is not used at all.
-      if (!other->getWidget()->wasAllocated ())
-         result = false;
-      else {
-         assert (wasAllocated (vloat->generatingBlock));
-         Allocation *gba = getAllocation (vloat->generatingBlock),
-            *flaOther = other->getWidget()->getAllocation ();
-
-         // TODO: The following comment is wrong after SRDOP. What is still
-         // relevant (especially in the second paragraph)? (Also, usage of
-         // allocation has to be reworked generally.)
-         //
-         // We distinguish two cases (by different values of useAllocation):
-         // (i) within tellPosition, GB allocation + yReal is used for the
-         // y position of the other float, while (ii) in checkAllocatedFloat-
-         // Collisions, the float allocation is used. The latter is necessary
-         // by the definition of this method, the former increases performance,
-         // as compared to using the float allocation, in some cases, as in
-         // this:
-         //
-         // When '<div><div style="float:left">[Some text]</div></div>' is
-         // repeated n times, the resize idle function (Layout::resizeIdle)
-         // would be repeated roughly n times, when also in case (i) the float
-         // allocation is used, since for the collision test of float n with
-         // float n - 1, the allocation of float n - 1 does not yet reflect the
-         // collision test between n - 1 and n - 2, but yReal does for n - 1.
-         //
-         // On the other hand, the GB allocations will most likely more stable
-         // than the float allocations.
-         //
-         // Cases where this is incorrect will hopefully be rare, and, in any
-         // case, corrected in sizeAllocateEnd, either because hasRelation-
-         // Changed returns true, or in checkAllocatedFloatCollisions.
-
-         int otherFloatY =
-            getAllocation(other->generatingBlock)->y + other->yReal;
-         int otherBottomGB =
-            otherFloatY + flaOther->ascent + flaOther->descent - gba->y;
-
-         DBG_OBJ_MSGF ("resize.oofm", 1,
-                       "different generators: "
-                       "otherBottomGB = %d + (%d + %d) - %d = %d",
-                       otherFloatY, flaOther->ascent, flaOther->descent, gba->y,
-                       otherBottomGB);
-
-         if (vloat->yReal <  otherBottomGB) {
-            *yReal = otherBottomGB;
-            result = true;
-         } else
-            result = false;
-      }
-   }
+   if (vloat->yReal <  otherBottomGB) {
+      *yReal = otherBottomGB;
+      result = true;
+   } else
+      result = false;
 
    if (result)
-      DBG_OBJ_MSGF ("resize.oofm", 1, "collides: new yReal = %d", *yReal);
+      DBG_OBJ_LEAVE_VAL ("%s, %d", "true", *yReal);
    else
-      DBG_OBJ_MSG ("resize.oofm", 1, "does not collide");
+      DBG_OBJ_LEAVE_VAL ("%s", "false");
 
-   DBG_OBJ_LEAVE ();
    return result;
 }
 
@@ -1241,57 +1041,33 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
                     "float %p has generator %p (container is %p)",
                     vloat->getWidget (), vloat->generatingBlock, container);
                     
-      if (vloat->generatingBlock == container ||
-          wasAllocated (vloat->generatingBlock)) {
-         ensureFloatSize (vloat);
-         int x, y;
-         
-         int effWidth;
-         if (container->mustBeWidenedToAvailWidth ())
-            // For most textblocks, the line break width is used for
-            // calculating the x position. (This changed for GROWS,
-            // where the width of a textblock is often smaller that
-            // the line break.)
-            effWidth = vloat->generatingBlock->getLineBreakWidth ();
-         else
-            // For some textblocks, like inline blocks, the line break
-            // width would be too large for right floats in some
-            // cases.
-            //
-            //  (i) Consider a small inline block with only a few words
-            //      in one line, narrower that line break width minus
-            //      float width. In this case, the sum should be used.
-            //
-            // (ii) If there is more than one line, the line break
-            //      will already be exceeded, and so be smaller that
-            //      GB width + float width.
-            effWidth = min (cbReq->width + vloat->size.width,
-                            vloat->generatingBlock->getLineBreakWidth ());
-
-         if (vloat->generatingBlock == container) {
-            x = calcFloatX (vloat, side, 0, effWidth);
-            y = vloat->yReal;
-         } else {
-            Allocation *gba = getAllocation(vloat->generatingBlock);
-            x = calcFloatX (vloat, side, gba->x - containerAllocation.x,
-                            effWidth);
-            y = gba->y - containerAllocation.y + vloat->yReal;
-         }
-
-         *width = max (*width, x +  vloat->size.width);
-         *height = max (*height, y + vloat->size.ascent + vloat->size.descent);
-
-         DBG_OBJ_MSGF ("resize.oofm", 1,
-                       "considering float %p generated by %p: (%d + %d) * "
-                       "(%d + (%d + %d)) => %d * %d",
-                       vloat->getWidget (), vloat->generatingBlock,
-                       x, vloat->size.width,
-                       y, vloat->size.ascent, vloat->size.descent,
-                       *width, *height);
-      } else
-         DBG_OBJ_MSGF ("resize.oofm", 1,
-                       "considering float %p generated by %p: not allocated",
-                       vloat->getWidget (), vloat->generatingBlock);
+      ensureFloatSize (vloat);
+      
+      int effWidth;
+      if (container->mustBeWidenedToAvailWidth ())
+         // For most textblocks, the line break width is used for calculating
+         // the x position. (This changed for GROWS, where the width of a
+         // textblock is often smaller that the line break.)
+         effWidth = vloat->generatingBlock->getLineBreakWidth ();
+      else
+         // For some textblocks, like inline blocks, the line break width would
+         // be too large for right floats in some cases.
+         //
+         //  (i) Consider a small inline block with only a few words in one
+         //      line, narrower that line break width minus float width. In this
+         //      case, the sum should be used.
+         //
+         // (ii) If there is more than one line, the line break will already be
+         //      exceeded, and so be smaller that GB width + float width.
+         effWidth = min (cbReq->width + vloat->size.width,
+                         vloat->generatingBlock->getLineBreakWidth ());
+      
+         *width = max (*width,
+                       calcFloatX (vloat, side, 0, effWidth)
+                       + vloat->size.width);
+         *height = max (*height,
+                        vloat->yReal
+                        + vloat->size.ascent + vloat->size.descent);
    }
 
    DBG_OBJ_LEAVE ();
@@ -1406,34 +1182,33 @@ OOFFloatsMgr::TBInfo *OOFFloatsMgr::getOOFAwareWidget (OOFAwareWidget *widget)
    return tbInfo;
 }
 
-int OOFFloatsMgr::getLeftBorder (OOFAwareWidget *textblock, int y, int h,
-                                 OOFAwareWidget *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getLeftBorder (int y, int h, OOFAwareWidget *lastGB,
+                                 int lastExtIndex)
 {
-   int b = getBorder (textblock, LEFT, y, h, lastGB, lastExtIndex);
-   DBG_OBJ_MSGF ("border", 0, "left border (%p, %d, %d, %p, %d) => %d",
-                 textblock, y, h, lastGB, lastExtIndex, b);
+   int b = getBorder (LEFT, y, h, lastGB, lastExtIndex);
+   DBG_OBJ_MSGF ("border", 0, "left border (%d, %d, %p, %d) => %d",
+                 y, h, lastGB, lastExtIndex, b);
    return b;
 }
 
-int OOFFloatsMgr::getRightBorder (OOFAwareWidget *textblock, int y, int h,
-                                  OOFAwareWidget *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getRightBorder (int y, int h, OOFAwareWidget *lastGB,
+                                  int lastExtIndex)
 {
-   int b = getBorder (textblock, RIGHT, y, h, lastGB, lastExtIndex);
-   DBG_OBJ_MSGF ("border", 0, "right border (%p, %d, %d, %p, %d) => %d",
-                 textblock, y, h, lastGB, lastExtIndex, b);
+   int b = getBorder (RIGHT, y, h, lastGB, lastExtIndex);
+   DBG_OBJ_MSGF ("border", 0, "right border (%d, %d, %p, %d) => %d",
+                 y, h, lastGB, lastExtIndex, b);
    return b;
 }
 
-int OOFFloatsMgr::getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
-                             OOFAwareWidget *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
+                             int lastExtIndex)
 {
-   DBG_OBJ_ENTER ("border", 0, "getBorder", "%p, %s, %d, %d, %p, %d",
-                  textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
-                  lastGB, lastExtIndex);
+   DBG_OBJ_ENTER ("border", 0, "getBorder", "%s, %d, %d, %p, %d",
+                  side == LEFT ? "LEFT" : "RIGHT", y, h, lastGB, lastExtIndex);
 
    SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
    int last;   
-   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, &last);
+   int first = list->findFirst (y, h, lastGB, lastExtIndex, &last);
 
    DBG_OBJ_MSGF ("border", 1, "first = %d", first);
 
@@ -1452,41 +1227,17 @@ int OOFFloatsMgr::getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
       // float defined by lastGB and lastExtIndex.
       for (int i = first; covers && i <= last; i++) {
          Float *vloat = list->get(i);
-         covers = vloat->covers (textblock, y, h);
+         covers = vloat->covers (y, h);
          DBG_OBJ_MSGF ("border", 1, "float %d (%p) covers? %s.",
                        i, vloat->getWidget(), covers ? "<b>yes</b>" : "no");
 
          if (covers) {
-            int thisBorder;
-            if (vloat->generatingBlock == textblock) {
-               int borderIn = side == LEFT ?
-                  vloat->generatingBlock->boxOffsetX() :
-                  vloat->generatingBlock->boxRestWidth();
-               thisBorder = vloat->size.width + borderIn;
-               DBG_OBJ_MSGF ("border", 1, "GB: thisBorder = %d + %d = %d",
-                             vloat->size.width, borderIn, thisBorder);
-            } else {
-               assert (wasAllocated (vloat->generatingBlock));
-               assert (vloat->getWidget()->wasAllocated ());
-
-               Allocation *tba = getAllocation(textblock),
-                  *fla = vloat->getWidget()->getAllocation ();
-               if (side == LEFT) {
-                  thisBorder = fla->x + fla->width - tba->x;
-                  DBG_OBJ_MSGF ("border", 1,
-                                "not GB: thisBorder = %d + %d - %d = %d",
-                                fla->x, fla->width, tba->x, thisBorder);
-               } else {
-                  // See also calcFloatX.
-                  thisBorder =
-                     tba->x + textblock->getLineBreakWidth () - fla->x;
-                  DBG_OBJ_MSGF ("border", 1,
-                                "not GB: thisBorder = %d + %d - %d "
-                                "= %d",
-                                tba->x, textblock->getLineBreakWidth (), fla->x,
-                                thisBorder);
-               }
-            }
+            int borderIn = side == LEFT ?
+               vloat->generatingBlock->boxOffsetX() :
+               vloat->generatingBlock->boxRestWidth();
+            int thisBorder = vloat->size.width + borderIn;
+            DBG_OBJ_MSGF ("border", 1, "GB: thisBorder = %d + %d = %d",
+                          vloat->size.width, borderIn, thisBorder);
 
             border = max (border, thisBorder);
             DBG_OBJ_MSGF ("border", 1, "=> border = %d", border);
@@ -1498,85 +1249,65 @@ int OOFFloatsMgr::getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
    }
 }
 
-bool OOFFloatsMgr::hasFloatLeft (OOFAwareWidget *textblock, int y, int h,
-                                 OOFAwareWidget *lastGB, int lastExtIndex)
+bool OOFFloatsMgr::hasFloatLeft (int y, int h, OOFAwareWidget *lastGB,
+                                 int lastExtIndex)
 {
-   bool b = hasFloat (textblock, LEFT, y, h, lastGB, lastExtIndex);
-   DBG_OBJ_MSGF ("border", 0, "has float left (%p, %d, %d, %p, %d) => %s",
-                 textblock, y, h, lastGB, lastExtIndex, b ? "true" : "false");
+   bool b = hasFloat (LEFT, y, h, lastGB, lastExtIndex);
+   DBG_OBJ_MSGF ("border", 0, "has float left (%d, %d, %p, %d) => %s",
+                 y, h, lastGB, lastExtIndex, b ? "true" : "false");
    return b;
 }
 
-bool OOFFloatsMgr::hasFloatRight (OOFAwareWidget *textblock, int y, int h,
-                                  OOFAwareWidget *lastGB, int lastExtIndex)
+bool OOFFloatsMgr::hasFloatRight (int y, int h, OOFAwareWidget *lastGB,
+                                  int lastExtIndex)
 {
-   bool b = hasFloat (textblock, RIGHT, y, h, lastGB, lastExtIndex);
-   DBG_OBJ_MSGF ("border", 0, "has float right (%p, %d, %d, %p, %d) => %s",
-                 textblock, y, h, lastGB, lastExtIndex, b ? "true" : "false");
+   bool b = hasFloat (RIGHT, y, h, lastGB, lastExtIndex);
+   DBG_OBJ_MSGF ("border", 0, "has float right (%d, %d, %p, %d) => %s",
+                 y, h, lastGB, lastExtIndex, b ? "true" : "false");
    return b;
 }
 
-bool OOFFloatsMgr::hasFloat (OOFAwareWidget *textblock, Side side, int y, int h,
-                             OOFAwareWidget *lastGB, int lastExtIndex)
+bool OOFFloatsMgr::hasFloat (Side side, int y, int h, OOFAwareWidget *lastGB,
+                             int lastExtIndex)
 {
-   DBG_OBJ_ENTER ("border", 0, "hasFloat", "%p, %s, %d, %d, %p, %d",
-                  textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
-                  lastGB, lastExtIndex);
+   DBG_OBJ_ENTER ("border", 0, "hasFloat", "%s, %d, %d, %p, %d",
+                  side == LEFT ? "LEFT" : "RIGHT", y, h, lastGB, lastExtIndex);
 
    SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
-   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, NULL);
+   int first = list->findFirst (y, h, lastGB, lastExtIndex, NULL);
 
    DBG_OBJ_MSGF ("border", 1, "first = %d", first);
    DBG_OBJ_LEAVE ();
    return first != -1;
 }
 
-int OOFFloatsMgr::getLeftFloatHeight (OOFAwareWidget *textblock, int y, int h,
-                                      OOFAwareWidget *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getLeftFloatHeight (int y, int h, OOFAwareWidget *lastGB,
+                                      int lastExtIndex)
 {
-   return getFloatHeight (textblock, LEFT, y, h, lastGB, lastExtIndex);
+   return getFloatHeight (LEFT, y, h, lastGB, lastExtIndex);
 }
 
-int OOFFloatsMgr::getRightFloatHeight (OOFAwareWidget *textblock, int y, int h,
-                                       OOFAwareWidget *lastGB, int lastExtIndex)
+int OOFFloatsMgr::getRightFloatHeight (int y, int h, OOFAwareWidget *lastGB,
+                                       int lastExtIndex)
 {
-   return getFloatHeight (textblock, RIGHT, y, h, lastGB, lastExtIndex);
+   return getFloatHeight (RIGHT, y, h, lastGB, lastExtIndex);
 }
 
-int OOFFloatsMgr::getFloatHeight (OOFAwareWidget *textblock, Side side, int y,
-                                  int h, OOFAwareWidget *lastGB,
-                                  int lastExtIndex)
+int OOFFloatsMgr::getFloatHeight (Side side, int y, int h,
+                                  OOFAwareWidget *lastGB, int lastExtIndex)
 {
-   DBG_OBJ_ENTER ("border", 0, "getFloatHeight", "%p, %s, %d, %d, %p, %d",
-                  textblock, side == LEFT ? "LEFT" : "RIGHT", y, h,
-                  lastGB, lastExtIndex);
+   DBG_OBJ_ENTER ("border", 0, "getFloatHeight", "%s, %d, %d, %p, %d",
+                  side == LEFT ? "LEFT" : "RIGHT", y, h, lastGB, lastExtIndex);
 
    SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
-   int first = list->findFirst (textblock, y, h, lastGB, lastExtIndex, NULL);
+   int first = list->findFirst (y, h, lastGB, lastExtIndex, NULL);
    assert (first != -1);   /* This method must not be called when there is no
                               float on the respective side. */
 
-   Float *vloat = list->get(first);
-   int yRelToFloat;
-
-   if (vloat->generatingBlock == textblock) {
-      yRelToFloat = y - vloat->yReal;
-      DBG_OBJ_MSGF ("border", 1, "caller is CB: yRelToFloat = %d - %d = %d",
-                    y, vloat->yReal, yRelToFloat);
-   } else {
-      // The respective widgets are allocated; otherwise, hasFloat() would have
-      // returned false.
-      assert (wasAllocated (textblock));
-      assert (vloat->getWidget()->wasAllocated ());
-
-      Allocation *tba = getAllocation(textblock),
-         *fla = vloat->getWidget()->getAllocation ();
-      yRelToFloat = tba->y + y - fla->y;
-
-      DBG_OBJ_MSGF ("border", 1,
-                    "caller is not CB: yRelToFloat = %d + %d - %d = %d",
-                    tba->y, y, fla->y, yRelToFloat);
-   }
+   Float *vloat = list->get (first);
+   int yRelToFloat = y - vloat->yReal;
+   DBG_OBJ_MSGF ("border", 1, "caller is CB: yRelToFloat = %d - %d = %d",
+                 y, vloat->yReal, yRelToFloat);
 
    ensureFloatSize (vloat);
    int height = vloat->size.ascent + vloat->size.descent - yRelToFloat;
@@ -1639,6 +1370,10 @@ bool OOFFloatsMgr::mayAffectBordersAtAll ()
 
 int OOFFloatsMgr::calcClearPosition (OOFAwareWidget *textblock, Side side)
 {
+   // TODO (SRDOP) Implementation
+   return 0;
+   
+#if 0
    DBG_OBJ_ENTER ("resize.oofm", 0, "getClearPosition", "%p, %s",
                   textblock, side == LEFT ? "LEFT" : "RIGHT");
 
@@ -1682,6 +1417,7 @@ int OOFFloatsMgr::calcClearPosition (OOFAwareWidget *textblock, Side side)
    DBG_OBJ_LEAVE ();
 
    return pos;
+#endif
 }
 
 void OOFFloatsMgr::ensureFloatSize (Float *vloat)

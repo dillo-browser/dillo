@@ -247,7 +247,17 @@ public:
               core::DrawingContext *context);
 
    virtual bool mustBeWidenedToAvailWidth ();
-   virtual void borderChanged (int y, core::Widget *vloat);
+
+   /**
+    * Called by an implementation of dw::oof::OutOfFlowMgr (actually only
+    * OOFFloatsMgr) when the border has changed due to a widget out of flow, or
+    * some widgets out of flow (actually floats).
+    *
+    * `y`, given relative to the container, denotes the minimal position (when
+    * more than one float caused this), `widgetOOF` the respective widget out of
+    * flow.
+    */
+   virtual void borderChanged (int oofmIndex, int y, core::Widget *widgetOOF);
    virtual void widgetRefSizeChanged (int externalIndex);
    virtual void clearPositionChanged ();
    virtual void oofSizeChanged (bool extremesChanged);

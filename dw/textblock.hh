@@ -904,7 +904,7 @@ public:
                          bool includeFirstSpace, bool includeLastSpace);
 
    bool mustBeWidenedToAvailWidth ();
-   void borderChanged (int y, core::Widget *vloat);
+   void borderChanged (int oofmIndex, int y, core::Widget *widgetOOF);
    void widgetRefSizeChanged (int externalIndex);
    void clearPositionChanged ();
    void oofSizeChanged (bool extremesChanged);

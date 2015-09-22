@@ -2070,20 +2070,17 @@ void Textblock::calcBorders (int lastOofRef, int height)
             int y = yRef + yRel;
             bool thisHasLeft, thisHasRight;
             
-            thisHasLeft = oofm->hasFloatLeft (this, y, height, this, effOofRef);
+            thisHasLeft = oofm->hasFloatLeft (y, height, this, effOofRef);
             newLineHasFloatLeft = newLineHasFloatLeft || thisHasLeft;
-            thisHasRight = oofm->hasFloatRight (this, y, height, this,
-                                                effOofRef);
+            thisHasRight = oofm->hasFloatRight (y, height, this, effOofRef);
             newLineHasFloatRight = newLineHasFloatRight || thisHasRight;
             
             newLineLeftBorder =
                misc::max (newLineLeftBorder,
-                          oofm->getLeftBorder (this, y, height, this,
-                                               effOofRef));
+                          oofm->getLeftBorder (y, height, this, effOofRef));
             newLineRightBorder =
                misc::max (newLineRightBorder,
-                          oofm->getRightBorder (this, y, height, this,
-                                                effOofRef));
+                          oofm->getRightBorder (y, height, this, effOofRef));
             
             // TODO "max" is not really correct for the heights. (Does
             // not matter, since only one, the float manager, returns
@@ -2091,12 +2088,12 @@ void Textblock::calcBorders (int lastOofRef, int height)
             if (thisHasLeft)
                newLineLeftFloatHeight =
                   misc::max (newLineLeftFloatHeight,
-                             oofm->getLeftFloatHeight (this, y, height, this,
+                             oofm->getLeftFloatHeight (y, height, this,
                                                        effOofRef));
             if (thisHasRight)
                newLineRightFloatHeight = 
                   misc::max (newLineRightFloatHeight,
-                             oofm->getRightFloatHeight (this, y, height, this,
+                             oofm->getRightFloatHeight (y, height, this,
                                                         effOofRef));
             
             DBG_OBJ_MSGF ("construct.line", 1,

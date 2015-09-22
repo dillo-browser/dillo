@@ -109,20 +109,16 @@ public:
 
    bool containerMustAdjustExtraSpace ();
 
-   int getLeftBorder (OOFAwareWidget *widget, int y, int h,
-                      OOFAwareWidget *lastGen, int lastExtIndex);
-   int getRightBorder (OOFAwareWidget *widget, int y, int h,
-                       OOFAwareWidget *lastGen, int lastExtIndex);
+   int getLeftBorder (int y, int h, OOFAwareWidget *lastGen, int lastExtIndex);
+   int getRightBorder (int y, int h, OOFAwareWidget *lastGen, int lastExtIndex);
 
-   bool hasFloatLeft (OOFAwareWidget *widget, int y, int h,
-                      OOFAwareWidget *lastGen, int lastExtIndex);
-   bool hasFloatRight (OOFAwareWidget *widget, int y, int h,
-                       OOFAwareWidget *lastGen, int lastExtIndex);
+   bool hasFloatLeft (int y, int h, OOFAwareWidget *lastGen, int lastExtIndex);
+   bool hasFloatRight (int y, int h, OOFAwareWidget *lastGen, int lastExtIndex);
 
-   int getLeftFloatHeight (OOFAwareWidget *widget, int y, int h,
-                           OOFAwareWidget *lastGen, int lastExtIndex);
-   int getRightFloatHeight (OOFAwareWidget *widget, int y, int h,
-                            OOFAwareWidget *lastGen, int lastExtIndex);
+   int getLeftFloatHeight (int y, int h, OOFAwareWidget *lastGen,
+                           int lastExtIndex);
+   int getRightFloatHeight (int y, int h, OOFAwareWidget *lastGen,
+                            int lastExtIndex);
 
    int getClearPosition (OOFAwareWidget *widget);
 

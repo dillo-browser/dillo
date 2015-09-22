@@ -1,7 +1,6 @@
 #ifndef __DW_OOFFLOATSMGR_HH__
 #define __DW_OOFFLOATSMGR_HH__
 
-
 #include "outofflowmgr.hh"
 
 namespace dw {
@@ -23,6 +22,7 @@ private:
    enum Side { LEFT, RIGHT };
 
    OOFAwareWidget *container;
+   int oofmIndex;
 
    // These two values are redundant to TBInfo::wasAllocated and
    // TBInfo::allocation, for some special cases.
@@ -49,20 +49,14 @@ private:
    public:
       class ComparePosition: public lout::object::Comparator
       {
-      private:
-         OOFFloatsMgr *oofm;
-         OOFAwareWidget *refTB;
-
       public:
-         ComparePosition (OOFFloatsMgr *oofm, OOFAwareWidget *refTB)
-         { this->oofm = oofm; this->refTB = refTB; }
-         int compare(Object *o1, Object *o2);
+         int compare (Object *o1, Object *o2);
       };
 
       class CompareSideSpanningIndex: public lout::object::Comparator
       {
       public:
-         int compare(Object *o1, Object *o2);
+         int compare (Object *o1, Object *o2);
       };
 
       class CompareGBAndExtIndex: public lout::object::Comparator
@@ -79,7 +73,7 @@ private:
       OOFAwareWidget *generatingBlock;
       int externalIndex;
       int index; // TODO Needed after SRDOP?
-      int yReq, yReal; // relative to generator, not container
+      int yReq, yReal; // relative to container
       int sideSpanningIndex;
       core::Requisition size;
       bool dirty, sizeChangedSinceLastAllocation;
@@ -98,7 +92,7 @@ private:
 
       void intoStringBuffer(lout::misc::StringBuffer *sb);
 
-      bool covers (OOFAwareWidget *textblock, int y, int h);
+      bool covers (int y, int h);
    };
 
    /**
@@ -125,9 +119,9 @@ private:
       { this->oofm = oofm; this->side = side; }
 
       int findFloatIndex (OOFAwareWidget *lastGB, int lastExtIndex);
-      int find (OOFAwareWidget *textblock, int y, int start, int end);
-      int findFirst (OOFAwareWidget *textblock, int y, int h,
-                     OOFAwareWidget *lastGB, int lastExtIndex, int *lastReturn);
+      int find (int y, int start, int end);
+      int findFirst (int y, int h, OOFAwareWidget *lastGB, int lastExtIndex,
+                     int *lastReturn);
       int findLastBeforeSideSpanningIndex (int sideSpanningIndex);
       void put (Float *vloat);
 
@@ -169,15 +163,15 @@ private:
       ~TBInfo ();
 
       inline bool isNowAllocated () {
-         return getOOFFloatsMgr()->wasAllocated (getOOFAwareWidget ()); }
+         return getOOFFloatsMgr()->wasAllocated (getOOFAwareWidget()); }
       inline int getNewXCB () {
-         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ())->x -
+         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget())->x -
             getOOFFloatsMgr()->containerAllocation.x; }
       inline int getNewYCB () {
-         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ())->y -
+         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget())->y -
             getOOFFloatsMgr()->containerAllocation.y; }
       inline int getNewWidth () {
-         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ())->width; }
+         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget())->width; }
       inline int getNewHeight () {
          core::Allocation *allocation =
             getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ());
@@ -245,13 +239,13 @@ private:
    TBInfo *getOOFAwareWidgetWhenRegistered (OOFAwareWidget *widget);
    inline bool isOOFAwareWidgetRegistered (OOFAwareWidget *widget)
    { return getOOFAwareWidgetWhenRegistered (widget) != NULL; }
-   int getBorder (OOFAwareWidget *textblock, Side side, int y, int h,
-                  OOFAwareWidget *lastGB, int lastExtIndex);
-   bool hasFloat (OOFAwareWidget *textblock, Side side, int y, int h,
-                  OOFAwareWidget *lastGB, int lastExtIndex);
 
-   int getFloatHeight (OOFAwareWidget *textblock, Side side, int y, int h,
-                       OOFAwareWidget *lastGB, int lastExtIndex);
+   int getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
+                  int lastExtIndex);
+   bool hasFloat (Side side, int y, int h, OOFAwareWidget *lastGB,
+                  int lastExtIndex);
+   int getFloatHeight (Side side, int y, int h, OOFAwareWidget *lastGB,
+                       int lastExtIndex);
 
    int calcClearPosition (OOFAwareWidget *textblock);
    int calcClearPosition (OOFAwareWidget *textblock, Side side);
@@ -271,7 +265,7 @@ private:
    { return ref == -1 ? ref : (ref >> 1); }
 
 public:
-   OOFFloatsMgr (OOFAwareWidget *container);
+   OOFFloatsMgr (OOFAwareWidget *container, int oofmIndex);
    ~OOFFloatsMgr ();
 
    void sizeAllocateStart (OOFAwareWidget *caller,
@@ -306,20 +300,16 @@ public:
    void getExtremes (core::Extremes *cbExtr,
                      int *oofMinWidth, int *oofMaxWidth);
 
-   int getLeftBorder (OOFAwareWidget *textblock, int y, int h,
-                      OOFAwareWidget *lastGB, int lastExtIndex);
-   int getRightBorder (OOFAwareWidget *textblock, int y, int h,
-                       OOFAwareWidget *lastGB, int lastExtIndex);
+   int getLeftBorder (int y, int h, OOFAwareWidget *lastGB, int lastExtIndex);
+   int getRightBorder (int y, int h, OOFAwareWidget *lastGB, int lastExtIndex);
 
-   bool hasFloatLeft (OOFAwareWidget *textblock, int y, int h,
-                      OOFAwareWidget *lastGB, int lastExtIndex);
-   bool hasFloatRight (OOFAwareWidget *textblock, int y, int h, 
-                       OOFAwareWidget *lastGB, int lastExtIndex);
+   bool hasFloatLeft (int y, int h, OOFAwareWidget *lastGB, int lastExtIndex);
+   bool hasFloatRight (int y, int h, OOFAwareWidget *lastGB, int lastExtIndex);
 
-   int getLeftFloatHeight (OOFAwareWidget *textblock, int y, int h,
-                           OOFAwareWidget *lastGB, int lastExtIndex);
-   int getRightFloatHeight (OOFAwareWidget *textblock, int y, int h,
-                            OOFAwareWidget *lastGB, int lastExtIndex);
+   int getLeftFloatHeight (int y, int h, OOFAwareWidget *lastGB,
+                           int lastExtIndex);
+   int getRightFloatHeight (int y, int h, OOFAwareWidget *lastGB,
+                            int lastExtIndex);
 
    bool affectsLeftBorder (core::Widget *widget);
    bool affectsRightBorder (core::Widget *widget);

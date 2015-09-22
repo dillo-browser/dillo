@@ -206,7 +206,7 @@ void OOFAwareWidget::initOutOfFlowMgrs ()
 {
    if (oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] == NULL) {
       oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS] =
-         new OOFFloatsMgr (oofContainer[OOFM_FLOATS]);
+         new OOFFloatsMgr (oofContainer[OOFM_FLOATS], OOFM_FLOATS);
       DBG_OBJ_ASSOC (oofContainer[OOFM_FLOATS],
                      oofContainer[OOFM_FLOATS]->outOfFlowMgr[OOFM_FLOATS]);
    }
@@ -538,7 +538,7 @@ bool OOFAwareWidget::mustBeWidenedToAvailWidth ()
    return false;
 }
 
-void OOFAwareWidget::borderChanged (int y, Widget *vloat)
+void OOFAwareWidget::borderChanged (int oofmIndex, int y, Widget *widgetOOF)
 {
    assertNotReached ();
 }

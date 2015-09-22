@@ -112,10 +112,11 @@ Plan
 1. General design (dw::core::Widget::sizeRequestReference, changes to
    dw::core::Widget::sizeRequest). Completed.
 
-2. Implementation for dw::Textblock. Completed.
+2. Implementation for dw::Textblock. Completed. (**TODO:** Check how the return
+   values of `get*Border` are used.)
 
-3. Change interface of dw::oof::OutOfFlowMgr (this affects mostly
-   only comments). Completed.
+3. Change interface of dw::oof::OutOfFlowMgr (this affects mostly only
+   comments). Completed.
 
    Affects methods dw::oof::OutOfFlowMgr::tellPosition1,
    dw::oof::OutOfFlowMgr::tellPosition2,
@@ -128,10 +129,10 @@ Plan
 
 4. Apply step 3 to calls within dw::Textblock. Completed.
 
-   <b>Attention:</b> After this step, and before completing the next
-   steps, the code is inconsistend and so incorrect.
+   <b>Attention:</b> After this step, and before completing the next steps, the
+   code is inconsistend and so incorrect.
 
-5. Implement step 3 for floats (affects dw::oof::OOFFloatsMgr). **INCOMPLETE.**
+5. Implement step 3 for floats (affects dw::oof::OOFFloatsMgr). **IN WORK.**
 
 6. Implement step 3 for positioned elements (affects only
    dw::oof::OOFPositionedMgr). **INCOMPLETE.**

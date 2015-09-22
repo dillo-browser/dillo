@@ -77,8 +77,8 @@ public:
     * but is 0 if there is no float, so a caller should also consider
     * other borders.
     */
-   virtual int getLeftBorder (OOFAwareWidget *widget, int y, int h,
-                              OOFAwareWidget *lastGen, int lastExtIndex) = 0;
+   virtual int getLeftBorder (int y, int h, OOFAwareWidget *lastGen,
+                              int lastExtIndex) = 0;
 
    /**
     * Get the right border for the vertical position of *y*, for a height
@@ -86,8 +86,8 @@ public:
     *
     * See also getLeftBorder().
     */
-   virtual int getRightBorder (OOFAwareWidget *widget, int y, int h,
-                               OOFAwareWidget *lastGen, int lastExtIndex) = 0;
+   virtual int getRightBorder (int y, int h, OOFAwareWidget *lastGen,
+                               int lastExtIndex) = 0;
 
    /**
     * Return whether there is a float on the left side. *y* is
@@ -95,8 +95,8 @@ public:
     *
     * See also getLeftBorder().
     */
-   virtual bool hasFloatLeft (OOFAwareWidget *widget, int y, int h,
-                              OOFAwareWidget *lastGen, int lastExtIndex) = 0;
+   virtual bool hasFloatLeft (int y, int h, OOFAwareWidget *lastGen,
+                              int lastExtIndex) = 0;
 
    /**
     * Return whether there is a float on the right side. *y* is
@@ -104,8 +104,8 @@ public:
     *
     * See also hasFloatLeft(), getLeftBorder();
     */
-   virtual bool hasFloatRight (OOFAwareWidget *widget, int y, int h,
-                               OOFAwareWidget *lastGen, int lastExtIndex) = 0;
+   virtual bool hasFloatRight (int y, int h, OOFAwareWidget *lastGen,
+                               int lastExtIndex) = 0;
 
    /**
     * Assuming there is a float on the left side, return the rest
@@ -113,9 +113,8 @@ public:
     *
     * See also getLeftBorder().
     */
-   virtual int getLeftFloatHeight (OOFAwareWidget *widget, int y, int h,
-                                   OOFAwareWidget *lastGen, int lastExtIndex)
-      = 0;
+   virtual int getLeftFloatHeight (int y, int h, OOFAwareWidget *lastGen,
+                                   int lastExtIndex) = 0;
 
    /**
     * Assuming there is a float on the right side, return the rest
@@ -123,9 +122,8 @@ public:
     *
     * See also getLeftFloatHeight(), getLeftBorder().
     */
-   virtual int getRightFloatHeight (OOFAwareWidget *widget, int y, int h,
-                                    OOFAwareWidget *lastGen, int lastExtIndex)
-      = 0;
+   virtual int getRightFloatHeight (int y, int h, OOFAwareWidget *lastGen,
+                                    int lastExtIndex) = 0;
    
    virtual bool affectsLeftBorder (core::Widget *widget) = 0;
    virtual bool affectsRightBorder (core::Widget *widget) = 0;

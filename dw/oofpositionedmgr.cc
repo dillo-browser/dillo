@@ -287,39 +287,38 @@ bool OOFPositionedMgr::containerMustAdjustExtraSpace ()
    return true;
 }
 
-int OOFPositionedMgr::getLeftBorder (OOFAwareWidget *widget, int y, int h,
-                                     OOFAwareWidget *lastGen, int lastExtIndex)
+int OOFPositionedMgr::getLeftBorder (int y, int h, OOFAwareWidget *lastGen,
+                                     int lastExtIndex)
 {
    return 0;
 }
 
-int OOFPositionedMgr::getRightBorder (OOFAwareWidget *widget, int y, int h,
-                                      OOFAwareWidget *lastGen, int lastExtIndex)
+int OOFPositionedMgr::getRightBorder (int y, int h, OOFAwareWidget *lastGen,
+                                      int lastExtIndex)
 {
    return 0;
 }
 
-bool OOFPositionedMgr::hasFloatLeft (OOFAwareWidget *widget, int y, int h,
-                                     OOFAwareWidget *lastGen, int lastExtIndex)
+bool OOFPositionedMgr::hasFloatLeft (int y, int h, OOFAwareWidget *lastGen,
+                                     int lastExtIndex)
 {
    return false;
 }
 
-bool OOFPositionedMgr::hasFloatRight (OOFAwareWidget *widget, int y, int h,
-                                      OOFAwareWidget *lastGen, int lastExtIndex)
+bool OOFPositionedMgr::hasFloatRight (int y, int h, OOFAwareWidget *lastGen,
+                                      int lastExtIndex)
 {
    return false;
 }
 
 
-int OOFPositionedMgr::getLeftFloatHeight (OOFAwareWidget *widget, int y, int h,
-                                          OOFAwareWidget *lastGen,
+int OOFPositionedMgr::getLeftFloatHeight (int y, int h, OOFAwareWidget *lastGen,
                                           int lastExtIndex)
 {
    return 0;
 }
 
-int OOFPositionedMgr::getRightFloatHeight (OOFAwareWidget *widget, int y, int h,
+int OOFPositionedMgr::getRightFloatHeight (int y, int h,
                                            OOFAwareWidget *lastGen,
                                            int lastExtIndex)
 {
