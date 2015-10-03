@@ -425,7 +425,7 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
             TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (key);
             OOFAwareWidget *tb = key->getTypedValue();
 
-            tbInfo->lineBreakWidth = tb->getLineBreakWidth ();
+            tbInfo->lineBreakWidth = tb->getGeneratorWidth ();
          }
 
          // There are cases where some allocated floats exceed the CB size.
@@ -533,13 +533,13 @@ int OOFFloatsMgr::getGBWidthForAllocation (Float *vloat)
 {
    // See comments in getFloatsSize() for a detailed rationale ...
    if (container->mustBeWidenedToAvailWidth ())
-      return vloat->generatingBlock->getLineBreakWidth ();
+      return vloat->generatingBlock->getGeneratorWidth ();
    else
       // ... but notice this difference: not GB width + float width is
       // used, but only GB width, since the float width has already
       // been included in getFloatsSize().
       return min (getAllocation(vloat->generatingBlock)->width,
-                  vloat->generatingBlock->getLineBreakWidth ());
+                  vloat->generatingBlock->getGeneratorWidth ());
 }
 
 /**
@@ -566,11 +566,11 @@ int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth)
       // This way, we save space and, especially within tables, avoid
       // some problems.
       if (wasAllocated (container) /* TODO: obsolete after SRDOP? */ &&
-          x + vloat->size.width > container->getLineBreakWidth ()) {
-         x = max (0, container->getLineBreakWidth () - vloat->size.width);
+          x + vloat->size.width > container->getGeneratorWidth ()) {
+         x = max (0, container->getGeneratorWidth () - vloat->size.width);
          DBG_OBJ_MSGF ("resize.common", 1,
                        "corrected to: max (0, %d - %d) = %d",
-                       container->getLineBreakWidth (), vloat->size.width, x);
+                       container->getGeneratorWidth (), vloat->size.width, x);
       }
       break;
 
@@ -940,7 +940,7 @@ bool OOFFloatsMgr::collidesH (Float *vloat, Float *other)
    if (vloat->generatingBlock == other->generatingBlock)
       collidesH = vloat->size.width + other->size.width
          + vloat->generatingBlock->boxDiffWidth()
-         > vloat->generatingBlock->getLineBreakWidth();
+         > vloat->generatingBlock->getGeneratorWidth ();
    else {
       // Again, if the other float is not allocated, there is no
       // collision. Compare to collidesV. (But vloat->size is used
@@ -1048,7 +1048,7 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
          // For most textblocks, the line break width is used for calculating
          // the x position. (This changed for GROWS, where the width of a
          // textblock is often smaller that the line break.)
-         effWidth = vloat->generatingBlock->getLineBreakWidth ();
+         effWidth = vloat->generatingBlock->getGeneratorWidth ();
       else
          // For some textblocks, like inline blocks, the line break width would
          // be too large for right floats in some cases.
@@ -1060,7 +1060,7 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
          // (ii) If there is more than one line, the line break will already be
          //      exceeded, and so be smaller that GB width + float width.
          effWidth = min (cbReq->width + vloat->size.width,
-                         vloat->generatingBlock->getLineBreakWidth ());
+                         vloat->generatingBlock->getGeneratorWidth ());
       
          *width = max (*width,
                        calcFloatX (vloat, side, 0, effWidth)

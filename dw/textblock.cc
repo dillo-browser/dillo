@@ -3179,7 +3179,12 @@ void Textblock::oofSizeChanged (bool extremesChanged)
    DBG_OBJ_LEAVE ();
 }
 
-int Textblock::getLineBreakWidth ()
+int Textblock::getGeneratorX ()
+{
+   return 0; // TODO
+}
+
+int Textblock::getGeneratorWidth ()
 {
    return lineBreakWidth;
 }

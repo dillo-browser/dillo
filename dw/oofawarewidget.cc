@@ -566,7 +566,13 @@ void OOFAwareWidget::oofSizeChanged (bool extremesChanged)
    DBG_OBJ_LEAVE ();
 }
 
-int OOFAwareWidget::getLineBreakWidth ()
+int OOFAwareWidget::getGeneratorX ()
+{
+   assertNotReached ();
+   return 0;
+}
+
+int OOFAwareWidget::getGeneratorWidth ()
 {
    assertNotReached ();
    return 0;

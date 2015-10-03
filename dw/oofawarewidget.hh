@@ -278,15 +278,22 @@ public:
    virtual void clearPositionChanged ();
 
    /**
-    * Called by an implementation of dw::oof::OutOfFlowMgr when the size
-    * of the container has changed, typically in sizeAllocateEnd.
+    * Called by an implementation of dw::oof::OutOfFlowMgr when the size of the
+    * container has changed, typically in sizeAllocateEnd.
     */
    virtual void oofSizeChanged (bool extremesChanged);
 
    /**
-    * Called by OOFFloatsMgr to position floats. (Should perhaps be renamed.)
+    * Return position relative to container, not regarding
+    * margin/border/padding, Called by OOFFloatsMgr to position floats.
     */
-   virtual int getLineBreakWidth ();
+   virtual int getGeneratorX ();
+
+   /**
+    * Return width including margin/border/padding Called by OOFFloatsMgr to
+    * position floats.
+    */
+   virtual int getGeneratorWidth ();
    
    virtual bool isPossibleContainer (int oofmIndex);
 
