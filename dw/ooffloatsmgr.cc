@@ -512,11 +512,8 @@ void OOFFloatsMgr::sizeAllocateFloats (Side side)
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
 
-      Allocation *gba = getAllocation (vloat->generatingBlock);
-
       Allocation childAllocation;
-      childAllocation.x = cba->x + calcFloatX (vloat, side, gba->x - cba->x,
-                                               getGBWidthForAllocation (vloat));
+      childAllocation.x = cba->x + calcFloatX (vloat);
       childAllocation.y = cba->y + vloat->yReal;
       childAllocation.width = vloat->size.width;
       childAllocation.ascent = vloat->size.ascent;
@@ -547,45 +544,35 @@ int OOFFloatsMgr::getGBWidthForAllocation (Float *vloat)
  *
  * gbX is given relative to the container, as is the return value.
  */
-int OOFFloatsMgr::calcFloatX (Float *vloat, Side side, int gbX, int gbWidth)
+int OOFFloatsMgr::calcFloatX (Float *vloat)
 {
-   DBG_OBJ_ENTER ("resize.common", 0, "calcFloatX", "%p, %s, %d, %d",
-                  vloat->getWidget (), side == LEFT ? "LEFT" : "RIGHT", gbX,
-                  gbWidth);
+   DBG_OBJ_ENTER ("resize.common", 0, "calcFloatX", "%p", vloat->getWidget ());
    int x;
+   OOFAwareWidget *generator = vloat->generatingBlock;
 
-   switch (side) {
-   case LEFT:
-      // Left floats are always aligned on the left side of the
-      // generator (content, not allocation) ...
-      x = gbX + vloat->generatingBlock->getStyle()->boxOffsetX();
-      DBG_OBJ_MSGF ("resize.common", 1, "left: x = %d + %d = %d",
-                    gbX, vloat->generatingBlock->getStyle()->boxOffsetX(), x);
-      // ... but when the float exceeds the line break width of the
-      // container, it is corrected (but not left of the container).
-      // This way, we save space and, especially within tables, avoid
-      // some problems.
-      if (wasAllocated (container) /* TODO: obsolete after SRDOP? */ &&
-          x + vloat->size.width > container->getGeneratorWidth ()) {
+   switch (vloat->getWidget()->getStyle()->vloat) {
+   case FLOAT_LEFT:
+      // Left floats are always aligned on the left side of the generator
+      // (content, not allocation) ...
+      x = generator->getGeneratorX (oofmIndex)
+         + generator->getStyle()->boxOffsetX();
+
+      // ... but when the float exceeds the line break width of the container,
+      // it is corrected (but not left of the container).  This way, we save
+      // space and, especially within tables, avoid some problems.
+      if (x + vloat->size.width > container->getGeneratorWidth ())
          x = max (0, container->getGeneratorWidth () - vloat->size.width);
-         DBG_OBJ_MSGF ("resize.common", 1,
-                       "corrected to: max (0, %d - %d) = %d",
-                       container->getGeneratorWidth (), vloat->size.width, x);
-      }
       break;
 
-   case RIGHT:
-      // Similar for right floats, but in this case, floats are
-      // shifted to the right when they are too big (instead of
-      // shifting the generator to the right).
-
-      x = max (gbX + gbWidth - vloat->size.width
+   case FLOAT_RIGHT:
+      // Similar for right floats, but in this case, floats are shifted to the
+      // right when they are too big (instead of shifting the generator to the
+      // right).
+      x = max (generator->getStyle()->boxOffsetX()
+               + generator->getGeneratorX (oofmIndex) + vloat->size.width
                - vloat->generatingBlock->getStyle()->boxRestWidth(),
-               // Do not exceed CB allocation:
+               // Do not exceed container allocation:
                0);
-      DBG_OBJ_MSGF ("resize.common", 1, "x = max (%d + %d - %d - %d, 0) = %d",
-                    gbX, gbWidth, vloat->size.width,
-                    vloat->generatingBlock->getStyle()->boxRestWidth(), x);
       break;
 
    default:
@@ -949,12 +936,7 @@ bool OOFFloatsMgr::collidesH (Float *vloat, Float *other)
          collidesH = false;
       else {
          assert (wasAllocated (vloat->generatingBlock));
-         Allocation *gba = getAllocation (vloat->generatingBlock);
-         int vloatX =
-            calcFloatX (vloat,
-                        vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT ?
-                        LEFT : RIGHT,
-                        gba->x, getGBWidthForAllocation (vloat));
+         int vloatX = calcFloatX (vloat);
 
          // Generally: right border of the left float > left border of
          // the right float (all in canvas coordinates).
@@ -1043,33 +1025,11 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
                     
       ensureFloatSize (vloat);
       
-      int effWidth;
-      if (container->mustBeWidenedToAvailWidth ())
-         // For most textblocks, the line break width is used for calculating
-         // the x position. (This changed for GROWS, where the width of a
-         // textblock is often smaller that the line break.)
-         effWidth = vloat->generatingBlock->getGeneratorWidth ();
-      else
-         // For some textblocks, like inline blocks, the line break width would
-         // be too large for right floats in some cases.
-         //
-         //  (i) Consider a small inline block with only a few words in one
-         //      line, narrower that line break width minus float width. In this
-         //      case, the sum should be used.
-         //
-         // (ii) If there is more than one line, the line break will already be
-         //      exceeded, and so be smaller that GB width + float width.
-         effWidth = min (cbReq->width + vloat->size.width,
-                         vloat->generatingBlock->getGeneratorWidth ());
-      
-         *width = max (*width,
-                       calcFloatX (vloat, side, 0, effWidth)
-                       + vloat->size.width);
-         *height = max (*height,
-                        vloat->yReal
-                        + vloat->size.ascent + vloat->size.descent);
+      *width = max (*width, calcFloatX (vloat) + vloat->size.width);
+      *height = max (*height,
+                     vloat->yReal + vloat->size.ascent + vloat->size.descent);
    }
-
+   
    DBG_OBJ_LEAVE ();
 }
 

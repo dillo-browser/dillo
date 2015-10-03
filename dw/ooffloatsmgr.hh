@@ -214,7 +214,7 @@ private:
 
    void sizeAllocateFloats (Side side);
    int getGBWidthForAllocation (Float *vloat);
-   int calcFloatX (Float *vloat, Side side, int gbX, int gbWidth);
+   int calcFloatX (Float *vloat);
 
    bool doFloatsExceedCB (Side side);
 

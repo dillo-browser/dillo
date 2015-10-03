@@ -3193,7 +3193,13 @@ int Textblock::getGeneratorX (int oofmIndex)
 
 int Textblock::getGeneratorWidth ()
 {
-   return lineBreakWidth;
+   // Cf. sizeRequestImpl.
+   if (mustBeWidenedToAvailWidth ())
+        return lineBreakWidth;
+   else {
+      int w = lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0;
+      return min (w + leftInnerPadding + boxDiffWidth (), lineBreakWidth);
+   }
 }
 
 bool Textblock::isPossibleContainer (int oofmIndex)
