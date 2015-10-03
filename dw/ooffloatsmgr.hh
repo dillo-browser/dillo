@@ -76,7 +76,7 @@ private:
       int yReq, yReal; // relative to container
       int sideSpanningIndex;
       core::Requisition size;
-      bool dirty, sizeChangedSinceLastAllocation;
+      bool dirty;
 
       Float (OOFFloatsMgr *oofm, core::Widget *widget,
              OOFAwareWidget *generatingBlock, int externalIndex);

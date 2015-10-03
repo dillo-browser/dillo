@@ -49,7 +49,7 @@ OOFFloatsMgr::Float::Float (OOFFloatsMgr *oofm, Widget *widget,
    this->externalIndex = externalIndex;
 
    yReq = yReal = size.width = size.ascent = size.descent = 0;
-   dirty = sizeChangedSinceLastAllocation = true;
+   dirty = true;
    index = -1;
 
    // Sometimes a float with widget = NULL is created as a key; this
@@ -63,8 +63,6 @@ OOFFloatsMgr::Float::Float (OOFFloatsMgr *oofm, Widget *widget,
       DBG_OBJ_SET_NUM_O (widget, "<Float>.size.ascent", size.ascent);
       DBG_OBJ_SET_NUM_O (widget, "<Float>.size.descent", size.descent);
       DBG_OBJ_SET_BOOL_O (widget, "<Float>.dirty", dirty);
-      DBG_OBJ_SET_BOOL_O (widget, "<Float>.sizeChangedSinceLastAllocation",
-                         sizeChangedSinceLastAllocation);
    }
 }
 
@@ -98,7 +96,6 @@ void OOFFloatsMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->append (" }, dirty = ");
    sb->appendBool (dirty);
    sb->append (", sizeChangedSinceLastAllocation = ");
-   sb->appendBool (sizeChangedSinceLastAllocation);
    sb->append (" }");
 }
 
@@ -723,12 +720,8 @@ void OOFFloatsMgr::markSizeChange (int ref)
       vloat = NULL; // compiler happiness
    }
 
-   vloat->dirty = vloat->sizeChangedSinceLastAllocation = true;
-   
+   vloat->dirty = true;  
    DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
-   DBG_OBJ_SET_BOOL_O (vloat->getWidget (),
-                       "<Float>.sizeChangedSinceLastAllocation",
-                       vloat->sizeChangedSinceLastAllocation);
 
    for (int i = 0; i < tbInfos->size (); i++)
       tbInfos->get(i)->getOOFAwareWidget()->borderChanged (oofmIndex,
