@@ -76,6 +76,9 @@ namespace oof {
  */
 class OOFAwareWidget: public core::Widget
 {
+public:
+   enum { IMPL_POS = false };
+   
 protected:
    enum { OOFM_FLOATS, OOFM_ABSOLUTE, OOFM_RELATIVE, OOFM_FIXED, NUM_OOFM };
    static const char *OOFM_NAME[NUM_OOFM];
@@ -204,11 +207,11 @@ public:
    { return style->vloat != core::style::FLOAT_NONE; }
 
    static inline bool testStyleAbsolutelyPositioned (core::style::Style *style)
-   { return style->position == core::style::POSITION_ABSOLUTE; }
+   { return IMPL_POS && style->position == core::style::POSITION_ABSOLUTE; }
    static inline bool testStyleFixedlyPositioned (core::style::Style *style)
-   { return style->position == core::style::POSITION_FIXED; }
+   { return IMPL_POS && style->position == core::style::POSITION_FIXED; }
    static inline bool testStyleRelativelyPositioned (core::style::Style *style)
-   { return style->position == core::style::POSITION_RELATIVE; }
+   { return IMPL_POS && style->position == core::style::POSITION_RELATIVE; }
 
    static inline bool testStylePositioned (core::style::Style *style)
    { return testStyleAbsolutelyPositioned (style) ||
