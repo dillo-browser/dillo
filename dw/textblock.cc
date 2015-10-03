@@ -3185,7 +3185,23 @@ int Textblock::getGeneratorX (int oofmIndex)
    if (findSizeRequestReference (oofmIndex, &xRef, NULL))
       return xRef;
    else {
-      // Only called by by OOFFloatsMgr, so this should not happen:
+      // Only called for floats, so this should not happen:
+      assertNotReached ();
+      return 0;
+   }
+}
+
+int Textblock::getGeneratorRest (int oofmIndex)
+{
+   int xRef;
+   OOFAwareWidget *container = oofContainer[oofmIndex];
+   
+   if (container != NULL && findSizeRequestReference (container, &xRef, NULL))
+      return misc::max (container->getGeneratorWidth ()
+                        - (xRef + getGeneratorWidth ()),
+                        0);
+   else {
+      // Only called for floats, so this should not happen:
       assertNotReached ();
       return 0;
    }

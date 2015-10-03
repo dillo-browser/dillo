@@ -2077,10 +2077,12 @@ void Textblock::calcBorders (int lastOofRef, int height)
             
             newLineLeftBorder =
                misc::max (newLineLeftBorder,
-                          oofm->getLeftBorder (y, height, this, effOofRef));
+                          oofm->getLeftBorder (y, height, this, effOofRef)
+                          - getGeneratorX (i));
             newLineRightBorder =
                misc::max (newLineRightBorder,
-                          oofm->getRightBorder (y, height, this, effOofRef));
+                          oofm->getRightBorder (y, height, this, effOofRef)
+                          - getGeneratorRest (i));
             
             // TODO "max" is not really correct for the heights. (Does
             // not matter, since only one, the float manager, returns

@@ -871,6 +871,8 @@ protected:
                        int numBreaks, int *breakPos,
                        core::Requisition *wordSize);
 
+   int getGeneratorRest (int oofmIndex);
+
 public:
    static int CLASS_ID;
 
