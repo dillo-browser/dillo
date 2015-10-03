@@ -129,7 +129,6 @@ private:
    class TBInfo: public WidgetInfo
    {
    public:
-      int lineBreakWidth;
       int index; // position within "tbInfos"
 
       TBInfo *parent;

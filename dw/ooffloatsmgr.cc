@@ -412,18 +412,6 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
          sizeAllocateFloats (LEFT);
          sizeAllocateFloats (RIGHT);
 
-         // Store some information for later use.
-         // TODO still used with SRDOP?
-         for (lout::container::typed::Iterator<TypedPointer <OOFAwareWidget> >
-                 it = tbInfosByOOFAwareWidget->iterator ();
-              it.hasNext (); ) {
-            TypedPointer <OOFAwareWidget> *key = it.getNext ();
-            TBInfo *tbInfo = tbInfosByOOFAwareWidget->get (key);
-            OOFAwareWidget *tb = key->getTypedValue();
-
-            tbInfo->lineBreakWidth = tb->getGeneratorWidth ();
-         }
-
          // There are cases where some allocated floats exceed the CB size.
          // TODO Still needed after SRDOP?
          bool sizeChanged = doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT);
