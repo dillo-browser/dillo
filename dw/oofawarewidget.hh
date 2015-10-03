@@ -191,6 +191,8 @@ protected:
 
    void removeChild (Widget *child);
 
+   virtual bool adjustExtraSpaceWhenCorrectingRequisitionByOOF ();
+
 public:
    enum {
       SL_START, SL_BACKGROUND, SL_SC_BOTTOM, SL_IN_FLOW, SL_OOF_REF,
@@ -261,13 +263,34 @@ public:
     * flow.
     */
    virtual void borderChanged (int oofmIndex, int y, core::Widget *widgetOOF);
+
+   /**
+    * Called by an implementation of dw::oof::OutOfFlowMgr (actually only
+    * OOFPosRelMgr) for the generator of a widget out of flow, when the
+    * reference size has changed. (The size of the reference is 0 * 0 for all
+    * other implementations of dw::oof::OutOfFlowMgr.)
+    */
    virtual void widgetRefSizeChanged (int externalIndex);
+   
+   /**
+    * TODO Needed after SRDOP?
+    */
    virtual void clearPositionChanged ();
+
+   /**
+    * Called by an implementation of dw::oof::OutOfFlowMgr when the size
+    * of the container has changed, typically in sizeAllocateEnd.
+    */
    virtual void oofSizeChanged (bool extremesChanged);
-   virtual int getLineBreakWidth (); // Should perhaps be renamed.
+
+   /**
+    * Called by OOFFloatsMgr to position floats. (Should perhaps be renamed.)
+    */
+   virtual int getLineBreakWidth ();
+   
    virtual bool isPossibleContainer (int oofmIndex);
+
    virtual bool isPossibleContainerParent (int oofmIndex);
-   virtual bool adjustExtraSpaceWhenCorrectingRequisitionByOOF ();
 };
 
 } // namespace oof
