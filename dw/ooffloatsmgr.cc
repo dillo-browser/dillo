@@ -526,9 +526,9 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
       // Similar for right floats, but in this case, floats are shifted to the
       // right when they are too big (instead of shifting the generator to the
       // right).
-      x = max (generator->getStyle()->boxOffsetX()
-               + generator->getGeneratorX (oofmIndex) + vloat->size.width
-               - vloat->generator->getStyle()->boxRestWidth(),
+      x = max (generator->getGeneratorX (oofmIndex)
+               + generator->getGeneratorWidth () - vloat->size.width
+               - generator->getStyle()->boxRestWidth(),
                // Do not exceed container allocation:
                0);
       break;
