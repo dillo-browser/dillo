@@ -3179,9 +3179,16 @@ void Textblock::oofSizeChanged (bool extremesChanged)
    DBG_OBJ_LEAVE ();
 }
 
-int Textblock::getGeneratorX ()
+int Textblock::getGeneratorX (int oofmIndex)
 {
-   return 0; // TODO
+   int xRef;
+   if (findSizeRequestReference (oofmIndex, &xRef, NULL))
+      return xRef;
+   else {
+      // Only called by by OOFFloatsMgr, so this should not happen:
+      assertNotReached ();
+      return 0;
+   }
 }
 
 int Textblock::getGeneratorWidth ()

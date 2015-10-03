@@ -566,7 +566,7 @@ void OOFAwareWidget::oofSizeChanged (bool extremesChanged)
    DBG_OBJ_LEAVE ();
 }
 
-int OOFAwareWidget::getGeneratorX ()
+int OOFAwareWidget::getGeneratorX (int oofmIndex)
 {
    assertNotReached ();
    return 0;

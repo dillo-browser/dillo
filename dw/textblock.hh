@@ -908,7 +908,7 @@ public:
    void widgetRefSizeChanged (int externalIndex);
    void clearPositionChanged ();
    void oofSizeChanged (bool extremesChanged);
-   int getGeneratorX ();
+   int getGeneratorX (int oofmIndex);
    int getGeneratorWidth ();
    bool isPossibleContainer (int oofmIndex);
    bool isPossibleContainerParent (int oofmIndex);
