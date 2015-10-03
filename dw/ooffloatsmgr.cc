@@ -301,8 +301,6 @@ OOFFloatsMgr::TBInfo::TBInfo (OOFFloatsMgr *oofm, OOFAwareWidget *textblock,
    leftFloats = new Vector<Float> (1, false);
    rightFloats = new Vector<Float> (1, false);
 
-   wasAllocated = getWidget()->wasAllocated ();
-   allocation = *(getWidget()->getAllocation ());
    clearPosition = 0;
 }
 
@@ -363,14 +361,6 @@ void OOFFloatsMgr::sizeAllocateStart (OOFAwareWidget *caller,
                   "%p, (%d, %d, %d * (%d + %d))",
                   caller, allocation->x, allocation->y, allocation->width,
                   allocation->ascent, allocation->descent);
-
-   // Some callers are not registered, especially tables. (Where the
-   // floats manager is actually empty?)
-   TBInfo *oofAWInfo = getOOFAwareWidgetWhenRegistered (caller);
-   if (oofAWInfo) {
-      oofAWInfo->allocation = *allocation;
-      oofAWInfo->wasAllocated = true;
-   }
 
    if (caller == container) {
       // In the size allocation process, the *first* OOFM method

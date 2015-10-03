@@ -134,14 +134,6 @@ private:
       TBInfo *parent;
       int parentExtIndex;
 
-      // These two values are set by sizeAllocateStart(), and they are
-      // accessable also within sizeAllocateEnd() for the same
-      // textblock, for which allocation and WAS_ALLOCATED is set
-      // *after* sizeAllocateEnd(). See the two functions
-      // wasAllocated(Widget*) and getAllocation(Widget*) (further
-      // down) for usage.
-      bool wasAllocated;
-      core::Allocation allocation;
       int clearPosition;
 
       // These two lists store all floats of a generator, in the order
