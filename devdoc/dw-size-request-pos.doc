@@ -20,6 +20,13 @@ solution is a frequent correction by calling
 dw::core::Widget::queueResize. In this document, an alternative
 approach is presented.
 
+<div style="border: 2px solid #ffff00; margin: 1em 0; padding: 0.5em 1em;
+  background-color: #ffffe0">This approach works very well for floats, but not
+  for positioned elements, which means that calling
+  dw::core::Widget::queueResize is still needed for the latter. On the other
+  hand, dw::oof::OOFFloatsMgr (which is much more complex than
+  dw::oof::OOFPositionedMgr) can be simplified quite much.</div>
+
 
 General Idea
 ============
