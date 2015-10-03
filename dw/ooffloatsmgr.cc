@@ -510,9 +510,7 @@ void OOFFloatsMgr::sizeAllocateFloats (Side side)
 }
 
 /**
- * \brief ...
- *
- * gbX is given relative to the container, as is the return value.
+ * \brief Return position of a float relative to the container.
  */
 int OOFFloatsMgr::calcFloatX (Float *vloat)
 {
