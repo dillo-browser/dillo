@@ -399,6 +399,27 @@ core::Widget *Textblock::sizeRequestReference (int index)
    return sizeReferences[index];
 }
 
+bool Textblock::mustBeWidenedToAvailWidth ()
+{
+   DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
+   bool toplevel = getParent () == NULL,
+      block = getStyle()->display == core::style::DISPLAY_BLOCK,
+      vloat = testWidgetFloat (this),
+      abspos = testWidgetAbsolutelyPositioned (this),
+      fixpos = testWidgetFixedlyPositioned (this),
+      // In detail, this depends on what the respective OOFM does
+      // with the child widget:
+      result = toplevel || (block && !(vloat || abspos || fixpos));
+   DBG_OBJ_MSGF ("resize", 0,
+                 "=> %s (toplevel: %s, block: %s, float: %s, abspos: %s, "
+                 "fixpos: %s)",
+                 result ? "true" : "false", toplevel ? "true" : "false",
+                 block ? "true" : "false", vloat ? "true" : "false",
+                 abspos ? "true" : "false", fixpos ? "true" : "false");
+   DBG_OBJ_LEAVE ();
+   return result;
+}
+
 int Textblock::calcVerticalBorder (int widgetPadding, int widgetBorder,
                                    int widgetMargin, int lineBorderTotal,
                                    int lineMarginTotal)
@@ -2975,27 +2996,6 @@ void Textblock::queueDrawRange (int index1, int index2)
    }
 
    DBG_OBJ_LEAVE ();
-}
-
-bool Textblock::mustBeWidenedToAvailWidth ()
-{
-   DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
-   bool toplevel = getParent () == NULL,
-      block = getStyle()->display == core::style::DISPLAY_BLOCK,
-      vloat = testWidgetFloat (this),
-      abspos = testWidgetAbsolutelyPositioned (this),
-      fixpos = testWidgetFixedlyPositioned (this),
-      // In detail, this depends on what the respective OOFM does
-      // with the child widget:
-      result = toplevel || (block && !(vloat || abspos || fixpos));
-   DBG_OBJ_MSGF ("resize", 0,
-                 "=> %s (toplevel: %s, block: %s, float: %s, abspos: %s, "
-                 "fixpos: %s)",
-                 result ? "true" : "false", toplevel ? "true" : "false",
-                 block ? "true" : "false", vloat ? "true" : "false",
-                 abspos ? "true" : "false", fixpos ? "true" : "false");
-   DBG_OBJ_LEAVE ();
-   return result;
 }
 
 void Textblock::borderChanged (int oofmIndex, int y, Widget *widgetOOF)

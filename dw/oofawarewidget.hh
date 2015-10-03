@@ -251,8 +251,6 @@ public:
    void draw (core::View *view, core::Rectangle *area,
               core::DrawingContext *context);
 
-   virtual bool mustBeWidenedToAvailWidth ();
-
    /**
     * Called by an implementation of dw::oof::OutOfFlowMgr (actually only
     * OOFFloatsMgr) when the border has changed due to a widget out of flow, or

@@ -525,20 +525,6 @@ void OOFFloatsMgr::sizeAllocateFloats (Side side)
    DBG_OBJ_LEAVE ();
 }
 
-// Used as argument "gbWidth" for calcFloatX(), in the context of allocation.
-int OOFFloatsMgr::getGBWidthForAllocation (Float *vloat)
-{
-   // See comments in getFloatsSize() for a detailed rationale ...
-   if (container->mustBeWidenedToAvailWidth ())
-      return vloat->generatingBlock->getGeneratorWidth ();
-   else
-      // ... but notice this difference: not GB width + float width is
-      // used, but only GB width, since the float width has already
-      // been included in getFloatsSize().
-      return min (getAllocation(vloat->generatingBlock)->width,
-                  vloat->generatingBlock->getGeneratorWidth ());
-}
-
 /**
  * \brief ...
  *

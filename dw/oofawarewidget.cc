@@ -531,13 +531,6 @@ void OOFAwareWidget::removeChild (Widget *child)
    assert (isWidgetOOF (child));
 }
 
-bool OOFAwareWidget::mustBeWidenedToAvailWidth ()
-{
-   // Only used for floats.
-   assertNotReached ();
-   return false;
-}
-
 void OOFAwareWidget::borderChanged (int oofmIndex, int y, Widget *widgetOOF)
 {
    assertNotReached ();

@@ -779,7 +779,9 @@ protected:
                             core::MousePositionEvent *event);
 
    void processWord (int wordIndex);
+   
    virtual int wordWrap (int wordIndex, bool wrapAll);
+
    int wrapWordInFlow (int wordIndex, bool wrapAll);
    int wrapWordOofRef (int wordIndex, bool wrapAll);
    void balanceBreakPosAndHeight (int wordIndex, int firstIndex,
@@ -826,6 +828,8 @@ protected:
                          Widget **references, int *x, int *y);
    int numSizeRequestReferences ();
    Widget *sizeRequestReference (int index);
+
+   virtual bool mustBeWidenedToAvailWidth ();
 
    void getExtremesSimpl (core::Extremes *extremes);
 
@@ -902,8 +906,7 @@ public:
    void changeLinkColor (int link, int newColor);
    void changeWordStyle (int from, int to, core::style::Style *style,
                          bool includeFirstSpace, bool includeLastSpace);
-
-   bool mustBeWidenedToAvailWidth ();
+  
    void borderChanged (int oofmIndex, int y, core::Widget *widgetOOF);
    void widgetRefSizeChanged (int externalIndex);
    void clearPositionChanged ();
