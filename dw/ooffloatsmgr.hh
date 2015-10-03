@@ -70,7 +70,7 @@ private:
          int compare(Object *o1, Object *o2);
       };
 
-      OOFAwareWidget *generatingBlock;
+      OOFAwareWidget *generator;
       int externalIndex;
       int index; // TODO Needed after SRDOP?
       int yReq, yReal; // relative to container

@@ -45,7 +45,7 @@ OOFFloatsMgr::Float::Float (OOFFloatsMgr *oofm, Widget *widget,
                             OOFAwareWidget *generatingBlock, int externalIndex)
    : WidgetInfo (oofm, widget)
 {
-   this->generatingBlock = generatingBlock;
+   this->generator = generatingBlock;
    this->externalIndex = externalIndex;
 
    yReq = yReal = size.width = size.ascent = size.descent = 0;
@@ -81,8 +81,8 @@ void OOFFloatsMgr::Float::intoStringBuffer(StringBuffer *sb)
    sb->appendInt (index);
    sb->append (", sideSpanningIndex = ");
    sb->appendInt (sideSpanningIndex);
-   sb->append (", generatingBlock = ");
-   sb->appendPointer (generatingBlock);
+   sb->append (", generator = ");
+   sb->appendPointer (generator);
    sb->append (", yReq = ");
    sb->appendInt (yReq);
    sb->append (", yReal = ");
@@ -132,18 +132,17 @@ int OOFFloatsMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
 
    DBG_OBJ_ENTER_O ("border", 1, oofm, "CompareGBAndExtIndex::compare",
                     "#%d -> %p/%d, #%d -> %p/#%d",
-                    f1->index, f1->generatingBlock, f1->externalIndex,
-                    f2->index, f2->generatingBlock,
-                    f2->externalIndex);
+                    f1->index, f1->generator, f1->externalIndex,
+                    f2->index, f2->generator, f2->externalIndex);
 
-   if (f1->generatingBlock == f2->generatingBlock) {
+   if (f1->generator == f2->generator) {
       r = f1->externalIndex - f2->externalIndex;
       DBG_OBJ_MSGF_O ("border", 2, oofm,
                       "(a) generating blocks equal => %d - %d = %d",
                       f1->externalIndex, f2->externalIndex, r);
    } else {
-      TBInfo *t1 = oofm->getOOFAwareWidget (f1->generatingBlock),
-         *t2 = oofm->getOOFAwareWidget (f2->generatingBlock);
+      TBInfo *t1 = oofm->getOOFAwareWidget (f1->generator),
+         *t2 = oofm->getOOFAwareWidget (f2->generator);
       bool rdef = false;
 
       for (TBInfo *t = t1; t != NULL; t = t->parent)
@@ -531,7 +530,7 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
 {
    DBG_OBJ_ENTER ("resize.common", 0, "calcFloatX", "%p", vloat->getWidget ());
    int x;
-   OOFAwareWidget *generator = vloat->generatingBlock;
+   OOFAwareWidget *generator = vloat->generator;
 
    switch (vloat->getWidget()->getStyle()->vloat) {
    case FLOAT_LEFT:
@@ -553,7 +552,7 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
       // right).
       x = max (generator->getStyle()->boxOffsetX()
                + generator->getGeneratorX (oofmIndex) + vloat->size.width
-               - vloat->generatingBlock->getStyle()->boxRestWidth(),
+               - vloat->generator->getStyle()->boxRestWidth(),
                // Do not exceed container allocation:
                0);
       break;
@@ -903,10 +902,10 @@ bool OOFFloatsMgr::collidesH (Float *vloat, Float *other)
    // collidesV (...) && collidesH (...).
    bool collidesH;
 
-   if (vloat->generatingBlock == other->generatingBlock)
+   if (vloat->generator == other->generator)
       collidesH = vloat->size.width + other->size.width
-         + vloat->generatingBlock->boxDiffWidth()
-         > vloat->generatingBlock->getGeneratorWidth ();
+         + vloat->generator->boxDiffWidth()
+         > vloat->generator->getGeneratorWidth ();
    else {
       // Again, if the other float is not allocated, there is no
       // collision. Compare to collidesV. (But vloat->size is used
@@ -999,7 +998,7 @@ void OOFFloatsMgr::getFloatsSize (Requisition *cbReq, Side side, int *width,
 
       DBG_OBJ_MSGF ("resize.oofm", 1,
                     "float %p has generator %p (container is %p)",
-                    vloat->getWidget (), vloat->generatingBlock, container);
+                    vloat->getWidget (), vloat->generator, container);
                     
       ensureFloatSize (vloat);
       
@@ -1053,7 +1052,7 @@ void OOFFloatsMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
 
       DBG_OBJ_MSGF ("resize.oofm", 1,
                     "float %p has generator %p (container is %p)",
-                    vloat->getWidget (), vloat->generatingBlock,
+                    vloat->getWidget (), vloat->generator,
                     container);
       
       Extremes extr;
@@ -1073,9 +1072,9 @@ void OOFFloatsMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
       // For the maximal width, borders must be considered.
       *maxWidth = max (*maxWidth,
                        extr.maxWidth
-                       + vloat->generatingBlock->getStyle()->boxDiffWidth(),
+                       + vloat->generator->getStyle()->boxDiffWidth(),
                        + max (container->getGeneratorWidth ()
-                              - vloat->generatingBlock->getGeneratorWidth (),
+                              - vloat->generator->getGeneratorWidth (),
                               0));
       
       DBG_OBJ_MSGF ("resize.oofm", 1, "%d / %d => %d / %d",
@@ -1157,8 +1156,8 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
 
          if (covers) {
             int borderIn = side == LEFT ?
-               vloat->generatingBlock->boxOffsetX() :
-               vloat->generatingBlock->boxRestWidth();
+               vloat->generator->boxOffsetX() :
+               vloat->generator->boxRestWidth();
             int thisBorder = vloat->size.width + borderIn;
             DBG_OBJ_MSGF ("border", 1, "GB: thisBorder = %d + %d = %d",
                           vloat->size.width, borderIn, thisBorder);
