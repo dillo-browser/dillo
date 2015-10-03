@@ -81,15 +81,6 @@ private:
       Float (OOFFloatsMgr *oofm, core::Widget *widget,
              OOFAwareWidget *generatingBlock, int externalIndex);
 
-      inline bool isNowAllocated () { return getWidget()->wasAllocated (); }
-      inline int getNewXCB () { return getWidget()->getAllocation()->x -
-            getOOFFloatsMgr()->containerAllocation.x; }
-      inline int getNewYCB () { return getWidget()->getAllocation()->y -
-            getOOFFloatsMgr()->containerAllocation.y; }
-      inline int getNewWidth () { return getWidget()->getAllocation()->width; }
-      inline int getNewHeight () { return getWidget()->getAllocation()->ascent +
-            getWidget()->getAllocation()->descent; }
-
       void intoStringBuffer(lout::misc::StringBuffer *sb);
 
       bool covers (int y, int h);
@@ -162,21 +153,6 @@ private:
               TBInfo *parent, int parentExtIndex);
       ~TBInfo ();
 
-      inline bool isNowAllocated () {
-         return getOOFFloatsMgr()->wasAllocated (getOOFAwareWidget()); }
-      inline int getNewXCB () {
-         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget())->x -
-            getOOFFloatsMgr()->containerAllocation.x; }
-      inline int getNewYCB () {
-         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget())->y -
-            getOOFFloatsMgr()->containerAllocation.y; }
-      inline int getNewWidth () {
-         return getOOFFloatsMgr()->getAllocation (getOOFAwareWidget())->width; }
-      inline int getNewHeight () {
-         core::Allocation *allocation =
-            getOOFFloatsMgr()->getAllocation (getOOFAwareWidget ());
-         return allocation->ascent + allocation->descent; }
-
       inline OOFAwareWidget *getOOFAwareWidget ()
       { return (OOFAwareWidget*)getWidget (); }
    };
@@ -191,22 +167,6 @@ private:
                                      TBInfo> *tbInfosByOOFAwareWidget;
 
    int lastLeftTBIndex, lastRightTBIndex, leftFloatsMark, rightFloatsMark;
-
-   /**
-    * Variant of Widget::wasAllocated(), which can also be used within
-    * OOFM::sizeAllocateEnd().
-    */
-   inline bool wasAllocated (OOFAwareWidget *textblock) {
-      return getOOFAwareWidget(textblock)->wasAllocated;
-   }
-
-   /**
-    * Variant of Widget::getAllocation(), which can also be used
-    * within OOFM::sizeAllocateEnd().
-    */
-   inline core::Allocation *getAllocation (OOFAwareWidget *textblock) {
-      return &(getOOFAwareWidget(textblock)->allocation);
-   }
 
    void moveExternalIndices (lout::container::typed::Vector<Float> *list,
                              int oldStartIndex, int diff);

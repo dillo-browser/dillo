@@ -914,7 +914,6 @@ bool OOFFloatsMgr::collidesH (Float *vloat, Float *other)
       if (!other->getWidget()->wasAllocated ())
          collidesH = false;
       else {
-         assert (wasAllocated (vloat->generatingBlock));
          int vloatX = calcFloatX (vloat);
 
          // Generally: right border of the left float > left border of
@@ -1057,44 +1056,30 @@ void OOFFloatsMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
                     vloat->getWidget (), vloat->generatingBlock,
                     container);
       
-      if (vloat->generatingBlock == container ||
-          wasAllocated (vloat->generatingBlock)) {
-         Extremes extr;
-         vloat->getWidget()->getExtremes (&extr);
-         
-         // The calculation of extremes must be kept consistent with
-         // getFloatsSize(). Especially this means for the *minimal* width:
-         //
-         // - The right border (difference between float and
-         //   container) does not have to be considered (see
-         //   getFloatsSize()).
-         //
-         // - This is also the case for the left border, as seen in
-         //   calcFloatX() ("... but when the float exceeds the line
-         //   break width" ...).
-
-         *minWidth = max (*minWidth, extr.minWidth);
-
-         // For the maximal width, borders must be considered.
+      Extremes extr;
+      vloat->getWidget()->getExtremes (&extr);
       
-         if (vloat->generatingBlock == container)
-            *maxWidth =
-               max (*maxWidth,
-                    extr.maxWidth
-                    + vloat->generatingBlock->getStyle()->boxDiffWidth());
-         else {
-            Allocation *gba = getAllocation (vloat->generatingBlock);
-            *maxWidth =
-               max (*maxWidth,
-                    extr.maxWidth
-                    + vloat->generatingBlock->getStyle()->boxDiffWidth()
-                    + max (containerAllocation.width - gba->width, 0));
-         }
-         
-         DBG_OBJ_MSGF ("resize.oofm", 1, "%d / %d => %d / %d",
-                       extr.minWidth, extr.maxWidth, *minWidth, *maxWidth);
-      } else
-         DBG_OBJ_MSG ("resize.oofm", 1, "not allocated");
+      // The calculation of extremes must be kept consistent with
+      // getFloatsSize(). Especially this means for the *minimal* width:
+      //
+      // - The right border (difference between float and container) does not
+      //   have to be considered (see getFloatsSize()).
+      //
+      // - This is also the case for the left border, as seen in calcFloatX()
+      //   ("... but when the float exceeds the line break width" ...).
+      
+      *minWidth = max (*minWidth, extr.minWidth);
+      
+      // For the maximal width, borders must be considered.
+      *maxWidth = max (*maxWidth,
+                       extr.maxWidth
+                       + vloat->generatingBlock->getStyle()->boxDiffWidth(),
+                       + max (container->getGeneratorWidth ()
+                              - vloat->generatingBlock->getGeneratorWidth (),
+                              0));
+      
+      DBG_OBJ_MSGF ("resize.oofm", 1, "%d / %d => %d / %d",
+                    extr.minWidth, extr.maxWidth, *minWidth, *maxWidth);
    }
 
    DBG_OBJ_LEAVE ();
