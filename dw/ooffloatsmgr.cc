@@ -332,7 +332,6 @@ OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container, int oofmIndex)
    leftFloatsMark = rightFloatsMark = 0;
    lastLeftTBIndex = lastRightTBIndex = 0;
 
-   containerWasAllocated = container->wasAllocated ();
    containerAllocation = *(container->getAllocation());
 
    addWidgetInFlow (this->container, NULL, 0);
@@ -362,15 +361,8 @@ void OOFFloatsMgr::sizeAllocateStart (OOFAwareWidget *caller,
                   caller, allocation->x, allocation->y, allocation->width,
                   allocation->ascent, allocation->descent);
 
-   if (caller == container) {
-      // In the size allocation process, the *first* OOFM method
-      // called is sizeAllocateStart, with the containing block as an
-      // argument. So this is the correct point to initialize size
-      // allocation.
-
-      containerWasAllocated = true;
+   if (caller == container)
       containerAllocation = *allocation;
-   }
    
    DBG_OBJ_LEAVE ();
 }

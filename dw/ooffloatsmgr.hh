@@ -24,7 +24,6 @@ private:
    OOFAwareWidget *container;
    int oofmIndex;
 
-   bool containerWasAllocated;
    core::Allocation containerAllocation;
 
    class WidgetInfo: public lout::object::Object
