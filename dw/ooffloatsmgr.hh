@@ -164,8 +164,6 @@ private:
    int getGBWidthForAllocation (Float *vloat);
    int calcFloatX (Float *vloat);
 
-   bool doFloatsExceedCB (Side side);
-
    void drawFloats (SortedFloatsVector *list, core::View *view,
                     core::Rectangle *area, core::DrawingContext *context);
    core::Widget *getFloatWidgetAtPoint (SortedFloatsVector *list, int x, int y,

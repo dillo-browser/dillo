@@ -386,13 +386,6 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
       if (caller == container) {
          sizeAllocateFloats (LEFT);
          sizeAllocateFloats (RIGHT);
-
-         // There are cases where some allocated floats exceed the CB size.
-         // TODO Still needed after SRDOP?
-         bool sizeChanged = doFloatsExceedCB (LEFT) || doFloatsExceedCB (RIGHT);
-
-         if (sizeChanged)
-            container->oofSizeChanged (false);
       }
    }
 
@@ -409,53 +402,6 @@ void OOFFloatsMgr::containerSizeChangedForChildren ()
       rightFloats->get(i)->getWidget()->containerSizeChanged ();
 
    DBG_OBJ_LEAVE ();
-}
-
-bool OOFFloatsMgr::doFloatsExceedCB (Side side)
-{
-   DBG_OBJ_ENTER ("resize.oofm", 0, "doFloatsExceedCB", "%s",
-                  side == LEFT ? "LEFT" : "RIGHT");
-
-   // This method is called to determine whether the *requisition* of
-   // the CB must be recalculated. So, we check the float allocations
-   // against the *requisition* of the CB, which may (e. g. within
-   // tables) differ from the new allocation. (Generally, a widget may
-   // allocated at a different size.)
-  
-   core::Requisition cbReq;
-   container->sizeRequest (&cbReq);
-
-   SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
-   bool exceeds = false;
-
-   DBG_OBJ_MSG_START ();
-
-   for (int i = 0; i < list->size () && !exceeds; i++) {
-      Float *vloat = list->get (i);
-      if (vloat->getWidget()->wasAllocated ()) {
-         Allocation *fla = vloat->getWidget()->getAllocation ();
-         DBG_OBJ_MSGF ("resize.oofm", 2,
-                       "Does FlA = (%d, %d, %d * %d) exceed CB req+alloc = "
-                       "(%d, %d, %d * %d)?",
-                       fla->x, fla->y, fla->width, fla->ascent + fla->descent,
-                       containerAllocation.x, containerAllocation.y,
-                       cbReq.width, cbReq.ascent + cbReq.descent);
-         if (fla->x + fla->width > containerAllocation.x + cbReq.width ||
-             fla->y + fla->ascent + fla->descent
-             > containerAllocation.y + cbReq.ascent + cbReq.descent) {
-            exceeds = true;
-            DBG_OBJ_MSG ("resize.oofm", 2, "Yes.");
-         } else
-            DBG_OBJ_MSG ("resize.oofm", 2, "No.");
-      }
-   }
-
-   DBG_OBJ_MSG_END ();
-
-   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %s", exceeds ? "true" : "false");
-   DBG_OBJ_LEAVE ();
-
-   return exceeds;
 }
 
 void OOFFloatsMgr::sizeAllocateFloats (Side side)
