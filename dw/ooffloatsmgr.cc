@@ -392,13 +392,6 @@ void OOFFloatsMgr::sizeAllocateEnd (OOFAwareWidget *caller)
       }
 
       if (caller == container) {
-         // In the size allocation process, the *last* OOFM method called
-         // is sizeAllocateEnd, with the containing block as an
-         // argument. So this is the correct point to finish size
-         // allocation.
-         
-         // TODO: After SRDOP, the comment above is probably non-sense.
-
          sizeAllocateFloats (LEFT);
          sizeAllocateFloats (RIGHT);
 

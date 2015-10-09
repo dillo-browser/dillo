@@ -24,8 +24,6 @@ private:
    OOFAwareWidget *container;
    int oofmIndex;
 
-   // These two values are redundant to TBInfo::wasAllocated and
-   // TBInfo::allocation, for some special cases.
    bool containerWasAllocated;
    core::Allocation containerAllocation;
 
