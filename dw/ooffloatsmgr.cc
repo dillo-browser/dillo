@@ -396,15 +396,13 @@ void OOFFloatsMgr::sizeAllocateFloats (Side side)
    DBG_OBJ_ENTER ("resize.oofm", 0, "sizeAllocateFloats", "%s",
                   side == LEFT ? "LEFT" : "RIGHT");
 
-   Allocation *cba = &containerAllocation;
-
    for (int i = 0; i < list->size (); i++) {
       Float *vloat = list->get(i);
       ensureFloatSize (vloat);
 
       Allocation childAllocation;
-      childAllocation.x = cba->x + calcFloatX (vloat);
-      childAllocation.y = cba->y + vloat->yReal;
+      childAllocation.x = containerAllocation.x + calcFloatX (vloat);
+      childAllocation.y = containerAllocation.y + vloat->yReal;
       childAllocation.width = vloat->size.width;
       childAllocation.ascent = vloat->size.ascent;
       childAllocation.descent = vloat->size.descent;
