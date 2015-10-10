@@ -131,8 +131,6 @@ private:
       TBInfo *parent;
       int parentExtIndex;
 
-      int clearPosition;
-
       // These two lists store all floats of a generator, in the order
       // in which they are defined. Used for optimization
       lout::container::typed::Vector<Float> *leftFloats, *rightFloats;
@@ -193,8 +191,7 @@ private:
    int getFloatHeight (Side side, int y, int h, OOFAwareWidget *lastGB,
                        int lastExtIndex);
 
-   int calcClearPosition (OOFAwareWidget *textblock);
-   int calcClearPosition (OOFAwareWidget *textblock, Side side);
+   int getClearPosition (OOFAwareWidget *widget, Side side);
 
    void ensureFloatSize (Float *vloat);
 

@@ -914,6 +914,7 @@ public:
    void clearPositionChanged ();
    void oofSizeChanged (bool extremesChanged);
    int getGeneratorX (int oofmIndex);
+   int getGeneratorY (int oofmIndex);
    int getGeneratorWidth ();
    bool isPossibleContainer (int oofmIndex);
    bool isPossibleContainerParent (int oofmIndex);

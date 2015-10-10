@@ -565,6 +565,12 @@ int OOFAwareWidget::getGeneratorX (int oofmIndex)
    return 0;
 }
 
+int OOFAwareWidget::getGeneratorY (int oofmIndex)
+{
+   assertNotReached ();
+   return 0;
+}
+
 int OOFAwareWidget::getGeneratorWidth ()
 {
    assertNotReached ();
