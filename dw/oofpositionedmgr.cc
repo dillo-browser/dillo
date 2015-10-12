@@ -47,7 +47,7 @@ OOFPositionedMgr::Child::Child (core::Widget *widget, OOFAwareWidget *generator,
 
 OOFPositionedMgr::OOFPositionedMgr (OOFAwareWidget *container)
 {
-   DBG_OBJ_CREATE ("dw::OOFPositionedMgr");
+   DBG_OBJ_CREATE ("dw::oof::OOFPositionedMgr");
 
    this->container = (OOFAwareWidget*)container;
    children = new Vector<Child> (1, false);

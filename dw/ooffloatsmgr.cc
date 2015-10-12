@@ -310,7 +310,7 @@ OOFFloatsMgr::TBInfo::~TBInfo ()
 
 OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container, int oofmIndex)
 {
-   DBG_OBJ_CREATE ("dw::OOFFloatsMgr");
+   DBG_OBJ_CREATE ("dw::oof::OOFFloatsMgr");
 
    this->container = container;
    this->oofmIndex = oofmIndex;

@@ -26,7 +26,7 @@ namespace oof {
 OOFPosFixedMgr::OOFPosFixedMgr (OOFAwareWidget *container) :
    OOFPosAbsLikeMgr (container)
 {
-   DBG_OBJ_CREATE ("dw::OOFPosFixedMgr");
+   DBG_OBJ_CREATE ("dw::oof::OOFPosFixedMgr");
 }
 
 OOFPosFixedMgr::~OOFPosFixedMgr ()

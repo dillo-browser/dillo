@@ -30,7 +30,7 @@ namespace oof {
 OOFPosRelMgr::OOFPosRelMgr (OOFAwareWidget *container) :
    OOFPositionedMgr (container)
 {
-   DBG_OBJ_CREATE ("dw::OOFPosRelMgr");
+   DBG_OBJ_CREATE ("dw::oof::OOFPosRelMgr");
 }
 
 OOFPosRelMgr::~OOFPosRelMgr ()

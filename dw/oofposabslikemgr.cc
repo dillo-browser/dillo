@@ -29,7 +29,7 @@ namespace oof {
 OOFPosAbsLikeMgr::OOFPosAbsLikeMgr (OOFAwareWidget *container) :
    OOFPositionedMgr (container)
 {
-   DBG_OBJ_CREATE ("dw::OOFPosAbsLikeMgr");
+   DBG_OBJ_CREATE ("dw::oof::OOFPosAbsLikeMgr");
 }
 
 OOFPosAbsLikeMgr::~OOFPosAbsLikeMgr ()

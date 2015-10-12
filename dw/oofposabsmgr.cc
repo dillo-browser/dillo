@@ -26,7 +26,7 @@ namespace oof {
 OOFPosAbsMgr::OOFPosAbsMgr (OOFAwareWidget *container) :
    OOFPosAbsLikeMgr (container)
 {
-   DBG_OBJ_CREATE ("dw::OOFPosAbsMgr");
+   DBG_OBJ_CREATE ("dw::oof::OOFPosAbsMgr");
 }
 
 OOFPosAbsMgr::~OOFPosAbsMgr ()
