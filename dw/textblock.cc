@@ -1695,7 +1695,7 @@ int Textblock::findParagraphOfWord (int wordIndex)
    if (wordIndex < 0 || wordIndex >= words->size () ||
        // It may be that the paragraphs list is incomplete. But look
        // also at fillParagraphs, where this method is called.
-       (paragraphs->size () > 0 &&
+       (paragraphs->size () == 0 ||
         wordIndex > paragraphs->getLastRef()->lastWord))
       return -1;
 
