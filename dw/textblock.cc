@@ -580,53 +580,6 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
    showMissingLines ();
 
-   // In some cases, this allocation results in child allocation which
-   // exceed the top of this allocation, which will then result in an
-   // endless resize idle cascade and CPU hogging (when floats come
-   // into play).
-   //
-   // Example:
-   // 
-   // <div id="id1" style="height: 50px">
-   //   <div id="id2">...</div>
-   // <div>
-   //
-   // Assume that the inner section, div#id2, has a height of 200px =
-   // 100px (ascent) + 100px (descent). For the outer section,
-   // div#id1, this will be initially calculated for the size, but
-   // then (because of CSS 'height') reduced to 50px = 50px (ascent) +
-   // 0px (descent). Without the following correction, the inner
-   // section (div#id2) would be allocated at 50px top of the
-   // allocation of the outer section: childAllocation->y =
-   // allocation->y - 50.
-   //
-   // For this reason, we calculat "childBaseAllocation", which will
-   // avoid this case; in the example above, the height will be 50px =
-   // 100px (ascent) - 50px (descent: negative).
-
-   childBaseAllocation.x = allocation->x;
-   childBaseAllocation.y = allocation->y;
-   childBaseAllocation.width = allocation->width;
-   childBaseAllocation.ascent =
-      misc::max (allocation->ascent,
-                 // Reconstruct the initial size; see
-                 // Textblock::sizeRequestImpl.
-                 (lines->size () > 0 ?
-                  calcVerticalBorder (getStyle()->padding.top,
-                                      getStyle()->borderWidth.top,
-                                      getStyle()->margin.top + extraSpace.top,
-                                      lines->getRef(0)->borderAscent,
-                                      lines->getRef(0)->marginAscent) :
-                  boxOffsetY ()));
-   childBaseAllocation.descent =
-      allocation->ascent + allocation->descent - childBaseAllocation.ascent;
-
-   DBG_OBJ_SET_NUM ("childBaseAllocation.x", childBaseAllocation.x);
-   DBG_OBJ_SET_NUM ("childBaseAllocation.y", childBaseAllocation.y);
-   DBG_OBJ_SET_NUM ("childBaseAllocation.width", childBaseAllocation.width);
-   DBG_OBJ_SET_NUM ("childBaseAllocation.ascent", childBaseAllocation.ascent);
-   DBG_OBJ_SET_NUM ("childBaseAllocation.descent", childBaseAllocation.descent);
-
    sizeAllocateStart (allocation);
 
    int lineIndex, wordIndex;
@@ -655,8 +608,10 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
       // the allocation width is greater than the line break width,
       // due to wide unbreakable lines (large image etc.), use the
       // original line break width.
-      calcTextOffset (lineIndex,
-                      misc::min (childBaseAllocation.width, lineBreakWidth));
+      //
+      // TODO: test case?
+      
+      calcTextOffset (lineIndex, misc::min (allocation->width, lineBreakWidth));
 
       line = lines->getRef (lineIndex);
       xCursor = line->textOffset;
@@ -668,7 +623,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
          word = words->getRef (wordIndex);
 
          if (wordIndex == lastWordDrawn + 1) {
-            redrawY = misc::min (redrawY, lineYOffsetWidget (line));
+            redrawY = misc::min (redrawY, lineYOffsetWidget (line, allocation));
             DBG_OBJ_SET_NUM ("redrawY", redrawY);
          }
 
@@ -680,7 +635,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             // TODO For word->flags & Word::TOPLEFT_OF_LINE, make
             // allocation consistent with calcSizeOfWidgetInFlow():
 
-            childAllocation.x = xCursor + childBaseAllocation.x;
+            childAllocation.x = xCursor + allocation->x;
             
             /** \todo Justification within the line is done here. */
             /* align=top:
@@ -689,7 +644,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             /* align=bottom (base line) */
             /* Commented lines break the n2 and n3 test cases at
              * http://www.dillo.org/test/img/ */
-            childAllocation.y = lineYOffsetCanvas (line)
+            childAllocation.y = lineYOffsetCanvas (line, allocation)
                + (line->borderAscent - word->size.ascent);
 
             childAllocation.width = word->size.width;
@@ -704,7 +659,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                /* The child widget has changed its position or its width
                 * so we need to redraw from this line onwards.
                 */
-               redrawY = misc::min (redrawY, lineYOffsetWidget (line));
+               redrawY =
+                  misc::min (redrawY, lineYOffsetWidget (line, allocation));
                DBG_OBJ_SET_NUM ("redrawY", redrawY);
                if (word->content.widget->wasAllocated ()) {
                   redrawY = misc::min (redrawY,
@@ -732,7 +688,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                     core::Content::BREAK)) {
 
                   int childChangedY =
-                     misc::min(childAllocation.y - childBaseAllocation.y +
+                     misc::min(childAllocation.y - allocation->y +
                         childAllocation.ascent + childAllocation.descent,
                         oldChildAllocation->y - this->allocation.y +
                         oldChildAllocation->ascent +
@@ -741,7 +697,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
                   redrawY = misc::min (redrawY, childChangedY);
                   DBG_OBJ_SET_NUM ("redrawY", redrawY);
                } else {
-                  redrawY = misc::min (redrawY, lineYOffsetWidget (line));
+                  redrawY =
+                     misc::min (redrawY, lineYOffsetWidget (line, allocation));
                   DBG_OBJ_SET_NUM ("redrawY", redrawY);
                }
             }
@@ -772,7 +729,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
          y = allocation->y + allocation->ascent + allocation->descent;
       } else {
          Line *line = lines->getRef(findLineOfWord (anchor->wordIndex));
-         y = lineYOffsetCanvas (line);
+         y = lineYOffsetCanvas (line, allocation);
       }
       changeAnchor (anchor->name, y);
    }
@@ -1063,7 +1020,7 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
       wordIndex = -1;
    } else {
       Line *lastLine = lines->getRef (lines->size () - 1);
-      int yFirst = lineYOffsetCanvasI (0);
+      int yFirst = lineYOffsetCanvas (0);
       int yLast = lineYOffsetCanvas (lastLine) + lastLine->borderAscent +
                   lastLine->borderDescent;
       if (event->yCanvas < yFirst) {
@@ -1619,7 +1576,7 @@ int Textblock::findLineIndexWhenNotAllocated (int y)
 int Textblock::findLineIndexWhenAllocated (int y)
 {
    assert (wasAllocated ());
-   return findLineIndex (y, childBaseAllocation.ascent);
+   return findLineIndex (y, allocation.ascent);
 }
 
 int Textblock::findLineIndex (int y, int ascent)
@@ -1635,13 +1592,12 @@ int Textblock::findLineIndex (int y, int ascent)
    step = (lines->size() + 1) >> 1;
    while ( step > 1 ) {
       index = low + step;
-      if (index <= maxIndex &&
-          lineYOffsetWidgetIAllocation (index, &alloc) <= y)
+      if (index <= maxIndex && lineYOffsetWidget (index, &alloc) <= y)
          low = index;
       step = (step + 1) >> 1;
    }
 
-   if (low < maxIndex && lineYOffsetWidgetIAllocation (low + 1, &alloc) <= y)
+   if (low < maxIndex && lineYOffsetWidget (low + 1, &alloc) <= y)
       low++;
 
    /*
@@ -2498,7 +2454,7 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
       if (lines->size () == 0)
          y = allocation.y;
       else
-         y = allocation.y + lineYOffsetWidgetI (lines->size () - 1);
+         y = allocation.y + lineYOffsetWidget (lines->size () - 1);
       copy = Widget::addAnchor (name, y);
    } else
       copy = Widget::addAnchor (name);
