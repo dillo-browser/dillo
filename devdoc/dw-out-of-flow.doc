@@ -1,44 +1,9 @@
 /** \page dw-out-of-flow Handling Elements Out Of Flow
 
-<div style="border: 2px solid #ff4040; margin-bottom: 0.5em;
-padding: 0.5em 1em; background-color: #fff0f0"><b>Info:</b>
-Not up to date; incorporate these two changes: (i) there are different
-containing blocks for floats and absolutely (furthermore also fixedly)
-positioned elements; (ii) dw::oof::OutOfFlowMgr is now only the base
-class; floats and absolutely positioned elements are seperated:
-\dot
-digraph G {
-   node [shape=record, fontname=Helvetica, fontsize=10];
-   edge [arrowhead="none", arrowtail="empty", dir="both"];
-   fontname=Helvetica; fontsize=8;
-
-   OutOfFlowMgr [URL="\ref dw::oof::OutOfFlowMgr"; color="#a0a0a0"];
-   OOFFloatsMgr [URL="\ref dw::oof::OOFFloatsMgr"];
-   OOFPositionedMgr [URL="\ref dw::oof::OOFPositionedMgr"; color="#a0a0a0"];
-   OOFPosAbsLikeMgr [URL="\ref dw::oof::OOFPosAbsLikeMgr"; color="#a0a0a0"];
-   OOFPosAbsMgr [URL="\ref dw::oof::OOFPosAbsMgr"];
-   OOFPosFixedMgr [URL="\ref dw::oof::OOFPosFixedMgr"];
-   OOFPosRelMgr [URL="\ref dw::oof::OOFPosRelMgr"];
-
-   OutOfFlowMgr -> OOFFloatsMgr;
-   OutOfFlowMgr -> OOFPositionedMgr;
-   OOFPositionedMgr -> OOFPosAbsLikeMgr;
-   OOFPosAbsLikeMgr -> OOFPosAbsMgr;
-   OOFPosAbsLikeMgr -> OOFPosFixedMgr;  
-   OOFPositionedMgr -> OOFPosRelMgr;
-}
-\enddot
-</div>
-
-<div style="border: 2px solid #ffff00; margin: 1em 0;
-padding: 0.5em 1em; background-color: #ffffe0"><b>Info:</b>
-A simplification is ongoing, see \ref dw-size-request-pos.
-</div>
-
 Introduction
 ============
 
-This texts deals with both floats and absolute positions, which have
+This texts deals with both floats and positioned elements, which have
 in common that there is a distinction between generating block and
 containing block (we are here using the same notation as in the
 CSS&nbsp;2 specification). Consider this snippet (regarding floats):
@@ -76,177 +41,58 @@ their borders, and so their size. In this example, the following list
 item (green) must consider the position of the float. This is
 discussed in detail in the next section.)
 
-Both in this text and the code, generating and containing block are
-abbreviated with **GB** and **CB**, respectively.
-
 
 Implementation overview
 =======================
 
-Widget level
-------------
-The terms *generating block* and *containing block* have been raised
-to a higher level, the one of dw::core::Widget, and are here called
-*generating widget* and *containing widget*. To represent the
-distinction, the type of dw::core::Content has been split into three
-parts:
+- dw::oof::OOFAwareWidget is the base for both generators and containers.
+  dw::Textblock and dw::Table are based on this, but dw::Table is only relevant
+  for positioned elements, so much simpler than dw::Textblock.
+- Different containers for floats, absolutely positioned elements etc.
+- If a widget is out of flow, the generating widget keeps a reference with the
+  type dw::core::Content::WIDGET_OOF_REF, while the containing block refers to
+  it as dw::core::Content::WIDGET_OOF_CONT.  For widgets within flow,
+  dw::core::Content::WIDGET_IN_FLOW is used. Notice that in the first case,
+  there are two pieces of content referring to the same widget. An application
+  of this distinction is iterators. (For selection and searching, the generating
+  hierarchy is used, whih is different from the widget hierarchy.)
 
-- If a widget is out of flow, the generating widget keeps a reference
-  with the type dw::core::Content::WIDGET_OOF_REF, while the
-  containing block refers to it as dw::core::Content::WIDGET_OOF_CONT.
-- For widgets within flow, dw::core::Content::WIDGET_IN_FLOW is used.
+Handling widgets out of flow is partly the task of class implementing
+dw::oof::OutOfFlowMgr, which is stored by dw::oof::OOFAwareWidget::outOfFlowMgr,
+but only for containing blocks. Generating blocks should refer
+to *container->outOfFlowMgr[...]*.
 
-Notice that in the first case, there are two pieces of content
-referring to the same widget.
+Overview of the dw::oof::OutOfFlowMgr hierarchy;
 
-An application of this distinction is iterators. [TODO: more. And
-still missing: DeepIterator may need the generating parent widget in
-some cases.]
+\dot
+digraph G {
+   node [shape=record, fontname=Helvetica, fontsize=10];
+   edge [arrowhead="none", arrowtail="empty", dir="both"];
+   fontname=Helvetica; fontsize=8;
 
+   OutOfFlowMgr [URL="\ref dw::oof::OutOfFlowMgr"; color="#a0a0a0"];
+   OOFFloatsMgr [URL="\ref dw::oof::OOFFloatsMgr"];
+   OOFPositionedMgr [URL="\ref dw::oof::OOFPositionedMgr"; color="#a0a0a0"];
+   OOFPosAbsLikeMgr [URL="\ref dw::oof::OOFPosAbsLikeMgr"; color="#a0a0a0"];
+   OOFPosAbsMgr [URL="\ref dw::oof::OOFPosAbsMgr"];
+   OOFPosFixedMgr [URL="\ref dw::oof::OOFPosFixedMgr"];
+   OOFPosRelMgr [URL="\ref dw::oof::OOFPosRelMgr"];
 
-Textblock level
----------------
-Both dw::Textblock::notifySetAsTopLevel and
-dw::Textblock::notifySetParent set the member
-dw::Textblock::containingBlock appropriately, (according to rules
-which should be defined in this document).
-
-Handling widgets out of flow is partly the task of the new class
-dw::oof::OutOfFlowMgr, which is stored by dw::Textblock::outOfFlowMgr,
-but only for containing blocks. Generating blocks should refer to
-*containingBlock->outOfFlowMgr*. (Perhaps dw::oof::OutOfFlowMgr may
-become independent of dw::Textblock.)
-
-dw::Textblock::addWidget is extended, so that floats and absolutely
-positioned elements can be added. Notice that not *this* widget, but
-the containing block becomes the parent of the newly added child, if
-it is out of flow. dw::Textblock::addWidget decides this by calling
-dw::oof::OutOfFlowMgr::isOutOfFlow. (See new content types above.)
-
-dw::core::Widget::parentRef has become a new representation. Before,
-it represented the line numer. Now (least signifant bit left):
-
-    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-    |                line number                | 0 |
-    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-
-    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-    |          left float index         | 0 | 0 | 1 |
-    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-
-    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-    |         right float index         | 1 | 0 | 1 |
-    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-
-    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-    |      absolutely positioned index      | 1 | 1 |
-    +---+ - - - +---+---+- - - - - -+---+---+---+---+
-
-Details are hidden by static inline methods of dw::oof::OutOfFlowMgr.
+   OutOfFlowMgr -> OOFFloatsMgr;
+   OutOfFlowMgr -> OOFPositionedMgr;
+   OOFPositionedMgr -> OOFPosAbsLikeMgr;
+   OOFPosAbsLikeMgr -> OOFPosAbsMgr;
+   OOFPosAbsLikeMgr -> OOFPosFixedMgr;  
+   OOFPositionedMgr -> OOFPosRelMgr;
+}
+\enddot
+</div>
 
 
-The sizeRequest/sizeAllocate problem
-====================================
+Further details
+===============
 
-*See also:* \ref dw-widget-sizes, especially the section *Rules for
-Methods Related to Resizing*.
-
-The size/position model of ::dw consists mainly of the following two
-steps:
-
-1. First, the size of the toplevel widget is calculated. Size
-   calculation typically depends on the sizes of the widgets, which
-   are calculated recursively, but not more.
-2. After this, the toplevel widget is allocated at position (0, 0),
-   with the previosly calculated size. Each widget must allocate its
-   children; here, the condition for the toplevel widget (allocated
-   size equals requested size) is not necessary; instead, each widget
-   may be allocated at every size.
-
-Especially for floats, this model becomes a bit difficult, for reasons
-described below. For the solutions, much is centralized at the level
-of the containing block, which delegates most to an instance of
-dw::oof::OutOfFlowMgr (details below).
-
-**The size of a widget depends on the size not only of the children.**
-In the example above, the last list item (green, following the
-generating list item) must know the size of the the float (which is
-not a child or, generally, descendant) to determine the borders, which
-is done in dw::Textblock::sizeRequestImpl.
-
-For this, the size model has been extended (see \ref dw-widget-sizes,
-section *Rules for Methods Related to Resizing*): *sizeRequest* can be
-called within *sizeRequestImpl* for other widgets that children (with
-some caution). Namely, dw::Textblock::sizeRequestImpl calls
-dw::core::Widget::sizeRequest for the float, via
-dw::oof::OutOfFlowMgr::getBorder and
-dw::oof::OutOfFlowMgr::ensureFloatSize.
-
-**The size of a widget depends on the allocation of another widget.**
-In the example above, both list items (blue and green) must know the
-position of the float widget, within dw::Textblock::sizeRequestImpl,
-to calculate the borders. The position, however, is stored in the
-allocation, which is typically calculated later.
-
-Here, two cases must be distinguished. The position of a float is
-always **relative to its generating block**, so for calculating the
-borders for the generating block, the allocation needs not to be
-know. For other textblocks, it needs to be known, so the calculation
-of the borders will ignore floats generated by other textblocks, until
-all widgets are allocated. The latter will call (when neccessary)
-dw::core::Widget::queueResize, so that all border calculations are
-repeated. See below (*hasRelationChanged*) for details.
-
-Generally, this pattern (distinguishing between GB and CB) can be
-found everywhere in dw::oof::OutOfFlowMgr.
-
-For details see:
-
-- dw::oof::OutOfFlowMgr::getLeftBorder,
-  dw::oof::OutOfFlowMgr::getRightBorder,
-  dw::oof::OutOfFlowMgr::getBorder (called by the first two), and
-  especially, dw::oof::OutOfFlowMgr::getFloatsListForTextblock (called
-  by the latter), where these three cases are distinguished;
-- dw::oof::OutOfFlowMgr::sizeAllocateStart,
-  dw::oof::OutOfFlowMgr::sizeAllocateEnd which are called by the
-  containing block.
-
-(This could be solved in a more simple, elegant way, when
-*sizeRequest* would depend on the position. This is, however, only a
-vague idea, perhaps not even feasible, and for which there are no
-concrete plans, certainly not in \ref dw-grows.)
-
-
-Implementation details
-======================
-
-- CB and GB lists (general pattern) (see previous section)
-- binary search; different search criteria, how they accord
-- lastLeftTBIndex, lastRightTBIndex etc.
-- limitiation of search; extIndex etc.
-
-
-How *hasRelationChanged* works
-==============================
-
-...
-
-
-Integration of line breaking and floats
-=======================================
-
-(Positioning of floats, loop, recent works.)
-
-
-Absolute and fixed positiones
-=============================
-
-To be documented.
-
-
-See also
-========
-
-→ \ref dw-miscellaneous.
+- \ref dw-out-of-flow-floats
+- \ref dw-out-of-flow-positioned
 
 */
