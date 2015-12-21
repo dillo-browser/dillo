@@ -13,6 +13,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <math.h>      /* rint */
 
 #include "keys.hh"
 #include "ui.hh"
@@ -462,6 +463,7 @@ void UI::make_location(int ww)
      i->when(FL_WHEN_ENTER_KEY);
      i->callback(location_cb, this);
      i->set_tooltip("Location");
+     i->textsize((int) rint(14.0 * prefs.font_factor));
      p_xpos += i->w();
     LocationGroup->box(FL_THIN_UP_BOX);   // or FL_FLAT_BOX
     LocationGroup->end();
