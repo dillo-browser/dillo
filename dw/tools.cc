@@ -37,7 +37,7 @@ void SizeParams::cleanup ()
 
 void SizeParams::fill (int numPos, Widget **references, int *x, int *y)
 {
-   DBG_OBJ_ENTER0 ("resize", 0, "fill");
+   DBG_OBJ_ENTER ("resize", 0, "fill", "%d, ...", numPos);
 
    cleanup ();
    

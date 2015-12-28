@@ -2276,9 +2276,15 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
       int xRel = boxOffsetX () + leftInnerPadding
          + (lines->size () == 0 ? line1OffsetEff : 0);
       int lastMargin, yLine = yOffsetOfLineToBeCreated (&lastMargin);
-      int yRel = yLine - lastMargin
-         + max (lastMargin, widget->getStyle()->margin.top);
+      int yRel = yLine - min (lastMargin, widget->getStyle()->margin.top);
 
+      DBG_OBJ_MSGF ("resize", 1,
+                    "xRel = %d + %d + (%d == 0 ? %d : 0) = %d, "
+                    "yRel = %d - min (%d, %d) = %d",
+                    boxOffsetX (), leftInnerPadding , lines->size (),
+                    line1OffsetEff, xRel, yLine, lastMargin,
+                    widget->getStyle()->margin.top, yRel);
+            
       core::SizeParams childParams;
       DBG_OBJ_ASSOC_CHILD (&childParams);
 
