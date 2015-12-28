@@ -1564,7 +1564,9 @@ void Widget::sizeRequestImpl (Requisition *requisition, int numPos,
                               Widget **references, int *x, int *y)
 {
    // Use the simple variant.
+   DBG_OBJ_ENTER0 ("resize", 0, "Widget::sizeRequestImpl");
    sizeRequestSimpl (requisition);
+   DBG_OBJ_LEAVE ();
 }
 
 void Widget::sizeRequestSimpl (Requisition *requisition)
@@ -1577,7 +1579,7 @@ void Widget::getExtremesImpl (Extremes *extremes, int numPos,
                               Widget **references, int *x, int *y)
 {
    // Use the simple variant.
-   DBG_OBJ_ENTER0 ("resize", 0, "Widget::getExtremesSImpl");
+   DBG_OBJ_ENTER0 ("resize", 0, "Widget::getExtremesImpl");
    getExtremesSimpl (extremes);
    DBG_OBJ_LEAVE ();
 }
