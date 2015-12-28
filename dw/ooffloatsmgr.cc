@@ -1045,9 +1045,7 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
                        i, vloat->getWidget(), covers ? "<b>yes</b>" : "no");
 
          if (covers) {
-            int borderIn = side == LEFT ?
-               vloat->generator->boxOffsetX() :
-               vloat->generator->boxRestWidth();
+            int borderIn = calcFloatX (vloat);
             int thisBorder = vloat->size.width + borderIn;
             DBG_OBJ_MSGF ("border", 1, "GB: thisBorder = %d + %d = %d",
                           vloat->size.width, borderIn, thisBorder);
