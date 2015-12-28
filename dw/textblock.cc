@@ -459,7 +459,7 @@ void Textblock::getWordExtremes (Word *word, core::Extremes *extremes)
 
 void Textblock::getExtremesSimpl (core::Extremes *extremes)
 {
-   DBG_OBJ_ENTER0 ("resize", 0, "getExtremesImpl");
+   DBG_OBJ_ENTER0 ("resize", 0, "getExtremesSimpl");
 
    // TODO Can extremes depend on the available width? Should not; if
    // they do, the following code must be reactivated, but it causes
@@ -739,6 +739,8 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
 
 void Textblock::calcExtraSpaceImpl ()
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "Textblock::calcExtraSpaceImpl");
+
    OOFAwareWidget::calcExtraSpaceImpl ();
 
    int clearPosition = 0;
@@ -749,6 +751,8 @@ void Textblock::calcExtraSpaceImpl ()
                        searchOutOfFlowMgr(i)->getClearPosition (this));
    
    extraSpace.top = misc::max (extraSpace.top, clearPosition);
+
+   DBG_OBJ_LEAVE ();
 }
 
 int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)

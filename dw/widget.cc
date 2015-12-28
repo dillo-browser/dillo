@@ -1046,6 +1046,8 @@ void Widget::getExtremes (Extremes *extremes, int numPos, Widget **references,
  */
 void Widget::calcExtraSpace ()
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "calcExtraSpace");
+
    extraSpace.top = extraSpace.right = extraSpace.bottom = extraSpace.left = 0;
    calcExtraSpaceImpl ();
 
@@ -1053,6 +1055,8 @@ void Widget::calcExtraSpace ()
    DBG_OBJ_SET_NUM ("extraSpace.bottom", extraSpace.bottom);
    DBG_OBJ_SET_NUM ("extraSpace.left", extraSpace.left);
    DBG_OBJ_SET_NUM ("extraSpace.right", extraSpace.right);
+
+   DBG_OBJ_LEAVE ();
 }
 
 int Widget::numSizeRequestReferences ()
@@ -1573,7 +1577,9 @@ void Widget::getExtremesImpl (Extremes *extremes, int numPos,
                               Widget **references, int *x, int *y)
 {
    // Use the simple variant.
+   DBG_OBJ_ENTER0 ("resize", 0, "Widget::getExtremesSImpl");
    getExtremesSimpl (extremes);
+   DBG_OBJ_LEAVE ();
 }
 
 void Widget::getExtremesSimpl (Extremes *extremes)
