@@ -301,7 +301,7 @@ protected:
     */
    virtual void getExtremesSimpl (Extremes *extremes);
 
-   virtual void calcExtraSpaceImpl ();
+   virtual void calcExtraSpaceImpl (bool vertical);
 
    /**
     * \brief See \ref dw-widget-sizes.
@@ -483,7 +483,7 @@ public:
                      Widget **references = NULL, int *x = NULL, int *y = NULL);
    void sizeAllocate (Allocation *allocation);
 
-   void calcExtraSpace ();
+   void calcExtraSpace (bool vertical);
 
    int getAvailWidth (bool forceValue);
    int getAvailHeight (bool forceValue);
