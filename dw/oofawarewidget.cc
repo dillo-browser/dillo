@@ -429,6 +429,11 @@ void OOFAwareWidget::drawLevel (View *view, Rectangle *area, int level,
 
    case SL_END:
       break;
+
+   default:
+      fprintf (stderr, "OOFAwareWidget::drawLevel: invalid level %s (%d)",
+               stackingLevelText (level), level);
+      break;
    }
 
    DBG_OBJ_LEAVE ();
@@ -501,7 +506,10 @@ Widget *OOFAwareWidget::getWidgetAtPointLevel (int x, int y, int level,
       break;
 
    default:
-      assertNotReached ();
+      fprintf (stderr,
+               "OOFAwareWidget::getWidgetAtPointLevel: invalid level %s (%d)",
+               stackingLevelText (level), level);
+      break;
    }
 
    DBG_OBJ_MSGF ("events", 1, "=> %p", widgetAtPoint);
