@@ -30,6 +30,7 @@
 #include <math.h>
 
 using namespace lout;
+using namespace lout::misc;
 
 namespace dw {
 
@@ -782,10 +783,12 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
          } while (floatHandled);
 
          int minHeight;
-         if (firstIndex <= breakPos)
+         if (firstIndex <= breakPos) {
             // Not an empty line: calculate line height from contents.
             minHeight = 1;
-         else {
+            DBG_OBJ_MSGF ("construct.word", 1, "%d <= %d => minHeight = %d",
+                          firstIndex, breakPos, minHeight);
+         } else {
             // Empty line. Too avoid too many lines one pixel high, we
             // use the float heights.
             if (newLineHasFloatLeft && newLineHasFloatRight)
@@ -799,6 +802,14 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
             else
                // May this happen?
                minHeight = 1;
+
+            DBG_OBJ_MSGF ("construct.word", 1,
+                          "%d < %d => minHeight = %d (l: %s (%d), r: %s (%d))",
+                          firstIndex, breakPos, minHeight,
+                          boolToStr (newLineHasFloatLeft),
+                          newLineHasFloatLeft ? newLineLeftFloatHeight : 0,
+                          boolToStr (newLineHasFloatRight),
+                          newLineHasFloatRight ? newLineRightFloatHeight : 0);
          }
 
          addLine (firstIndex, breakPos, lastFloatPos, tempNewLine, minHeight);
@@ -969,7 +980,7 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
       runNo++;
    }
 
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d, %d, %d", *searchUntil, *lastFloatPos, *height);
 }
 
 // *wordIndexEnd must be initialized (initially to wordIndex)
