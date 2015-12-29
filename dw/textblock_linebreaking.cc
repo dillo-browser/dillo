@@ -815,7 +815,7 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
          addLine (firstIndex, breakPos, lastFloatPos, tempNewLine, minHeight);
 
          DBG_OBJ_MSGF ("construct.word", 1,
-                       "accumulating again from %d to %d\n",
+                       "accumulating again from %d to %d",
                        breakPos + 1, wordIndexEnd);
          for(int i = breakPos + 1; i <= wordIndexEnd; i++)
             accumulateWordData (i);
@@ -997,7 +997,8 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                   tempNewLine ? "true" : "false", penaltyIndex,
                   thereWillBeMoreSpace ? "true" : "false",
                   wrapAll ? "true" : "false");
-   DBG_MSG_WORD ("construct.word", 0, "<i>first word:</i> ", firstIndex, "");
+
+   DBG_MSG_WORD ("construct.word", 1, "<i>first word:</i> ", firstIndex, "");
 
    int result;
    bool lineAdded;
@@ -1015,8 +1016,14 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
       } else if (thereWillBeMoreSpace &&
                  words->getRef(firstIndex)->badnessAndPenalty.lineTooTight ()) {
          int hyphenatedWord = considerHyphenation (firstIndex, firstIndex);
-         DBG_OBJ_MSGF ("construct.word", 1, "too tight ... hyphenatedWord = %d",
-                       hyphenatedWord);
+
+         DBG_IF_RTFL {
+            StringBuffer sb;
+            words->getRef(firstIndex)->badnessAndPenalty.intoStringBuffer (&sb);
+            DBG_OBJ_MSGF ("construct.word", 1,
+                          "too tight: %s ... hyphenatedWord = %d",
+                          sb.getChars (), hyphenatedWord);
+         }
 
          if (hyphenatedWord == -1) {
             DBG_OBJ_MSG ("construct.word", 1, "... => empty line");
@@ -1075,7 +1082,7 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
                *diffWords += n;
 
             DBG_OBJ_MSGF ("construct.word", 1,
-                          "accumulating again from %d to %d\n",
+                          "accumulating again from %d to %d",
                           breakPos + 1, *wordIndexEnd);
             for(int i = breakPos + 1; i <= *wordIndexEnd; i++)
                accumulateWordData (i);
@@ -1085,8 +1092,7 @@ int Textblock::searchBreakPos (int wordIndex, int firstIndex, int *searchUntil,
       DBG_OBJ_MSG_END ();
    } while(!lineAdded);
 
-   DBG_OBJ_MSGF ("construct.word", 1, "=> %d", result);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d", result);
 
    return result;
 }
@@ -1125,7 +1131,7 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
    }
    DBG_OBJ_MSG_END ();
 
-   DBG_OBJ_MSGF ("construct.word", 1, "found at %d\n", pos);
+   DBG_OBJ_MSGF ("construct.word", 1, "found at %d", pos);
 
    if (correctAtEnd && lastWord == words->size () - 1) {
       // Since no break and no space is added, the last word will have
@@ -1150,7 +1156,7 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
       if (correctedBap.compareTo(penaltyIndex,
                                  &words->getRef(pos)->badnessAndPenalty) <= 0) {
          pos = lastWord;
-         DBG_OBJ_MSGF ("construct.word", 1, "corrected: %d\n", pos);
+         DBG_OBJ_MSGF ("construct.word", 1, "corrected: %d", pos);
       }
    }
 
@@ -1677,7 +1683,8 @@ void Textblock::accumulateWordData (int wordIndex)
    DBG_IF_RTFL {
       StringBuffer sb;
       word->badnessAndPenalty.intoStringBuffer (&sb);
-      DBG_OBJ_MSGF ("construct.word.accum", 1, "b+p: %s", sb.getChars ());
+      DBG_OBJ_ARRATTRSET_SYM ("words", wordIndex, "badnessAndPenalty",
+                              sb.getChars ());
    }
 
    DBG_OBJ_LEAVE ();
@@ -1709,11 +1716,9 @@ int Textblock::calcLineBreakWidth (int lineIndex)
 
    lineBreakWidth -= (leftBorder + rightBorder);
 
-   DBG_OBJ_MSGF ("construct.word.width", 2, "=> %d - %d - (%d + %d) = %d\n",
-                 this->lineBreakWidth, leftInnerPadding, leftBorder,
-                 rightBorder, lineBreakWidth);
-
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d - %d - (%d + %d) = %d",
+                      this->lineBreakWidth, leftInnerPadding, leftBorder,
+                      rightBorder, lineBreakWidth);
    return lineBreakWidth;
 }
 

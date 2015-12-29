@@ -410,13 +410,10 @@ bool Textblock::mustBeWidenedToAvailWidth ()
       // In detail, this depends on what the respective OOFM does
       // with the child widget:
       result = toplevel || (block && !(vloat || abspos || fixpos));
-   DBG_OBJ_MSGF ("resize", 0,
-                 "=> %s (toplevel: %s, block: %s, float: %s, abspos: %s, "
-                 "fixpos: %s)",
-                 result ? "true" : "false", toplevel ? "true" : "false",
-                 block ? "true" : "false", vloat ? "true" : "false",
-                 abspos ? "true" : "false", fixpos ? "true" : "false");
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%s (toplevel: %s, block: %s, float: %s, abspos: %s, "
+                      "fixpos: %s)",
+                      boolToStr(result), boolToStr(toplevel), boolToStr(block),
+                      boolToStr(vloat), boolToStr(abspos), boolToStr(fixpos));
    return result;
 }
 
@@ -438,9 +435,7 @@ int Textblock::calcVerticalBorder (int widgetPadding, int widgetBorder,
    } else
       result = lineMarginTotal + widgetPadding + widgetBorder + widgetMargin;
 
-   DBG_OBJ_MSGF ("resize", 0, "=> %d", result);
-   DBG_OBJ_LEAVE ();
-
+   DBG_OBJ_LEAVE_VAL ("%d", result);
    return result;
 }
 
