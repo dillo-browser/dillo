@@ -51,7 +51,7 @@ int Textblock::BadnessAndPenalty::badnessValue (int infLevel)
    }
 
    // compiler happiness
-   lout::misc::assertNotReached ();
+   assertNotReached ();
    return 0;
 }
 
@@ -192,7 +192,7 @@ int Textblock::BadnessAndPenalty::compareTo (int penaltyIndex,
    return 0;
 }
 
-void Textblock::BadnessAndPenalty::intoStringBuffer(misc::StringBuffer *sb)
+void Textblock::BadnessAndPenalty::intoStringBuffer(StringBuffer *sb)
 {
    switch (badnessState) {
    case NOT_STRETCHABLE:
@@ -366,11 +366,11 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    line->breakSpace = 0;
 
    bool regardBorder = mustBorderBeRegarded (line);
-   line->leftOffset = misc::max (regardBorder ? newLineLeftBorder : 0,
-                                 boxOffsetX () + leftInnerPadding
-                                 + (lineIndex == 0 ? line1OffsetEff : 0));
-   line->rightOffset = misc::max (regardBorder ? newLineRightBorder : 0,
-                                  boxRestWidth ());
+   line->leftOffset = max (regardBorder ? newLineLeftBorder : 0,
+                           boxOffsetX () + leftInnerPadding
+                           + (lineIndex == 0 ? line1OffsetEff : 0));
+   line->rightOffset = max (regardBorder ? newLineRightBorder : 0,
+                            boxRestWidth ());
 
    DBG_OBJ_MSGF ("construct.line", 1,
                  "regardBorder = %s, newLineLeftBorder = %d, "
@@ -408,7 +408,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
       line->lastOofRefPositionedBeforeThisLine = -1;
    } else {
       Line *prevLine = lines->getRef (lines->size () - 2);
-      line->maxLineWidth = misc::max (lineWidth, prevLine->maxLineWidth);
+      line->maxLineWidth = max (lineWidth, prevLine->maxLineWidth);
       line->lastOofRefPositionedBeforeThisLine =
          prevLine->lastOofRefPositionedBeforeThisLine;
    }
@@ -435,8 +435,8 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    // zero height, which may cause endless loops. For this reasons,
    // the height should be positive (assuming the caller passed
    // minHeight > 0).
-   line->borderAscent = misc::max (line->borderAscent, minHeight);
-   line->marginAscent = misc::max (line->marginAscent, minHeight);
+   line->borderAscent = max (line->borderAscent, minHeight);
+   line->marginAscent = max (line->marginAscent, minHeight);
 
    DBG_OBJ_ARRATTRSET_NUM ("lines", lineIndex, "borderAscent",
                            line->borderAscent);
@@ -484,7 +484,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    }
 
    line->lastOofRefPositionedBeforeThisLine =
-      misc::max (line->lastOofRefPositionedBeforeThisLine, newLastOofPos);
+      max (line->lastOofRefPositionedBeforeThisLine, newLastOofPos);
    DBG_OBJ_SET_NUM ("lastLine.lastOofRefPositionedBeforeThisLine",
                     line->lastOofRefPositionedBeforeThisLine);
 
@@ -727,7 +727,7 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                           "breakPos = %d, height = %d, lastFloatPos = %d",
                           breakPos, height, lastFloatPos);
 
-            int startSearch = misc::max (firstIndex, lastFloatPos + 1);
+            int startSearch = max (firstIndex, lastFloatPos + 1);
             int newFloatPos = -1;
 
             // Step 1: search for the next float.
@@ -792,13 +792,13 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
             // Empty line. Too avoid too many lines one pixel high, we
             // use the float heights.
             if (newLineHasFloatLeft && newLineHasFloatRight)
-               minHeight = misc::max (misc::min (newLineLeftFloatHeight,
-                                                 newLineRightFloatHeight),
-                                      1);
+               minHeight = max (min (newLineLeftFloatHeight,
+                                     newLineRightFloatHeight),
+                                1);
             else if (newLineHasFloatLeft && !newLineHasFloatRight)
-               minHeight = misc::max (newLineLeftFloatHeight, 1);
+               minHeight = max (newLineLeftFloatHeight, 1);
             else if (!newLineHasFloatLeft && newLineHasFloatRight)
-               minHeight = misc::max (newLineRightFloatHeight, 1);
+               minHeight = max (newLineRightFloatHeight, 1);
             else
                // May this happen?
                minHeight = 1;
@@ -1105,7 +1105,7 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
       Word *w = words->getRef(i);
 
       DBG_IF_RTFL {
-         misc::StringBuffer sb;
+         StringBuffer sb;
          w->badnessAndPenalty.intoStringBuffer (&sb);
          DBG_OBJ_MSGF ("construct.word", 2, "%d (of %d): b+p: %s",
                        i, words->size (), sb.getChars ());
@@ -1140,7 +1140,7 @@ int Textblock::searchMinBap (int firstWord, int lastWord, int penaltyIndex,
       correctedBap.setPenalty (0);
 
       DBG_IF_RTFL {
-         misc::StringBuffer sb;
+         StringBuffer sb;
          correctedBap.intoStringBuffer (&sb);
          DBG_OBJ_MSGF ("construct.word", 1, "corrected b+p: %s",
                        sb.getChars ());
@@ -1213,11 +1213,11 @@ int Textblock::calcLinePartHeight (int firstWord, int lastWord)
 
    for (int i = firstWord; i <= lastWord; i++) {
       Word *word = words->getRef (i);
-      ascent = misc::max (ascent, word->size.ascent);
-      descent = misc::max (descent, word->size.descent);
+      ascent = max (ascent, word->size.ascent);
+      descent = max (descent, word->size.descent);
    }
 
-   return misc::max (ascent + descent, 1);
+   return max (ascent + descent, 1);
 }
 
 /**
@@ -1306,11 +1306,11 @@ void Textblock::handleWordExtremes (int wordIndex)
       wordExtremes.minWidthIntrinsic + word->hyphenWidth + corrDiffMin;
    lastPar->parAdjustmentWidth +=
       wordExtremes.adjustmentWidth + word->hyphenWidth + corrDiffMin;
-   lastPar->maxParMin = misc::max (lastPar->maxParMin, lastPar->parMin);
+   lastPar->maxParMin = max (lastPar->maxParMin, lastPar->parMin);
    lastPar->maxParMinIntrinsic =
-      misc::max (lastPar->maxParMinIntrinsic, lastPar->parMinIntrinsic);
+      max (lastPar->maxParMinIntrinsic, lastPar->parMinIntrinsic);
    lastPar->maxParAdjustmentWidth =
-      misc::max (lastPar->maxParAdjustmentWidth, lastPar->parAdjustmentWidth);
+      max (lastPar->maxParAdjustmentWidth, lastPar->parAdjustmentWidth);
 
    DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "parMin",
                            lastPar->parMin);
@@ -1344,9 +1344,9 @@ void Textblock::handleWordExtremes (int wordIndex)
    lastPar->parMax += wordExtremes.maxWidth + word->hyphenWidth + corrDiffMax;
    lastPar->parMaxIntrinsic +=
       wordExtremes.maxWidthIntrinsic + word->hyphenWidth + corrDiffMax;
-   lastPar->maxParMax = misc::max (lastPar->maxParMax, lastPar->parMax);
+   lastPar->maxParMax = max (lastPar->maxParMax, lastPar->parMax);
    lastPar->maxParMaxIntrinsic =
-      misc::max (lastPar->maxParMaxIntrinsic, lastPar->parMaxIntrinsic);
+      max (lastPar->maxParMaxIntrinsic, lastPar->parMaxIntrinsic);
 
    DBG_OBJ_ARRATTRSET_NUM ("paragraphs", paragraphs->size() - 1, "parMax",
                            lastPar->parMax);
@@ -1545,12 +1545,12 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
    int len = word->style->font->ascent;
    if (word->style->valign == core::style::VALIGN_SUPER)
       len += len / 2;
-   line->contentAscent = misc::max (line->contentAscent, len);
+   line->contentAscent = max (line->contentAscent, len);
 
    len = word->style->font->descent;
    if (word->style->valign == core::style::VALIGN_SUB)
       len += word->style->font->ascent / 3;
-   line->contentDescent = misc::max (line->contentDescent, len);
+   line->contentDescent = max (line->contentDescent, len);
 
    int borderAscent, borderDescent, marginAscent, marginDescent;
 
@@ -1574,8 +1574,7 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
       borderDescent = marginDescent = word->size.descent;
 
       if (word->content.type == core::Content::BREAK)
-         line->breakSpace =
-            misc::max (word->content.breakSpace, line->breakSpace);
+         line->breakSpace = max (word->content.breakSpace, line->breakSpace);
    }
 
    DBG_OBJ_MSGF ("construct.line", 2,
@@ -1583,10 +1582,10 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
                  "marginDescent = %d",
                  borderAscent, borderDescent, marginAscent, marginDescent);
 
-   line->borderAscent = misc::max (line->borderAscent, borderAscent);
-   line->borderDescent = misc::max (line->borderDescent, borderDescent);
-   line->marginAscent = misc::max (line->marginAscent, marginAscent);
-   line->marginDescent = misc::max (line->marginDescent, marginDescent);
+   line->borderAscent = max (line->borderAscent, borderAscent);
+   line->borderDescent = max (line->borderDescent, borderDescent);
+   line->marginAscent = max (line->marginAscent, marginAscent);
+   line->marginDescent = max (line->marginDescent, marginDescent);
 
    DBG_OBJ_LEAVE ();
 }
@@ -1640,8 +1639,8 @@ void Textblock::accumulateWordData (int wordIndex)
       word->totalWidth = prevWord->totalWidth
          + prevWord->origSpace - prevWord->hyphenWidth
          + word->size.width + word->hyphenWidth;
-      word->maxAscent = misc::max (prevWord->maxAscent, word->size.ascent);
-      word->maxDescent = misc::max (prevWord->maxDescent, word->size.descent);
+      word->maxAscent = max (prevWord->maxAscent, word->size.ascent);
+      word->maxDescent = max (prevWord->maxDescent, word->size.descent);
       word->totalSpaceStretchability =
          prevWord->totalSpaceStretchability + getSpaceStretchability(prevWord);
       word->totalSpaceShrinkability =
@@ -1675,7 +1674,7 @@ void Textblock::accumulateWordData (int wordIndex)
                                         totalShrinkability);
 
    DBG_IF_RTFL {
-      misc::StringBuffer sb;
+      StringBuffer sb;
       word->badnessAndPenalty.intoStringBuffer (&sb);
       DBG_OBJ_MSGF ("construct.word.accum", 1, "b+p: %s", sb.getChars ());
    }
@@ -1704,8 +1703,8 @@ int Textblock::calcLineBreakWidth (int lineIndex)
    } else
       leftBorder = rightBorder = 0;
 
-   leftBorder = misc::max (leftBorder, boxOffsetX());
-   rightBorder = misc::max (rightBorder, boxRestWidth());
+   leftBorder = max (leftBorder, boxOffsetX());
+   rightBorder = max (rightBorder, boxRestWidth());
 
    lineBreakWidth -= (leftBorder + rightBorder);
 
@@ -1859,7 +1858,7 @@ void Textblock::calcTextOffset (int lineIndex, int totalWidth)
       break;
 
    default:
-      misc::assertNotReached ();
+      assertNotReached ();
       break;
    }
 
@@ -1888,7 +1887,7 @@ void Textblock::rewrap ()
       // the line list up from this position is rebuild.
       lines->setSize (wrapRefLines);
       DBG_OBJ_SET_NUM ("lines.size", lines->size ());
-      nonTemporaryLines = misc::min (nonTemporaryLines, wrapRefLines);
+      nonTemporaryLines = min (nonTemporaryLines, wrapRefLines);
 
       initNewLine ();
 
@@ -1901,7 +1900,7 @@ void Textblock::rewrap ()
 
       DBG_OBJ_MSGF ("construct.line", 0, "starting with word %d", firstWord);
 
-      lastWordDrawn = misc::min (lastWordDrawn, firstWord - 1);
+      lastWordDrawn = min (lastWordDrawn, firstWord - 1);
       DBG_OBJ_SET_NUM ("lastWordDrawn", lastWordDrawn);
 
       for (int i = firstWord; i < words->size (); i++) {
@@ -1962,7 +1961,7 @@ void Textblock::fillParagraphs ()
       if (lines->size () > 0 && wrapRefParagraphs > 0) {
          // Sometimes, wrapRefParagraphs is larger than lines->size(), due to
          // floats? (Has to be clarified.)
-         int lineNo = misc::min (wrapRefParagraphs, lines->size ()) - 1;
+         int lineNo = min (wrapRefParagraphs, lines->size ()) - 1;
          firstWordOfLine = lines->getRef(lineNo)->lastWord + 1;
       } else
          firstWordOfLine = 0;
@@ -1980,7 +1979,7 @@ void Textblock::fillParagraphs ()
       else
          // If there are no paragraphs yet, findParagraphOfWord will return
          // -1: use 0 then instead.
-         parNo = misc::max (0, findParagraphOfWord (firstWordOfLine));
+         parNo = max (0, findParagraphOfWord (firstWordOfLine));
 
       paragraphs->setSize (parNo);
       DBG_OBJ_SET_NUM ("paragraphs.size", paragraphs->size ());
@@ -2039,7 +2038,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
    if (oofmDefined) {
       int firstWordOfLine =
          lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
-      int effOofRef = misc::max (lastOofRef, firstWordOfLine - 1);
+      int effOofRef = max (lastOofRef, firstWordOfLine - 1);
       int yRel = yOffsetOfLineToBeCreated (), yRef;
            
       for (int i = 0; i < NUM_OOFM; i++) {
@@ -2087,27 +2086,25 @@ void Textblock::calcBorders (int lastOofRef, int height)
             newLineHasFloatRight = newLineHasFloatRight || thisHasRight;
             
             newLineLeftBorder =
-               misc::max (newLineLeftBorder,
-                          oofm->getLeftBorder (y, height, this, effOofRef)
-                          - getGeneratorX (i));
+               max (newLineLeftBorder,
+                    oofm->getLeftBorder (y, height, this, effOofRef)
+                    - getGeneratorX (i));
             newLineRightBorder =
-               misc::max (newLineRightBorder,
-                          oofm->getRightBorder (y, height, this, effOofRef)
-                          - getGeneratorRest (i));
+               max (newLineRightBorder,
+                    oofm->getRightBorder (y, height, this, effOofRef)
+                    - getGeneratorRest (i));
             
             // TODO "max" is not really correct for the heights. (Does
             // not matter, since only one, the float manager, returns
             // meaningful values.)
             if (thisHasLeft)
                newLineLeftFloatHeight =
-                  misc::max (newLineLeftFloatHeight,
-                             oofm->getLeftFloatHeight (y, height, this,
-                                                       effOofRef));
+                  max (newLineLeftFloatHeight,
+                       oofm->getLeftFloatHeight (y, height, this, effOofRef));
             if (thisHasRight)
                newLineRightFloatHeight = 
-                  misc::max (newLineRightFloatHeight,
-                             oofm->getRightFloatHeight (y, height, this,
-                                                        effOofRef));
+                  max (newLineRightFloatHeight,
+                       oofm->getRightFloatHeight (y, height, this, effOofRef));
             
             DBG_OBJ_MSGF ("construct.line", 1,
                           "OOFM #%d: %d * %d (%s) / %d * %d (%s), at %d (%d), "
