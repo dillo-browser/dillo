@@ -1022,18 +1022,14 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
    SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
    int last;   
    int first = list->findFirst (y, h, lastGB, lastExtIndex, &last);
+   int border = 0;
 
    DBG_OBJ_MSGF ("border", 1, "first = %d", first);
 
-   if (first == -1) {
-      // No float.
-      DBG_OBJ_LEAVE ();
-      return 0;
-   } else {
+   if (first != -1) {
       // It is not sufficient to find the first float, since a line
       // (with height h) may cover the region of multiple float, of
       // which the widest has to be choosen.
-      int border = 0;
       bool covers = true;
 
       // We are not searching until the end of the list, but until the
@@ -1045,19 +1041,20 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
                        i, vloat->getWidget(), covers ? "<b>yes</b>" : "no");
 
          if (covers) {
-            int borderIn = calcFloatX (vloat);
+            int borderIn = side == LEFT ?
+               vloat->generator->getStyle()->boxOffsetX() :
+               vloat->generator->getStyle()->boxRestWidth();
             int thisBorder = vloat->size.width + borderIn;
-            DBG_OBJ_MSGF ("border", 1, "GB: thisBorder = %d + %d = %d",
+            DBG_OBJ_MSGF ("border", 1, "thisBorder = %d + %d = %d",
                           vloat->size.width, borderIn, thisBorder);
 
             border = max (border, thisBorder);
-            DBG_OBJ_MSGF ("border", 1, "=> border = %d", border);
          }
       }
-
-      DBG_OBJ_LEAVE ();
-      return border;
    }
+
+   DBG_OBJ_LEAVE_VAL ("%d", border);
+   return border;
 }
 
 bool OOFFloatsMgr::hasFloatLeft (int y, int h, OOFAwareWidget *lastGB,
