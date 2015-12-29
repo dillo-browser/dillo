@@ -1041,13 +1041,26 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
                        i, vloat->getWidget(), covers ? "<b>yes</b>" : "no");
 
          if (covers) {
-            int borderIn = side == LEFT ?
-               vloat->generator->getStyle()->boxOffsetX() :
-               vloat->generator->getStyle()->boxRestWidth();
-            int thisBorder = vloat->size.width + borderIn;
-            DBG_OBJ_MSGF ("border", 1, "thisBorder = %d + %d = %d",
-                          vloat->size.width, borderIn, thisBorder);
+            int x = calcFloatX (vloat), w, thisBorder;
+            switch (side) {
+            case LEFT:
+               thisBorder = x + vloat->size.width;
+               DBG_OBJ_MSGF ("border", 1, "thisBorder = %d + %d = %d (left)",
+                             x, vloat->size.width, thisBorder);
+               break;
 
+            case RIGHT:
+               w = container->getGeneratorWidth () - x;
+               thisBorder = w - x;
+               DBG_OBJ_MSGF ("border", 1, "thisBorder = %d - %d = %d",
+                             w, x, thisBorder);
+
+            default:
+               assertNotReached ();
+               thisBorder = 0;
+               break;
+            }
+            
             border = max (border, thisBorder);
          }
       }
