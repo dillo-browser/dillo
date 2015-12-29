@@ -1050,10 +1050,11 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
                break;
 
             case RIGHT:
-               w = container->getGeneratorWidth () - x;
+               w = container->getGeneratorWidth ();
                thisBorder = w - x;
                DBG_OBJ_MSGF ("border", 1, "thisBorder = %d - %d = %d",
                              w, x, thisBorder);
+               break;
 
             default:
                assertNotReached ();
