@@ -980,7 +980,8 @@ void Textblock::balanceBreakPosAndHeight (int wordIndex, int firstIndex,
       runNo++;
    }
 
-   DBG_OBJ_LEAVE_VAL ("%d, %d, %d", *searchUntil, *lastFloatPos, *height);
+   DBG_OBJ_LEAVE_VAL ("%d, %d, %d, %d",
+                      *searchUntil, *lastFloatPos, *height, *breakPos);
 }
 
 // *wordIndexEnd must be initialized (initially to wordIndex)
