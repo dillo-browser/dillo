@@ -8,9 +8,9 @@ at http://hg.dillo.org/dillo
 
 dillo_grows repository [to be merged]
 
-+- Absolutely and relatively positioned elements.
++- Absolutely and relatively positioned elements (currently deactivated).
  - Fixedly positioned elements (incomplete: referring to the canvas instead to
-   the viewport).
+   the viewport) (currently deactivated).
  - "Z-index", stacking contexts.
    Patches: Sebastian Geerken
 
