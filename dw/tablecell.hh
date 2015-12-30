@@ -7,7 +7,7 @@ namespace dw {
 
 namespace tablecell {
 
-inline bool mustBeWidenedToAvailWidth () { return true; }
+inline bool usesMaxGeneratorWidth () { return true; }
 
 bool getAdjustMinWidth ();
 bool isBlockLevel ();

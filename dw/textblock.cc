@@ -352,7 +352,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
       requisition->descent = boxRestHeight ();
    }
 
-   if (mustBeWidenedToAvailWidth ()) {
+   if (usesMaxGeneratorWidth ()) {
       DBG_OBJ_MSGF ("resize", 1,
                     "before considering lineBreakWidth (= %d): %d * (%d + %d)",
                     lineBreakWidth, requisition->width, requisition->ascent,
@@ -397,24 +397,6 @@ int Textblock::numSizeRequestReferences ()
 core::Widget *Textblock::sizeRequestReference (int index)
 {
    return sizeReferences[index];
-}
-
-bool Textblock::mustBeWidenedToAvailWidth ()
-{
-   DBG_OBJ_ENTER0 ("resize", 0, "mustBeWidenedToAvailWidth");
-   bool toplevel = getParent () == NULL,
-      block = getStyle()->display == core::style::DISPLAY_BLOCK,
-      vloat = testWidgetFloat (this),
-      abspos = testWidgetAbsolutelyPositioned (this),
-      fixpos = testWidgetFixedlyPositioned (this),
-      // In detail, this depends on what the respective OOFM does
-      // with the child widget:
-      result = toplevel || (block && !(vloat || abspos || fixpos));
-   DBG_OBJ_LEAVE_VAL ("%s (toplevel: %s, block: %s, float: %s, abspos: %s, "
-                      "fixpos: %s)",
-                      boolToStr(result), boolToStr(toplevel), boolToStr(block),
-                      boolToStr(vloat), boolToStr(abspos), boolToStr(fixpos));
-   return result;
 }
 
 int Textblock::calcVerticalBorder (int widgetPadding, int widgetBorder,
@@ -778,7 +760,7 @@ int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
          width = Widget::getAvailWidthOfChild (child, forceValue);
       
       if (forceValue && this == child->getContainer () &&
-          !mustBeWidenedToAvailWidth ()) {
+          !usesMaxGeneratorWidth ()) {
          core::Extremes extremes;
          getExtremes (&extremes);
          if (width > extremes.maxWidth - boxDiffWidth () - leftInnerPadding)
@@ -824,7 +806,7 @@ bool Textblock::affectsSizeChangeContainerChild (Widget *child)
    // See Textblock::getAvailWidthOfChild() and Textblock::oofSizeChanged():
    // Extremes changes affect the size of the child, too:
    bool ret;
-   if (!mustBeWidenedToAvailWidth () &&
+   if (!usesMaxGeneratorWidth () &&
        (extremesQueued () || extremesChanged ()))
       ret = true;
    else
@@ -3136,7 +3118,7 @@ void Textblock::oofSizeChanged (bool extremesChanged)
 
    // See Textblock::getAvailWidthOfChild(): Extremes changes may become also
    // relevant for the children, under certain conditions:
-   if (extremesChanged && !mustBeWidenedToAvailWidth ())
+   if (extremesChanged && !usesMaxGeneratorWidth ())
       containerSizeChanged ();
 
    DBG_OBJ_LEAVE ();
@@ -3184,13 +3166,45 @@ int Textblock::getGeneratorRest (int oofmIndex)
 
 int Textblock::getGeneratorWidth ()
 {
+   DBG_OBJ_ENTER0 ("resize", 0, "Textblock::getGeneratorWidth");
+   
    // Cf. sizeRequestImpl.
-   if (mustBeWidenedToAvailWidth ())
-        return lineBreakWidth;
-   else {
-      int w = lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0;
-      return min (w + leftInnerPadding + boxDiffWidth (), lineBreakWidth);
+   if (usesMaxGeneratorWidth ()) {
+      return lineBreakWidth;
+      DBG_OBJ_LEAVE_VAL ("%d", lineBreakWidth);
+   } else {
+      int w0 = lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0,
+         w = min (w0 + leftInnerPadding + boxDiffWidth (), lineBreakWidth);
+      DBG_OBJ_LEAVE_VAL ("min (%d + %d + %d, %d) = %d",
+                         w0, leftInnerPadding, boxDiffWidth (), lineBreakWidth,
+                         w);
+      return w;
    }
+}
+
+int Textblock::getMaxGeneratorWidth ()
+{
+   DBG_OBJ_ENTER0 ("resize", 0, "Textblock::getMaxGeneratorWidth");
+   DBG_OBJ_LEAVE_VAL ("%d", lineBreakWidth);
+   return lineBreakWidth;
+}
+
+bool Textblock::usesMaxGeneratorWidth ()
+{
+   DBG_OBJ_ENTER0 ("resize", 0, "usesMaxGeneratorWidth");
+   bool toplevel = getParent () == NULL,
+      block = getStyle()->display == core::style::DISPLAY_BLOCK,
+      vloat = testWidgetFloat (this),
+      abspos = testWidgetAbsolutelyPositioned (this),
+      fixpos = testWidgetFixedlyPositioned (this),
+      // In detail, this depends on what the respective OOFM does
+      // with the child widget:
+      result = toplevel || (block && !(vloat || abspos || fixpos));
+   DBG_OBJ_LEAVE_VAL ("%s (toplevel: %s, block: %s, float: %s, abspos: %s, "
+                      "fixpos: %s)",
+                      boolToStr(result), boolToStr(toplevel), boolToStr(block),
+                      boolToStr(vloat), boolToStr(abspos), boolToStr(fixpos));
+   return result;
 }
 
 bool Textblock::isPossibleContainer (int oofmIndex)

@@ -419,8 +419,10 @@ void OOFFloatsMgr::sizeAllocateFloats (Side side)
 int OOFFloatsMgr::calcFloatX (Float *vloat)
 {
    DBG_OBJ_ENTER ("resize.common", 0, "calcFloatX", "%p", vloat->getWidget ());
-   int x;
+   int x, effGeneratorWidth;
    OOFAwareWidget *generator = vloat->generator;
+
+   ensureFloatSize (vloat);
 
    switch (vloat->getWidget()->getStyle()->vloat) {
    case FLOAT_LEFT:
@@ -432,17 +434,40 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
       // ... but when the float exceeds the line break width of the container,
       // it is corrected (but not left of the container).  This way, we save
       // space and, especially within tables, avoid some problems.
-      if (x + vloat->size.width > container->getGeneratorWidth ())
-         x = max (0, container->getGeneratorWidth () - vloat->size.width);
+      if (x + vloat->size.width > container->getMaxGeneratorWidth ())
+         x = max (0, container->getMaxGeneratorWidth () - vloat->size.width);
       break;
 
    case FLOAT_RIGHT:
       // Similar for right floats, but in this case, floats are shifted to the
       // right when they are too big (instead of shifting the generator to the
       // right).
-      x = max (generator->getGeneratorX (oofmIndex)
-               + generator->getGeneratorWidth () - vloat->size.width
-               - generator->getStyle()->boxRestWidth(),
+
+      // (The following code for calculating effGeneratorWidth, is quite
+      // specific for textblocks; this also applies for the comments. Both may
+      // be generalized, but actually, only textblocks play a role here.)
+   
+      if (vloat->generator->usesMaxGeneratorWidth ())
+         // For most textblocks, the line break width is used for calculating
+         // the x position. (This changed for GROWS, where the width of a
+         // textblock is often smaller that the line break.)
+         effGeneratorWidth = vloat->generator->getMaxGeneratorWidth ();
+      else
+         // For some textblocks, like inline blocks, the line break width would
+         // be too large for right floats in some cases.
+         //
+         //  (i) Consider a small inline block with only a few words in one
+         //      line, narrower that line break width minus float width. In this
+         //      case, the sum should be used.
+         //
+         // (ii) If there is more than one line, the line break will already be
+         //      exceeded, and so be smaller that GB width + float width.
+         effGeneratorWidth =
+            min (vloat->generator->getGeneratorWidth () + vloat->size.width,
+                 vloat->generator->getMaxGeneratorWidth ());
+
+      x = max (generator->getGeneratorX (oofmIndex) + effGeneratorWidth
+               - vloat->size.width - generator->getStyle()->boxRestWidth(),
                // Do not exceed container allocation:
                0);
       break;
@@ -453,7 +478,7 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
       break;
    }
 
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d", x);
    return x;
 }
 

@@ -821,8 +821,6 @@ protected:
    int numSizeRequestReferences ();
    Widget *sizeRequestReference (int index);
 
-   virtual bool mustBeWidenedToAvailWidth ();
-
    void getExtremesSimpl (core::Extremes *extremes);
 
    int numGetExtremesReferences ();
@@ -908,6 +906,8 @@ public:
    int getGeneratorX (int oofmIndex);
    int getGeneratorY (int oofmIndex);
    int getGeneratorWidth ();
+   int getMaxGeneratorWidth ();
+   bool usesMaxGeneratorWidth ();
    bool isPossibleContainer (int oofmIndex);
    bool isPossibleContainerParent (int oofmIndex);
 };

@@ -50,9 +50,9 @@ bool SimpleTableCell::isBlockLevel ()
    return tablecell::isBlockLevel ();
 }
 
-bool SimpleTableCell::mustBeWidenedToAvailWidth ()
+bool SimpleTableCell::usesMaxGeneratorWidth ()
 {
-   return tablecell::mustBeWidenedToAvailWidth ();
+   return tablecell::usesMaxGeneratorWidth ();
 }
 
 int SimpleTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)

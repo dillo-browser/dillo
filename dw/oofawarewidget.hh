@@ -298,6 +298,10 @@ public:
     * position floats.
     */
    virtual int getGeneratorWidth ();
+
+   virtual int getMaxGeneratorWidth ();
+
+   virtual bool usesMaxGeneratorWidth ();
    
    virtual bool isPossibleContainer (int oofmIndex);
 

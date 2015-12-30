@@ -21,8 +21,6 @@ protected:
 
    bool adjustExtraSpaceWhenCorrectingRequisitionByOOF ();
 
-   bool mustBeWidenedToAvailWidth ();
-
 public:
    static int CLASS_ID;
 
@@ -33,6 +31,8 @@ public:
    int applyPerHeight (int containerHeight, core::style::Length perHeight);
 
    bool isBlockLevel ();
+
+   bool usesMaxGeneratorWidth ();
 };
 
 } // namespace dw

@@ -56,9 +56,9 @@ bool AlignedTableCell::isBlockLevel ()
    return tablecell::isBlockLevel ();
 }
 
-bool AlignedTableCell::mustBeWidenedToAvailWidth ()
+bool AlignedTableCell::usesMaxGeneratorWidth ()
 {
-   return tablecell::mustBeWidenedToAvailWidth ();
+   return tablecell::usesMaxGeneratorWidth ();
 }
 
 int AlignedTableCell::getAvailWidthOfChild (Widget *child, bool forceValue)

@@ -40,7 +40,7 @@ ListItem::~ListItem()
    DBG_OBJ_DELETE ();
 }
 
-bool ListItem::mustBeWidenedToAvailWidth ()
+bool ListItem::usesMaxGeneratorWidth ()
 {
    return true;
 }

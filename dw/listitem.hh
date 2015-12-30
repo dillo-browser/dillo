@@ -9,8 +9,6 @@ namespace dw {
 class ListItem: public AlignedTextblock
 {
 protected:
-   bool mustBeWidenedToAvailWidth ();
-
    int getValue ();
    void setMaxValue (int maxValue, int value);
 
@@ -19,6 +17,8 @@ public:
 
    ListItem(ListItem *ref, bool limitTextWidth);
    ~ListItem();
+
+   bool usesMaxGeneratorWidth ();
 
    void initWithWidget (core::Widget *widget, core::style::Style *style);
    void initWithText (const char *text, core::style::Style *style);

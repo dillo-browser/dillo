@@ -585,6 +585,18 @@ int OOFAwareWidget::getGeneratorWidth ()
    return 0;
 }
 
+int OOFAwareWidget::getMaxGeneratorWidth ()
+{
+   assertNotReached ();
+   return 0;
+}
+
+bool OOFAwareWidget::usesMaxGeneratorWidth ()
+{
+   assertNotReached ();
+   return false;
+}
+   
 bool OOFAwareWidget::isPossibleContainer (int oofmIndex)
 {
    return oofmIndex != OOFM_FLOATS;

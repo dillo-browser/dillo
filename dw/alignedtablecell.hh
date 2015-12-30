@@ -25,8 +25,6 @@ protected:
 
    bool adjustExtraSpaceWhenCorrectingRequisitionByOOF ();
 
-   bool mustBeWidenedToAvailWidth ();
-
    int wordWrap (int wordIndex, bool wrapAll);
 
    int getValue ();
@@ -42,6 +40,8 @@ public:
    int applyPerHeight (int containerHeight, core::style::Length perHeight);
 
    bool isBlockLevel ();
+
+   bool usesMaxGeneratorWidth ();
 };
 
 } // namespace dw
