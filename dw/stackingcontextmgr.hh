@@ -35,7 +35,8 @@ public:
    ~StackingContextMgr ();
 
    inline static bool isEstablishingStackingContext (Widget *widget) {
-      return widget->getStyle()->position != style::POSITION_STATIC &&
+      return IMPL_POS &&
+         widget->getStyle()->position != style::POSITION_STATIC &&
          widget->getStyle()->zIndex != style::Z_INDEX_AUTO;
    }
 

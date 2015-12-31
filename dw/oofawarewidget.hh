@@ -75,10 +75,7 @@ namespace oof {
  * these. However, this should be considered for completeness.
  */
 class OOFAwareWidget: public core::Widget
-{
-public:
-   enum { IMPL_POS = false };
-   
+{ 
 protected:
    enum { OOFM_FLOATS, OOFM_ABSOLUTE, OOFM_RELATIVE, OOFM_FIXED, NUM_OOFM };
    static const char *OOFM_NAME[NUM_OOFM];
