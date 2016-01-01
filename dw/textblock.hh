@@ -582,6 +582,7 @@ protected:
                                             are the line numbers, not
                                             the value stored in
                                             parentRef. */
+   int wrapRefLinesFCX, wrapRefLinesFCY;
 
    // These four values are calculated by containingBlock->outOfFlowMgr
    // (when defined; otherwise, they are  false, or 0, respectively), for

@@ -236,11 +236,14 @@ Textblock::Textblock (bool limitTextWidth)
    anchors = new misc::SimpleVector <Anchor> (1);
 
    wrapRefLines = wrapRefParagraphs = -1;
+   wrapRefLinesFCX = wrapRefLinesFCY = -1;
 
    DBG_OBJ_SET_NUM ("lines.size", lines->size ());
    DBG_OBJ_SET_NUM ("words.size", words->size ());
    DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
    DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);
+   DBG_OBJ_SET_NUM ("wrapRefLinesFCX",wrapRefLinesFCX);
+   DBG_OBJ_SET_NUM ("wrapRefLinesFCY", wrapRefLinesFCY);
 
    hoverLink = -1;
 
@@ -305,13 +308,31 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
    DBG_OBJ_ENTER ("resize", 0, "sizeRequestImpl", "%d, ...", numPos);
 
    sizeRequestParams.fill (numPos, references, x, y);
+
+   // We have to rewrap the whole textblock, if (i) the available width (which
+   // is the line break width) has changed, or (ii) if the position within the
+   // float container, and so possibly borders relative to this textblock, have
+   // changed.
+   //
+   // (The latter is a simplification: an over-correct implementation would test
+   // all OOFMs on whether affectsLeftBorder() or affectsRightBorder() returns
+   // true.)
    
    int newLineBreakWidth = getAvailWidth (true);
-   if (newLineBreakWidth != lineBreakWidth) {
+   int newFCX = getGeneratorX (OOFM_FLOATS);
+   int newFCY = getGeneratorY (OOFM_FLOATS);
+   
+   if (newLineBreakWidth != lineBreakWidth ||
+       newFCX != wrapRefLinesFCX || newFCY != wrapRefLinesFCY) {
       lineBreakWidth = newLineBreakWidth;
       wrapRefLines = 0;
+      wrapRefLinesFCX = newFCX;
+      wrapRefLinesFCY = newFCY;
+         
       DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
       DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
+      DBG_OBJ_SET_NUM ("wrapRefLinesFCX",wrapRefLinesFCX);
+      DBG_OBJ_SET_NUM ("wrapRefLinesFCY", wrapRefLinesFCY);
    }
 
    rewrap ();
