@@ -3170,8 +3170,8 @@ int Textblock::getGeneratorWidth ()
    
    // Cf. sizeRequestImpl.
    if (usesMaxGeneratorWidth ()) {
-      return lineBreakWidth;
       DBG_OBJ_LEAVE_VAL ("%d", lineBreakWidth);
+      return lineBreakWidth;
    } else {
       int w0 = lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0,
          w = min (w0 + leftInnerPadding + boxDiffWidth (), lineBreakWidth);
