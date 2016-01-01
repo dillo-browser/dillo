@@ -20,7 +20,7 @@ SizeParams::SizeParams (int numPos, Widget **references, int *x, int *y)
    debugPrint ();
 }
 
-SizeParams::SizeParams (SizeParams &other)
+SizeParams::SizeParams (const SizeParams &other)
 {
    DBG_OBJ_CREATE ("dw::core::SizeParams");
    init ();
@@ -32,6 +32,14 @@ SizeParams::~SizeParams ()
 {
    cleanup ();
    DBG_OBJ_DELETE ();
+}
+
+SizeParams &SizeParams::operator=(const SizeParams &other)
+{
+   cleanup ();
+   init ();
+   fill (other.numPos, other.references, other.x, other.y);
+   debugPrint ();
 }
 
 void SizeParams::init ()

@@ -39,9 +39,11 @@ private:
 public:
    SizeParams ();
    SizeParams (int numPos, Widget **references, int *x, int *y);
-   SizeParams (SizeParams &other);
+   SizeParams (const SizeParams &other);
    ~SizeParams ();
 
+   SizeParams &operator=(const SizeParams &other);
+   
    void fill (int numPos, Widget **references, int *x, int *y);
    void forChild (Widget *parent, Widget *child, int xRel, int yRel,
                   SizeParams *childParams);
