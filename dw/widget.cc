@@ -68,6 +68,8 @@ Widget::Widget ()
    DBG_OBJ_CREATE ("dw::core::Widget");
    registerName ("dw::core::Widget", &CLASS_ID);
 
+   DBG_OBJ_ASSOC_CHILD (&requisitionParams);
+
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED);
    parent = quasiParent = generator = container = NULL;
    DBG_OBJ_SET_PTR ("container", container);
@@ -585,7 +587,24 @@ void Widget::sizeRequest (Requisition *requisition, int numPos,
       // Layout::resizeIdle.
    }
 
-   if (needsResize ()) {
+   bool callImpl;
+   if (needsResize ())
+      callImpl = true;
+   else {
+      // Even if RESIZE_QUEUED / NEEDS_RESIZE is not set, calling
+      // sizeRequestImpl is necessary when the relavive positions passed here
+      // have changed.
+      SizeParams newParams (numPos, references, x, y);
+      DBG_OBJ_ASSOC_CHILD (&newParams);
+      if (newParams.isEquivalent (&requisitionParams))
+         callImpl = false;
+      else {
+         callImpl = true;
+         requisitionParams = newParams;
+      }
+   }
+   
+   if (callImpl) {
       calcExtraSpace (true);
       /** \todo Check requisition == &(this->requisition) and do what? */
       sizeRequestImpl (requisition, numPos, references, x, y);

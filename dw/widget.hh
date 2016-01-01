@@ -136,6 +136,7 @@ private:
     * Do not read this directly, but call size_request().
     */
    Requisition requisition;
+   SizeParams requisitionParams;
 
    /**
     * \brief Analogue to dw::core::Widget::requisition.

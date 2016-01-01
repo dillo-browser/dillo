@@ -45,6 +45,7 @@ class ResourceFactory;
 #include "../lout/container.hh"
 #include "../lout/signal.hh"
 
+#include "tools.hh"
 #include "types.hh"
 #include "events.hh"
 #include "imgbuf.hh"

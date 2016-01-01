@@ -1,6 +1,10 @@
 #ifndef __DW_TOOLS_HH__
 #define __DW_TOOLS_HH__
 
+#ifndef __INCLUDED_FROM_DW_CORE_HH__
+#   error Do not include this file directly, use "core.hh" instead.
+#endif
+
 #include "core.hh"
 #include "../lout/debug.hh"
 
@@ -34,13 +38,17 @@ private:
    
 public:
    SizeParams ();
+   SizeParams (int numPos, Widget **references, int *x, int *y);
+   SizeParams (SizeParams &other);
    ~SizeParams ();
 
    void fill (int numPos, Widget **references, int *x, int *y);
    void forChild (Widget *parent, Widget *child, int xRel, int yRel,
                   SizeParams *childParams);
    bool findReference (Widget *reference, int *x, int *y);
-   
+
+   bool isEquivalent (SizeParams *other);
+
    inline int getNumPos () { return numPos; }
    inline Widget **getReferences () { return references; }
    inline int *getX () { return x; }

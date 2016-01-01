@@ -4,7 +4,6 @@
 #include <limits.h>
 
 #include "regardingborder.hh"
-#include "tools.hh"
 #include "../lout/misc.hh"
 
 // These were used when improved line breaking and hyphenation were implemented.

@@ -1,12 +1,30 @@
-#include "tools.hh"
+#include "core.hh"
 
 namespace dw {
 namespace core {
 
+using namespace lout::misc;
+   
 SizeParams::SizeParams ()
 {
    DBG_OBJ_CREATE ("dw::core::SizeParams");
    init ();
+   debugPrint ();
+}
+
+SizeParams::SizeParams (int numPos, Widget **references, int *x, int *y)
+{
+   DBG_OBJ_CREATE ("dw::core::SizeParams");
+   init ();
+   fill (numPos, references, x, y);
+   debugPrint ();
+}
+
+SizeParams::SizeParams (SizeParams &other)
+{
+   DBG_OBJ_CREATE ("dw::core::SizeParams");
+   init ();
+   fill (other.numPos, other.references, other.x, other.y);
    debugPrint ();
 }
    
@@ -127,7 +145,39 @@ bool SizeParams::findReference (Widget *reference, int *x, int *y)
 
    return found;
 }
-  
 
+/**
+ * Compares two instances, but considers a change in the order of the reference
+ * widgets as equivalent.
+ */
+bool SizeParams::isEquivalent (SizeParams *other)
+{
+   DBG_OBJ_ENTER ("resize", 0, "isEquivalent", "%p", other);
+   bool result;
+   
+   if (numPos != other->numPos)
+      result = false;
+   else {
+      result = true;
+      
+      for (int i = 0; result && i < numPos; i++) {
+         bool otherFound = false;
+         for (int j = 0; !otherFound && j < numPos; j++) {
+            if (references[i] == other->references[j]) {
+               otherFound = true;
+               if (!(x[i] == other->x[j] && y[i] == other->y[j]))
+                  result = false;
+            }
+         }
+         
+         if (!otherFound)
+            result = false;
+      }
+   }
+   
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (result));
+   return result;
+}
+  
 } // namespace core
 } // namespace dw
