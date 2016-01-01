@@ -40,6 +40,7 @@ SizeParams &SizeParams::operator=(const SizeParams &other)
    init ();
    fill (other.numPos, other.references, other.x, other.y);
    debugPrint ();
+   return *this;
 }
 
 void SizeParams::init ()
