@@ -242,7 +242,7 @@ Textblock::Textblock (bool limitTextWidth)
    DBG_OBJ_SET_NUM ("words.size", words->size ());
    DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
    DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefParagraphs);
-   DBG_OBJ_SET_NUM ("wrapRefLinesFCX",wrapRefLinesFCX);
+   DBG_OBJ_SET_NUM ("wrapRefLinesFCX", wrapRefLinesFCX);
    DBG_OBJ_SET_NUM ("wrapRefLinesFCY", wrapRefLinesFCY);
 
    hoverLink = -1;
@@ -319,20 +319,23 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
    // true.)
    
    int newLineBreakWidth = getAvailWidth (true);
-   int newFCX = getGeneratorX (OOFM_FLOATS);
-   int newFCY = getGeneratorY (OOFM_FLOATS);
+   int newFCX, newFCY;
+   bool fcDefined = findSizeRequestReference (OOFM_FLOATS, &newFCX, &newFCY);
    
    if (newLineBreakWidth != lineBreakWidth ||
-       newFCX != wrapRefLinesFCX || newFCY != wrapRefLinesFCY) {
+       (fcDefined && (newFCX != wrapRefLinesFCX ||
+                      newFCY != wrapRefLinesFCY))) {
       lineBreakWidth = newLineBreakWidth;
       wrapRefLines = 0;
-      wrapRefLinesFCX = newFCX;
-      wrapRefLinesFCY = newFCY;
-         
       DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
       DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
-      DBG_OBJ_SET_NUM ("wrapRefLinesFCX",wrapRefLinesFCX);
-      DBG_OBJ_SET_NUM ("wrapRefLinesFCY", wrapRefLinesFCY);
+
+      if (!fcDefined) {
+         wrapRefLinesFCX = newFCX;
+         wrapRefLinesFCY = newFCY;
+         DBG_OBJ_SET_NUM ("wrapRefLinesFCX", wrapRefLinesFCX);
+         DBG_OBJ_SET_NUM ("wrapRefLinesFCY", wrapRefLinesFCY);
+      }
    }
 
    rewrap ();
