@@ -1013,7 +1013,7 @@ void Widget::getExtremes (Extremes *extremes, int numPos, Widget **references,
 {
    assert (!queueResizeEntered ());
 
-   DBG_OBJ_ENTER0 ("resize", 0, "getExtremes");
+   DBG_OBJ_ENTER ("resize", 0, "getExtremes", "%d, ...", numPos);
 
    enterGetExtremes ();
 
