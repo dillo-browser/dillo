@@ -3145,11 +3145,11 @@ void Textblock::oofSizeChanged (bool extremesChanged)
    DBG_OBJ_LEAVE ();
 }
 
-int Textblock::getGeneratorY (int oofmIndex)
+int Textblock::getGeneratorX (int oofmIndex)
 {
-   int yRef;
-   if (findSizeRequestReference (oofmIndex, NULL, &yRef))
-      return yRef;
+   int xRef;
+   if (findSizeRequestReference (oofmIndex, &xRef, NULL))
+      return xRef;
    else {
       // Only called for floats, so this should not happen:
       assertNotReached ();
@@ -3157,11 +3157,11 @@ int Textblock::getGeneratorY (int oofmIndex)
    }
 }
 
-int Textblock::getGeneratorX (int oofmIndex)
+int Textblock::getGeneratorY (int oofmIndex)
 {
-   int xRef;
-   if (findSizeRequestReference (oofmIndex, &xRef, NULL))
-      return xRef;
+   int yRef;
+   if (findSizeRequestReference (oofmIndex, NULL, &yRef))
+      return yRef;
    else {
       // Only called for floats, so this should not happen:
       assertNotReached ();
