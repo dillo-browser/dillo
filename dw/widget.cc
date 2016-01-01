@@ -69,6 +69,7 @@ Widget::Widget ()
    registerName ("dw::core::Widget", &CLASS_ID);
 
    DBG_OBJ_ASSOC_CHILD (&requisitionParams);
+   DBG_OBJ_ASSOC_CHILD (&extremesParams);
 
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED);
    parent = quasiParent = generator = container = NULL;
@@ -1025,7 +1026,24 @@ void Widget::getExtremes (Extremes *extremes, int numPos, Widget **references,
       // Layout::resizeIdle.
    }
 
-   if (extremesChanged ()) {
+   bool callImpl;
+   if (extremesChanged ())
+      callImpl = true;
+   else {
+      // Even if EXTREMES_QUEUED / EXTREMES_CHANGED is not set, calling
+      // getExtremesImpl is necessary when the relavive positions passed here
+      // have changed.
+      SizeParams newParams (numPos, references, x, y);
+      DBG_OBJ_ASSOC_CHILD (&newParams);
+      if (newParams.isEquivalent (&extremesParams))
+         callImpl = false;
+      else {
+         callImpl = true;
+         extremesParams = newParams;
+      }
+   }
+   
+   if (callImpl) {
       calcExtraSpace (false);
 
       // For backward compatibility (part 1/2):

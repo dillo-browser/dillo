@@ -142,6 +142,7 @@ private:
     * \brief Analogue to dw::core::Widget::requisition.
     */
    Extremes extremes;
+   SizeParams extremesParams;
 
    /**
     * \brief See dw::core::Widget::setBgColor().
