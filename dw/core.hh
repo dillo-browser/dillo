@@ -12,7 +12,7 @@
  */
 namespace dw {
 
-// Used (temporally) for code related to positioned elements.
+/** Used (temporally) for code related to positioned elements. */
 enum { IMPL_POS = false };
 
 /**

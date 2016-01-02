@@ -131,13 +131,21 @@ Instead, this approach is focussed:
   textblock of this kind then reard the floats in detail, to insert
   empty lines when needed?
 
-**Real-world cases:** *Overflow:hidden* is set for headings in
+<b>Real-world cases:</b> *Overflow:hidden* is set for headings in
 Wikipedia, and so this case occurs when there is a float (thumb image)
 before a heading. See e.&nbsp;g.
 <a href="http://de.wikipedia.org/wiki/Emmerich_am_Rhein#Ans.C3.A4ssige_Unternehmen">this page</a>
 and scroll a bit up; the company logos should be right of this section.
 
-**Priority:** Since this is not a regression, compared to not
+<b>Priority:</b> Since this is not a regression, compared to not
 supporting floats at all, a fix is not urgent for a new release.
+
+Resizing
+--------
+Has the case that a float changes its position to be regarded? Probably yes, but
+cases where no other mechanisms come into play are rather unlikely.
+
+<b>Priority:</b> If this plays a role, this means a regression compared to not
+supporting floats at all.
 
 */

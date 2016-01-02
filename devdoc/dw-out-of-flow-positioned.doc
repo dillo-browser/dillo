@@ -1,6 +1,9 @@
 /** \page dw-out-of-flow-positioned Handling Elements Out Of Flow: Positioned Elements
 
-TODO
+<div style="border: 2px solid #ffff00; margin: 1em 0; padding: 0.5em
+  1em; background-color: #ffffe0">Positioned elements have been
+  deactivated, during the development of \ref dw-size-request-pos, to
+  focus on floats. See dw::core::IMPL_POS in file dw/core.hh.</div>
 
 
 Miscellaneous notes
