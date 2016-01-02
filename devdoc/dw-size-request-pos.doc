@@ -100,6 +100,10 @@ Since for this new approach, the size does not only depend on the size of the
 children, the second condition must be modified. See beginning of
 dw::core::Widget::sizeRequest.
 
+An implementation may have to consider, this too, especially when implementing
+incremental resizing (see \ref dw-widget-sizes); see
+dw::Textblock::sizeRequestImpl as an example.
+
 Regarding changes of the position is not sufficient. Consider this example,
 where a float size changes as soon as the image is loaded:
 
