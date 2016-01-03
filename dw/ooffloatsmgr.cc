@@ -1165,9 +1165,6 @@ int OOFFloatsMgr::getFloatHeight (Side side, int y, int h,
    return height;
 }
 
-/**
- * Returns position relative to the textblock "tb".
- */
 int OOFFloatsMgr::getClearPosition (OOFAwareWidget *widget)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "getClearPosition", "%p", widget);
@@ -1189,9 +1186,7 @@ int OOFFloatsMgr::getClearPosition (OOFAwareWidget *widget)
    } else
       pos = 0;
 
-   DBG_OBJ_MSGF ("resize.oofm", 1, "=> %d", pos);
-   DBG_OBJ_LEAVE ();
-
+   DBG_OBJ_LEAVE_VAL ("%d", pos);
    return pos;
 }
 
@@ -1226,8 +1221,12 @@ int OOFFloatsMgr::getClearPosition (OOFAwareWidget *widget, Side side)
       Float *vloat = list->get(i);
       assert (vloat->generator != widget);
       ensureFloatSize (vloat);
-      pos = max (vloat->yReal + vloat->size.ascent + vloat->size.descent
-                 - vloat->generator->getGeneratorY (oofmIndex), 0);
+      int yRel = widget->getGeneratorY (oofmIndex);
+      pos = max (vloat->yReal + vloat->size.ascent + vloat->size.descent - yRel,
+                 0);
+      DBG_OBJ_MSGF ("resize.oofm", 1, "pos = max (%d + %d + %d - %d, 0)",
+                    vloat->yReal, vloat->size.ascent, vloat->size.descent,
+                    yRel);
    }
    
    DBG_OBJ_LEAVE_VAL ("%d", pos);

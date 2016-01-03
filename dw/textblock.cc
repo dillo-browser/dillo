@@ -747,7 +747,7 @@ void Textblock::calcExtraSpaceImpl (bool vertical)
    if (vertical) {
       int clearPosition = 0;
       for (int i = 0; i < NUM_OOFM; i++)
-         if (searchOutOfFlowMgr (i))
+         if (searchOutOfFlowMgr (i) && findSizeRequestReference (i, NULL, NULL))
             clearPosition =
                misc::max (clearPosition,
                           searchOutOfFlowMgr(i)->getClearPosition (this));

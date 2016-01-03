@@ -129,6 +129,9 @@ public:
    virtual bool affectsRightBorder (core::Widget *widget) = 0;
    virtual bool mayAffectBordersAtAll () = 0;
 
+   /**
+    * Return value is relative to the *calling generator* (not container).
+    */
    virtual int getClearPosition (OOFAwareWidget *widget) = 0;
 
    virtual bool dealingWithSizeOfChild (core::Widget *child) = 0;
