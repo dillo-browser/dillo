@@ -1066,26 +1066,33 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
                        i, vloat->getWidget(), covers ? "<b>yes</b>" : "no");
 
          if (covers) {
-            int x = calcFloatX (vloat), w, thisBorder;
+            int d;
             switch (side) {
             case LEFT:
-               thisBorder = x + vloat->size.width;
-               DBG_OBJ_MSGF ("border", 1, "thisBorder = %d + %d = %d (left)",
-                             x, vloat->size.width, thisBorder);
+               d = vloat->generator->getGeneratorX (oofmIndex)
+                  + vloat->generator->getStyle()->boxOffsetX ();
                break;
 
             case RIGHT:
-               w = container->getGeneratorWidth ();
-               thisBorder = w - x;
-               DBG_OBJ_MSGF ("border", 1, "thisBorder = %d - %d = %d",
-                             w, x, thisBorder);
+               // There is no simple possibility to get the difference between
+               // container and generator at the right border (as it is at the
+               // left border, see above). We have to calculate the difference
+               // between the maximal widths.
+               d = container->getMaxGeneratorWidth ()
+                  - (vloat->generator->getGeneratorX (oofmIndex)
+                     + vloat->generator->getMaxGeneratorWidth ())
+                  + vloat->generator->getStyle()->boxRestWidth ();
                break;
 
             default:
                assertNotReached ();
-               thisBorder = 0;
+               d = 0;
                break;
             }
+
+            int thisBorder = vloat->size.width + d;
+            DBG_OBJ_MSGF ("border", 1, "thisBorder = %d + %d = %d",
+                          vloat->size.width, d, thisBorder);
             
             border = max (border, thisBorder);
          }
