@@ -364,12 +364,21 @@ static void Html_add_textblock(DilloHtml *html, bool addBreaks, int breakSpace,
                                bool addBreakOpt)
 {
    Textblock *textblock = new Textblock (prefs.limit_text_width);
+   Style *style;
+
+   if (addBreaks) {
+      StyleAttrs attrs = *(html->style ());
+      attrs.display = DISPLAY_BLOCK;
+      style = Style::create (&attrs);
+   } else {
+      style = html->style ();
+      style->ref ();
+   }
 
    if (addBreaks)
       HT2TB(html)->addParbreak (breakSpace, html->wordStyle ());
 
-   HT2TB(html)->addWidget (textblock, html->style ()); /* Works also for floats
-                                                          etc. */
+   HT2TB(html)->addWidget (textblock, style); /* Works also for floats etc. */
    if (addBreakOpt)
       HT2TB(html)->addBreakOption (html->style (), false);
 
@@ -378,6 +387,8 @@ static void Html_add_textblock(DilloHtml *html, bool addBreaks, int breakSpace,
    S_TOP(html)->textblock = html->dw = textblock;
    if (addBreaks)
       S_TOP(html)->hand_over_break = true;
+
+   style->unref ();
 }
 
 static bool Html_must_add_breaks(DilloHtml *html)
