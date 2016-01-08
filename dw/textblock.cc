@@ -3231,12 +3231,12 @@ bool Textblock::usesMaxGeneratorWidth ()
    return result;
 }
 
-bool Textblock::isPossibleContainer (int oofmIndex)
+bool Textblock::isPossibleOOFContainer (int oofmIndex)
 {
    return true;
 }
 
-bool Textblock::isPossibleContainerParent (int oofmIndex)
+bool Textblock::isPossibleOOFContainerParent (int oofmIndex)
 {
    return true;
 }

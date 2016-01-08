@@ -300,9 +300,9 @@ public:
 
    virtual bool usesMaxGeneratorWidth ();
    
-   virtual bool isPossibleContainer (int oofmIndex);
+   virtual bool isPossibleOOFContainer (int oofmIndex);
 
-   virtual bool isPossibleContainerParent (int oofmIndex);
+   virtual bool isPossibleOOFContainerParent (int oofmIndex);
 };
 
 } // namespace oof

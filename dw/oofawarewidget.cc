@@ -134,7 +134,7 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
       return widget->instanceOf (OOFAwareWidget::CLASS_ID) &&
          (// For floats, only some OOF aware widgets are considered as
           // containers.
-          ((OOFAwareWidget*)widget)->isPossibleContainer (OOFM_FLOATS) &&
+          ((OOFAwareWidget*)widget)->isPossibleOOFContainer (OOFM_FLOATS) &&
           // The second condition: that this block is "out of flow", in a
           // wider sense.
           (// The toplevel widget is "out of flow", since there is no
@@ -147,7 +147,7 @@ bool OOFAwareWidget::isOOFContainer (Widget *widget, int oofmIndex)
            // container parent).
            !(widget->getParent()->instanceOf (OOFAwareWidget::CLASS_ID) &&
              ((OOFAwareWidget*)widget->getParent())
-                 ->isPossibleContainerParent (OOFM_FLOATS)) ||
+                 ->isPossibleOOFContainerParent (OOFM_FLOATS)) ||
            // Inline blocks are containing blocks, too.
            widget->getStyle()->display == DISPLAY_INLINE_BLOCK ||
            // Same for blocks with 'overview' set to another value than
@@ -597,12 +597,12 @@ bool OOFAwareWidget::usesMaxGeneratorWidth ()
    return false;
 }
    
-bool OOFAwareWidget::isPossibleContainer (int oofmIndex)
+bool OOFAwareWidget::isPossibleOOFContainer (int oofmIndex)
 {
    return oofmIndex != OOFM_FLOATS;
 }
 
-bool OOFAwareWidget::isPossibleContainerParent (int oofmIndex)
+bool OOFAwareWidget::isPossibleOOFContainerParent (int oofmIndex)
 {
    return oofmIndex != OOFM_FLOATS;
 }

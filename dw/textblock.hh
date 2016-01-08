@@ -908,8 +908,8 @@ public:
    int getGeneratorWidth ();
    int getMaxGeneratorWidth ();
    bool usesMaxGeneratorWidth ();
-   bool isPossibleContainer (int oofmIndex);
-   bool isPossibleContainerParent (int oofmIndex);
+   bool isPossibleOOFContainer (int oofmIndex);
+   bool isPossibleOOFContainerParent (int oofmIndex);
 };
 
 #define DBG_SET_WORD_PENALTY(n, i, is) \
