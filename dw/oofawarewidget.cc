@@ -365,17 +365,22 @@ bool OOFAwareWidget::doesWidgetOOFInterruptDrawing (Widget *widget)
 {
    DBG_OBJ_ENTER ("draw", 0, "doesWidgetOOFInterruptDrawing", "%p", widget);
 
-   // This is the generator of the widget.
-   int oofmIndex = getOOFMIndex (widget);
-   DBG_OBJ_MSGF ("draw", 1, "oofmIndex = %d", oofmIndex);
-
-   int cl = oofContainer[oofmIndex]->stackingContextWidget->getLevel (),
-      gl = stackingContextWidget->getLevel ();
-
-   DBG_OBJ_MSGF ("draw", 1,"%d < %d => %s", cl, gl, cl < gl ? "true" : "false");
-
-   DBG_OBJ_LEAVE ();
-   return cl < gl;
+   bool result;
+   if (IMPL_POS) {
+      // This is the generator of the widget.
+      int oofmIndex = getOOFMIndex (widget);
+      DBG_OBJ_MSGF ("draw", 1, "oofmIndex = %d", oofmIndex);
+      
+      int cl = oofContainer[oofmIndex]->stackingContextWidget->getLevel (),
+         gl = stackingContextWidget->getLevel ();
+      result = cl < gl;
+      
+      DBG_OBJ_MSGF ("draw", 1,"%d < %d => %s", cl, gl, boolToStr (result));
+   } else
+      result = false;
+   
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr (result));
+   return result;
 }
 
 void OOFAwareWidget::draw (View *view, Rectangle *area, DrawingContext *context)
