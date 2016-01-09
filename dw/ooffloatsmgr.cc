@@ -770,13 +770,13 @@ void OOFFloatsMgr::tellPosition2 (Widget *widget, int x, int y)
 void OOFFloatsMgr::tellIncompletePosition1 (Widget *generator, Widget *widget,
                                             int x, int y)
 {
-   assertNotReached ();
+   notImplemented ("OOFFloatsMgr::tellIncompletePosition1");
 }
 
 void OOFFloatsMgr::tellIncompletePosition2 (Widget *generator, Widget *widget,
                                             int x, int y)
 {
-   assertNotReached ();
+   notImplemented ("OOFFloatsMgr::tellIncompletePosition2");
 }
 
 bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, int *yReal)
@@ -1280,13 +1280,13 @@ bool OOFFloatsMgr::dealingWithSizeOfChild (core::Widget *child)
 
 int OOFFloatsMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
-   assertNotReached ();
+   notImplemented ("OOFFloatsMgr::getAvailWidthOfChild");
    return 0;
 }
 
 int OOFFloatsMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
 {
-   assertNotReached ();
+   notImplemented ("OOFFloatsMgr::getAvailHeightOfChild");
    return 0;
 }
 

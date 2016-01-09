@@ -234,13 +234,13 @@ bool OOFPosRelMgr::dealingWithSizeOfChild (Widget *child)
 
 int OOFPosRelMgr::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
-   assertNotReached ();
+   notImplemented("OOFPosRelMgr::getAvailWidthOfChild");
    return 0;
 }
 
 int OOFPosRelMgr::getAvailHeightOfChild (Widget *child, bool forceValue)
 {
-   assertNotReached ();
+   notImplemented ("OOFPosRelMgr::getAvailHeightOfChild");
    return 0;
 }
 

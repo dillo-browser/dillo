@@ -230,14 +230,14 @@ void Resource::sizeAllocate (Allocation *allocation)
 int Resource::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
    // Only used when the resource contains other dillo widgets.
-   misc::assertNotReached ();
+   misc::notImplemented ("Resource::getAvailWidthOfChild");
    return 0;
 }
 
 int Resource::getAvailHeightOfChild (Widget *child, bool forceValue)
 {
    // Only used when the resource contains other dillo widgets.
-   misc::assertNotReached ();
+   misc::notImplemented ("Resource::getAvailHeightOfChild");
    return 0;
 }
 
@@ -247,14 +247,14 @@ void Resource::correctRequisitionOfChild (Widget *child,
                                                                   int*))
 {
    // Only used when the resource contains other dillo widgets.
-   misc::assertNotReached ();
+   misc::notImplemented ("Resource::correctRequisitionOfChild");
 }
 
 void Resource::correctExtremesOfChild (Widget *child, Extremes *extremes,
                                        bool useAdjustmentWidth)
 {
    // Only used when the resource contains other dillo widgets.
-   misc::assertNotReached ();
+   misc::notImplemented ("Resource::correctExtremesOfChild");
 }
 
 void Resource::containerSizeChangedForChildren ()

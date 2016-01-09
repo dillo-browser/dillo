@@ -1110,7 +1110,7 @@ int Widget::numSizeRequestReferences ()
 
 Widget *Widget::sizeRequestReference (int index)
 {
-   misc::assertNotReached ();
+   misc::notImplemented ("Widget::sizeRequestReference");
    return NULL;
 }
 
@@ -1121,7 +1121,7 @@ int Widget::numGetExtremesReferences ()
 
 Widget *Widget::getExtremesReference (int index)
 {
-   misc::assertNotReached ();
+   misc::notImplemented ("Widget::getExtremesReference");
    return NULL;
 }
 
@@ -1616,7 +1616,7 @@ void Widget::sizeRequestImpl (Requisition *requisition, int numPos,
 void Widget::sizeRequestSimpl (Requisition *requisition)
 {
    // Either variant should be implemented.
-   misc::assertNotReached ();
+   misc::notImplemented ("Widget::sizeRequestSimpl");
 }
 
 void Widget::getExtremesImpl (Extremes *extremes, int numPos,
@@ -1631,7 +1631,7 @@ void Widget::getExtremesImpl (Extremes *extremes, int numPos,
 void Widget::getExtremesSimpl (Extremes *extremes)
 {
     // Either variant should be implemented.
-   misc::assertNotReached ();
+   misc::notImplemented ("Widget::getExtremesSimpl");
 }
 
 void Widget::sizeAllocateImpl (Allocation *allocation)
@@ -1974,7 +1974,7 @@ void Widget::leaveNotifyImpl (EventCrossing *)
 void Widget::removeChild (Widget *child)
 {
    // Should be implemented.
-   misc::assertNotReached ();
+   misc::notImplemented ("Widget::removeChild");
 }
 
 // ----------------------------------------------------------------------

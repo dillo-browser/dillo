@@ -541,17 +541,17 @@ void OOFAwareWidget::removeChild (Widget *child)
 
 void OOFAwareWidget::borderChanged (int oofmIndex, int y, Widget *widgetOOF)
 {
-   assertNotReached ();
+   notImplemented ("OOFAwareWidget::borderChanged");
 }
 
 void OOFAwareWidget::widgetRefSizeChanged (int externalIndex)
 {
-   assertNotReached ();
+   notImplemented ("OOFAwareWidget::widgetRefSizeChanged");
 }
 
 void OOFAwareWidget::clearPositionChanged ()
 {
-   assertNotReached ();
+   notImplemented ("OOFAwareWidget::clearPositionChanged");
 }
 
 void OOFAwareWidget::oofSizeChanged (bool extremesChanged)
@@ -569,31 +569,31 @@ void OOFAwareWidget::oofSizeChanged (bool extremesChanged)
 
 int OOFAwareWidget::getGeneratorX (int oofmIndex)
 {
-   assertNotReached ();
+   notImplemented ("OOFAwareWidget::getGeneratorX");
    return 0;
 }
 
 int OOFAwareWidget::getGeneratorY (int oofmIndex)
 {
-   assertNotReached ();
+   notImplemented ("OOFAwareWidget::getGeneratorY");
    return 0;
 }
 
 int OOFAwareWidget::getGeneratorWidth ()
 {
-   assertNotReached ();
+   notImplemented ("OOFAwareWidget::getGeneratorWidth");
    return 0;
 }
 
 int OOFAwareWidget::getMaxGeneratorWidth ()
 {
-   assertNotReached ();
+   notImplemented ("OOFAwareWidget::getMaxGeneratorWidth");
    return 0;
 }
 
 bool OOFAwareWidget::usesMaxGeneratorWidth ()
 {
-   assertNotReached ();
+   notImplemented ("OOFAwareWidget::usesMaxGeneratorWidth");
    return false;
 }
    

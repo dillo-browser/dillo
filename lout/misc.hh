@@ -38,6 +38,12 @@ inline void assertNotReached ()
    abort ();
 }
 
+inline void notImplemented (const char *name)
+{
+   fprintf (stderr, "*** [%s] Not implemented: %s ***\n", prgName, name);
+   abort ();
+}
+
 inline int roundInt(double d)
 {
    return (int) ((d > 0) ? (d + 0.5) : (d - 0.5));
