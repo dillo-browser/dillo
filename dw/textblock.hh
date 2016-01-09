@@ -831,7 +831,8 @@ protected:
 
    void sizeAllocateImpl (core::Allocation *allocation);
 
-   void calcExtraSpaceImpl (bool vertical);
+   void calcExtraSpaceImpl (bool vertical, int numPos, Widget **references,
+                            int *x, int *y);
 
    int getAvailWidthOfChild (core::Widget *child, bool forceValue);
    int getAvailHeightOfChild (core::Widget *child, bool forceValue);

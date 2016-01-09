@@ -738,11 +738,14 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    DBG_OBJ_LEAVE ();
 }
 
-void Textblock::calcExtraSpaceImpl (bool vertical)
+void Textblock::calcExtraSpaceImpl (bool vertical, int numPos,
+                                    Widget **references, int *x, int *y)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "Textblock::calcExtraSpaceImpl");
 
-   OOFAwareWidget::calcExtraSpaceImpl (vertical);
+   sizeRequestParams.fill (numPos, references, x, y);
+
+   OOFAwareWidget::calcExtraSpaceImpl (vertical, numPos, references, x, y);
 
    if (vertical) {
       int clearPosition = 0;

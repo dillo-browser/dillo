@@ -153,10 +153,15 @@ Plan
 Issues
 ======
 
-- Since the signature of dw::core::Widget::sizeRequestImpl changes
-  quite often during the development of *size requisitions depending
-  on positions*, a simpler option dw::core::Widget::sizeRequestSimpl
-  has been added. May be removed again, after the design is stable.
+- Since the signature of dw::core::Widget::sizeRequestImpl changes quite often
+  during the development of *size requisitions depending on positions*, a
+  simpler option dw::core::Widget::sizeRequestSimpl has been added. May be
+  removed again, after the design is stable.
+
+- As an alternative, passing the references may be done in a new method, which
+  is called *before* dw::core::Widget::sizeRequestImpl. This makes even more
+  sense, after dw::core::Widget::calcExtraSpace and
+  dw::core::Widget::calcExtraSpaceImpl have been extended by references.
 
 - There may be inconsistencies for widget styles; see
   [revision f797436687fe](http://flpsed.org/hgweb/dillo_grows/rev/f797436687fe)
