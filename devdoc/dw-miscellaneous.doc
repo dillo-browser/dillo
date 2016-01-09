@@ -41,5 +41,9 @@ Interrupted drawing
 Similar rules apply to handling mouse events
 (dw::core::Widget::getWidgetAtPoint).
 
+Extra space
+-----------
+Should dw::core::Widget::calcExtraSpace be called from
+dw::core::Widget::getExtremes?
 
 */

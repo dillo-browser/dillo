@@ -738,25 +738,23 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
    DBG_OBJ_LEAVE ();
 }
 
-void Textblock::calcExtraSpaceImpl (bool vertical, int numPos,
-                                    Widget **references, int *x, int *y)
+void Textblock::calcExtraSpaceImpl (int numPos, Widget **references, int *x,
+                                    int *y)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "Textblock::calcExtraSpaceImpl");
 
    sizeRequestParams.fill (numPos, references, x, y);
 
-   OOFAwareWidget::calcExtraSpaceImpl (vertical, numPos, references, x, y);
+   OOFAwareWidget::calcExtraSpaceImpl (numPos, references, x, y);
 
-   if (vertical) {
-      int clearPosition = 0;
-      for (int i = 0; i < NUM_OOFM; i++)
-         if (searchOutOfFlowMgr (i) && findSizeRequestReference (i, NULL, NULL))
-            clearPosition =
-               misc::max (clearPosition,
-                          searchOutOfFlowMgr(i)->getClearPosition (this));
+   int clearPosition = 0;
+   for (int i = 0; i < NUM_OOFM; i++)
+      if (searchOutOfFlowMgr (i) && findSizeRequestReference (i, NULL, NULL))
+         clearPosition =
+            misc::max (clearPosition,
+                       searchOutOfFlowMgr(i)->getClearPosition (this));
    
-      extraSpace.top = misc::max (extraSpace.top, clearPosition);
-   }
+   extraSpace.top = misc::max (extraSpace.top, clearPosition);
 
    DBG_OBJ_LEAVE ();
 }

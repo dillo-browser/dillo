@@ -128,6 +128,8 @@ namespace dw {
  *   Widget::extraSpace should fix this, but it is only fully working
  *   in the GROWS branch (<http://flpsed.org/hgweb/dillo_grows>).
  *
+ *   Update: This needs to be re-evaluated.
+ *
  * - Do margins of inline blocks and tables collapse? Check CSS
  *   spec. (They do currently; if not, ignoring them is simple.)
  *
@@ -831,8 +833,7 @@ protected:
 
    void sizeAllocateImpl (core::Allocation *allocation);
 
-   void calcExtraSpaceImpl (bool vertical, int numPos, Widget **references,
-                            int *x, int *y);
+   void calcExtraSpaceImpl (int numPos, Widget **references, int *x, int *y);
 
    int getAvailWidthOfChild (core::Widget *child, bool forceValue);
    int getAvailHeightOfChild (core::Widget *child, bool forceValue);

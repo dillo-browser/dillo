@@ -606,7 +606,7 @@ void Widget::sizeRequest (Requisition *requisition, int numPos,
    }
    
    if (callImpl) {
-      calcExtraSpace (true, numPos, references, x, y);
+      calcExtraSpace (numPos, references, x, y);
       /** \todo Check requisition == &(this->requisition) and do what? */
       sizeRequestImpl (requisition, numPos, references, x, y);
       this->requisition = *requisition;
@@ -1044,8 +1044,6 @@ void Widget::getExtremes (Extremes *extremes, int numPos, Widget **references,
    }
    
    if (callImpl) {
-      calcExtraSpace (false, numPos, references, x, y);
-
       // For backward compatibility (part 1/2):
       extremes->minWidthIntrinsic = extremes->maxWidthIntrinsic = -1;
 
@@ -1080,23 +1078,16 @@ void Widget::getExtremes (Extremes *extremes, int numPos, Widget **references,
  *
  * Delegated to dw::core::Widget::calcExtraSpaceImpl. Called both from
  * dw::core::Widget::sizeRequest and dw::core::Widget::getExtremes.
- *
- * If `vertical` is false, only horizontal dimensions are calculated. (This is
- * used for extremes.)
  */
-void Widget::calcExtraSpace (bool vertical, int numPos, Widget **references,
-                             int *x, int *y)
+void Widget::calcExtraSpace (int numPos, Widget **references, int *x, int *y)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "calcExtraSpace");
 
    extraSpace.top = extraSpace.right = extraSpace.bottom = extraSpace.left = 0;
-   calcExtraSpaceImpl (vertical, numPos, references, x, y);
+   calcExtraSpaceImpl (numPos, references, x, y);
 
-   if (vertical) {
-      DBG_OBJ_SET_NUM ("extraSpace.top", extraSpace.top);
-      DBG_OBJ_SET_NUM ("extraSpace.bottom", extraSpace.bottom);
-   }
-   
+   DBG_OBJ_SET_NUM ("extraSpace.top", extraSpace.top);
+   DBG_OBJ_SET_NUM ("extraSpace.bottom", extraSpace.bottom);
    DBG_OBJ_SET_NUM ("extraSpace.left", extraSpace.left);
    DBG_OBJ_SET_NUM ("extraSpace.right", extraSpace.right);
 
@@ -1646,12 +1637,9 @@ void Widget::sizeAllocateImpl (Allocation *allocation)
  * dw::core::Widget::extraSpace, which is only corrected. To make sure
  * all possible influences are considered, the implementation of the
  * base class should be called, too.
- *
- * If `vertical` is false, only horizontal dimensions are calculated. (This is
- * used for extremes.)
  */
-void Widget::calcExtraSpaceImpl (bool vertical, int numPos, Widget **references,
-                                 int *x, int *y)
+void Widget::calcExtraSpaceImpl (int numPos, Widget **references, int *x,
+                                 int *y)
 {
 }
 
