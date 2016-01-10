@@ -2270,10 +2270,22 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
    DBG_OBJ_ENTER ("resize", 0, "calcSizeOfWidgetInFlow", "%d, %p, ...",
                   wordIndex, widget);
 
-   bool result;
+   bool result, firstWordOfLine;
 
-   if ((wordIndex == 0 ||
-        words->getRef(wordIndex - 1)->content.type == core::Content::BREAK) &&
+   if (hasListitemValue)
+      // For list items, the word #0 at the beginning (bullet, number ...) has
+      // to be considered;
+      firstWordOfLine = wordIndex == 1 ||
+         (wordIndex > 0 &&
+          words->getRef(wordIndex - 1)->content.type == core::Content::BREAK);
+   else
+      firstWordOfLine = wordIndex == 0 ||
+         words->getRef(wordIndex - 1)->content.type == core::Content::BREAK;
+
+   DBG_OBJ_MSGF ("resize", 1, "firstWordOfLine = %s",
+                 boolToStr (firstWordOfLine));
+
+   if (firstWordOfLine &&
        (widget->getStyle()->display == core::style::DISPLAY_BLOCK ||
         widget->getStyle()->display == core::style::DISPLAY_LIST_ITEM ||
         widget->getStyle()->display == core::style::DISPLAY_TABLE)) {
