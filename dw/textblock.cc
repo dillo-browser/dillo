@@ -709,7 +709,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
          xCursor += (word->size.width + word->effSpace);
          DBG_OBJ_MSGF ("resize", 1, "xCursor = %d (after word %d)",
                        xCursor, wordIndex);
-         DBG_MSG_WORD("resize", 1, "<i>that is:</i> ", wordIndex, "");
+         DBG_MSG_WORD ("resize", 1, "<i>that is:</i> ", wordIndex, "");
       }
 
       DBG_OBJ_MSG_END ();
