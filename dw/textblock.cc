@@ -2278,6 +2278,7 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
         widget->getStyle()->display == core::style::DISPLAY_LIST_ITEM ||
         widget->getStyle()->display == core::style::DISPLAY_TABLE)) {
       // pass positions
+      DBG_OBJ_MSG ("resize", 1, "pass position");
       int lastWord = lines->empty () ? -1 : lines->getLastRef()->lastWord;
       assert (wordIndex > lastWord);
 
@@ -2304,6 +2305,7 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
       result = true;
    } else {
       // do not pass positions (inline elements etc)
+      DBG_OBJ_MSG ("resize", 1, "do not pass position");
       widget->sizeRequest (size);
       result = false;
    }
