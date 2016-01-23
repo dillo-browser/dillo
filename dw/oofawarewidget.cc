@@ -493,7 +493,8 @@ Widget *OOFAwareWidget::getWidgetAtPointLevel (int x, int y, int level,
 
    case SL_IN_FLOW:
       // Should be implemented in the sub class.
-      assertNotReached ();
+      assertNotReached ("getWidgetAtPoint (SL_IN_FLOW) for %s",
+                        getClassName ());
       break;
 
    case SL_OOF_REF:

@@ -38,6 +38,20 @@ inline void assertNotReached ()
    abort ();
 }
 
+inline void assertNotReached (const char *fmt, ...)
+{
+   va_list argp;
+   va_start(argp, fmt);
+
+   fprintf (stderr, "*** [%s] This should not happen: ", prgName);
+   vfprintf(stderr, fmt, argp);
+   fprintf (stderr, "! ***\n");
+
+   va_end(argp);
+
+   abort ();
+}
+
 inline void notImplemented (const char *name)
 {
    fprintf (stderr, "*** [%s] Not implemented: %s ***\n", prgName, name);
