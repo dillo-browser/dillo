@@ -79,6 +79,18 @@ void Ruler::draw (core::View *view, core::Rectangle *area,
    drawWidgetBox (view, area, false);
 }
 
+core::Widget *Ruler::getWidgetAtPoint (int x, int y,
+                                       core::GettingWidgetAtPointContext
+                                       *context)
+{
+   // Override (complex) implementation OOFAwareWidget::getWidgetAtPoint().
+
+   if (inAllocation (x, y))
+      return this;
+   else
+      return NULL;
+}
+
 core::Iterator *Ruler::iterator (core::Content::Type mask, bool atEnd)
 {
    /** \todo TextIterator? */

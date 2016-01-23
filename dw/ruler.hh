@@ -26,6 +26,8 @@ protected:
    bool usesAvailWidth ();
    void draw (core::View *view, core::Rectangle *area,
               core::DrawingContext *context);
+   core::Widget *getWidgetAtPoint (int x, int y,
+                                   core::GettingWidgetAtPointContext *context);
 
 public:
    static int CLASS_ID;
