@@ -740,11 +740,20 @@ static int Bms_load(void)
       if (buf[0] == 's') {
          /* get section, url and title */
          section = strtol(buf + 1, NULL, 10);
-         p = strchr(buf, ' '); *p = 0;
+         p = strchr(buf, ' ');
+         if (!p)
+            goto error;
+         *p = 0;
          url = ++p;
-         p = strchr(p, ' '); *p = 0;
+         p = strchr(p, ' ');
+         if (!p)
+            goto error;
+         *p = 0;
          title = ++p;
-         p = strchr(p, '\n'); *p = 0;
+         p = strchr(p, '\n');
+         if (!p)
+            goto error;
+         *p = 0;
          u_title = Unescape_html_str(title);
          Bms_add(section, url, u_title);
          dFree(u_title);
@@ -752,13 +761,22 @@ static int Bms_load(void)
       } else if (buf[0] == ':' && buf[1] == 's') {
          /* section = strtol(buf + 2, NULL, 10); */
          p = strchr(buf + 2, ' ');
+         if (!p)
+            goto error;
          title = ++p;
          p = strchr(p, '\n'); *p = 0;
+         if (!p)
+            goto error;
          Bms_sec_add(title);
-
       } else {
-         MSG("Syntax error in bookmarks file:\n %s", buf);
+         goto error;
       }
+
+      dFree(buf);
+      continue;
+
+error: 
+      MSG("Syntax error in bookmarks file:\n %s", buf);
       dFree(buf);
    }
    fclose(BmTxt);
