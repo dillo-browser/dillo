@@ -126,7 +126,18 @@ private:
    class TBInfo: public WidgetInfo
    {
    public:
+      class ComparePosition: public lout::object::Comparator
+      {
+      private:
+         int oofmIndex;
+      
+      public:
+         inline ComparePosition (int oofmIndex) { this->oofmIndex = oofmIndex; }
+         int compare (Object *o1, Object *o2);
+      };
+
       int index; // position within "tbInfos"
+      int y;     // used for sorting
 
       TBInfo *parent;
       int parentExtIndex;
@@ -157,6 +168,7 @@ private:
    void moveExternalIndices (lout::container::typed::Vector<Float> *list,
                              int oldStartIndex, int diff);
    Float *findFloatByWidget (core::Widget *widget);
+   int findTBInfo (int y);
 
    void sizeAllocateFloats (Side side);
    int getGBWidthForAllocation (Float *vloat);

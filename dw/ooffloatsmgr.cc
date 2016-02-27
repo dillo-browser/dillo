@@ -291,6 +291,16 @@ void OOFFloatsMgr::SortedFloatsVector::put (Float *vloat)
    vloat->index = size() - 1;
 }
 
+int OOFFloatsMgr::TBInfo::ComparePosition::compare (Object *o1, Object *o2)
+{
+   TBInfo *tbInfo1 = (TBInfo*)o1, *tbInfo2 = (TBInfo*)o2;
+   int y1 = tbInfo1->getOOFAwareWidget () == NULL ? tbInfo1->y :
+      tbInfo1->getOOFAwareWidget()->getGeneratorY (oofmIndex);
+   int y2 = tbInfo2->getOOFAwareWidget () == NULL ? tbInfo2->y :
+      tbInfo2->getOOFAwareWidget()->getGeneratorY (oofmIndex);
+   return y1 - y2;
+}
+
 OOFFloatsMgr::TBInfo::TBInfo (OOFFloatsMgr *oofm, OOFAwareWidget *textblock,
                               TBInfo *parent, int parentExtIndex) :
    WidgetInfo (oofm, textblock)
@@ -637,12 +647,36 @@ void OOFFloatsMgr::markSizeChange (int ref)
    vloat->dirty = true;  
    DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
 
-   for (int i = 0; i < tbInfos->size (); i++)
+   int first = findTBInfo (vloat->yReal);
+   // The determination of the last element could perhaps be optimized, but we
+   // do not yet know the *new* height of the float.
+   int last = tbInfos->size () - 1;
+   for (int i = first; i <= last; i++)
       tbInfos->get(i)->getOOFAwareWidget()->borderChanged (oofmIndex,
                                                            vloat->yReal,
                                                            vloat->getWidget ());
 
    DBG_OBJ_LEAVE ();
+}
+
+/**
+ * `y` is given relative to the container.
+ */
+int OOFFloatsMgr::findTBInfo (int y)
+{
+   DBG_OBJ_ENTER_O ("findTBInfo", 0, oofm, "findTBInfo", "%d", y);
+
+   TBInfo key (this, NULL, NULL, 0);
+   key.y = y;
+   TBInfo::ComparePosition comparator (oofmIndex);
+   int index = tbInfos->bsearch (&key, false, &comparator);
+
+   // "bsearch" returns next greater, but we are interrested in the last which
+   // is less or equal.
+   int result = index > 0 ? index - 1 : index;
+
+   DBG_OBJ_LEAVE_VAL_O (oofm, "%d", result);
+   return result;
 }
 
 
