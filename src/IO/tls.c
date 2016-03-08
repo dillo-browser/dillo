@@ -1041,7 +1041,12 @@ static void Tls_close_by_key(int connkey)
          a_IOwatch_remove_fd(c->fd, -1);
          dClose(c->fd);
       }
-      SSL_shutdown(c->ssl);
+      if (!SSL_in_init(c->ssl)) {
+         /* openssl 1.0.2f does not like shutdown being called during
+          * handshake, resulting in ssl_undefined_function in the error queue.
+          */
+         SSL_shutdown(c->ssl);
+      }
       SSL_free(c->ssl);
 
       a_Url_free(c->url);
