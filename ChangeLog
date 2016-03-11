@@ -40,6 +40,9 @@ dillo-3.1 [not released yet]
    --with-ca-certs-file and --with-ca-certs-dir to configure, some improvement
    to security warning popups, etc.
    Patch: corvid, Benjamin Johnson
++- Fix bookmarks DPI crash.
+ - Fix OSX compilation issue with xembed.
+   Patches: Johannes Hofmann
 
 -----------------------------------------------------------------------------
 
