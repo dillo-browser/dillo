@@ -169,6 +169,10 @@ public:
       DBG_OBJ_BASECLASS (lout::signal::ObservedObject);
    }
 
+   inline ~Imgbuf () {
+      DBG_OBJ_DELETE ();
+   }
+
    /*
     * Methods called from the image decoding
     */

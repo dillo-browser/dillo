@@ -651,10 +651,11 @@ void OOFFloatsMgr::markSizeChange (int ref)
    // The determination of the last element could perhaps be optimized, but we
    // do not yet know the *new* height of the float.
    int last = tbInfos->size () - 1;
-   for (int i = first; i <= last; i++)
-      tbInfos->get(i)->getOOFAwareWidget()->borderChanged (oofmIndex,
-                                                           vloat->yReal,
-                                                           vloat->getWidget ());
+   for (int i = first; i <= last; i++) {
+      OOFAwareWidget *oofaw = tbInfos->get(i)->getOOFAwareWidget();
+      DBG_OBJ_MSGF ("resize.oofm", 1, "calling borderChanged for %p", oofaw);
+      oofaw->borderChanged (oofmIndex, vloat->yReal, vloat->getWidget ());
+   }
 
    DBG_OBJ_LEAVE ();
 }
@@ -664,7 +665,7 @@ void OOFFloatsMgr::markSizeChange (int ref)
  */
 int OOFFloatsMgr::findTBInfo (int y)
 {
-   DBG_OBJ_ENTER_O ("findTBInfo", 0, oofm, "findTBInfo", "%d", y);
+   DBG_OBJ_ENTER ("findTBInfo", 0, "findTBInfo", "%d", y);
 
    TBInfo key (this, NULL, NULL, 0);
    key.y = y;
@@ -675,7 +676,7 @@ int OOFFloatsMgr::findTBInfo (int y)
    // is less or equal.
    int result = index > 0 ? index - 1 : index;
 
-   DBG_OBJ_LEAVE_VAL_O (oofm, "%d", result);
+   DBG_OBJ_LEAVE_VAL ("%d", result);
    return result;
 }
 

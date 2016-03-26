@@ -415,6 +415,11 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
    } else {
       for (widget2 = parent, child = this; widget2;
            child = widget2, widget2 = widget2->parent) {
+         // TODO Could the following code be used for optimization?
+         //if (widget2->resizeQueued () &&
+         //    (widget2->extremesQueued () || !extremesChanged))
+         //   break;
+         
          if (layout && !widget2->resizeQueued ())
             layout->queueResizeList->put (widget2);
 
