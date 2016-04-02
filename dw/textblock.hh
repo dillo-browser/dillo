@@ -940,9 +940,11 @@ public:
                                  words->getRef(n)->content.widget); \
          break; \
       case ::dw::core::Content::WIDGET_OOF_REF: \
+         /* It would be nice to show also parentRef. */ \
          DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "WIDGET_OOF_REF"); \
          DBG_OBJ_ARRATTRSET_PTR ("words", n, "text/widget/breakSpace", \
-                                 words->getRef(n)->content.widget); \
+                                 words->getRef(n) \
+                                 ->content.widgetReference->widget); \
          break; \
       case ::dw::core::Content::BREAK: \
          DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "BREAK"); \
@@ -982,8 +984,9 @@ public:
                           words->getRef(n)->content.widget); \
             break; \
          case ::dw::core::Content::WIDGET_OOF_REF: \
+            /* It would be nice to show also parentRef. */ \
             DBG_OBJ_MSGF (aspect, prio, prefix "WIDGET_OOF_REF / %p" suffix, \
-                          words->getRef(n)->content.widget); \
+                          words->getRef(n)->content.widgetReference->widget); \
             break; \
          case ::dw::core::Content::BREAK: \
             DBG_OBJ_MSGF (aspect, prio, prefix "BREAK / %d" suffix, \

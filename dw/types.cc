@@ -299,9 +299,11 @@ void Content::intoStringBuffer(Content *content, misc::StringBuffer *sb)
       break;
    case WIDGET_OOF_REF:
       sb->append ("<widget oof ref: ");
-      sb->appendPointer (content->widget);
+      sb->appendPointer (content->widgetReference->widget);
       sb->append (" (");
-      sb->append (content->widget->getClassName());
+      sb->append (content->widgetReference->widget->getClassName());
+      sb->append (", ");
+      sb->appendInt (content->widgetReference->parentRef);
       sb->append (")>");
       break;
    case WIDGET_OOF_CONT:

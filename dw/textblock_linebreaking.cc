@@ -463,7 +463,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
          word->spaceImgRenderer->setData (xWidget, lines->size () - 1);
 
       if (word->content.type == core::Content::WIDGET_OOF_REF) {
-         Widget *widget = word->content.widget;
+         Widget *widget = word->content.widgetReference->widget;
          int oofmIndex = getWidgetOOFIndex (widget);
          oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (oofmIndex);
          // See also Textblock::sizeAllocate, and notes there about
@@ -737,10 +737,9 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                core::Content *content = &(words->getRef(i)->content);
                if (content->type == core::Content::WIDGET_OOF_REF) {
                   for (int j = 0; newFloatPos == -1 && j < NUM_OOFM; j++) {
-                     if ((searchOutOfFlowMgr(j)->affectsLeftBorder(content
-                                                                   ->widget) ||
-                          searchOutOfFlowMgr(j)->affectsRightBorder (content
-                                                                     ->widget)))
+                     Widget *widget = content->widgetReference->widget;
+                     if ((searchOutOfFlowMgr(j)->affectsLeftBorder(widget) ||
+                          searchOutOfFlowMgr(j)->affectsRightBorder (widget)))
                         newFloatPos = i;
                   }
                }
@@ -760,7 +759,8 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
 
                lastFloatPos = newFloatPos;
                
-               Widget *widget = words->getRef(lastFloatPos)->content.widget;
+               Widget *widget =
+                  words->getRef(lastFloatPos)->content.widgetReference->widget;
                int oofmIndex = getWidgetOOFIndex (widget);
                oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (oofmIndex);
                if (oofm && oofm->mayAffectBordersAtAll ()) {
@@ -862,7 +862,7 @@ int Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
                   wordIndex, wrapAll ? "true" : "false");
 
    Word *word = words->getRef (wordIndex);
-   Widget *widget = word->content.widget;
+   Widget *widget = word->content.widgetReference->widget;
    int yNewLine = yOffsetOfLineToBeCreated ();
 
    // Floats, which affect either border, are handled in wrapWordInFlow; this
@@ -1920,9 +1920,11 @@ void Textblock::rewrap ()
             
          case core::Content::WIDGET_OOF_REF:
             {
-               int oofmIndex = getOOFMIndex (word->content.widget);
+               int oofmIndex =
+                  getOOFMIndex (word->content.widgetReference->widget);
                oof::OutOfFlowMgr *oofm = searchOutOfFlowMgr (oofmIndex);
-               oofm->calcWidgetRefSize (word->content.widget, &(word->size));
+               oofm->calcWidgetRefSize (word->content.widgetReference->widget,
+                                        &(word->size));
                DBG_SET_WORD_SIZE (i);
             }
             break;

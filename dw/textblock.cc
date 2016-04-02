@@ -1748,7 +1748,8 @@ void Textblock::drawLevel (core::View *view, core::Rectangle *area,
          for (int wordIndex = 0; wordIndex < words->size (); wordIndex++) {
             Word *word = words->getRef (wordIndex);
             if (word->content.type == core::Content::WIDGET_OOF_REF &&
-                getOOFMIndex (word->content.widget) == oofmIndex &&
+                getOOFMIndex (word->content.widgetReference->widget)
+                == oofmIndex &&
                 doesWidgetOOFInterruptDrawing (word->content.widget))
                word->content.widget->drawInterruption (view, area, context);
          }
@@ -1805,7 +1806,9 @@ void Textblock::cleanupWord (int wordNo)
 
    if (word->content.type == core::Content::WIDGET_IN_FLOW)
       delete word->content.widget;
-   /** \todo Widget references? What about texts? */
+   if (word->content.type == core::Content::WIDGET_OOF_REF)
+      delete word->content.widgetReference;
+   /** \todo What about texts? */
 
    removeWordImgRenderer (wordNo);
    removeSpaceImgRenderer (wordNo);
@@ -2421,7 +2424,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       oofm->calcWidgetRefSize (widget, &size);
       Word *word = addWord (size.width, size.ascent, size.descent, 0, style);
       word->content.type = core::Content::WIDGET_OOF_REF;
-      word->content.widget = widget;
+      word->content.widgetReference = new core::WidgetReference (widget);
 
       // After a out-of-flow reference, breaking is allowed. (This avoids some
       // problems with breaking near float definitions.)
@@ -2835,11 +2838,13 @@ core::Widget *Textblock::getWidgetAtPointLevel (int x, int y, int level,
               widgetAtPoint == NULL && wordIndex >= 0; wordIndex--) {
             Word *word = words->getRef (wordIndex);
             if (word->content.type == core::Content::WIDGET_OOF_REF &&
-                getOOFMIndex (word->content.widget) == oofmIndex &&
-                doesWidgetOOFInterruptDrawing (word->content.widget))
+                getOOFMIndex (word->content.widgetReference->widget)
+                == oofmIndex &&
+                doesWidgetOOFInterruptDrawing (word->content.widgetReference
+                                               ->widget))
                widgetAtPoint = 
-                  word->content.widget->getWidgetAtPointInterrupted (x, y,
-                                                                     context);
+                  word->content.widgetReference->widget
+                  ->getWidgetAtPointInterrupted (x, y, context);
          }
       }
       break;
@@ -3022,7 +3027,7 @@ void Textblock::borderChanged (int oofmIndex, int y, Widget *widgetOOF)
                  !found && wordIndex < words->size(); wordIndex++) {
                Word *word = words->getRef (wordIndex);
                if (word->content.type == core::Content::WIDGET_OOF_REF &&
-                   word->content.widget == widgetOOF)
+                   word->content.widgetReference->widget == widgetOOF)
                   found = true;
             }
 
@@ -3088,7 +3093,7 @@ void Textblock::borderChanged (int oofmIndex, int y, Widget *widgetOOF)
                        !found && wordIndex <= line->lastWord; wordIndex++) {
                      Word *word = words->getRef (wordIndex);
                      if (word->content.type == core::Content::WIDGET_OOF_REF &&
-                         word->content.widget == widgetOOF) {
+                         word->content.widgetReference->widget == widgetOOF) {
                         found = true;
                         // Correct only by smaller values (case (1) above):
                         realWrapLineIndex =

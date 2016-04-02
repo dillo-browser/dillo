@@ -185,6 +185,15 @@ struct Extremes
    int adjustmentWidth;
 };
 
+class WidgetReference: public lout::object::Object
+{
+public:
+   Widget *widget;
+   int parentRef;
+
+   WidgetReference (Widget *widget) { this->widget = widget; }
+};
+
 struct Content
 {
    enum Type {
@@ -226,6 +235,7 @@ struct Content
    union {
       const char *text;
       Widget *widget;
+      WidgetReference *widgetReference;
       int breakSpace;
    };
 
@@ -235,6 +245,11 @@ struct Content
    static void maskIntoStringBuffer(Type mask, lout::misc::StringBuffer *sb);
    static void print (Content *content);
    static void printMask (Type mask);
+
+   inline Widget *getWidget () {
+      assert (type & ANY_WIDGET);
+      return type == WIDGET_OOF_REF ? widgetReference->widget : widget;
+   }
 };
 
 /**

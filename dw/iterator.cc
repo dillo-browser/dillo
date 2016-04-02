@@ -362,7 +362,7 @@ Iterator *DeepIterator::searchDownward (Iterator *it, Content::Type mask,
    //          indent, "", from_end ? "back" : "for", a_Dw_iterator_text (it));
 
    assert (it->getContent()->type & Content::ANY_WIDGET);
-   it2 = it->getContent()->widget->iterator (mask, fromEnd);
+   it2 = it->getContent()->getWidget()->iterator (mask, fromEnd);
 
    if (it2 == NULL) {
       // Moving downwards failed.
@@ -442,7 +442,7 @@ Iterator *DeepIterator::searchSideward (Iterator *it, Content::Type mask,
             misc::assertNotReached ();
 
          if (it2->getContent()->type & Content::ANY_WIDGET &&
-             it2->getContent()->widget == it->getWidget ()) {
+             it2->getContent()->getWidget () == it->getWidget ()) {
             it3 = searchSideward (it2, mask, fromEnd);
             it2->unref ();
             //DEBUG_MSG (1, "%*smoving %swards succeeded: %s\n",
@@ -571,7 +571,7 @@ DeepIterator::DeepIterator (Iterator *it)
             assert (hasNext);
 
             if (it->getContent()->type & Content::ANY_WIDGET &&
-                it->getContent()->widget == w)
+                it->getContent()->getWidget () == w)
                break;
          }
 
@@ -675,7 +675,7 @@ bool DeepIterator::next ()
    if (it->next ()) {
       if (it->getContent()->type & Content::ANY_WIDGET) {
          // Widget: new iterator on stack, to search in this widget.
-         stack.push (it->getContent()->widget->iterator (mask, false));
+         stack.push (it->getContent()->getWidget()->iterator (mask, false));
          return next ();
       } else {
          // Simply return the content of the iterartor.
@@ -708,7 +708,7 @@ bool DeepIterator::prev ()
    if (it->prev ()) {
       if (it->getContent()->type & Content::ANY_WIDGET) {
          // Widget: new iterator on stack, to search in this widget.
-         stack.push (it->getContent()->widget->iterator (mask, true));
+         stack.push (it->getContent()->getWidget()->iterator (mask, true));
          return prev ();
       } else {
          // Simply return the content of the iterartor.
