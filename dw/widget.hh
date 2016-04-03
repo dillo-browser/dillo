@@ -125,6 +125,8 @@ private:
     */
    Widget *container;
 
+   WidgetReference *widgetReference;
+   
    style::Style *style;
 
    Flags flags;
@@ -548,6 +550,12 @@ public:
    int getGeneratorLevel ();
    Widget *getNearestCommonAncestor (Widget *otherWidget);
 
+   inline WidgetReference *getWidgetReference () { return widgetReference; }
+   inline void setWidgetReference (WidgetReference *widgetReference) {
+      this->widgetReference = widgetReference;
+      DBG_OBJ_SET_PTR ("widgetReference", widgetReference);
+   }
+   
    inline Widget *getGenerator () { return generator ? generator : parent; }
 
    inline Layout *getLayout () { return layout; }

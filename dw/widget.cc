@@ -73,6 +73,7 @@ Widget::Widget ()
 
    flags = (Flags)(NEEDS_RESIZE | EXTREMES_CHANGED);
    parent = quasiParent = generator = container = NULL;
+   setWidgetReference (NULL);
    DBG_OBJ_SET_PTR ("container", container);
 
    layout = NULL;

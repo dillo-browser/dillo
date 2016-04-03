@@ -2425,6 +2425,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
       Word *word = addWord (size.width, size.ascent, size.descent, 0, style);
       word->content.type = core::Content::WIDGET_OOF_REF;
       word->content.widgetReference = new core::WidgetReference (widget);
+      widget->setWidgetReference (word->content.widgetReference);
 
       // After a out-of-flow reference, breaking is allowed. (This avoids some
       // problems with breaking near float definitions.)
