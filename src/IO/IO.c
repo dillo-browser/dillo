@@ -185,6 +185,7 @@ static bool_t IO_read(IOData_t *io)
             break;
          } else {
             io->Status = errno;
+            MSG("READ Failed: %s\n", strerror(errno));
             break;
          }
       } else { /* St == 0 */

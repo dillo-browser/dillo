@@ -1140,7 +1140,7 @@ static void Cache_provide_redirection_blocked_page(CacheEntry_t *entry,
    a_Web_dispatch_by_type("text/html", clientWeb, &client->Callback,
                           &client->CbData);
    client->Buf = dStrconcat("<!doctype html><html><body>"
-                    "Dillo blocked a redirection attempt from <a href=\"",
+                    "Dillo blocked a redirection from <a href=\"",
                     URL_STR(entry->Url), "\">", URL_STR(entry->Url),
                     "</a> to <a href=\"", URL_STR(entry->Location), "\">",
                     URL_STR(entry->Location), "</a> based on your domainrc "

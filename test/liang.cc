@@ -1,10 +1,11 @@
+#include <unistd.h>
 
 #include "../dw/fltkcore.hh"
 #include "../dw/hyphenator.hh"
 
-void hyphenateWord (dw::core::Platform *p, const char *word)
+void hyphenateWord (dw::core::Platform *p, const char *lang, const char *word)
 {
-   dw::Hyphenator *h = dw::Hyphenator::getHyphenator ("de");
+   dw::Hyphenator *h = dw::Hyphenator::getHyphenator (lang);
 
    int numBreaks;
    int *breakPos = h->hyphenateWord (p, word, &numBreaks);
@@ -26,35 +27,52 @@ int main (int argc, char *argv[])
    dw::fltk::FltkPlatform p;
 
    if (argc > 1) {
-      hyphenateWord (&p, argv[1]);
+      // Usage: liang [-l LANG] WORD ...
+      
+      const char *lang = "de";
+      char opt;
+      
+      while ((opt = getopt(argc, argv, "l:")) != -1) {
+         switch (opt) {
+         case 'l':
+            lang = optarg;
+            break;            
+         }
+      }
+
+      for (int i = optind; i < argc; i++) 
+         hyphenateWord (&p, lang, argv[i]);
+
    } else {
-      hyphenateWord (&p, "...");
-      hyphenateWord (&p, "Jahrhundertroman");
-      hyphenateWord (&p, "JAHRHUNDERTROMAN");
-      hyphenateWord (&p, "„Jahrhundertroman“");
-      hyphenateWord (&p, "währenddessen");
-      hyphenateWord (&p, "„währenddessen“");
-      hyphenateWord (&p, "Ückendorf");
-      hyphenateWord (&p, "über");
-      hyphenateWord (&p, "aber");
-      hyphenateWord (&p, "Ackermann");
-      hyphenateWord (&p, "„Ackermann“");
-      hyphenateWord (&p, "entscheidet.");
-      hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeits"
+      hyphenateWord (&p, "de", "...");
+      hyphenateWord (&p, "de", "Jahrhundertroman");
+      hyphenateWord (&p, "de", "JAHRHUNDERTROMAN");
+      hyphenateWord (&p, "de", "„Jahrhundertroman“");
+      hyphenateWord (&p, "de", "währenddessen");
+      hyphenateWord (&p, "de", "„währenddessen“");
+      hyphenateWord (&p, "de", "Ückendorf");
+      hyphenateWord (&p, "de", "über");
+      hyphenateWord (&p, "de", "aber");
+      hyphenateWord (&p, "de", "Ackermann");
+      hyphenateWord (&p, "de", "„Ackermann“");
+      hyphenateWord (&p, "de", "entscheidet.");
+      hyphenateWord (&p, "de", "Grundstücksverkehrsgenehmigungszuständigkeits"
                      "übertragungsverordnung");
-      hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeits"
+      hyphenateWord (&p, "de", "„Grundstücksverkehrsgenehmigungszuständigkeits"
                      "übertragungsverordnung“");
-      hyphenateWord (&p, "Grundstücksverkehrsgenehmigungszuständigkeit");
-      hyphenateWord (&p, "„Grundstücksverkehrsgenehmigungszuständigkeit“");
-      hyphenateWord (&p, "(6R,7R)-7-[2-(2-Amino-4-thiazolyl)-glyoxylamido]-3-"
+      hyphenateWord (&p, "de", "Grundstücksverkehrsgenehmigungszuständigkeit");
+      hyphenateWord (&p, "de",
+                     "„Grundstücksverkehrsgenehmigungszuständigkeit“");
+      hyphenateWord (&p, "de",
+                     "(6R,7R)-7-[2-(2-Amino-4-thiazolyl)-glyoxylamido]-3-"
                      "(2,5-dihydro-6-hydroxy-2-methyl-5-oxo-1,2,4-triazin-3-yl-"
                      "thiomethyl)-8-oxo-5-thia-1-azabicyclo[4.2.0]oct-2-en-2-"
                      "carbonsäure-7²-(Z)-(O-methyloxim)");
-      hyphenateWord (&p, "Abtei-Stadt");
-      hyphenateWord (&p, "Nordrhein-Westfalen");
-      hyphenateWord (&p, "kurz\xc2\xa0und\xc2\xa0knapp");
-      hyphenateWord (&p, "weiß");
-      hyphenateWord (&p, "www.dillo.org");
+      hyphenateWord (&p, "de", "Abtei-Stadt");
+      hyphenateWord (&p, "de", "Nordrhein-Westfalen");
+      hyphenateWord (&p, "de", "kurz\xc2\xa0und\xc2\xa0knapp");
+      hyphenateWord (&p, "de", "weiß");
+      hyphenateWord (&p, "de", "www.dillo.org");
    }
 
    return 0;
