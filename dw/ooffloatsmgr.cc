@@ -647,15 +647,22 @@ void OOFFloatsMgr::markSizeChange (int ref)
    vloat->dirty = true;  
    DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
 
+   assert (vloat->getWidget()->getWidgetReference() != NULL);
+     
    int first = findTBInfo (vloat->yReal);
    // The determination of the last element could perhaps be optimized, but we
    // do not yet know the *new* height of the float.
    int last = tbInfos->size () - 1;
-   for (int i = first; i <= last; i++) {
-      OOFAwareWidget *oofaw = tbInfos->get(i)->getOOFAwareWidget();
-      DBG_OBJ_MSGF ("resize.oofm", 1, "calling borderChanged for %p", oofaw);
-      oofaw->borderChanged (oofmIndex, vloat->yReal, vloat->getWidget ());
-   }
+
+   DBG_OBJ_MSGF ("resize.oofm", 1, "updating from %d to %d", first, last);
+         
+   if (first <= last)
+      tbInfos->get(first)->getOOFAwareWidget()
+         ->updateReference (vloat->getWidget()->getWidgetReference()
+                            ->parentRef);
+
+   for (int i = first + 1; i <= last; i++)
+      tbInfos->get(first)->getOOFAwareWidget()->updateReference(0);
 
    DBG_OBJ_LEAVE ();
 }

@@ -764,8 +764,6 @@ protected:
    RegardingBorder *getWidgetRegardingBorderForLine (int lineNo);
    RegardingBorder *getWidgetRegardingBorderForLine (int firstWord,
                                                      int lastWord);
-   void printBorderChangedErrorAndAbort (int y, Widget *vloat,
-                                         int wrapLineIndex);
    int yOffsetOfLineToBeCreated (int *lastMargin = NULL);
    int yOffsetOfLineCreated (Line *line);
 
@@ -901,7 +899,7 @@ public:
    void changeWordStyle (int from, int to, core::style::Style *style,
                          bool includeFirstSpace, bool includeLastSpace);
   
-   void borderChanged (int oofmIndex, int y, core::Widget *widgetOOF);
+   void updateReference (int ref);
    void widgetRefSizeChanged (int externalIndex);
    void clearPositionChanged ();
    void oofSizeChanged (bool extremesChanged);

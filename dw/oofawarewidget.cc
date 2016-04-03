@@ -545,9 +545,9 @@ void OOFAwareWidget::removeChild (Widget *child)
    assert (isWidgetOOF (child));
 }
 
-void OOFAwareWidget::borderChanged (int oofmIndex, int y, Widget *widgetOOF)
+void OOFAwareWidget::updateReference (int ref)
 {
-   notImplemented ("OOFAwareWidget::borderChanged");
+   notImplemented ("OOFAwareWidget::updateReference");
 }
 
 void OOFAwareWidget::widgetRefSizeChanged (int externalIndex)
