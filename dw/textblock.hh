@@ -927,10 +927,11 @@ public:
    } D_STMT_END
 
 #ifdef DBG_RTFL
-#define DBG_OBJ_ARRATTRSET_PTR_NUM(var, ind, attr, val1, val2) \
-   RTFL_OBJ_PRINT ("set", "p:s.d.s:p (d)", this, var, ind, attr, val1, val2)
+#define DBG_OBJ_ARRATTRSET_WREF(var, ind, attr, wref) \
+   RTFL_OBJ_PRINT ("set", "p:s.d.s:p (p, d)", this, var, ind, attr, wref, \
+                   wref->widget, wref->parentRef)
 #else
-#define DBG_OBJ_ARRATTRSET_PTR_NUM(var, ind, attr, val1, val2) STMT_NOP
+#define DBG_OBJ_ARRATTRSET_WREF(var, ind, attr, wref) STMT_NOP
 #endif
    
 #define DBG_SET_WORD(n) \
@@ -950,12 +951,9 @@ public:
          break; \
       case ::dw::core::Content::WIDGET_OOF_REF: \
          DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "WIDGET_OOF_REF"); \
-         DBG_OBJ_ARRATTRSET_PTR_NUM ("words", n, \
-                                     "text/widget/widgetReference/breakSpace", \
-                                     words->getRef(n) \
-                                     ->content.widgetReference->widget, \
-                                     words->getRef(n) \
-                                     ->content.widgetReference->parentRef); \
+         DBG_OBJ_ARRATTRSET_WREF ("words", n, \
+                                  "text/widget/widgetReference/breakSpace", \
+                                  words->getRef(n)->content.widgetReference); \
          break; \
       case ::dw::core::Content::BREAK: \
          DBG_OBJ_ARRATTRSET_SYM ("words", n, "type", "BREAK"); \
@@ -999,7 +997,8 @@ public:
             break; \
          case ::dw::core::Content::WIDGET_OOF_REF: \
             DBG_OBJ_MSGF (aspect, prio, \
-                          prefix "WIDGET_OOF_REF / %p (%d)" suffix,\
+                          prefix "WIDGET_OOF_REF / %p (%p, %d)" suffix,\
+                          words->getRef(n)->content.widgetReference,    \
                           words->getRef(n)->content.widgetReference->widget, \
                           words->getRef(n)->content.widgetReference \
                           ->parentRef); \
