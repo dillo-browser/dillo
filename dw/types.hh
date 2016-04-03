@@ -191,7 +191,7 @@ public:
    Widget *widget;
    int parentRef;
 
-   WidgetReference (Widget *widget) { this->widget = widget; }
+   WidgetReference (Widget *widget) { parentRef = -1; this->widget = widget; }
 };
 
 struct Content

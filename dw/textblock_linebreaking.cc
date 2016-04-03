@@ -881,6 +881,21 @@ int Textblock::wrapWordOofRef (int wordIndex, bool wrapAll)
          oofm->tellIncompletePosition1 (widget, this, xRel, yRel);
    }
 
+   if(word->content.type == core::Content::WIDGET_OOF_REF) {
+      // Set parentRef for the referred widget. Cf. wrapWordInFlow.
+      int firstWordWithoutLine;
+      if (lines->size() == 0)
+         firstWordWithoutLine = 0;
+      else
+         firstWordWithoutLine = lines->getLastRef()->lastWord + 1;
+
+      if (wordIndex >= firstWordWithoutLine) {
+         word->content.widgetReference->parentRef =
+            makeParentRefInFlow (lines->size ());
+         DBG_SET_WORD (wordIndex);
+      }
+   }
+
    DBG_OBJ_LEAVE ();
 
    return 0; // Words list not changed.
@@ -1582,6 +1597,11 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
 
       if (word->content.type == core::Content::BREAK)
          line->breakSpace = max (word->content.breakSpace, line->breakSpace);
+      else if (word->content.type == core::Content::WIDGET_OOF_REF) {
+         word->content.widgetReference->parentRef =
+            makeParentRefInFlow (lineIndex);
+            DBG_SET_WORD (wordIndex);
+      }
    }
 
    DBG_OBJ_MSGF ("construct.line", 2,
