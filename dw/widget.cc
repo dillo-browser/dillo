@@ -330,30 +330,6 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
       }
 
       while (layout != NULL && layout->queueQueueResizeList->size () > 0) {
-         DBG_IF_RTFL {
-            DBG_OBJ_MSGF ("resize", 1, "queue item list has %d elements:",
-                          layout->queueQueueResizeList->size ());
-#if 0
-            // TODO This worked when queueQueueResizeList was a Vector; now,
-            // iterators should be used.
-            DBG_OBJ_MSG_START ();
-            for (int i = 0; i < layout->queueQueueResizeList->size (); i++) {
-               DBG_OBJ_MSGF
-                  ("resize", 1,
-                   "#%d: widget = %p, ref = %d, extremesChanged = %s, "
-                   "fast = %s",
-                   i, layout->queueQueueResizeList->get(i)->widget,
-                   layout->queueQueueResizeList->get(i)->ref,
-                   layout->queueQueueResizeList->get(i)->extremesChanged ?
-                   "true" : "false",
-                   layout->queueQueueResizeList->get(i)->fast ?
-                   "true" : "false");
-            }
-            DBG_OBJ_MSG_END ();
-            DBG_OBJ_MSG ("resize", 1, "taking #0 out of list");
-#endif
-         }
-
          Layout::QueueResizeItem *item =
             layout->queueQueueResizeList->getTop ();
          item->widget->actualQueueResize (item->ref, item->extremesChanged,
