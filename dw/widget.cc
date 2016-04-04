@@ -383,7 +383,7 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
          // markExtremesChange have to be called explicitly for the
          // parent. The tests (needsResize etc.) are uses to check
          // whether queueResize has been called for the parent, or
-         // whether this widget is the enty point.
+         // whether this widget is the entry point.
          if (parent->needsResize () || parent->resizeQueued ())
             parent->markSizeChange (parentRef);
          if (parent->extremesChanged () || parent->extremesQueued ())
