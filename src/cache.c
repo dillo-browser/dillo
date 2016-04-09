@@ -206,7 +206,7 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->CharsetDecoder = NULL;
    NewEntry->ExpectedSize = 0;
    NewEntry->TransferSize = 0;
-   NewEntry->Flags = CA_IsEmpty | CA_KeepAlive;
+   NewEntry->Flags = CA_IsEmpty | CA_InProgress | CA_KeepAlive;
 }
 
 /*
@@ -270,7 +270,7 @@ static void Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
 
    if (!(entry = Cache_entry_search(Url)))
       entry = Cache_entry_add(Url);
-   entry->Flags |= CA_GotData + CA_GotHeader + CA_GotLength + CA_InternalUrl;
+   entry->Flags |= CA_GotHeader + CA_GotLength + CA_InternalUrl;
    if (data_ds->len)
       entry->Flags &= ~CA_IsEmpty;
    dStr_truncate(entry->Data, 0);
@@ -847,7 +847,7 @@ static int Cache_get_header(CacheEntry_t *entry,
 
 static void Cache_finish_msg(CacheEntry_t *entry)
 {
-   if (entry->Flags & CA_GotData) {
+   if (!(entry->Flags & CA_InProgress)) {
       /* already finished */
       return;
    }
@@ -858,13 +858,10 @@ static void Cache_finish_msg(CacheEntry_t *entry)
    }
    if ((entry->Flags & CA_GotLength) &&
        (entry->ExpectedSize != entry->TransferSize)) {
-      MSG_HTTP("Content-Length does NOT match message body at\n"
-               "%s\n", URL_STR_(entry->Url));
-      MSG("Expected size: %d, Transfer size: %d\n",
-          entry->ExpectedSize, entry->TransferSize);
+      MSG_HTTP("Content-Length (%d) does NOT match message body (%d) for %s\n",
+               entry->ExpectedSize, entry->TransferSize, URL_STR_(entry->Url));
    }
-   entry->Flags |= CA_GotData;
-   entry->Flags &= ~CA_Stopped;          /* it may catch up! */
+   entry->Flags &= ~CA_InProgress;
    if (entry->TransferDecoder) {
       a_Decode_transfer_free(entry->TransferDecoder);
       entry->TransferDecoder = NULL;
@@ -963,16 +960,22 @@ bool_t a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
    } else if (Op == IOClose) {
       Cache_finish_msg(entry);
    } else if (Op == IOAbort) {
-      int i;
-      CacheClient_t *Client;
+      entry->Flags |= CA_Aborted;
+      if (entry->Data->len) {
+         MSG("Premature close for %s\n", URL_STR(entry->Url));
+         Cache_finish_msg(entry);
+      } else {
+         int i;
+         CacheClient_t *Client;
 
-      for (i = 0; (Client = dList_nth_data(ClientQueue, i)); ++i) {
-         if (Client->Url == entry->Url) {
-            DilloWeb *web = (DilloWeb *)Client->Web;
+         for (i = 0; (Client = dList_nth_data(ClientQueue, i)); ++i) {
+            if (Client->Url == entry->Url) {
+               DilloWeb *web = (DilloWeb *)Client->Web;
 
-            a_Bw_remove_client(web->bw, Client->Key);
-            Cache_client_dequeue(Client);
-            --i; /* Keep the index value in the next iteration */
+               a_Bw_remove_client(web->bw, Client->Key);
+               Cache_client_dequeue(Client);
+               --i; /* Keep the index value in the next iteration */
+            }
          }
       }
    }
@@ -1184,7 +1187,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
       st = a_Misc_get_content_type_from_data(
               entry->Data->str, entry->Data->len, &Type);
       _MSG("Cache: detected Content-Type '%s'\n", Type);
-      if (st == 0 || entry->Flags & CA_GotData) {
+      if (st == 0 || !(entry->Flags & CA_InProgress)) {
          if (a_Misc_content_type_check(entry->TypeHdr, Type) < 0) {
             MSG_HTTP("Content-Type '%s' doesn't match the real data.\n",
                      entry->TypeHdr);
@@ -1289,7 +1292,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
          }
 
          /* Remove client when done */
-         if (entry->Flags & CA_GotData) {
+         if (!(entry->Flags & CA_InProgress)) {
             /* Copy flags to a local var */
             int flags = ClientWeb->flags;
 
@@ -1299,12 +1302,17 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
             }
             /* We finished sending data, let the client know */
             (Client->Callback)(CA_Close, Client);
-            if (ClientWeb->flags & WEB_RootUrl)
+            if (ClientWeb->flags & WEB_RootUrl) {
+               if (entry->Flags & CA_Aborted) {
+                  a_UIcmd_set_msg(Client_bw, "ERROR: Connection closed early, "
+                                             "read not complete.");
+               }
                a_UIcmd_set_page_prog(Client_bw, 0, 0);
+            }
             Cache_client_dequeue(Client);
             --i; /* Keep the index value in the next iteration */
 
-            /* within CA_GotData, we assert just one redirect call */
+            /* we assert just one redirect call */
             if (entry->Flags & CA_Redirect)
                Cache_redirect(entry, flags, Client_bw);
          }
@@ -1327,7 +1335,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
          }
       }
       a_Url_free(url);
-   } else if (entry->Auth && (entry->Flags & CA_GotData)) {
+   } else if (entry->Auth && !(entry->Flags & CA_InProgress)) {
       Cache_auth_entry(entry, Client_bw);
    }
 

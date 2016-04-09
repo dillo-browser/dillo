@@ -285,6 +285,10 @@ static void IO_fd_read_cb(int fd, void *data)
    } else {
       if (IO_callback(io) == 0)
          a_IOwatch_remove_fd(fd, DIO_READ);
+      if ((io = IO_get(io_key)) && io->Status) {
+         /* check io because IO_read OpSend could trigger abort */
+         a_IO_ccc(OpAbort, 2, FWD, io->Info, io, NULL);
+      }
    }
 }
 
@@ -443,7 +447,8 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(dbuf);
             break;
          case OpEnd:
-            a_Chain_fcb(OpEnd, Info, NULL, NULL);
+         case OpAbort:
+            a_Chain_fcb(Op, Info, NULL, NULL);
             IO_close_fd(io, IO_StopRdWr); /* IO_StopRd would leak FDs */
             IO_free(io);
             dFree(Info);
