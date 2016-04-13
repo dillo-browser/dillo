@@ -911,6 +911,17 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             }
             dFree(Info);
             break;
+         case OpAbort:
+            if (sd->https_proxy_reply) {
+               MSG("CONNECT through proxy failed. "
+                   "Full reply not received:\n%s\n",
+                   sd->https_proxy_reply->len ? sd->https_proxy_reply->str :
+                   "(nothing)");
+            }
+            Http_socket_free(SKey);
+            a_Chain_fcb(OpAbort, Info, NULL, "Both");
+            dFree(Info);
+            break;
          default:
             MSG_WARN("Unused CCC 2F Op %d\n", Op);
             break;

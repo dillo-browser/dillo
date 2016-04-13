@@ -502,10 +502,10 @@ static int Capi_map_cache_flags(uint_t flags)
       status |= CAPI_IsCached;
       if (flags & CA_IsEmpty)
          status |= CAPI_IsEmpty;
-      if (flags & CA_GotData)
-         status |= CAPI_Completed;
-      else
+      if (flags & CA_InProgress)
          status |= CAPI_InProgress;
+      else
+         status |= CAPI_Completed;
 
       /* CAPI_Aborted is not yet used/defined */
    }
