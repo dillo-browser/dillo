@@ -311,49 +311,11 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
                   ref, extremesChanged ? "true" : "false",
                   fast ? "true" : "false");
 
-   // queueResize() can be called recursively; calls are queued, so
-   // that actualQueueResize() is clean.
-
-   if (queueResizeEntered ()) {
-      DBG_OBJ_MSG ("resize", 1, "put into queue");
-      layout->queueQueueResizeList->pushUnder (new Layout::QueueResizeItem
-                                               (this, ref, extremesChanged,
-                                                fast));
-   } else {
-      actualQueueResize (ref, extremesChanged, fast);
-
-      DBG_IF_RTFL {
-         if (layout == NULL)
-            DBG_OBJ_MSG ("resize", 1, "layout is not set");
-         else if (layout->queueQueueResizeList->size () == 0)
-            DBG_OBJ_MSG ("resize", 1, "queue item list is empty");
-      }
-
-      while (layout != NULL && layout->queueQueueResizeList->size () > 0) {
-         Layout::QueueResizeItem *item =
-            layout->queueQueueResizeList->getTop ();
-         item->widget->actualQueueResize (item->ref, item->extremesChanged,
-                                          item->fast);
-         layout->queueQueueResizeList->pop ();
-      }
-   }
-
-   DBG_OBJ_LEAVE ();
-}
-
-void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
-{
-   assert (!queueResizeEntered ());
-
-   DBG_OBJ_ENTER ("resize", 0, "actualQueueResize", "%d, %s, %s",
-                  ref, extremesChanged ? "true" : "false",
-                  fast ? "true" : "false");
-
    enterQueueResize ();
 
    Widget *widget2, *child;
 
-   Flags resizeFlag, extremesFlag;
+   Flags resizeFlag, extremesFlag, totalFlags;
 
    if (layout) {
       // If RESIZE_QUEUED is set, this widget is already in the list.
@@ -371,7 +333,11 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
    setFlags (ALLOCATE_QUEUED);
    markSizeChange (ref);
 
+   totalFlags = resizeFlag;
+   
    if (extremesChanged) {
+      totalFlags = (Flags)(totalFlags | extremesFlag);
+      
       setFlags (extremesFlag);
       markExtremesChange (ref);
    }
@@ -391,12 +357,7 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
       }
    } else {
       for (widget2 = parent, child = this; widget2;
-           child = widget2, widget2 = widget2->parent) {
-         // TODO Could the following code be used for optimization?
-         //if (widget2->resizeQueued () &&
-         //    (widget2->extremesQueued () || !extremesChanged))
-         //   break;
-         
+           child = widget2, widget2 = widget2->parent) {         
          if (layout && !widget2->resizeQueued ())
             layout->queueResizeList->put (widget2);
 
@@ -412,6 +373,16 @@ void Widget::actualQueueResize (int ref, bool extremesChanged, bool fast)
          if (extremesChanged) {
             widget2->setFlags (extremesFlag);
             widget2->markExtremesChange (child->parentRef);
+         }
+
+         if (widget2->parent &&
+             (widget2->parent->flags & totalFlags) == totalFlags) {
+            widget2->parent->markSizeChange (widget2->parentRef);
+            if (extremesChanged) {
+               widget2->parent->markExtremesChange (widget2->parentRef);
+         }
+            
+            break;
          }
       }
 

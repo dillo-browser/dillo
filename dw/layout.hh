@@ -152,27 +152,9 @@ private:
       ~Anchor ();
    };
 
-   class QueueResizeItem: public lout::object::Object
-   {
-   public:
-      Widget *widget;
-      int ref;
-      bool extremesChanged, fast;
-
-      inline QueueResizeItem (Widget *widget, int ref, bool extremesChanged,
-                              bool fast)
-      {
-         this->widget = widget;
-         this->ref = ref;
-         this->extremesChanged = extremesChanged;
-         this->fast = fast;
-      }
-   };
-
    Platform *platform;
    View *view;
    Widget *topLevel, *widgetAtPoint;
-   lout::container::typed::Stack<QueueResizeItem> *queueQueueResizeList;
    lout::container::typed::Vector<Widget> *queueResizeList;
 
    /* The state, which must be projected into the view. */

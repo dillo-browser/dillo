@@ -164,7 +164,6 @@ private:
    void queueResize (int ref, bool extremesChanged, bool fast);
    inline void queueResizeFast (int ref, bool extremesChanged)
    { queueResize (ref, extremesChanged, true); }
-   void actualQueueResize (int ref, bool extremesChanged, bool fast);
 
 public:
    /**
