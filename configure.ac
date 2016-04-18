@@ -2,7 +2,7 @@ dnl Process this file with aclocal, autoconf and automake.
 
 # "grows2" (for second phase of GROWS) to distinguish this version
 # from version 3.1-dev. Remember to remove this again after merging.
-AC_INIT([dillo], [3.1-dev_grows2])
+AC_INIT([dillo], [3.1-dev])
 
 dnl Detect the canonical target build environment
 AC_CANONICAL_TARGET
