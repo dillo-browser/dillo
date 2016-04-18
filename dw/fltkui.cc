@@ -1040,6 +1040,9 @@ FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
    numCols = cols;
    numRows = rows;
 
+   DBG_OBJ_SET_NUM ("numCols", numCols);
+   DBG_OBJ_SET_NUM ("numRows", numRows);
+
    // Check values. Upper bound check is left to the caller.
    if (numCols < 1) {
       MSG_WARN("numCols = %d is set to 1.\n", numCols);
