@@ -17,7 +17,9 @@ protected:
 
    void correctRequisitionOfChild (Widget *child,
                                    core::Requisition *requisition,
-                                   void (*splitHeightFun) (int, int*, int*));
+                                   void (*splitHeightFun) (int, int*, int*),
+                                   bool allowDecreaseWidth,
+                                   bool allowDecreaseHeight);
    void correctExtremesOfChild (Widget *child, core::Extremes *extremes,
                                 bool useAdjustmentWidth);
 

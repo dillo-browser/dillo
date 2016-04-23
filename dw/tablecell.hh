@@ -21,7 +21,9 @@ void correctCorrectedRequisitionOfChild (core::Widget *widget,
                                          core::Widget *child,
                                          core::Requisition *requisition,
                                          void (*splitHeightFun) (int, int*,
-                                                                 int*));
+                                                                 int*),
+                                         bool allowDecreaseWidth,
+                                         bool allowDecreaseHeight);
 void correctCorrectedExtremesOfChild (core::Widget *widget, core::Widget *child,
                                       core::Extremes *extremes,
                                       bool useAdjustmentWidth);

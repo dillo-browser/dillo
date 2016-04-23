@@ -172,7 +172,7 @@ void SimpleContainer::sizeRequestSimpl (Requisition *requisition)
    requisition->ascent = childReq.ascent + boxOffsetY ();
    requisition->descent = childReq.descent + boxRestHeight ();
 
-   correctRequisition (requisition, splitHeightPreserveAscent);
+   correctRequisition (requisition, splitHeightPreserveAscent, true, true);
 }
 
 

@@ -121,7 +121,8 @@ void Table::sizeRequestSimpl (core::Requisition *requisition)
       boxDiffHeight () + cumHeight->get (numRows) + getStyle()->vBorderSpacing;
    requisition->descent = 0;
 
-   correctRequisition (requisition, core::splitHeightPreserveDescent);
+   correctRequisition (requisition, core::splitHeightPreserveDescent, true,
+                       false);
 
    // For the order, see similar reasoning for dw::Textblock.
    correctRequisitionByOOF (requisition, core::splitHeightPreserveDescent);
@@ -944,7 +945,8 @@ void Table::actuallyCalcCellSizes (bool calcHeights)
       // Even if 'width' is defined, it may not have a defined value. We try
       // this trick (should perhaps be replaced by a cleaner solution):
       core::Requisition testReq = { -1, -1, -1 };
-      correctRequisition (&testReq, core::splitHeightPreserveDescent);
+      correctRequisition (&testReq, core::splitHeightPreserveDescent, true,
+                          false);
       if (testReq.width != -1)
          totalWidthSpecified = true;
    }

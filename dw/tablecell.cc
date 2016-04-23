@@ -20,6 +20,8 @@
 #include "tablecell.hh"
 #include "table.hh"
 
+using namespace lout;
+
 namespace dw {
 
 /**
@@ -78,21 +80,27 @@ void correctCorrectedRequisitionOfChild (core::Widget *widget,
                                          core::Widget *child,
                                          core::Requisition *requisition,
                                          void (*splitHeightFun) (int, int*,
-                                                                 int*))
+                                                                 int*),
+                                         bool allowDecreaseWidth,
+                                         bool allowDecreaseHeight)
 {
    DBG_OBJ_ENTER_O ("resize", 0, widget, "tablecell::correctRequisitionOfChild",
-                    "%p, %d * (%d + %d), ...", child, requisition->width,
-                    requisition->ascent, requisition->descent);
+                    "%p, %d * (%d + %d), ..., %s, %s",
+                    child, requisition->width, requisition->ascent,
+                    requisition->descent, misc::boolToStr (allowDecreaseWidth),
+                    misc::boolToStr (allowDecreaseHeight));
 
    // Make sure that this width does not exceed the width of the table
    // cell (minus margin/border/padding).
 
    int thisWidth = widget->getAvailWidth (true);
    DBG_OBJ_MSGF_O ("resize", 1, widget, "thisWidth = %d", thisWidth);
-   requisition->width =
+   int newWidth =
       lout::misc::max (lout::misc::min (requisition->width,
                                         thisWidth - widget->boxDiffWidth ()),
                        0);
+   requisition->width = allowDecreaseWidth ?
+      newWidth : misc::max (requisition->width, newWidth);
 
    DBG_OBJ_LEAVE_O (widget);
 }

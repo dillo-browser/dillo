@@ -78,9 +78,13 @@ int Embed::getAvailHeightOfChild (Widget *child, bool forceValue)
 
 void Embed::correctRequisitionOfChild (Widget *child,
                                        Requisition *requisition,
-                                       void (*splitHeightFun) (int, int*, int*))
+                                       void (*splitHeightFun) (int, int*, int*),
+                                       bool allowDecreaseWidth,
+                                       bool allowDecreaseHeight)
 {
-   resource->correctRequisitionOfChild (child, requisition, splitHeightFun);
+   resource->correctRequisitionOfChild (child, requisition, splitHeightFun,
+                                        allowDecreaseWidth,
+                                        allowDecreaseHeight);
 }
 
 void Embed::correctExtremesOfChild (Widget *child, Extremes *extremes,
@@ -244,7 +248,9 @@ int Resource::getAvailHeightOfChild (Widget *child, bool forceValue)
 void Resource::correctRequisitionOfChild (Widget *child,
                                           Requisition *requisition,
                                           void (*splitHeightFun) (int, int*,
-                                                                  int*))
+                                                                  int*),
+                                          bool allowDecreaseWidth,
+                                          bool allowDecreaseHeight)
 {
    // Only used when the resource contains other dillo widgets.
    misc::notImplemented ("Resource::correctRequisitionOfChild");
@@ -416,7 +422,9 @@ int ComplexButtonResource::getAvailHeightOfChild (Widget *child,
 void ComplexButtonResource::correctRequisitionOfChild (Widget *child,
                                                        Requisition *requisition,
                                                        void (*splitHeightFun)
-                                                       (int, int*, int*))
+                                                       (int, int*, int*),
+                                                       bool allowDecreaseWidth,
+                                                       bool allowDecreaseHeight)
 {
    // Similar to Widget::correctRequisitionOfChild, but for percentage
    // the relief has to be considered.
@@ -428,15 +436,18 @@ void ComplexButtonResource::correctRequisitionOfChild (Widget *child,
                                     - getEmbed()->boxDiffWidth ()
                                     - 2 * reliefXThickness (),
                                     0);
-         requisition->width =
+         int newWidth =
             child->applyPerWidth (baseWidth, child->getStyle()->width);
+         requisition->width = allowDecreaseWidth ?
+            newWidth : misc::max (requisition->width, newWidth);
       }
    } else
-      getEmbed()->correctReqWidthOfChildNoRec (child, requisition);
+      getEmbed()->correctReqWidthOfChildNoRec (child, requisition,
+                                               allowDecreaseWidth);
 
    // TODO Percentage heights are ignored again.
-   getEmbed()->correctReqHeightOfChildNoRec (child, requisition,
-                                             splitHeightFun);
+   getEmbed()->correctReqHeightOfChildNoRec(child, requisition,
+                                            splitHeightFun, allowDecreaseWidth);
 
 }
 

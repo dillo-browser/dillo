@@ -200,7 +200,8 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
    requisition->ascent += boxOffsetY ();
    requisition->descent += boxRestHeight ();
 
-   correctRequisition (requisition, core::splitHeightPreserveDescent);
+   correctRequisition (requisition, core::splitHeightPreserveDescent, true,
+                       true);
 
    if (buffer) {
       // If one dimension is set, preserve the aspect ratio (without

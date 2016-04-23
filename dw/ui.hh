@@ -236,7 +236,9 @@ protected:
    int getAvailHeightOfChild (Widget *child, bool forceValue);
    void correctRequisitionOfChild (Widget *child,
                                    Requisition *requisition,
-                                   void (*splitHeightFun) (int, int*, int*));
+                                   void (*splitHeightFun) (int, int*, int*),
+                                   bool allowDecreaseWidth,
+                                   bool allowDecreaseHeight);
    void correctExtremesOfChild (Widget *child, Extremes *extremes,
                                 bool useAdjustmentWidth);
 
@@ -261,14 +263,17 @@ public:
    inline Resource *getResource () { return resource; }
 
    inline void correctReqWidthOfChildNoRec (Widget *child,
-                                            Requisition *requisition)
-   { Widget::correctReqWidthOfChild (child, requisition); }
+                                            Requisition *requisition,
+                                            bool allowDecreaseWidth)
+   { Widget::correctReqWidthOfChild (child, requisition, allowDecreaseWidth); }
 
    inline void correctReqHeightOfChildNoRec (Widget *child,
                                              Requisition *requisition,
                                              void (*splitHeightFun) (int, int*,
-                                                                     int*))
-   { Widget::correctReqHeightOfChild (child, requisition, splitHeightFun); }
+                                                                     int*),
+                                             bool allowDecreaseHeight)
+   { Widget::correctReqHeightOfChild (child, requisition, splitHeightFun,
+                                      allowDecreaseHeight); }
 
    virtual void correctExtremesOfChildNoRec (Widget *child, Extremes *extremes,
                                              bool useAdjustmentWidth)
@@ -363,7 +368,9 @@ public:
    virtual void correctRequisitionOfChild (Widget *child,
                                            Requisition *requisition,
                                            void (*splitHeightFun) (int, int*,
-                                                                   int*));
+                                                                   int*),
+                                           bool allowDecreaseWidth,
+                                           bool allowDecreaseHeight);
    virtual void correctExtremesOfChild (Widget *child, Extremes *extremes,
                                         bool useAdjustmentWidth);
    virtual void containerSizeChangedForChildren ();
@@ -440,7 +447,9 @@ public:
    int getAvailHeightOfChild (Widget *child, bool forceValue);
    void correctRequisitionOfChild (Widget *child,
                                    Requisition *requisition,
-                                   void (*splitHeightFun) (int, int*, int*));
+                                   void (*splitHeightFun) (int, int*, int*),
+                                   bool allowDecreaseWidth,
+                                   bool allowDecreaseHeight);
    void correctExtremesOfChild (Widget *child, Extremes *extremes,
                                 bool useAdjustmentWidth);
    void containerSizeChangedForChildren ();

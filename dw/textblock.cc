@@ -389,7 +389,8 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
    DBG_OBJ_MSGF ("resize", 1, "before correction: %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
 
-   correctRequisition (requisition, core::splitHeightPreserveAscent);
+   correctRequisition (requisition, core::splitHeightPreserveAscent, true,
+                       false);
 
    // Dealing with parts out of flow, which may overlap the borders of
    // the text block. Base lines are ignored here: they do not play a

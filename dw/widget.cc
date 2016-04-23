@@ -729,19 +729,26 @@ int Widget::getAvailHeight (bool forceValue)
 }
 
 void Widget::correctRequisition (Requisition *requisition,
-                                 void (*splitHeightFun) (int, int *, int *))
+                                 void (*splitHeightFun) (int, int *, int *),
+                                 bool allowDecreaseWidth,
+                                 bool allowDecreaseHeight)
 {
    // TODO Correct height by ... not extremes, but ...? (Height extremes?)
 
-   DBG_OBJ_ENTER ("resize", 0, "correctRequisition", "%d * (%d + %d), ...",
+   DBG_OBJ_ENTER ("resize", 0, "correctRequisition",
+                  "%d * (%d + %d), ..., %s, %s",
                   requisition->width, requisition->ascent,
-                  requisition->descent);
+                  requisition->descent, misc::boolToStr (allowDecreaseWidth),
+                  misc::boolToStr (allowDecreaseHeight));
 
    if (parent == NULL && quasiParent == NULL) {
       DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
 
       int limitMinWidth = getMinWidth (NULL, true);
+      if (!allowDecreaseWidth && limitMinWidth < requisition->width)
+         limitMinWidth = requisition->width;
+      
       int viewportWidth =
          layout->viewportWidth - (layout->canvasHeightGreater ?
                                   layout->vScrollbarThickness : 0);
@@ -753,6 +760,9 @@ void Widget::correctRequisition (Requisition *requisition,
                                layout->viewportHeight, NULL, false);
       int minHeight = calcHeight (getStyle()->minHeight, false,
                                   layout->viewportHeight, NULL, false);
+      if (!allowDecreaseHeight &&
+          minHeight < requisition->ascent + requisition->descent)
+         minHeight = requisition->ascent + requisition->descent;
       int maxHeight = calcHeight (getStyle()->maxHeight, false,
                                   layout->viewportHeight, NULL, false);
 
@@ -772,13 +782,17 @@ void Widget::correctRequisition (Requisition *requisition,
    } else if (parent) {
       DBG_OBJ_MSG ("resize", 1, "delegated to parent");
       DBG_OBJ_MSG_START ();
-      parent->correctRequisitionOfChild (this, requisition, splitHeightFun);
+      parent->correctRequisitionOfChild (this, requisition, splitHeightFun,
+                                         allowDecreaseWidth,
+                                         allowDecreaseHeight);
       DBG_OBJ_MSG_END ();
    } else /* if (quasiParent) */ {
       DBG_OBJ_MSG ("resize", 1, "delegated to quasiParent");
       DBG_OBJ_MSG_START ();
       quasiParent->correctRequisitionOfChild (this, requisition,
-                                              splitHeightFun);
+                                              splitHeightFun,
+                                              allowDecreaseWidth,
+                                              allowDecreaseHeight);
       DBG_OBJ_MSG_END ();
    }
 
@@ -1719,44 +1733,54 @@ int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
 
 void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
                                         void (*splitHeightFun) (int, int*,
-                                                                int*))
+                                                                int*),
+                                        bool allowDecreaseWidth,
+                                        bool allowDecreaseHeight)
 {
    // Again, a suitable implementation for all widgets (perhaps).
 
    DBG_OBJ_ENTER ("resize", 0, "correctRequisitionOfChild",
-                  "%p, %d * (%d + %d), ...", child, requisition->width,
-                  requisition->ascent, requisition->descent);
+                  "%p, %d * (%d + %d), ..., %s, %s", child, requisition->width,
+                  requisition->ascent, requisition->descent,
+                  misc::boolToStr (allowDecreaseWidth),
+                  misc::boolToStr (allowDecreaseHeight));
 
    // See comment in Widget::getAvailWidthOfChild.
    Widget *effContainer = child->quasiParent ? child->quasiParent :
       (child->container ? child->container : child->parent);
 
    if (effContainer == this) {
-      correctReqWidthOfChild (child, requisition);
-      correctReqHeightOfChild (child, requisition, splitHeightFun);
+      correctReqWidthOfChild (child, requisition, allowDecreaseWidth);
+      correctReqHeightOfChild (child, requisition, splitHeightFun,
+                               allowDecreaseHeight);
    } else {
       DBG_OBJ_MSG ("resize", 1, "delegated to (effective) container");
       DBG_OBJ_MSG_START ();
       effContainer->correctRequisitionOfChild (child, requisition,
-                                               splitHeightFun);
+                                               splitHeightFun,
+                                               allowDecreaseWidth,
+                                               allowDecreaseHeight);
       DBG_OBJ_MSG_END ();
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
-                 requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d * (%d + %d)", requisition->width, requisition->ascent,
+                      requisition->descent);
 }
 
-void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition)
+void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition,
+                                     bool allowDecreaseWidth)
 {
-   DBG_OBJ_ENTER ("resize", 0, "correctReqWidthOfChild", "%p, %d * (%d + %d)",
+   DBG_OBJ_ENTER ("resize", 0, "correctReqWidthOfChild",
+                  "%p, %d * (%d + %d), %s",
                   child, requisition->width, requisition->ascent,
-                  requisition->descent);
+                  requisition->descent, misc::boolToStr (allowDecreaseWidth));
 
    assert (this == child->quasiParent || this == child->container);
 
    int limitMinWidth = child->getMinWidth (NULL, true);
+   if (!allowDecreaseWidth && limitMinWidth < requisition->width)
+      limitMinWidth = requisition->width;
+
    child->calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, false,
                           &requisition->width);
 
@@ -1767,20 +1791,25 @@ void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition)
 }
 
 void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
-                                      void (*splitHeightFun) (int, int*, int*))
+                                      void (*splitHeightFun) (int, int*, int*),
+                                      bool allowDecreaseHeight)
 {
    // TODO Correct height by extremes? (Height extemes?)
 
    assert (this == child->quasiParent || this == child->container);
 
    DBG_OBJ_ENTER ("resize", 0, "correctReqHeightOfChild",
-                  "%p, %d * (%d + %d), ...", child, requisition->width,
-                  requisition->ascent, requisition->descent);
+                  "%p, %d * (%d + %d), ..., %s", child, requisition->width,
+                  requisition->ascent, requisition->descent,
+                  misc::boolToStr (allowDecreaseHeight));
 
    int height = child->calcHeight (child->getStyle()->height, false, -1, this,
                                    false);
    int minHeight = child->calcHeight (child->getStyle()->minHeight, false, -1,
                                       this, false);
+   if (!allowDecreaseHeight &&
+       minHeight < requisition->ascent + requisition->descent)
+      minHeight = requisition->ascent + requisition->descent;
    int maxHeight = child->calcHeight (child->getStyle()->maxHeight, false, -1,
                                       this, false);
 

@@ -23,6 +23,8 @@
 #include "../lout/debug.hh"
 #include <stdio.h>
 
+using namespace lout;
+
 namespace dw {
 
 int AlignedTableCell::CLASS_ID = -1;
@@ -92,16 +94,24 @@ void AlignedTableCell::correctRequisitionOfChild (Widget *child,
                                                   *requisition,
                                                   void (*splitHeightFun) (int,
                                                                           int*,
-                                                                          int*))
+                                                                          int*),
+                                                  bool allowDecreaseWidth,
+                                                  bool allowDecreaseHeight)
 {
    DBG_OBJ_ENTER ("resize", 0, "AlignedTableCell::correctRequisitionOfChild",
-                  "%p, %d * (%d + %d), ...", child, requisition->width,
-                  requisition->ascent, requisition->descent);
+                  "%p, %d * (%d + %d), ..., %s, %s", child, requisition->width,
+                  requisition->ascent, requisition->descent,
+                  misc::boolToStr (allowDecreaseWidth),
+                  misc::boolToStr (allowDecreaseHeight));
 
    AlignedTextblock::correctRequisitionOfChild (child, requisition,
-                                                splitHeightFun);
+                                                splitHeightFun,
+                                                allowDecreaseWidth,
+                                                allowDecreaseHeight);
    tablecell::correctCorrectedRequisitionOfChild (this, child, requisition,
-                                                  splitHeightFun);
+                                                  splitHeightFun,
+                                                  allowDecreaseWidth,
+                                                  allowDecreaseHeight);
 
    DBG_OBJ_LEAVE ();
 }

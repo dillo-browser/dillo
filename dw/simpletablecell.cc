@@ -21,8 +21,9 @@
 
 #include "simpletablecell.hh"
 #include "tablecell.hh"
-#include "../lout/misc.hh"
 #include "../lout/debug.hh"
+
+using namespace lout;
 
 namespace dw {
 
@@ -85,15 +86,23 @@ void SimpleTableCell::correctRequisitionOfChild (Widget *child,
                                                  core::Requisition *requisition,
                                                  void (*splitHeightFun) (int,
                                                                          int*,
-                                                                         int*))
+                                                                         int*),
+                                                 bool allowDecreaseWidth,
+                                                 bool allowDecreaseHeight)
 {
    DBG_OBJ_ENTER ("resize", 0, "SimpleTableCell::correctRequisitionOfChild",
-                  "%p, %d * (%d + %d), ...", child, requisition->width,
-                  requisition->ascent, requisition->descent);
+                  "%p, %d * (%d + %d), ..., %s, %s", child, requisition->width,
+                  requisition->ascent, requisition->descent,
+                  misc::boolToStr (allowDecreaseWidth),
+                  misc::boolToStr (allowDecreaseHeight));
 
-   Textblock::correctRequisitionOfChild (child, requisition, splitHeightFun);
+   Textblock::correctRequisitionOfChild (child, requisition, splitHeightFun,
+                                         allowDecreaseWidth,
+                                         allowDecreaseHeight);
    tablecell::correctCorrectedRequisitionOfChild (this, child, requisition,
-                                                  splitHeightFun);
+                                                  splitHeightFun,
+                                                  allowDecreaseWidth,
+                                                  allowDecreaseHeight);
 
    DBG_OBJ_LEAVE ();
 }
