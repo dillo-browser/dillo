@@ -1951,20 +1951,30 @@ void Widget::removeChild (Widget *child)
 
 void splitHeightPreserveAscent (int height, int *ascent, int *descent)
 {
+   DBG_OBJ_ENTER_S ("resize", 1, "splitHeightPreserveAscent", "%d, %d, %d",
+                    height, *ascent, *descent);
+   
    *descent = height - *ascent;
    if (*descent < 0) {
       *descent = 0;
       *ascent = height;
    }
+
+   DBG_OBJ_LEAVE_VAL_S ("%d, %d", *ascent, *descent);
 }
 
 void splitHeightPreserveDescent (int height, int *ascent, int *descent)
 {
+   DBG_OBJ_ENTER_S ("resize", 1, "splitHeightPreserveDescent", "%d, %d, %d",
+                    height, *ascent, *descent);
+
    *ascent = height - *descent;
    if (*ascent < 0) {
       *ascent = 0;
       *descent = height;
    }
+
+   DBG_OBJ_LEAVE_VAL_S ("%d, %d", *ascent, *descent);
 }
 
 } // namespace core
