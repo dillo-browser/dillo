@@ -51,6 +51,8 @@ Embed::~Embed()
 void Embed::sizeRequestSimpl (Requisition *requisition)
 {
    resource->sizeRequest (requisition);
+   // TODO Correction should perhaps be left to the resouces.
+   correctRequisition(requisition, core::splitHeightPreserveAscent, true, true);
 }
 
 void Embed::getExtremesSimpl (Extremes *extremes)
