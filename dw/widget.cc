@@ -758,13 +758,18 @@ void Widget::correctRequisition (Requisition *requisition,
       // For layout->viewportHeight, see comment in getAvailHeight().
       int height = calcHeight (getStyle()->height, false,
                                layout->viewportHeight, NULL, false);
+      adjustHeight (&height, allowDecreaseHeight, requisition->ascent,
+                    requisition->descent);
+
       int minHeight = calcHeight (getStyle()->minHeight, false,
                                   layout->viewportHeight, NULL, false);
-      if (!allowDecreaseHeight &&
-          minHeight < requisition->ascent + requisition->descent)
-         minHeight = requisition->ascent + requisition->descent;
+      adjustHeight (&minHeight, allowDecreaseHeight, requisition->ascent,
+                    requisition->descent);
+         
       int maxHeight = calcHeight (getStyle()->maxHeight, false,
                                   layout->viewportHeight, NULL, false);
+      adjustHeight (&maxHeight, allowDecreaseHeight, requisition->ascent,
+                    requisition->descent);
 
       // TODO Perhaps split first, then add box ascent and descent.
       if (height != -1)
@@ -970,6 +975,13 @@ int Widget::calcHeight (style::Length cssValue, bool usePercentage,
    DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
    DBG_OBJ_LEAVE ();
    return height;
+}
+
+void Widget::adjustHeight (int *height, bool allowDecreaseHeight, int ascent,
+                           int descent)
+{
+   if (!allowDecreaseHeight && *height != -1 && *height < ascent + descent)
+      *height = ascent + descent;
 }
 
 /**
@@ -1805,13 +1817,18 @@ void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
 
    int height = child->calcHeight (child->getStyle()->height, false, -1, this,
                                    false);
+   adjustHeight (&height, allowDecreaseHeight, requisition->ascent,
+                 requisition->descent);
+
    int minHeight = child->calcHeight (child->getStyle()->minHeight, false, -1,
                                       this, false);
-   if (!allowDecreaseHeight &&
-       minHeight < requisition->ascent + requisition->descent)
-      minHeight = requisition->ascent + requisition->descent;
+   adjustHeight (&minHeight, allowDecreaseHeight, requisition->ascent,
+                 requisition->descent);
+
    int maxHeight = child->calcHeight (child->getStyle()->maxHeight, false, -1,
                                       this, false);
+   adjustHeight (&maxHeight, allowDecreaseHeight, requisition->ascent,
+                 requisition->descent);
 
    // TODO Perhaps split first, then add box ascent and descent.
    if (height != -1)

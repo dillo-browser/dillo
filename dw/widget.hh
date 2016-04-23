@@ -506,6 +506,8 @@ public:
                         int limitMinWidth, bool forceValue, int *finalWidth);
    int calcHeight (style::Length cssValue, bool usePercentage, int refHeight,
                    Widget *refWidget, bool forceValue);
+   static void adjustHeight (int *height, bool allowDecreaseHeight, int ascent,
+                             int descent);
 
    virtual int applyPerWidth (int containerWidth, style::Length perWidth);
    virtual int applyPerHeight (int containerHeight, style::Length perHeight);
