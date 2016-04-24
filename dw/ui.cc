@@ -60,7 +60,7 @@ void Embed::getExtremesSimpl (Extremes *extremes)
    resource->getExtremes (extremes);
    correctExtremes (extremes, false);
    extremes->adjustmentWidth =
-      misc::max (extremes->minWidthIntrinsic, extremes->minWidth);
+      misc::min (extremes->minWidthIntrinsic, extremes->minWidth);
 }
 
 void Embed::sizeAllocateImpl (Allocation *allocation)
