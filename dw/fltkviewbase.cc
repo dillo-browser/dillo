@@ -434,7 +434,7 @@ void FltkViewBase::finishDrawing (core::Rectangle *area)
 void FltkViewBase::queueDraw (core::Rectangle *area)
 {
    drawRegion.addRectangle (area);
-   damage (FL_DAMAGE_USER1);
+   damage (FL_DAMAGE_USER1);  // USER1 for buffered draw
 }
 
 void FltkViewBase::queueDrawTotal ()

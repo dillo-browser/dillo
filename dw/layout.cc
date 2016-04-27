@@ -931,7 +931,6 @@ void Layout::resizeIdle ()
 
       // Tell the view about the new world size.
       view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
-      //  view->queueDrawTotal (false);
 
       if (usesViewport) {
          int currHThickness = currHScrollbarThickness();

@@ -193,34 +193,37 @@ void FltkViewport::draw_area (void *data, int x, int y, int w, int h)
   }
 
   fl_pop_clip();
-
 }
 
+/*
+ * Draw the viewport.
+ *
+ *  + Damage flags come in different ways, draw() should cope with them all.
+ *  + FL_DAMAGE_CHILD can flag scroll bars or embedded FLTK widgets.
+ */
 void FltkViewport::draw ()
 {
    int hdiff = vscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
    int vdiff = hscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
    int d = damage();
 
-   if (d & FL_DAMAGE_SCROLL) {
-      clear_damage (FL_DAMAGE_SCROLL);
+   MSG("FltkViewport::draw d=%d  =>  ", d);
+   if (d == (FL_DAMAGE_SCROLL | FL_DAMAGE_CHILD)) {
       fl_scroll(x(), y(), w() - hdiff, h() - vdiff,
                 -scrollDX, -scrollDY, draw_area, this);
-      clear_damage (d & ~FL_DAMAGE_SCROLL);
+      MSG("fl_scroll()\n");
+   } else {
+      draw_area(this, x(), y(), w () - hdiff, h () - vdiff);
+      MSG("draw_area()\n");
    }
 
-   if (d) {
-      draw_area(this, x(), y(), w () - hdiff, h () - vdiff);
-
-      if (d == FL_DAMAGE_ALL || hscrollbar->damage ())
-         draw_child (*hscrollbar);
-      if (d == FL_DAMAGE_ALL || vscrollbar->damage ())
-         draw_child (*vscrollbar);
-
-      if (d == FL_DAMAGE_ALL && hdiff && vdiff) {
-         fl_color(FL_BACKGROUND_COLOR);
-         fl_rectf(x()+w()-hdiff, y()+h()-vdiff, hdiff, vdiff);
-      }
+   if ((d & (FL_DAMAGE_ALL | FL_DAMAGE_EXPOSE)) || vscrollbar->damage ())
+      draw_child (*vscrollbar);
+   if ((d & (FL_DAMAGE_ALL | FL_DAMAGE_EXPOSE)) || hscrollbar->damage ())
+      draw_child (*hscrollbar);
+   if ((d & (FL_DAMAGE_ALL | FL_DAMAGE_EXPOSE)) && (hdiff && vdiff)) {
+      fl_color(FL_BACKGROUND_COLOR);
+      fl_rectf(x()+w()-hdiff, y()+h()-vdiff, hdiff, vdiff);
    }
 
    scrollDX = 0;
