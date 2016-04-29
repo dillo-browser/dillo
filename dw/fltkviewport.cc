@@ -199,31 +199,38 @@ void FltkViewport::draw_area (void *data, int x, int y, int w, int h)
  * Draw the viewport.
  *
  *  + Damage flags come in different ways, draw() should cope with them all.
+ *  + Damage flags are alive for visible and hidden widgets.
  *  + FL_DAMAGE_CHILD can flag scroll bars or embedded FLTK widgets.
  */
 void FltkViewport::draw ()
 {
-   int hdiff = vscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
-   int vdiff = hscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
-   int d = damage();
+   const int d = damage(),
+             vis_vs = vscrollbar->visible () ? SCROLLBAR_THICKNESS : 0,
+             vis_hs = hscrollbar->visible () ? SCROLLBAR_THICKNESS : 0,
+             draw = d & (FL_DAMAGE_ALL | FL_DAMAGE_EXPOSE),
+             draw_vs = vis_vs && vscrollbar->damage (),
+             draw_hs = vis_hs && hscrollbar->damage ();
 
    MSG("FltkViewport::draw d=%d  =>  ", d);
-   if (d == (FL_DAMAGE_SCROLL | FL_DAMAGE_CHILD)) {
-      fl_scroll(x(), y(), w() - hdiff, h() - vdiff,
+   // scrollbars
+   if (draw || draw_vs)
+      draw_child (*vscrollbar);
+   if (draw || draw_hs)
+      draw_child (*hscrollbar);
+   if (draw && vis_vs && vis_hs) {
+      fl_color(FL_BACKGROUND_COLOR);
+      fl_rectf(x()+w()-vis_vs, y()+h()-vis_hs, vis_vs, vis_hs);
+   }
+   // main area
+   if (d == FL_DAMAGE_CHILD && (draw_vs || draw_hs)) {
+      MSG("none\n");
+   } else if (d == (FL_DAMAGE_SCROLL | FL_DAMAGE_CHILD)) {
+      fl_scroll(x(), y(), w() - vis_vs, h() - vis_hs,
                 -scrollDX, -scrollDY, draw_area, this);
       MSG("fl_scroll()\n");
    } else {
-      draw_area(this, x(), y(), w () - hdiff, h () - vdiff);
+      draw_area(this, x(), y(), w() - vis_vs, h() - vis_hs);
       MSG("draw_area()\n");
-   }
-
-   if ((d & (FL_DAMAGE_ALL | FL_DAMAGE_EXPOSE)) || vscrollbar->damage ())
-      draw_child (*vscrollbar);
-   if ((d & (FL_DAMAGE_ALL | FL_DAMAGE_EXPOSE)) || hscrollbar->damage ())
-      draw_child (*hscrollbar);
-   if ((d & (FL_DAMAGE_ALL | FL_DAMAGE_EXPOSE)) && (hdiff && vdiff)) {
-      fl_color(FL_BACKGROUND_COLOR);
-      fl_rectf(x()+w()-hdiff, y()+h()-vdiff, hdiff, vdiff);
    }
 
    scrollDX = 0;
@@ -232,6 +239,7 @@ void FltkViewport::draw ()
 
 int FltkViewport::handle (int event)
 {
+   int ret = 0;
    _MSG("FltkViewport::handle %s\n", fl_eventnames[event]);
 
    switch(event) {
@@ -312,9 +320,9 @@ int FltkViewport::handle (int event)
       if (Fl::event_button() == FL_MIDDLE_MOUSE) {
          setCursor (core::style::CURSOR_DEFAULT);
       } else if (verScrolling) {
-         vscrollbar->handle(event);
+         ret = vscrollbar->handle(event);
       } else if (horScrolling) {
-         hscrollbar->handle(event);
+         ret = hscrollbar->handle(event);
       }
       horScrolling = verScrolling = dragScrolling = 0;
       break;
@@ -331,7 +339,7 @@ int FltkViewport::handle (int event)
       break;
    }
 
-   return FltkWidgetView::handle (event);
+   return ret ? ret : FltkWidgetView::handle (event);
 }
 
 // ----------------------------------------------------------------------
