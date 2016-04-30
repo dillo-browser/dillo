@@ -3038,30 +3038,40 @@ int Textblock::getGeneratorX (int oofmIndex)
 
 int Textblock::getGeneratorY (int oofmIndex)
 {
-   int yRef;
+   DBG_OBJ_ENTER ("resize", 0, "Textblock::getGeneratorY", "%d", oofmIndex);
+
+   int yRef, y;
    if (findSizeRequestReference (oofmIndex, NULL, &yRef))
-      return yRef;
+      y = yRef;
    else {
       // Only called for floats, so this should not happen:
       assertNotReached ();
-      return 0;
+      y = 0;
    }
+
+   DBG_OBJ_LEAVE_VAL ("%d", y);
+   return y;
 }
 
 int Textblock::getGeneratorRest (int oofmIndex)
 {
-   int xRef;
+   DBG_OBJ_ENTER ("resize", 0, "Textblock::getGeneratorRest", "%d", oofmIndex);
+
+   int xRef, rest;
    OOFAwareWidget *container = oofContainer[oofmIndex];
    
    if (container != NULL && findSizeRequestReference (container, &xRef, NULL))
-      return misc::max (container->getGeneratorWidth ()
-                        - (xRef + getGeneratorWidth ()),
-                        0);
+      rest =  misc::max (container->getGeneratorWidth ()
+                          - (xRef + getGeneratorWidth ()),
+                          0);
    else {
-      // Only called for floats, so this should not happen:
+      // Only callend for floats, so this should not happen:
       assertNotReached ();
-      return 0;
+      rest = 0;
    }
+
+   DBG_OBJ_LEAVE_VAL ("%d", rest);
+   return rest;
 }
 
 int Textblock::getGeneratorWidth ()
