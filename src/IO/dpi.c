@@ -780,7 +780,7 @@ char *a_Dpi_send_blocking_cmd(const char *server_name, const char *cmd)
       MSG_ERR("[a_Dpi_send_blocking_cmd] Can't connect to server.\n");
    } else if (Dpi_blocking_write(sock_fd, cmd, strlen(cmd)) == -1) {
       MSG_ERR("[a_Dpi_send_blocking_cmd] Can't send message.\n");
-   } if ((ret = Dpi_blocking_read(sock_fd)) == NULL) {
+   } else if ((ret = Dpi_blocking_read(sock_fd)) == NULL) {
       MSG_ERR("[a_Dpi_send_blocking_cmd] Can't read message.\n");
    }
    dClose(sock_fd);
