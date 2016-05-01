@@ -273,7 +273,7 @@ static void clear_cb(Fl_Widget *w, void *data)
    if (b == FL_LEFT_MOUSE) {
       ui->set_location("");
       ui->focus_location();
-   } if (b == FL_MIDDLE_MOUSE) {
+   } else if (b == FL_MIDDLE_MOUSE) {
       ui->paste_url();
    }
 }
