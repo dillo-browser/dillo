@@ -211,7 +211,7 @@ void FltkViewport::draw ()
              draw_vs = vis_vs && vscrollbar->damage (),
              draw_hs = vis_hs && hscrollbar->damage ();
 
-   MSG("FltkViewport::draw d=%d  =>  ", d);
+   _MSG("FltkViewport::draw d=%d  =>  ", d);
    // scrollbars
    if (draw || draw_vs)
       draw_child (*vscrollbar);
@@ -223,14 +223,14 @@ void FltkViewport::draw ()
    }
    // main area
    if (d == FL_DAMAGE_CHILD && (draw_vs || draw_hs)) {
-      MSG("none\n");
+      _MSG("none\n");
    } else if (d == (FL_DAMAGE_SCROLL | FL_DAMAGE_CHILD)) {
       fl_scroll(x(), y(), w() - vis_vs, h() - vis_hs,
                 -scrollDX, -scrollDY, draw_area, this);
-      MSG("fl_scroll()\n");
+      _MSG("fl_scroll()\n");
    } else {
       draw_area(this, x(), y(), w() - vis_vs, h() - vis_hs);
-      MSG("draw_area()\n");
+      _MSG("draw_area()\n");
    }
 
    scrollDX = 0;
