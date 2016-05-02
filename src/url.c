@@ -430,7 +430,7 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
        a_Hsts_require_https(a_Url_hostname(url))) {
       const char *const scheme = "https";
 
-      MSG("url: HSTS transformation for %s.\n", url->url_string->str);
+      _MSG("url: HSTS transformation for %s.\n", url->url_string->str);
       url->scheme = scheme;
       if (url->port == URL_HTTP_PORT)
          url->port = URL_HTTPS_PORT;
