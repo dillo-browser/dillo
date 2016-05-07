@@ -1225,7 +1225,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
                Client_bw->redirect_level = 0;
             }
             if (entry->Flags & CA_HugeFile) {
-               a_UIcmd_set_msg(Client_bw,"Huge file! (%dMB)",
+               a_UIcmd_set_msg(Client_bw, "Huge file! (%d MB)",
                                entry->ExpectedSize / (1024*1024));
                AbortEntry = OfferDownload = TRUE;
             }
