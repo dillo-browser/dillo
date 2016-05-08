@@ -24,6 +24,7 @@
 
 using namespace lout;
 using namespace lout::object;
+using namespace lout::misc;
 
 namespace dw {
 namespace core {
@@ -184,13 +185,12 @@ bool Widget::intersects (Widget *refWidget, Rectangle *area,
    }
 
    if (r)
-      DBG_OBJ_MSGF ("draw", 1, "=> true: %d, %d, %d * %d",
-                    intersection->x, intersection->y,
-                    intersection->width, intersection->height);
+      DBG_OBJ_LEAVE_VAL ("true: %d, %d, %d * %d",
+                         intersection->x, intersection->y,
+                         intersection->width, intersection->height);
    else
-      DBG_OBJ_MSG ("draw", 1, "=> false");
+      DBG_OBJ_LEAVE_VAL0 ("false");
 
-   DBG_OBJ_LEAVE ();
    return r;
 }
 
@@ -450,8 +450,7 @@ bool Widget::affectedByContainerSizeChange ()
    } else
       ret = container->affectsSizeChangeContainerChild (this);
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr(ret));
    return ret;
 }
 
@@ -481,8 +480,7 @@ bool Widget::affectsSizeChangeContainerChild (Widget *child)
          (child->getStyle()->height == style::LENGTH_AUTO ?
           child->usesAvailHeight () : false);
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr(ret));
    return ret;
 }
 
@@ -619,9 +617,7 @@ int Widget::getMinWidth (Extremes *extremes, bool forceValue)
    } else
       minWidth = 0;
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", minWidth);
-   DBG_OBJ_LEAVE ();
-
+   DBG_OBJ_LEAVE_VAL ("%d", minWidth);
    return minWidth;
 }
 
@@ -663,9 +659,7 @@ int Widget::getAvailWidth (bool forceValue)
       DBG_OBJ_MSG_END ();
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
-   DBG_OBJ_LEAVE ();
-
+   DBG_OBJ_LEAVE_VAL ("%d", width);
    return width;
 }
 
@@ -722,9 +716,7 @@ int Widget::getAvailHeight (bool forceValue)
       DBG_OBJ_MSG_END ();
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
-   DBG_OBJ_LEAVE ();
-
+   DBG_OBJ_LEAVE_VAL ("%d", height);
    return height;
 }
 
@@ -801,10 +793,8 @@ void Widget::correctRequisition (Requisition *requisition,
       DBG_OBJ_MSG_END ();
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
-                 requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d * (%d + %d)", requisition->width, requisition->ascent,
+                      requisition->descent);
 }
 
 void Widget::correctExtremes (Extremes *extremes, bool useAdjustmentWidth)
@@ -856,9 +846,7 @@ void Widget::correctExtremes (Extremes *extremes, bool useAdjustmentWidth)
    if (extremes->maxWidth < extremes->minWidth)
       extremes->maxWidth = extremes->minWidth;
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
-                 extremes->minWidth, extremes->maxWidth);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d / %d", extremes->minWidth, extremes->maxWidth);
 }
 
 int Widget::calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
@@ -896,8 +884,7 @@ int Widget::calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
       width = -1;
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d", width);
    return width;
 }
 
@@ -926,8 +913,7 @@ void Widget::calcFinalWidth (style::Style *style, int refWidth,
    if (maxWidth != -1 && *finalWidth == -1 && *finalWidth > maxWidth)
       *finalWidth = maxWidth;
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", *finalWidth);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d", *finalWidth);
 }
 
 int Widget::calcHeight (style::Length cssValue, bool usePercentage,
@@ -972,8 +958,7 @@ int Widget::calcHeight (style::Length cssValue, bool usePercentage,
       height = -1;
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d", height);
    return height;
 }
 
@@ -1678,9 +1663,7 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
       }
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
-   DBG_OBJ_LEAVE ();
-
+   DBG_OBJ_LEAVE_VAL ("%d", width);
    return width;
 }
 
@@ -1737,9 +1720,7 @@ int Widget::getAvailHeightOfChild (Widget *child, bool forceValue)
       }
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", height);
-   DBG_OBJ_LEAVE ();
-
+   DBG_OBJ_LEAVE_VAL ("%d", height);
    return height;
 }
 
@@ -1796,10 +1777,8 @@ void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition,
    child->calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, false,
                           &requisition->width);
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
-                 requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d * (%d + %d)", requisition->width, requisition->ascent,
+                      requisition->descent);
 }
 
 void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
@@ -1842,10 +1821,8 @@ void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
       splitHeightFun (maxHeight, &requisition->ascent,
                       &requisition->descent);
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
-                 requisition->width, requisition->ascent,
-                 requisition->descent);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d * (%d + %d)", requisition->width, requisition->ascent,
+                      requisition->descent);
 }
 
 void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes,
@@ -1890,9 +1867,7 @@ void Widget::correctExtremesOfChild (Widget *child, Extremes *extremes,
    }
 
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d / %d",
-                 extremes->minWidth, extremes->maxWidth);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d / %d", extremes->minWidth, extremes->maxWidth);
 }
 
 /**

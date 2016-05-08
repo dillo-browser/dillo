@@ -26,9 +26,14 @@
 
 #ifdef DBG_RTFL
 
+// =======================================
+//           Used by all modules
+// =======================================
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #define DBG_IF_RTFL if(1)
 
@@ -37,10 +42,11 @@
 
 // Prints an RTFL message to stdout. "fmt" contains simple format
 // characters how to deal with the additional arguments (no "%"
-// preceeding, as in printf), or "c" (short for "#%06x" and used for
-// colors), or other characters, which are simply printed. No quoting:
-// this function cannot be used to print the characters "d", "p", and
-// "s" directly.
+// preceeding, as in printf) or "q" (which additionally
+// (double-)quotes quotation marks) or "c" (short for "#%06x" and used
+// for colors), or other characters, which are simply printed. No
+// quoting: this function cannot be used to print the characters "d",
+// "p", "s" and "q" directly.
 
 inline void rtfl_print (const char *module, const char *version,
                         const char *file, int line, const char *fmt, ...)
@@ -77,6 +83,17 @@ inline void rtfl_print (const char *module, const char *version,
          }
          break;
 
+      case 'q':
+         s = va_arg (args, char*);
+         for (int j = 0; s[j]; j++) {
+            if (s[j] == ':' || s[j] == '\\')
+               putchar ('\\');
+            else if (s[j] == '\"')
+               printf ("\\\\"); // a quoted quoting character
+            putchar (s[j]);
+         }
+         break;
+
       case 'c':
          n = va_arg(args, int);
          printf ("#%06x", n);
@@ -97,6 +114,30 @@ inline void rtfl_print (const char *module, const char *version,
 #define RTFL_PRINT(module, version, cmd, fmt, ...) \
    rtfl_print (module, version, CUR_WORKING_DIR "/" __FILE__, __LINE__, \
                "s:" fmt, cmd, __VA_ARGS__)
+
+
+// ==================================
+//           General module
+// ==================================
+
+#define RTFL_GEN_VERSION "1.0"
+
+#define RTFL_GEN_PRINT(cmd, fmt, ...) \
+   RTFL_PRINT ("gen", RTFL_GEN_VERSION, cmd, fmt, __VA_ARGS__)
+
+#define DBG_GEN_TIME() \
+   STMT_START { \
+      struct timeval tv; \
+      gettimeofday(&tv, NULL); \
+      char buf[32]; \
+      snprintf (buf, sizeof (buf), "%ld%06ld", tv.tv_sec, tv.tv_usec); \
+      RTFL_GEN_PRINT ("time", "s", buf); \
+   } STMT_END
+
+
+// ==================================
+//           Objects module
+// ==================================
 
 #define RTFL_OBJ_VERSION "1.0"
 
@@ -197,6 +238,12 @@ inline void rtfl_print (const char *module, const char *version,
       RTFL_OBJ_PRINT ("leave", "p:s", obj, vals); \
    } STMT_END
 
+#define DBG_OBJ_LEAVE_VAL0(val) \
+   DBG_OBJ_LEAVE_VAL0_O (this, val)
+
+#define DBG_OBJ_LEAVE_VAL0_O(obj, val) \
+   RTFL_OBJ_PRINT ("leave", "p:s:", obj, val)
+
 #define DBG_OBJ_CREATE(klass) \
    DBG_OBJ_CREATE_O (this, klass)
 
@@ -243,7 +290,7 @@ inline void rtfl_print (const char *module, const char *version,
    DBG_OBJ_SET_STR_O (this, var, val)
 
 #define DBG_OBJ_SET_STR_O(obj, var, val) \
-   RTFL_OBJ_PRINT ("set", "p:s:\"s\"", obj, var, val)
+   RTFL_OBJ_PRINT ("set", "p:s:\"q\"", obj, var, val)
 
 #define DBG_OBJ_SET_PTR(var, val) \
    DBG_OBJ_SET_PTR_O (this, var, val)
@@ -279,7 +326,7 @@ inline void rtfl_print (const char *module, const char *version,
    DBG_OBJ_ARRSET_STR_O (this, var, ind, val)
 
 #define DBG_OBJ_ARRSET_STR_O(obj, var, ind, val) \
-   RTFL_OBJ_PRINT ("set", "p:s.d:\"s\"", obj, var, ind, val)
+   RTFL_OBJ_PRINT ("set", "p:s.d:\"q\"", obj, var, ind, val)
 
 #define DBG_OBJ_ARRSET_PTR(var, ind, val) \
    DBG_OBJ_ARRSET_PTR_O (this, var, ind, val)
@@ -316,7 +363,7 @@ inline void rtfl_print (const char *module, const char *version,
    DBG_OBJ_ARRATTRSET_STR_O (this, var, ind, attr, val)
 
 #define DBG_OBJ_ARRATTRSET_STR_O(obj, var, ind, attr, val) \
-   RTFL_OBJ_PRINT ("set", "p:s.d.s:\"s\"", obj, var, ind, attr, val)
+   RTFL_OBJ_PRINT ("set", "p:s.d.s:\"q\"", obj, var, ind, attr, val)
 
 #define DBG_OBJ_ARRATTRSET_PTR(var, ind, attr, val) \
    DBG_OBJ_ARRATTRSET_PTR_O (this, var, ind, attr, val)
@@ -339,6 +386,7 @@ inline void rtfl_print (const char *module, const char *version,
 
 #define DBG_IF_RTFL if(0)
 
+#define DBG_GEN_TIME()                                         STMT_NOP
 #define DBG_OBJ_MSG(aspect, prio, msg)                         STMT_NOP
 #define DBG_OBJ_MSG_O(aspect, prio, obj, msg)                  STMT_NOP
 #define DBG_OBJ_MSGF(aspect, prio, fmt, ...)                   STMT_NOP
@@ -359,6 +407,8 @@ inline void rtfl_print (const char *module, const char *version,
 #define DBG_OBJ_LEAVE_O(obj)                                   STMT_NOP
 #define DBG_OBJ_LEAVE_VAL(fmt, ...)                            STMT_NOP
 #define DBG_OBJ_LEAVE_VAL_O(obj, fmt, ...)                     STMT_NOP
+#define DBG_OBJ_LEAVE_VAL0(val)                                STMT_NOP
+#define DBG_OBJ_LEAVE_VAL0_O(obj, val)                         STMT_NOP
 #define DBG_OBJ_CREATE(klass)                                  STMT_NOP
 #define DBG_OBJ_CREATE_O(obj, klass)                           STMT_NOP
 #define DBG_OBJ_DELETE()                                       STMT_NOP

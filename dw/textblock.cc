@@ -794,8 +794,7 @@ int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
       }
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %d", width);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%d", width);
    return width;
 }
 
@@ -838,8 +837,7 @@ bool Textblock::affectsSizeChangeContainerChild (Widget *child)
    else
       ret = Widget::affectsSizeChangeContainerChild (child);
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %s", ret ? "true" : "false");
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr(ret));
    return ret;
 }
 
@@ -1158,8 +1156,7 @@ bool Textblock::sendSelectionEvent (core::SelectionState::EventType eventType,
    r = selectionHandleEvent (eventType, it, charPos, link, event);
    it->unref ();
 
-   DBG_OBJ_MSGF ("events", 1, "=> %s", r ? "true" : "false");
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr(r));
    return r;
 }
 
@@ -1620,9 +1617,7 @@ int Textblock::findLineIndex (int y, int ascent)
     * That function has now been inlined into Dw_page_motion_notify() --JV
     */
 
-   DBG_OBJ_MSGF ("events", 1, "=> %d", low);
-   DBG_OBJ_LEAVE ();
-
+   DBG_OBJ_LEAVE_VAL ("%d", low);
    return low;
 }
 
@@ -2508,8 +2503,7 @@ bool Textblock::addAnchor (const char *name, core::style::Style *style)
       result =  true;
    }
 
-   DBG_OBJ_MSGF ("construct.word", 0, "=> %s", result ? "true" : "false");
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr(result));
    return result;
 }
 
@@ -2857,8 +2851,7 @@ core::Widget *Textblock::getWidgetAtPointLevel (int x, int y, int level,
       break;
    }
 
-   DBG_OBJ_MSGF ("events", 1, "=> %p", widgetAtPoint);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%p", widgetAtPoint);
    return widgetAtPoint;
 }
 
@@ -3165,8 +3158,7 @@ RegardingBorder *Textblock::getWidgetRegardingBorderForLine (int firstWord,
       }
    }
 
-   DBG_OBJ_MSGF ("resize", 1, "=> %p", widgetRegardingBorder);
-   DBG_OBJ_LEAVE ();
+   DBG_OBJ_LEAVE_VAL ("%p", widgetRegardingBorder);
    return widgetRegardingBorder;
 }
 
