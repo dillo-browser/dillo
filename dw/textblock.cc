@@ -3061,9 +3061,7 @@ int Textblock::getGeneratorRest (int oofmIndex)
    OOFAwareWidget *container = oofContainer[oofmIndex];
    
    if (container != NULL && findSizeRequestReference (container, &xRef, NULL))
-      rest =  misc::max (container->getGeneratorWidth ()
-                          - (xRef + getGeneratorWidth ()),
-                          0);
+      rest = container->getGeneratorWidth () - (xRef + getGeneratorWidth ());
    else {
       // Only callend for floats, so this should not happen:
       assertNotReached ();
