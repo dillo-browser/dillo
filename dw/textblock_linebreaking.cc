@@ -2112,27 +2112,29 @@ void Textblock::calcBorders (int lastOofRef, int height)
             newLineHasFloatLeft = newLineHasFloatLeft || thisHasLeft;
             thisHasRight = oofm->hasFloatRight (y, height, this, effOofRef);
             newLineHasFloatRight = newLineHasFloatRight || thisHasRight;
-            
-            newLineLeftBorder =
-               max (newLineLeftBorder,
-                    oofm->getLeftBorder (y, height, this, effOofRef)
-                    - getGeneratorX (i));
-            newLineRightBorder =
-               max (newLineRightBorder,
-                    oofm->getRightBorder (y, height, this, effOofRef)
-                    - getGeneratorRest (i));
-            
+                       
             // TODO "max" is not really correct for the heights. (Does
             // not matter, since only one, the float manager, returns
             // meaningful values.)
-            if (thisHasLeft)
+            if (thisHasLeft) {
+               newLineLeftBorder =
+                  max (newLineLeftBorder,
+                       oofm->getLeftBorder (y, height, this, effOofRef)
+                       - getGeneratorX (i));
                newLineLeftFloatHeight =
                   max (newLineLeftFloatHeight,
                        oofm->getLeftFloatHeight (y, height, this, effOofRef));
-            if (thisHasRight)
+            }
+
+            if (thisHasRight) {
+               newLineRightBorder =
+                  max (newLineRightBorder,
+                       oofm->getRightBorder (y, height, this, effOofRef)
+                       - getGeneratorRest (i));
                newLineRightFloatHeight = 
                   max (newLineRightFloatHeight,
                        oofm->getRightFloatHeight (y, height, this, effOofRef));
+            }
             
             DBG_OBJ_MSGF ("construct.line", 1,
                           "OOFM #%d: %d * %d (%s) / %d * %d (%s), at %d (%d), "
