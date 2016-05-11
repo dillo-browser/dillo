@@ -177,9 +177,11 @@ public:  //BUG: for now everything is public
    bool PrevWasCR;        /* Flag to help parsing of "\r\n" in PRE tags */
    bool PrevWasOpenTag;   /* Flag to help deferred parsing of white space */
    bool InVisitedLink;    /* used to 'contrast_visited_colors' */
-   bool ReqTagClose;      /* Flag to help handling bad-formed HTML */
+   bool ReqTagClose;      /* Flag to close the stack's top tag */
    bool TagSoup;          /* Flag to enable the parser's cleanup functions */
    bool loadCssFromStash; /* current stash content should be loaded as CSS */
+   bool PrevWasBodyClose; /* set when </body> is found */
+   bool PrevWasHtmlClose; /* set when </html> is found */
 
    /* element counters: used for validation purposes.
     * ATM they're used as three state flags {0,1,>1} */

@@ -463,6 +463,8 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    ReqTagClose = false;
    TagSoup = true;
    loadCssFromStash = false;
+   PrevWasBodyClose = false;
+   PrevWasHtmlClose = false;
 
    Num_HTML = Num_HEAD = Num_BODY = Num_TITLE = 0;
 
@@ -1189,6 +1191,10 @@ static void Html_process_word(DilloHtml *html, const char *word, int size)
 
    if (S_TOP(html)->display_none)
       return;
+   if ((i = html->PrevWasHtmlClose ? 1 : html->PrevWasBodyClose ? 2 : 0)) {
+      BUG_MSG("Content after </%s> tag.", i == 1 ? "html" : "body");
+      html->PrevWasHtmlClose = html->PrevWasBodyClose = false;
+   }
 
    if (parse_mode == DILLO_HTML_PARSE_MODE_STASH ||
        parse_mode == DILLO_HTML_PARSE_MODE_STASH_AND_BODY) {
@@ -1351,13 +1357,19 @@ static void Html_real_pop_tag(DilloHtml *html)
  */
 static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
 {
+   static int i_BODY = a_Html_tag_index("body");
    int s_sz;
    while ((s_sz = html->stack->size()) > idx) {
       int toptag_idx = S_TOP(html)->tag_idx;
       TagInfo toptag = Tags[toptag_idx];
       if (s_sz > idx + 1 && toptag.EndTag != 'O')
          BUG_MSG("  - forcing close of open tag: <%s>.", toptag.name);
-      _MSG("Close: %*s%s\n", size," ", toptag.name);
+      _MSG("Close: %s sz=%d idx=%d\n", toptag.name, s_sz, idx);
+      if (toptag_idx == i_BODY &&
+          !((html->InFlags & IN_EOF) || html->ReqTagClose)) {
+         (idx == 1 ? html->PrevWasHtmlClose : html->PrevWasBodyClose) = true;
+         break; // only pop {BODY,HTML} upon EOF or redundancy
+      }
       if (toptag.close)
          toptag.close(html);
       Html_real_pop_tag(html);
@@ -1706,6 +1718,10 @@ static void Html_tag_open_html(DilloHtml *html, const char *tag, int tagsize)
 static void Html_tag_close_html(DilloHtml *html)
 {
    _MSG("Html_tag_close_html: Num_HTML=%d\n", html->Num_HTML);
+
+  /* As some Tag soup pages use multiple HTML tags, this function
+   * gets called only on EOF and upon and extra HTML open.
+   * Also, we defer clearing the IN_HTML flag until IN_EOF */
 }
 
 /*
@@ -1962,8 +1978,11 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_body(DilloHtml *html)
 {
-   /* Some tag soup pages use multiple BODY tags...
-    * Defer clearing the IN_BODY flag until IN_EOF */
+   _MSG("Html_tag_close_body: Num_BODY=%d\n", html->Num_BODY);
+
+  /* As some Tag soup pages use multiple BODY tags, this function
+   * gets called only on EOF and upon and extra BODY open.
+   * Also, we defer clearing the IN_BODY flag until IN_EOF */
 }
 
 /*
@@ -3973,6 +3992,7 @@ static void Html_display_listitem(DilloHtml *html)
  */
 static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 {
+   static int i_HTML = a_Html_tag_index("html");
    int ci, ni;           /* current and new tag indexes */
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
@@ -3989,9 +4009,15 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       /* Ignore unknown tags */
       return;
    }
+   _MSG("Html_process_tag: %s%s\n", IsCloseTag ? "/" : "", Tags[ni].name);
 
    if (!IsCloseTag && html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
       Html_check_html5_obsolete(html, ni);
+
+   int i = html->PrevWasHtmlClose ? 1 : html->PrevWasBodyClose ? 2 : 0;
+   if (i == 1 || (i == 2 && ni != i_HTML))
+      BUG_MSG("Content after </%s> tag.", i == 1 ? "html" : "body");
+   html->PrevWasHtmlClose = html->PrevWasBodyClose = false;
 
    /* Handle HTML, HEAD and BODY. Elements with optional open and close */
    if (!(html->InFlags & IN_BODY) /* && parsing HTML */)
