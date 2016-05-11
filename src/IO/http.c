@@ -794,7 +794,7 @@ static void Http_socket_reuse(int SKey)
             srv->active_conns--;
             Http_socket_free(SKey);
 
-            MSG("Reusing fd %d for %s\n", new_sd->SockFD,URL_STR(new_sd->url));
+            _MSG("Reusing fd %d for %s\n",new_sd->SockFD,URL_STR(new_sd->url));
             Http_socket_activate(srv, new_sd);
             Http_fd_map_add_entry(new_sd);
             a_Http_connect_done(new_sd->SockFD, success);

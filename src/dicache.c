@@ -521,7 +521,7 @@ void a_Dicache_cleanup(void)
          --i; /* adjust counter */
       }
    }
-   MSG("a_Dicache_cleanup: length = %d\n", dList_length(CachedIMGs));
+   _MSG("a_Dicache_cleanup: length = %d\n", dList_length(CachedIMGs));
 }
 
 /* ------------------------------------------------------------------------- */
