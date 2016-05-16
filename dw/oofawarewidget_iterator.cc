@@ -31,7 +31,7 @@ namespace dw {
 
 namespace oof {
 
-// "numContentsInFlow" is passed here to avoid indirectly callin the (virtual)
+// "numContentsInFlow" is passed here to avoid indirectly calling the (virtual)
 // method numContentsInFlow() from the constructor.
 OOFAwareWidget::OOFAwareWidgetIterator::OOFAwareWidgetIterator
    (OOFAwareWidget *widget, Content::Type mask, bool atEnd,
@@ -76,7 +76,11 @@ int OOFAwareWidget::OOFAwareWidgetIterator::numParts (int sectionIndex,
    OOFAwareWidget *widget = (OOFAwareWidget*)getWidget();
    int result;
 
-   if (sectionIndex == 0)
+   if (sectionIndex < 0 || sectionIndex > NUM_SECTIONS) {
+      DBG_OBJ_MARKF_O("iterator", 0, getWidget(), "invalid sectionIndex %d",
+                      sectionIndex);
+      result = 0;
+   } else if (sectionIndex == 0)
       result = numContentsInFlow == -1 ?
          this->numContentsInFlow () : numContentsInFlow;
    else
@@ -130,8 +134,9 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
    DBG_IF_RTFL {
       StringBuffer sb;
       intoStringBuffer (&sb);
-      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "initial value: %s",
-                      sb.getChars ());
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (),
+                      "initial value: %s; sectionIndex = %d, index = %d",
+                      sb.getChars (), sectionIndex, index);
    }
 
    bool r;
@@ -145,7 +150,7 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
       do {
          index++;
          
-         if (index < numParts(sectionIndex))
+         if (sectionIndex >= 0 && index < numParts(sectionIndex))
             getPart (sectionIndex, index, &content);
          else {
             sectionIndex++;
@@ -185,8 +190,9 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
    DBG_IF_RTFL {
       StringBuffer sb;
       intoStringBuffer (&sb);
-      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "initial value: %s",
-                      sb.getChars ());
+      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (),
+                      "initial value: %s; sectionIndex = %d, index = %d",
+                      sb.getChars (), sectionIndex, index);
    }
 
    bool r;
@@ -200,7 +206,8 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
       do {
          index--;
          
-         if (index >= 0)
+         if (sectionIndex < NUM_SECTIONS &&
+             numParts (sectionIndex) > 0 && index >= 0)
             getPart (sectionIndex, index, &content);
          else {
             sectionIndex--;
