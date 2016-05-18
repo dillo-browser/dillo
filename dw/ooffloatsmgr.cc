@@ -657,7 +657,7 @@ void OOFFloatsMgr::markSizeChange (int ref)
                          ->parentRef);
 
    for (int i = first + 1; i < tbInfos->size(); i++)
-      tbInfos->get(first)->getOOFAwareWidget()->updateReference(0);
+      tbInfos->get(i)->getOOFAwareWidget()->updateReference(0);
 
    DBG_OBJ_LEAVE ();
 }
