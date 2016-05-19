@@ -58,10 +58,9 @@ void OOFAwareWidget::OOFAwareWidgetIterator::setValues (int sectionIndex,
    this->sectionIndex = sectionIndex;
    this->index = index;
 
-   if (sectionIndex == 0 && index < 0)
+   if (sectionIndex < 0 || index < 0)
       content.type = core::Content::START;
-   else if (sectionIndex == NUM_SECTIONS - 1 &&
-            index >= numParts (sectionIndex))
+   else if (sectionIndex >= NUM_SECTIONS || index >= numParts (sectionIndex))
       content.type = core::Content::END;
    else
       getPart (sectionIndex, index, &content);
@@ -139,34 +138,29 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
                       sb.getChars (), sectionIndex, index);
    }
 
-   bool r;
+   bool found = false;
 
-   if (content.type == Content::END)
-      r = false;
-   else {
-      r = true;
-      bool cancel = false;
+   if (content.type != Content::END) {
+      while (!found) {
+         ++index;
 
-      do {
-         index++;
-         
-         if (sectionIndex >= 0 && index < numParts(sectionIndex))
+         if (sectionIndex >= 0 && sectionIndex < NUM_SECTIONS &&
+             index >= 0 && index < numParts (sectionIndex)) {
             getPart (sectionIndex, index, &content);
-         else {
-            sectionIndex++;
-            while (sectionIndex < NUM_SECTIONS && numParts (sectionIndex) == 0)
-               sectionIndex++;
+         } else {
+            while (++sectionIndex < NUM_SECTIONS &&
+                   numParts (sectionIndex) == 0) ;
             
-            if (sectionIndex == NUM_SECTIONS) {
+            if (sectionIndex >= NUM_SECTIONS) {
                content.type = Content::END;
-               r = false;
-               cancel = true;
+               break;
             } else {
-               index = 0;
-               getPart (sectionIndex, index, &content);
+               index = -1;
+               continue;
             }
          }         
-      } while (!cancel && (content.type & getMask()) == 0);
+         found = (content.type & getMask());
+      }
    }
 
    DBG_IF_RTFL {
@@ -179,7 +173,7 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
    }
 
    DBG_OBJ_LEAVE_O (getWidget ());
-   return r;
+   return found;
 }
 
 bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
@@ -195,37 +189,30 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
                       sb.getChars (), sectionIndex, index);
    }
 
-   bool r;
+   bool found = false;
 
-   if (content.type == Content::START)
-      r = false;
-   else {
-      r = true;
-      bool cancel = false;
-
-      do {
+   if (content.type != Content::START) {
+      while (!found) {
          index--;
-         
-         if (sectionIndex < NUM_SECTIONS &&
-             numParts (sectionIndex) > 0 && index >= 0)
+
+         if (sectionIndex >= 0 && sectionIndex < NUM_SECTIONS &&
+             index >= 0 && index < numParts (sectionIndex)) {
             getPart (sectionIndex, index, &content);
-         else {
-            sectionIndex--;
-            while (sectionIndex >= 0 && numParts (sectionIndex) == 0)
-               sectionIndex--;
-            
+         } else {
+            while (--sectionIndex >= 0 && numParts (sectionIndex) == 0) ;
+
             if (sectionIndex < 0) {
                content.type = Content::START;
-               r = false;
-               cancel = true;
+               break;
             } else {
-               index = numParts (sectionIndex) - 1;
-               getPart (sectionIndex, index, &content);
+               index = numParts (sectionIndex);
+               continue;
             }
-         }        
-      } while (!cancel && (content.type & getMask()) == 0);
+         }
+         found = (content.type & getMask());
+      }
    }
-      
+
    DBG_IF_RTFL {
       StringBuffer sb;
       intoStringBuffer (&sb);
@@ -236,7 +223,7 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
    }
 
    DBG_OBJ_LEAVE_O (getWidget ());
-   return r;
+   return found;
 }
 
 void OOFAwareWidget::OOFAwareWidgetIterator::highlightOOF (int start, int end,
