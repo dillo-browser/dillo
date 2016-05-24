@@ -341,7 +341,7 @@ Decode *a_Decode_content_init(const char *format)
 
          dc->decode = Decode_gzip;
       } else if (!dStrAsciiCasecmp(format, "deflate")) {
-         MSG("deflated data!\n");
+         _MSG("deflated data!\n");
 
          dc = Decode_content_init_common();
          zs = (z_stream *)dc->state;
