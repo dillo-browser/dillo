@@ -275,27 +275,28 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # theme=plastic
 
 # UI colors
-# The first four colors map to concepts in the underlying FLTK toolkit. Note
-# that FLTK may sometimes override colors, generally for contrast and
+# Note that FLTK may sometimes override colors, generally for contrast and
 # readability.
 #
-#ui_fg_color=black
-#ui_main_bg_color=silver
-#ui_text_bg_color=white
-#ui_selection_color=navy
+# ui_fg_color, ui_main_bg_color, ui_text_bg_color, and ui_selection_color
+# map to concepts in the underlying FLTK toolkit which are described as:
+# "the default foreground color...used for labels and text", "default
+# background color", "the default background color for text, list, and
+# valuator widgets", and "the default selection/highlight color". They
+# sometimes have other uses in the more complex FLTK widgets.
 #
-# Background used when the mouse cursor is over a button.
-#ui_button_highlight_color=(by default, the main background color, lightened)
+# ui_button_highlight_color is the background used when the mouse cursor is
+# over a button. By default, this is a lightened version of the main
+# background color.
 #
-# Colors for the current tab.
-#ui_tab_active_bg_color=(by default, the text background color)
-#ui_tab_active_fg_color=(by default, the main foreground color)
+# ui_tab_active_fg_color and ui_tab_active_bg_color are used for the current
+# tab. By default, they are the main foreground color and the text background
+# color, respectively.
 #
-# Colors for the other tabs.
-#ui_tab_bg_color=(by default, the main background color)
-#ui_tab_fg_color=(by default, the main foreground color)
-
-
+# ui_tab_fg_color and ui_tab_bg_color are used for the other tabs. By default,
+# they are the main foreground color and the main background color,
+# respectively.
+#
 # Note to packagers: leaving these variables for the system to guess
 # gives different results in different environments, so we played it safe
 # by defining the traditional colors.  Please choose the color theme that
