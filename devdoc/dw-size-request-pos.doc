@@ -28,8 +28,8 @@ approach is presented.
 General Idea
 ============
 
-A widget size may depend on the position relative to an anchestor
-widget. If a widget wants to get the size of a child widget, it should
+A widget size may depend on the position relative to an ancestor
+widget. If a widget wants to get the size of a child widget, it should:
 
 1. call the new methods dw::core::Widget::numSizeRequestReferences and
    dw::core::Widget::sizeRequestReference, which return all widgets
@@ -61,12 +61,12 @@ occurs with inline blocks.
 
 This conflict is handled in different ways:
 
-1. Fortunately, this case is irrelevat for floats: an inline blocks
-   constitute its own floats container, so that there is no dependance
+1. Fortunately, this case is irrelevat for floats: an inline block
+   constitutes its own floats container, so that there is no dependance
    on a position within another widget.
 
 2. For positioned elements, this case is relevant, since an inline
-   block is in most cases not a container for positioned element. In
+   block is in most cases not a container for positioned elements. In
    this case, a generator will call the methods
    dw::oof::OutOfFlowMgr::tellIncompletePosition1 and
    dw::oof::OutOfFlowMgr::tellIncompletePosition2, instead of
@@ -91,7 +91,7 @@ Extremes may depend on the position in an analogue way, see:
 
 Resizing
 --------
-Currently, the size of a widget has to be recalculated, when
+Currently, the size of a widget has to be recalculated when:
 
 1. it has called dw::core::Widget::queueResize, or
 2. the size of a child widget has to be recalculated.
@@ -140,7 +140,7 @@ Plan
 4. Apply step 3 to calls within dw::Textblock. Completed.
 
    <b>Attention:</b> After this step, and before completing the next steps, the
-   code is inconsistend and so incorrect.
+   code is inconsistent and so incorrect.
 
 5. Implement step 3 for floats (affects dw::oof::OOFFloatsMgr). **MOSTLY
    COMPLETED.**
