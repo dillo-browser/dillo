@@ -168,11 +168,9 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::next ()
       intoStringBuffer (&sb);
       DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "final value: %s",
                       sb.getChars ());
-      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "return value: %s",
-                      r ? "true" : "false");
    }
 
-   DBG_OBJ_LEAVE_O (getWidget ());
+   DBG_OBJ_LEAVE_VAL_O (getWidget (), "%s", boolToStr (found));
    return found;
 }
 
@@ -218,11 +216,9 @@ bool OOFAwareWidget::OOFAwareWidgetIterator::prev ()
       intoStringBuffer (&sb);
       DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "final value: %s",
                       sb.getChars ());
-      DBG_OBJ_MSGF_O ("iterator", 1, getWidget (), "return value: %s",
-                      r ? "true" : "false");
    }
 
-   DBG_OBJ_LEAVE_O (getWidget ());
+   DBG_OBJ_LEAVE_VAL_O (getWidget (), "%s", boolToStr (found));
    return found;
 }
 
