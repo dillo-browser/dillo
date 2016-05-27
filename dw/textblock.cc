@@ -3055,8 +3055,8 @@ int Textblock::getGeneratorRest (int oofmIndex)
    
    if (container != NULL && findSizeRequestReference (container, &xRef, NULL)) {
       // This method is typically called within sizeRequest; so, this widget has
-      // more information to calculate the width that the container, wich will
-      // result in to too small values (often negative) of the rest.  For this
+      // more information to calculate the width than the container, which will
+      // result in too small values (often negative) of the rest.  For this
       // reason, we use the possibility to pass values from this widget.
 
       // (Also notice that the return value may actually be negative.)
