@@ -1363,7 +1363,7 @@ static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
       int toptag_idx = S_TOP(html)->tag_idx;
       TagInfo toptag = Tags[toptag_idx];
       if (s_sz > idx + 1 && toptag.EndTag != 'O')
-         BUG_MSG("  - forcing close of open tag: <%s>.", toptag.name);
+         BUG_MSG("Bad nesting - forcing close of open tag: <%s>.",toptag.name);
       _MSG("Close: %s sz=%d idx=%d\n", toptag.name, s_sz, idx);
       if (toptag_idx == i_BODY &&
           !((html->InFlags & IN_EOF) || html->ReqTagClose)) {
@@ -1393,7 +1393,8 @@ static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
  */
 static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
 {
-   static int i_BUTTON = a_Html_tag_index("button"),
+   static int i_A = a_Html_tag_index("a"),
+              i_BUTTON = a_Html_tag_index("button"),
               i_SELECT = a_Html_tag_index("select"),
               i_TEXTAREA = a_Html_tag_index("textarea");
    int w3c_mode = !prefs.w3c_plus_heuristics;
@@ -1411,10 +1412,11 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
       } else if (Tags[tag_idx].EndTag == 'O') {
          /* skip an optional tag */
          continue;
-      } else if ((new_idx == i_BUTTON && html->InFlags & IN_BUTTON) ||
+      } else if ((new_idx == i_A && html->InFlags & IN_A) ||
+                 (new_idx == i_BUTTON && html->InFlags & IN_BUTTON) ||
                  (new_idx == i_SELECT && html->InFlags & IN_SELECT) ||
                  (new_idx == i_TEXTAREA && html->InFlags & IN_TEXTAREA)) {
-         /* let these elements close tags inside them */
+         /* Let these elements close anything left open inside them */
          continue;
       } else if (w3c_mode || Tags[tag_idx].TagLevel >= new_tag.TagLevel) {
          /* this is the tag that should have been closed */
@@ -2783,6 +2785,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
    const char *attrbuf;
 
    /* TODO: add support for MAP with A HREF */
+   html->InFlags |= IN_A;
    if (html->InFlags & IN_MAP)
       Html_tag_content_area(html, tag, tagsize);
 
@@ -2848,6 +2851,7 @@ static void Html_tag_open_a(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_a(DilloHtml *html)
 {
+   html->InFlags &= ~IN_A;
    html->InVisitedLink = false;
 }
 
