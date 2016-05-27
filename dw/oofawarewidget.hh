@@ -287,8 +287,13 @@ public:
    /**
     * Return width including margin/border/padding Called by OOFFloatsMgr to
     * position floats.
+    *
+    * In somce cases (as in dw::Textblock::getGeneratorRest), the value is not
+    * up to date; for this, the caller may pass its position relative to this
+    * widget, as well as its width, which are used for adjustments. (See comment
+    * in dw::Textblock::getGeneratorRest.)
     */
-   virtual int getGeneratorWidth ();
+   virtual int getGeneratorWidth (int callerX, int callerWidth);
 
    virtual int getMaxGeneratorWidth ();
 

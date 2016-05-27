@@ -3053,9 +3053,17 @@ int Textblock::getGeneratorRest (int oofmIndex)
    int xRef, rest;
    OOFAwareWidget *container = oofContainer[oofmIndex];
    
-   if (container != NULL && findSizeRequestReference (container, &xRef, NULL))
-      rest = container->getGeneratorWidth () - (xRef + getGeneratorWidth ());
-   else {
+   if (container != NULL && findSizeRequestReference (container, &xRef, NULL)) {
+      // This method is typically called within sizeRequest; so, this widget has
+      // more information to calculate the width that the container, wich will
+      // result in to too small values (often negative) of the rest.  For this
+      // reason, we use the possibility to pass values from this widget.
+
+      // (Also notice that the return value may actually be negative.)
+      
+      int width = getGeneratorWidth (0, 0);
+      rest = container->getGeneratorWidth (xRef, width) - (xRef + width);
+   } else {
       // Only callend for floats, so this should not happen:
       assertNotReached ();
       rest = 0;
@@ -3065,16 +3073,18 @@ int Textblock::getGeneratorRest (int oofmIndex)
    return rest;
 }
 
-int Textblock::getGeneratorWidth ()
+int Textblock::getGeneratorWidth (int callerX, int callerWidth)
 {
-   DBG_OBJ_ENTER0 ("resize", 0, "Textblock::getGeneratorWidth");
+   DBG_OBJ_ENTER ("resize", 0, "Textblock::getGeneratorWidth", "%d, %d",
+                  callerX, callerWidth);
    
    // Cf. sizeRequestImpl.
    if (usesMaxGeneratorWidth ()) {
       DBG_OBJ_LEAVE_VAL ("%d", lineBreakWidth);
       return lineBreakWidth;
    } else {
-      int w0 = lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0,
+      int w0 = max (lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0,
+                    callerX + callerWidth),
          w = min (w0 + leftInnerPadding + boxDiffWidth (), lineBreakWidth);
       DBG_OBJ_LEAVE_VAL ("min (%d + %d + %d, %d) = %d",
                          w0, leftInnerPadding, boxDiffWidth (), lineBreakWidth,
