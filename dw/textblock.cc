@@ -307,6 +307,14 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
 {
    DBG_OBJ_ENTER ("resize", 0, "sizeRequestImpl", "%d, ...", numPos);
 
+   DBG_IF_RTFL {
+      DBG_OBJ_MSG_START();
+      for(int i = 0; i < numPos; i++)
+         DBG_OBJ_MSGF ("resize", 1, "ref #%d: %p, %d, %d",
+                       i, references[i], x[i], y[i]);
+      DBG_OBJ_MSG_END();
+   }
+   
    sizeRequestParams.fill (numPos, references, x, y);
 
    // We have to rewrap the whole textblock, if (i) the available width (which
@@ -3019,14 +3027,19 @@ void Textblock::oofSizeChanged (bool extremesChanged)
 
 int Textblock::getGeneratorX (int oofmIndex)
 {
-   int xRef;
+   DBG_OBJ_ENTER ("resize", 0, "Textblock::getGeneratorX", "%d", oofmIndex);
+
+   int x, xRef;
    if (findSizeRequestReference (oofmIndex, &xRef, NULL))
-      return xRef;
+      x = xRef;
    else {
       // Only called for floats, so this should not happen:
       assertNotReached ();
-      return 0;
+      x = 0;
    }
+
+   DBG_OBJ_LEAVE_VAL ("%d", x);
+   return x;
 }
 
 int Textblock::getGeneratorY (int oofmIndex)
