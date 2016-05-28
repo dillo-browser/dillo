@@ -2,8 +2,8 @@
 
 TODO: Much missing.
 
-(Historical) Note: Floats make use of dw-size-request-pos, which reduces the
-complexity of a previous design.
+(Historical) Note: Floats make use of \ref dw-size-request-pos, which
+reduces the complexity of a previous design.
 
 
 Sorting floats
