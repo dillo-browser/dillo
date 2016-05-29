@@ -371,27 +371,26 @@ protected:
       int lastWord;     /* last word's index in word vector */
 
 
-      int top;                  /* "top" is always relative to the top
-                                   of the first line, i.e.
-                                   page->lines[0].top is always 0. */
-      int marginAscent;         /* Maximum of all total ascents
-                                   (including margin: hence the name)
+      int top;                  /* "top" is always relative to the top of the
+                                   first line, i.e.  page->lines[0].top is
+                                   always 0. */
+      int marginAscent;         /* Maximum of all total ascents (including
+                                   margin: hence the name) of the words in this
+                                   line. */
+      int marginDescent;        /* Maximum of all total decents (including
+                                   margin: hence the name) of the words in this
+                                   line. */
+      int borderAscent;         /* Maximum of all ascents minus margin (but
+                                   including padding and border: hence the name)
                                    of the words in this line. */
-      int marginDescent;        /* Maximum of all total decents
-                                   (including margin: hence the name)
+      int borderDescent;        /* Maximum of all descents minus margin (but
+                                   including padding and border: hence the name)
                                    of the words in this line. */
-      int borderAscent;         /* Maximum of all ascents minus margin
-                                   (but including padding and border:
-                                   hence the name) of the words in
-                                   this line. */
-      int borderDescent;        /* Maximum of all descents minus margin
-                                   (but including padding and border:
-                                   hence the name) of the words in
-                                   this line. */
       int contentAscent;        /* ??? (depricated?) */
       int contentDescent;       /* ??? (depricated?) */
       int breakSpace;           /* Space between this line and the next one. */
-      int textOffset;           /* ??? (to be documented) */
+      int textOffset;           /* Horizontal position of the first word of the
+                                   line, in widget coordinates. */
 
       /**
        * \brief Returns the difference between two vertical lines
