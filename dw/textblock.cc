@@ -2280,16 +2280,20 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
       int lastWord = lines->empty () ? -1 : lines->getLastRef()->lastWord;
       assert (wordIndex > lastWord);
 
-      int xRel0 = boxOffsetX () + leftInnerPadding
+      // Since the child widget will regard floats, we do not have to include
+      // floats when calculating left and right border.
+      int leftBorder = boxOffsetX () + leftInnerPadding
          + (lines->size () == 0 ? line1OffsetEff : 0);
+      int rightBorder = boxRestWidth ();
+      
       int lastMargin, yLine = yOffsetOfLineToBeCreated (&lastMargin);
       int yRel = yLine - min (lastMargin, widget->getStyle()->margin.top);
 
       DBG_OBJ_MSGF ("resize", 1,
-                    "xRel0 = %d + %d + (%d == 0 ? %d : 0) = %d, "
-                    "yRel = %d - min (%d, %d) = %d",
+                    "leftBorder = %d + %d + (%d == 0 ? %d : 0) = %d, "
+                    "rightBorder = %d, yRel = %d - min (%d, %d) = %d",
                     boxOffsetX (), leftInnerPadding , lines->size (),
-                    line1OffsetEff, xRel0, yLine, lastMargin,
+                    line1OffsetEff, leftBorder, rightBorder, yLine, lastMargin,
                     widget->getStyle()->margin.top, yRel);
             
       core::SizeParams childParams;
@@ -2305,26 +2309,29 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
          
          int xRel;
          if(first)
-            xRel = xRel0;
+            xRel = leftBorder;
          else {
             switch(widget->getStyle()->textAlign) {
             case core::style::TEXT_ALIGN_LEFT:
             case core::style::TEXT_ALIGN_STRING: // see comment in alignLine()
             case core::style::TEXT_ALIGN_JUSTIFY:
             default: // compiler happiness
-               xRel = xRel0;
+               xRel = leftBorder;
                break;
     
             case core::style::TEXT_ALIGN_RIGHT:
-               // TODO: Is this correct?
-               xRel = xRel0 + lineBreakWidth - size->width;
+               xRel = lineBreakWidth - rightBorder - size->width;
                break;
     
             case core::style::TEXT_ALIGN_CENTER:
-               // TODO: Is this correct?
-               xRel = xRel0 + (lineBreakWidth - size->width) / 2;
+               xRel =
+                  (leftBorder + lineBreakWidth - rightBorder - size->width) / 2;
                break;
             }
+            
+            // Cf. Textblock::calcTextOffset().
+            if (xRel < leftBorder)
+               xRel = leftBorder;
          }
 
          DBG_OBJ_MSGF ("resize", 2, "xRel = %d, oldXRel = %d", xRel, oldXRel);
