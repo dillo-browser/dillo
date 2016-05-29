@@ -2306,8 +2306,12 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
       core::SizeParams childParams;
       DBG_OBJ_ASSOC_CHILD (&childParams);
 
-      bool first = true;
-      int oldXRel = -1;
+      int oldXRel = leftBorder;
+
+      sizeRequestParams.forChild (this, widget, oldXRel, yRel, &childParams);
+      widget->sizeRequest (size, childParams.getNumPos (),
+                           childParams.getReferences (), childParams.getX (),
+                           childParams.getY ());
 
       DBG_OBJ_MSG_START ();
       
@@ -2315,35 +2319,34 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
          DBG_OBJ_MSG_START ();
          
          int xRel;
-         if(first)
-            xRel = leftBorder;
-         else {
-            switch(widget->getStyle()->textAlign) {
-            case core::style::TEXT_ALIGN_LEFT:
-            case core::style::TEXT_ALIGN_STRING: // see comment in alignLine()
-            case core::style::TEXT_ALIGN_JUSTIFY: // equivalent for only 1 word
-            default: // compiler happiness
-               xRel = leftBorder;
-               break;
-    
-            case core::style::TEXT_ALIGN_RIGHT:
-               xRel = lineBreakWidth - rightBorder - size->width;
-               break;
-    
-            case core::style::TEXT_ALIGN_CENTER:
-               xRel =
-                  (leftBorder + lineBreakWidth - rightBorder - size->width) / 2;
-               break;
-            }
-            
-            // Cf. Textblock::calcTextOffset().
-            if (xRel < leftBorder)
-               xRel = leftBorder;
-         }
 
+         switch(widget->getStyle()->textAlign) {
+         case core::style::TEXT_ALIGN_LEFT:
+         case core::style::TEXT_ALIGN_STRING: // see comment in alignLine()
+         case core::style::TEXT_ALIGN_JUSTIFY: // equivalent for only one word
+         default: // compiler happiness
+            xRel = leftBorder;
+            break;
+            
+         case core::style::TEXT_ALIGN_RIGHT:
+            xRel = lineBreakWidth - rightBorder - size->width;
+            break;
+            
+         case core::style::TEXT_ALIGN_CENTER:
+            xRel =
+               (leftBorder + lineBreakWidth - rightBorder - size->width) / 2;
+            break;
+         }
+         
+         // Cf. Textblock::calcTextOffset().
+         if (xRel < leftBorder)
+            xRel = leftBorder;
+      
          DBG_OBJ_MSGF ("resize", 2, "xRel = %d, oldXRel = %d", xRel, oldXRel);
 
-         if (!first && xRel == oldXRel)
+         // Stop when the value of xRel has not changed during the last
+         // iteration.
+         if (xRel == oldXRel)
             break;
          
          sizeRequestParams.forChild (this, widget, xRel, yRel, &childParams);
@@ -2352,7 +2355,6 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
                               childParams.getY ());
 
          oldXRel = xRel;
-         first = false;
 
          DBG_OBJ_MSG_END ();
       }
