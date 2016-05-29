@@ -2280,6 +2280,13 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
       int lastWord = lines->empty () ? -1 : lines->getLastRef()->lastWord;
       assert (wordIndex > lastWord);
 
+      // The position passed to sizeRequest must be equivalent to the position
+      // passed later to sizeAllocate. This is more complicated for widgets
+      // which are centered or aligned to the right: here, we have to know the
+      // width to calculate the horizontal position. Both are calculated in an
+      // iterative way; initially, the left border is used (like for other,
+      // simpler alignments).
+      
       // Since the child widget will regard floats, we do not have to include
       // floats when calculating left and right border.
       int leftBorder = boxOffsetX () + leftInnerPadding
@@ -2314,7 +2321,7 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
             switch(widget->getStyle()->textAlign) {
             case core::style::TEXT_ALIGN_LEFT:
             case core::style::TEXT_ALIGN_STRING: // see comment in alignLine()
-            case core::style::TEXT_ALIGN_JUSTIFY:
+            case core::style::TEXT_ALIGN_JUSTIFY: // equivalent for only 1 word
             default: // compiler happiness
                xRel = leftBorder;
                break;
