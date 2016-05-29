@@ -463,19 +463,6 @@ void Textblock::getExtremesSimpl (core::Extremes *extremes)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "getExtremesSimpl");
 
-   // TODO Can extremes depend on the available width? Should not; if
-   // they do, the following code must be reactivated, but it causes
-   // an endless recursion.
-#if 0
-   int newLineBreakWidth = getAvailWidth (true);
-   if (newLineBreakWidth != lineBreakWidth) {
-      lineBreakWidth = newLineBreakWidth;
-      wrapRefParagraphs = 0;
-      DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
-      DBG_OBJ_SET_NUM ("wrapRefParagraphs", wrapRefLines);
-   }
-#endif
-
    fillParagraphs ();
 
    if (paragraphs->size () == 0) {

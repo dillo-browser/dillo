@@ -576,7 +576,7 @@ protected:
 
    core::SizeParams sizeRequestParams;
    
-   /* This value is currently) set by setAscent(). */
+   /* Stores the value of getAvailWidth(). */
    int lineBreakWidth;
 
    int wrapRefLines, wrapRefParagraphs;  /* 0-based. Important: Both
