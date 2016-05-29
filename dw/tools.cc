@@ -172,6 +172,11 @@ bool SizeParams::isEquivalent (SizeParams *other)
       for (int i = 0; result && i < numPos; i++) {
          bool otherFound = false;
          for (int j = 0; !otherFound && j < numPos; j++) {
+            DBG_OBJ_MSGF ("resize", 1,
+                          "#%d = (%p, %d, %d) vs. #%d = (%p, %d, %d)",
+                          i, references[i], x[i], y[i], j, other->references[j],
+                          other->x[j], other->y[j]);
+            
             if (references[i] == other->references[j]) {
                otherFound = true;
                if (!(x[i] == other->x[j] && y[i] == other->y[j]))

@@ -528,6 +528,14 @@ void Widget::sizeRequest (Requisition *requisition, int numPos,
 
    DBG_OBJ_ENTER ("resize", 0, "sizeRequest", "%d, ...", numPos);
 
+   DBG_IF_RTFL {
+      DBG_OBJ_MSG_START();
+      for(int i = 0; i < numPos; i++)
+         DBG_OBJ_MSGF ("resize", 1, "ref #%d: %p, %d, %d",
+                       i, references[i], x[i], y[i]);
+      DBG_OBJ_MSG_END();
+   }
+
    enterSizeRequest ();
 
    if (resizeQueued ()) {
@@ -539,6 +547,9 @@ void Widget::sizeRequest (Requisition *requisition, int numPos,
       // Layout::resizeIdle.
    }
 
+   SizeParams newRequisitionParams (numPos, references, x, y);
+   DBG_OBJ_ASSOC_CHILD (&newRequisitionParams);
+
    bool callImpl;
    if (needsResize ())
       callImpl = true;
@@ -546,16 +557,13 @@ void Widget::sizeRequest (Requisition *requisition, int numPos,
       // Even if RESIZE_QUEUED / NEEDS_RESIZE is not set, calling
       // sizeRequestImpl is necessary when the relavive positions passed here
       // have changed.
-      SizeParams newParams (numPos, references, x, y);
-      DBG_OBJ_ASSOC_CHILD (&newParams);
-      if (newParams.isEquivalent (&requisitionParams))
-         callImpl = false;
-      else {
-         callImpl = true;
-         requisitionParams = newParams;
-      }
+      callImpl = !newRequisitionParams.isEquivalent (&requisitionParams);
    }
-   
+
+   DBG_OBJ_MSGF ("resize", 1, "callImpl = %s", boolToStr (callImpl));
+
+   requisitionParams = newRequisitionParams;
+
    if (callImpl) {
       calcExtraSpace (numPos, references, x, y);
       /** \todo Check requisition == &(this->requisition) and do what? */
