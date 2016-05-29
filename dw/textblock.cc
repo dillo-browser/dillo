@@ -306,15 +306,7 @@ void Textblock::sizeRequestImpl (core::Requisition *requisition, int numPos,
                                  Widget **references, int *x, int *y)
 {
    DBG_OBJ_ENTER ("resize", 0, "sizeRequestImpl", "%d, ...", numPos);
-
-   DBG_IF_RTFL {
-      DBG_OBJ_MSG_START();
-      for(int i = 0; i < numPos; i++)
-         DBG_OBJ_MSGF ("resize", 1, "ref #%d: %p, %d, %d",
-                       i, references[i], x[i], y[i]);
-      DBG_OBJ_MSG_END();
-   }
-   
+  
    sizeRequestParams.fill (numPos, references, x, y);
 
    // We have to rewrap the whole textblock, if (i) the available width (which
@@ -2301,26 +2293,71 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
       int lastWord = lines->empty () ? -1 : lines->getLastRef()->lastWord;
       assert (wordIndex > lastWord);
 
-      int xRel = boxOffsetX () + leftInnerPadding
+      int xRel0 = boxOffsetX () + leftInnerPadding
          + (lines->size () == 0 ? line1OffsetEff : 0);
       int lastMargin, yLine = yOffsetOfLineToBeCreated (&lastMargin);
       int yRel = yLine - min (lastMargin, widget->getStyle()->margin.top);
 
       DBG_OBJ_MSGF ("resize", 1,
-                    "xRel = %d + %d + (%d == 0 ? %d : 0) = %d, "
+                    "xRel0 = %d + %d + (%d == 0 ? %d : 0) = %d, "
                     "yRel = %d - min (%d, %d) = %d",
                     boxOffsetX (), leftInnerPadding , lines->size (),
-                    line1OffsetEff, xRel, yLine, lastMargin,
+                    line1OffsetEff, xRel0, yLine, lastMargin,
                     widget->getStyle()->margin.top, yRel);
             
       core::SizeParams childParams;
       DBG_OBJ_ASSOC_CHILD (&childParams);
 
-      sizeRequestParams.forChild (this, widget, xRel, yRel, &childParams);
-      widget->sizeRequest (size, childParams.getNumPos (),
-                           childParams.getReferences (), childParams.getX (),
-                           childParams.getY ());
+      bool first = true;
+      int oldXRel = -1;
 
+      DBG_OBJ_MSG_START ();
+      
+      while (true) {
+         DBG_OBJ_MSG_START ();
+         
+         int xRel;
+         if(first)
+            xRel = xRel0;
+         else {
+            switch(widget->getStyle()->textAlign) {
+            case core::style::TEXT_ALIGN_LEFT:
+            case core::style::TEXT_ALIGN_STRING: // see comment in alignLine()
+            case core::style::TEXT_ALIGN_JUSTIFY:
+            default: // compiler happiness
+               xRel = xRel0;
+               break;
+    
+            case core::style::TEXT_ALIGN_RIGHT:
+               // TODO: Is this correct?
+               xRel = xRel0 + lineBreakWidth - size->width;
+               break;
+    
+            case core::style::TEXT_ALIGN_CENTER:
+               // TODO: Is this correct?
+               xRel = xRel0 + (lineBreakWidth - size->width) / 2;
+               break;
+            }
+         }
+
+         DBG_OBJ_MSGF ("resize", 2, "xRel = %d, oldXRel = %d", xRel, oldXRel);
+
+         if (!first && xRel == oldXRel)
+            break;
+         
+         sizeRequestParams.forChild (this, widget, xRel, yRel, &childParams);
+         widget->sizeRequest (size, childParams.getNumPos (),
+                              childParams.getReferences (), childParams.getX (),
+                              childParams.getY ());
+
+         oldXRel = xRel;
+         first = false;
+
+         DBG_OBJ_MSG_END ();
+      }
+
+      DBG_OBJ_MSG_END ();
+      
       result = true;
    } else {
       // do not pass positions (inline elements etc)
