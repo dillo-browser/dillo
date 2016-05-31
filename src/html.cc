@@ -2668,7 +2668,8 @@ static void Html_tag_open_source(DilloHtml *html, const char *tag,
    const char *attrbuf;
 
    if (!(html->InFlags & IN_MEDIA)) {
-      BUG_MSG("<source> not inside a media element.");
+      // Can also be inside a picture element.
+      // BUG_MSG("<source> not inside a media element.");
       return;
    }
    if (!(attrbuf = a_Html_get_attr(html, tag, tagsize, "src"))) {
