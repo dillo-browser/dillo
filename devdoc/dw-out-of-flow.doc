@@ -26,7 +26,7 @@ which may be rendered like this
 \image html dw-floats-01.png
 
 The float (the DIV section, yellow in the image) is defined
-("generated") within the list item (blue), so, in CSS 2 terms, the
+("generated") within the list item (green), so, in CSS 2 terms, the
 list item is the generating block of the float. However, as the image
 shows, the float is not contained by the list item, but another block,
 several levels above (not shown here). In terms of ::dw, this means
@@ -38,7 +38,7 @@ is assigned as the containing box.
 
 (Notice also that other text blocks must regard floats to calculate
 their borders, and so their size. In this example, the following list
-item (green) must consider the position of the float. This is
+item (gray) must consider the position of the float. This is
 discussed in detail in the next section.)
 
 
