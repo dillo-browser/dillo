@@ -3119,7 +3119,7 @@ int Textblock::getGeneratorRest (int oofmIndex)
       int width = getGeneratorWidth (0, 0);
       rest = container->getGeneratorWidth (xRef, width) - (xRef + width);
    } else {
-      // Only callend for floats, so this should not happen:
+      // Only called for floats, so this should not happen:
       assertNotReached ();
       rest = 0;
    }
@@ -3132,15 +3132,31 @@ int Textblock::getGeneratorWidth (int callerX, int callerWidth)
 {
    DBG_OBJ_ENTER ("resize", 0, "Textblock::getGeneratorWidth", "%d, %d",
                   callerX, callerWidth);
-   
+
+   if (0 && lines->size () > 0) {
+      Word *lastWordOfLine, *lwol0;
+      lwol0 = words->getRef(lines->getRef(0)->lastWord);
+      lastWordOfLine = words->getRef(lines->getLastRef()->lastWord);
+      MSG("lww=%d lwol0=%d ", lastWordOfLine->totalWidth, lwol0->totalWidth);
+      MSG("lbw0=%d lbwl=%d\n",
+          calcLineBreakWidth(0),
+          calcLineBreakWidth(lines->size() - 1));
+   }
    // Cf. sizeRequestImpl.
    if (usesMaxGeneratorWidth ()) {
       DBG_OBJ_LEAVE_VAL ("%d", lineBreakWidth);
       return lineBreakWidth;
    } else {
+#if 0
+      int w0 = max (lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0,
+                    callerX + callerWidth);
+      ...
+      w = min (w0 + leftInnerPadding + boxDiffWidth (), lineBreakWidth);
+#else
       int w0 = max (lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0,
                     callerX + callerWidth),
          w = min (w0 + leftInnerPadding + boxDiffWidth (), lineBreakWidth);
+#endif
       DBG_OBJ_LEAVE_VAL ("min (%d + %d + %d, %d) = %d",
                          w0, leftInnerPadding, boxDiffWidth (), lineBreakWidth,
                          w);

@@ -575,7 +575,7 @@ int Textblock::wordWrap (int wordIndex, bool wrapAll)
       n = wrapWordOofRef (wordIndex, wrapAll);
    else
       n = wrapWordInFlow (wordIndex, wrapAll);
-
+   _MSG("wordWrap word[%d] wtW=%d\n", wordIndex, word->totalWidth);
    DBG_OBJ_MSGF ("construct.word", 1, "=> %d", n);
    DBG_OBJ_LEAVE ();
 
@@ -758,7 +758,6 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
                // (currently?).
 
                lastFloatPos = newFloatPos;
-               
                Widget *widget =
                   words->getRef(lastFloatPos)->content.widgetReference->widget;
                int oofmIndex = getWidgetOOFIndex (widget);
@@ -813,7 +812,6 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
          }
 
          addLine (firstIndex, breakPos, lastFloatPos, tempNewLine, minHeight);
-
          DBG_OBJ_MSGF ("construct.word", 1,
                        "accumulating again from %d to %d",
                        breakPos + 1, wordIndexEnd);
@@ -823,7 +821,12 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
          // update word pointer as hyphenateWord() can trigger a
          // reorganization of the words structure
          word = words->getRef (wordIndex);
-
+         MSG("wrapWordInFlow brkPos=%d, wIdxEnd=%d, word[%d].totalWidth=%d\n",
+             breakPos, wordIndexEnd,
+             wordIndex, words->getRef(wordIndex)->totalWidth);
+         if (words->getRef(wordIndex)->totalWidth == 36) {
+            MSG("*");
+         }
          penaltyIndex = calcPenaltyIndexForNewLine ();
       }
    } while (newLine);
@@ -1654,7 +1657,6 @@ void Textblock::accumulateWordData (int wordIndex)
       word->maxDescent = word->size.descent;
       word->totalSpaceStretchability = 0;
       word->totalSpaceShrinkability = 0;
-
       DBG_OBJ_MSGF ("construct.word.accum", 1,
                     "first word of line: words[%d].totalWidth = %d + %d = %d; "
                     "maxAscent = %d, maxDescent = %d",
@@ -1666,6 +1668,7 @@ void Textblock::accumulateWordData (int wordIndex)
       word->totalWidth = prevWord->totalWidth
          + prevWord->origSpace - prevWord->hyphenWidth
          + word->size.width + word->hyphenWidth;
+      _MSG("wtW=%d ", word->totalWidth);
       word->maxAscent = max (prevWord->maxAscent, word->size.ascent);
       word->maxDescent = max (prevWord->maxDescent, word->size.descent);
       word->totalSpaceStretchability =
@@ -1965,6 +1968,21 @@ void Textblock::rewrap ()
          // So this is necessary: word = words->getRef (i);
       }
 
+      MSG("rewrap tb=%p: totalWidth { ", this);
+      for (int i = firstWord; i < words->size (); i++) {
+         Word *word = words->getRef (i);
+         MSG("w%d=%d ", i, word->totalWidth);
+      }
+      MSG("}");
+
+      MSG(", Lines MaxW{ ");
+      for (int i = 0; i < lines->size (); ++i) {
+         Line *line = lines->getRef(i);
+         MSG("l%d=%d ", i, line->maxLineWidth);
+         //Line *lastLine = lines->getLastRef();
+      }
+      MSG("}\n");
+
       // Next time, the page will not have to be rewrapped.
       wrapRefLines = -1;
       DBG_OBJ_SET_NUM ("wrapRefLines", wrapRefLines);
@@ -2053,7 +2071,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
 {
    DBG_OBJ_ENTER ("construct.line", 0, "calcBorders", "%d, %d",
                  lastOofRef, height);
-
+   MSG("calcBorders tb=%p ", this);
    newLineHasFloatLeft = newLineHasFloatRight = false;
    newLineLeftBorder = newLineRightBorder = 0;
    newLineLeftFloatHeight = newLineRightFloatHeight = 0;
@@ -2112,6 +2130,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
             newLineHasFloatLeft = newLineHasFloatLeft || thisHasLeft;
             thisHasRight = oofm->hasFloatRight (y, height, this, effOofRef);
             newLineHasFloatRight = newLineHasFloatRight || thisHasRight;
+            MSG("nlhFR=%d thR=%d ", newLineHasFloatRight, thisHasRight);
                        
             // TODO "max" is not really correct for the heights. (Does
             // not matter, since only one, the float manager, returns
@@ -2129,8 +2148,12 @@ void Textblock::calcBorders (int lastOofRef, int height)
             if (thisHasRight) {
                newLineRightBorder =
                   max (newLineRightBorder,
+#if 0
+                       oofm->getRightBorder (y, height, this, effOofRef));
+#else
                        oofm->getRightBorder (y, height, this, effOofRef)
                        - getGeneratorRest (i));
+#endif
                newLineRightFloatHeight = 
                   max (newLineRightFloatHeight,
                        oofm->getRightFloatHeight (y, height, this, effOofRef));
@@ -2147,6 +2170,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
          }
       }
    }
+   MSG("\n");
 
    DBG_OBJ_SET_BOOL ("newLineHasFloatLeft", newLineHasFloatLeft);
    DBG_OBJ_SET_BOOL ("newLineHasFloatRight", newLineHasFloatRight);

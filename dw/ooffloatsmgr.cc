@@ -475,6 +475,7 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
          // (ii) If there is more than one line, the line break will already be
          //      exceeded, and so be smaller that GB width + float width.
          effGeneratorWidth =
+            //min (vloat->generator->getGeneratorWidth (0, 0),
             min (vloat->generator->getGeneratorWidth (0, 0) + vloat->size.width,
                  vloat->generator->getMaxGeneratorWidth ());
       MSG("UsesMaxGenW=%d gen->MaxGenW()=%d genW00=%d effGenW=%d ",
@@ -485,8 +486,11 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
 
       x = max (generator->getC0RelX (oofmIndex) + effGeneratorWidth
                - vloat->size.width - generator->getStyle()->boxRestWidth(),
+               //- generator->getStyle()->boxRestWidth(),
                // Do not exceed container allocation:
                0);
+
+      //if (x == 356) x -= 34;
 
       MSG("vloatW=%d gen->getC0RelX()=%d g->boxRestWidth()=%d x=%d",
           vloat->size.width,
