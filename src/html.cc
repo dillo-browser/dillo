@@ -1436,25 +1436,27 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
 }
 
 /*
- * Avoid nesting and inter-nesting of BUTTON, SELECT and TEXTAREA,
+ * Avoid nesting and inter-nesting of BUTTON, SELECT, TEXTAREA and A,
  * by closing them before opening another.
  * This is not an HTML SPEC restriction , but it avoids lots of trouble
  * inside dillo (concurrent inputs), and makes almost no sense to have.
  */
-static void Html_tag_cleanup_nested_inputs(DilloHtml *html, int new_idx)
+static void Html_tag_cleanup_nested_elements(DilloHtml *html, int new_idx)
 {
-   static int i_BUTTON = a_Html_tag_index("button"),
+   static int i_A = a_Html_tag_index("a"),
+              i_BUTTON = a_Html_tag_index("button"),
               i_SELECT = a_Html_tag_index("select"),
               i_TEXTAREA = a_Html_tag_index("textarea");
    int stack_idx, u_idx, matched = 0;
 
-   dReturn_if_fail(html->InFlags & (IN_BUTTON | IN_SELECT | IN_TEXTAREA));
+   dReturn_if_fail(html->InFlags & (IN_BUTTON |IN_SELECT |IN_TEXTAREA |IN_A));
    dReturn_if_fail(new_idx == i_BUTTON || new_idx == i_SELECT ||
-                   new_idx == i_TEXTAREA);
+                   new_idx == i_TEXTAREA || new_idx == i_A);
 
    /* Get the unclosed tag index */
    u_idx = (html->InFlags & IN_BUTTON) ? i_BUTTON :
-                 (html->InFlags & IN_SELECT) ? i_SELECT : i_TEXTAREA;
+           (html->InFlags & IN_SELECT) ? i_SELECT :
+           (html->InFlags & IN_TEXTAREA) ? i_TEXTAREA : i_A;
 
    /* Look for it inside the stack */
    stack_idx = html->stack->size();
@@ -1475,7 +1477,7 @@ static void Html_tag_cleanup_nested_inputs(DilloHtml *html, int new_idx)
                "was found in the stack\n", Tags[u_idx].name);
    }
 
-   html->InFlags &= ~(IN_BUTTON | IN_SELECT | IN_TEXTAREA);
+   html->InFlags &= ~(IN_BUTTON | IN_SELECT | IN_TEXTAREA | IN_A);
 }
 
 
@@ -4045,8 +4047,8 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
          BUG_MSG("<pre> is not allowed to contain <%s>.", Tags[ni].name);
 
       /* Make sure these elements don't nest each other */
-      if (html->InFlags & (IN_BUTTON | IN_SELECT | IN_TEXTAREA))
-         Html_tag_cleanup_nested_inputs(html, ni);
+      if (html->InFlags & (IN_BUTTON | IN_SELECT | IN_TEXTAREA | IN_A))
+         Html_tag_cleanup_nested_elements(html, ni);
 
       /* Push the tag into the stack */
       Html_push_tag(html, ni);
