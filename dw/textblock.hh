@@ -902,7 +902,7 @@ public:
    void widgetRefSizeChanged (int externalIndex);
    void clearPositionChanged ();
    void oofSizeChanged (bool extremesChanged);
-   int getGeneratorX (int oofmIndex);
+   int getC0RelX (int oofmIndex);
    int getGeneratorY (int oofmIndex);
    int getGeneratorWidth (int callerX, int callerWidth);
    int getMaxGeneratorWidth ();

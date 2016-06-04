@@ -20,6 +20,7 @@
 #include "ooffloatsmgr.hh"
 #include "oofawarewidget.hh"
 #include "../lout/debug.hh"
+#include "../lout/msg.h"
 
 #include <limits.h>
 
@@ -433,12 +434,13 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
    OOFAwareWidget *generator = vloat->generator;
 
    ensureFloatSize (vloat);
+   MSG("calcFloatX: ");
 
    switch (vloat->getWidget()->getStyle()->vloat) {
    case FLOAT_LEFT:
       // Left floats are always aligned on the left side of the generator
       // (content, not allocation) ...
-      x = generator->getGeneratorX (oofmIndex)
+      x = generator->getC0RelX (oofmIndex)
          + generator->getStyle()->boxOffsetX();
 
       // ... but when the float exceeds the line break width of the container,
@@ -475,11 +477,21 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
          effGeneratorWidth =
             min (vloat->generator->getGeneratorWidth (0, 0) + vloat->size.width,
                  vloat->generator->getMaxGeneratorWidth ());
+      MSG("UsesMaxGenW=%d gen->MaxGenW()=%d genW00=%d effGenW=%d ",
+          vloat->generator->usesMaxGeneratorWidth(),
+          vloat->generator->getMaxGeneratorWidth (),
+          vloat->generator->getGeneratorWidth (0, 0),
+          effGeneratorWidth);
 
-      x = max (generator->getGeneratorX (oofmIndex) + effGeneratorWidth
+      x = max (generator->getC0RelX (oofmIndex) + effGeneratorWidth
                - vloat->size.width - generator->getStyle()->boxRestWidth(),
                // Do not exceed container allocation:
                0);
+
+      MSG("vloatW=%d gen->getC0RelX()=%d g->boxRestWidth()=%d x=%d",
+          vloat->size.width,
+          generator->getC0RelX (oofmIndex),
+          generator->getStyle()->boxRestWidth(), x);
       break;
 
    default:
@@ -487,8 +499,8 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
       x = 0;
       break;
    }
-
    DBG_OBJ_LEAVE_VAL ("%d", x);
+   MSG("\n");
    return x;
 }
 
@@ -1106,7 +1118,7 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
             int d;
             switch (side) {
             case LEFT:
-               d = vloat->generator->getGeneratorX (oofmIndex)
+               d = vloat->generator->getC0RelX (oofmIndex)
                   + vloat->generator->getStyle()->boxOffsetX ();
                break;
 
@@ -1116,7 +1128,7 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
                // left border, see above). We have to calculate the difference
                // between the maximal widths.
                d = container->getMaxGeneratorWidth ()
-                  - (vloat->generator->getGeneratorX (oofmIndex)
+                  - (vloat->generator->getC0RelX (oofmIndex)
                      + vloat->generator->getMaxGeneratorWidth ())
                   + vloat->generator->getStyle()->boxRestWidth ();
                break;

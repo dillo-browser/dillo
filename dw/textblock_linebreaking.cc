@@ -2120,7 +2120,7 @@ void Textblock::calcBorders (int lastOofRef, int height)
                newLineLeftBorder =
                   max (newLineLeftBorder,
                        oofm->getLeftBorder (y, height, this, effOofRef)
-                       - getGeneratorX (i));
+                       - getC0RelX (i));
                newLineLeftFloatHeight =
                   max (newLineLeftFloatHeight,
                        oofm->getLeftFloatHeight (y, height, this, effOofRef));

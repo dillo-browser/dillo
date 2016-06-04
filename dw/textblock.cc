@@ -3067,9 +3067,9 @@ void Textblock::oofSizeChanged (bool extremesChanged)
    DBG_OBJ_LEAVE ();
 }
 
-int Textblock::getGeneratorX (int oofmIndex)
+int Textblock::getC0RelX (int oofmIndex)
 {
-   DBG_OBJ_ENTER ("resize", 0, "Textblock::getGeneratorX", "%d", oofmIndex);
+   DBG_OBJ_ENTER ("resize", 0, "Textblock::getC0RelX", "%d", oofmIndex);
 
    int x, xRef;
    if (findSizeRequestReference (oofmIndex, &xRef, NULL))

@@ -573,9 +573,9 @@ void OOFAwareWidget::oofSizeChanged (bool extremesChanged)
    DBG_OBJ_LEAVE ();
 }
 
-int OOFAwareWidget::getGeneratorX (int oofmIndex)
+int OOFAwareWidget::getC0RelX (int oofmIndex)
 {
-   notImplemented ("OOFAwareWidget::getGeneratorX");
+   notImplemented ("OOFAwareWidget::getC0RelX");
    return 0;
 }
 
