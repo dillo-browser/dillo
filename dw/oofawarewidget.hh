@@ -276,7 +276,7 @@ public:
     * Return position relative to container, not regarding
     * margin/border/padding, Called by OOFFloatsMgr to position floats.
     */
-   virtual int getC0RelX (int oofmIndex);
+   virtual int getGeneratorX (int oofmIndex);
 
    /**
     * Return position relative to container, not regarding
