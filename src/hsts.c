@@ -357,8 +357,10 @@ void a_Hsts_init(FILE *preload_file)
       hsts_latest_representable_time = mktime(&future_tm);
       domains = dList_new(32);
 
-      if (preload_file)
+      if (preload_file) {
          Hsts_preload(preload_file);
+         fclose(preload_file);
+      }
    }
 }
 
