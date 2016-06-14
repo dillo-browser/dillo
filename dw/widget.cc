@@ -380,7 +380,7 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
             widget2->parent->markSizeChange (widget2->parentRef);
             if (extremesChanged) {
                widget2->parent->markExtremesChange (widget2->parentRef);
-         }
+            }
             
             break;
          }
