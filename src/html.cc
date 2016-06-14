@@ -3005,8 +3005,13 @@ static void Html_tag_open_li(DilloHtml *html, const char *tag, int tagsize)
    int *list_number;
    const char *attrbuf;
 
-   if (S_TOP(html)->list_type == HTML_LIST_NONE)
+   if (S_TOP(html)->list_type == HTML_LIST_NONE &&
+       !(html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)) {
+      /* In WHATWG's HTML5 and W3C's HTML 5.1, LI can appear within MENUs
+       * of the toolbar type.
+       */
       BUG_MSG("<li> outside <ul> or <ol>.");
+   }
 
    html->InFlags |= IN_LI;
 
