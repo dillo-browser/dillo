@@ -1559,7 +1559,7 @@ int32_t a_Html_color_parse(DilloHtml *html, const char *str,
    int32_t color = a_Color_parse(str, default_color, &err);
 
    if (err) {
-      BUG_MSG("Color '%s' is not in \"#RRGGBB\" format.", str);
+      BUG_MSG("Color \"%s\" is not in \"#RRGGBB\" format.", str);
    }
    return color;
 }
