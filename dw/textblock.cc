@@ -3034,7 +3034,7 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::updateReference (int ref)
 {
-   if (lines->size () > 0)
+   if (lines->size () > 0) 
       queueResize (ref, false);
 }
 
