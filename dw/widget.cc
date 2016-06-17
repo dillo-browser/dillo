@@ -375,6 +375,15 @@ void Widget::queueResize (int ref, bool extremesChanged, bool fast)
             widget2->markExtremesChange (child->parentRef);
          }
 
+         DBG_IF_RTFL {
+            if (widget2->parent)
+               DBG_OBJ_MSGF ("resize", 2,
+                             "checking parent %p: (%d & %d) [= %d] == %d?",
+                             widget2->parent, widget2->parent->flags,
+                             totalFlags, widget2->parent->flags & totalFlags,
+                             totalFlags);
+         }
+         
          if (widget2->parent &&
              (widget2->parent->flags & totalFlags) == totalFlags) {
             widget2->parent->markSizeChange (widget2->parentRef);
