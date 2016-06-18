@@ -13,8 +13,7 @@ A widget allocation outside of the allocation of the parent is
 allowed, but the part outside is not visible.
 
 Which widgets may be drawn?
--------------------
-
+---------------------------
 All drawing starts with the toplevel widget
 (cf. dw::core::Widget::queueDrawArea, dw::core::Layout::queueDraw, and
 dw::core::Layout::expose), and a widget has to draw its children, in a

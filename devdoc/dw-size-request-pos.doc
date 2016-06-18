@@ -4,7 +4,8 @@
   padding: 0.5em 1em; background-color: #ffffe0">The complex "widget
   sizes" is currently divided into three documents: \ref
   dw-widget-sizes, \ref dw-grows, and **Size requisitions depending on
-  positions** (this document).</div>
+  positions** (this document). Furthermore, there are some notes in
+  \ref dw-miscellaneous.</div>
 
 
 Motivation
