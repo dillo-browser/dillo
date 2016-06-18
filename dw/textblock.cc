@@ -202,7 +202,7 @@ void Textblock::setStretchabilityFactor (int stretchabilityFactor)
    Textblock::stretchabilityFactor = stretchabilityFactor;
 }
 
-Textblock::Textblock (bool limitTextWidth)
+Textblock::Textblock (bool limitTextWidth, bool treatAsInline)
 {
    DBG_OBJ_CREATE ("dw::Textblock");
    registerName ("dw::Textblock", &CLASS_ID);
@@ -252,6 +252,7 @@ Textblock::Textblock (bool limitTextWidth)
    DBG_OBJ_SET_NUM ("lineBreakWidth", lineBreakWidth);
 
    this->limitTextWidth = limitTextWidth;
+   this->treatAsInline = treatAsInline;
 
    for (int layer = 0; layer < core::HIGHLIGHT_NUM_LAYERS; layer++) {
       /* hlStart[layer].index > hlEnd[layer].index means no highlighting */
@@ -3169,18 +3170,28 @@ int Textblock::getMaxGeneratorWidth ()
 bool Textblock::usesMaxGeneratorWidth ()
 {
    DBG_OBJ_ENTER0 ("resize", 0, "usesMaxGeneratorWidth");
-   bool toplevel = getParent () == NULL,
-      block = getStyle()->display == core::style::DISPLAY_BLOCK,
-      vloat = testWidgetFloat (this),
-      abspos = testWidgetAbsolutelyPositioned (this),
-      fixpos = testWidgetFixedlyPositioned (this),
-      // In detail, this depends on what the respective OOFM does
-      // with the child widget:
+
+   bool result;
+   if (treatAsInline) {
+      DBG_OBJ_MSG ("resize", 1, "treatAsInline set");
+      result = false;
+   } else {
+      bool toplevel = getParent () == NULL,
+         block = getStyle()->display == core::style::DISPLAY_BLOCK,
+         vloat = testWidgetFloat (this),
+         abspos = testWidgetAbsolutelyPositioned (this),
+         fixpos = testWidgetFixedlyPositioned (this);
+      DBG_OBJ_MSGF("resize", 1,
+                   "toplevel: %s, block: %s, float: %s, abspos: %s, fixpos: %s",
+                   boolToStr(toplevel), boolToStr(block), boolToStr(vloat),
+                   boolToStr(abspos), boolToStr(fixpos));
+
+      // In detail, this depends on what the respective OOFM does with the
+      // child widget:
       result = toplevel || (block && !(vloat || abspos || fixpos));
-   DBG_OBJ_LEAVE_VAL ("%s (toplevel: %s, block: %s, float: %s, abspos: %s, "
-                      "fixpos: %s)",
-                      boolToStr(result), boolToStr(toplevel), boolToStr(block),
-                      boolToStr(vloat), boolToStr(abspos), boolToStr(fixpos));
+   }
+
+   DBG_OBJ_LEAVE_VAL ("%s", boolToStr(result));
    return result;
 }
 

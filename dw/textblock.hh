@@ -570,7 +570,8 @@ protected:
    static int stretchabilityFactor;
 
    bool limitTextWidth; /* from preferences */
-
+   bool treatAsInline;
+   
    int redrawY;
    int lastWordDrawn;
 
@@ -876,7 +877,7 @@ public:
    { return !testStyleOutOfFlow (style) ||
          testStyleRelativelyPositioned (style); }
 
-   Textblock (bool limitTextWidth);
+   Textblock (bool limitTextWidth, bool treatAsInline = false);
    ~Textblock ();
 
    core::Iterator *iterator (core::Content::Type mask, bool atEnd);
