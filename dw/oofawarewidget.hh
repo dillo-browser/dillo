@@ -249,7 +249,8 @@ public:
               core::DrawingContext *context);
 
    /**
-    * ...
+    * Update content in flow, down from `ref`. Uses e. g. when floats sizes have
+    * changed.
     */
    virtual void updateReference (int ref);
 

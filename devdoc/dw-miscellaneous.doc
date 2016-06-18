@@ -45,4 +45,37 @@ Extra space
 Should dw::core::Widget::calcExtraSpace be called from
 dw::core::Widget::getExtremes?
 
+
+Widget sizes
+============
+
+Relation between dw::core::Widget::markSizeChange and  dw::core::Widget::queueResize
+------------------------------------------------------------------------------------
+dw::oof::OOFFloatsMgr::markSizeChange (called from
+dw::Textblock::markSizeChange) calls dw::oof::OOFAwareWidget::updateReference,
+whose implementation dw::Textblock::updateReference calls
+dw::core::Widget::queueResize. This may result in a recursion,
+
+- for which it is not clear whether it ends in all cases (although endless cases
+  are not known yet), and
+- which nevertheless may take much time in cases where the number of calls
+  increases exponentially with the depth of the widget tree.
+
+The recent change in dw::Textblock::updateReference (`if (lines->size () > 0)`)
+seems to fix the performance problem, but the issue should be examined further,
+albeit with lower priority. Especially, it has to be determined, under which
+conditions it is allowed to (directly or indirectly) call
+dw::core::Widget::queueResize within an implementation of
+dw::core::Widget::markSizeChange.
+
+Here is the orginal test case (slow, when `if (lines->size () > 0)` is removed
+again):
+
+    (for i in $(seq 1 20); do echo '<div style="float:left"><div></div>'; done) > tmp.html; src/dillo tmp.html
+
+You may change the numner (20), or examine smaller cases with
+<a href="http://home.gna.org/rtfl/">RTFL</a>:
+
+    (for i in $(seq 1 3); do echo '<div style="float:left"><div></div>'; done) > tmp.html; src/dillo tmp.html | rtfl-objview -OM -A "*" -a resize -a resize.oofm
+
 */
