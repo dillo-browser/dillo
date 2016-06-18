@@ -3044,6 +3044,8 @@ void Textblock::updateReference (int ref)
    
    if (lines->size () > 0)
       queueResize (ref, false);
+
+   // TODO: "if (words->size () > 0)" has to be considered.
 }
 
 void Textblock::widgetRefSizeChanged (int externalIndex)
