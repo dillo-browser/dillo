@@ -38,8 +38,8 @@ is assigned as the containing box.
 
 (Notice also that other text blocks must regard floats to calculate
 their borders, and so their size. In this example, the following list
-item (gray) must consider the position of the float. This is
-discussed in detail in the next section.)
+item (gray) must consider the position of the float. This is discussed
+in detail in the following section, _Implementation overview_.)
 
 
 Implementation overview
@@ -48,7 +48,11 @@ Implementation overview
 - dw::oof::OOFAwareWidget is the base for both generators and containers.
   dw::Textblock and dw::Table are based on this, but dw::Table is only relevant
   for positioned elements, so much simpler than dw::Textblock.
-- Different containers for floats, absolutely positioned elements etc.
+- For a given textblock (or, generally, generator), the float container is not
+  necessary the same container as for positioned elements. For this reason,
+  dw::oof::OOFAwareWidget::oofContainer is an array.
+- The containers are set in dw::oof::OOFAwareWidget::notifySetAsTopLevel and
+  dw::oof::OOFAwareWidget::notifySetParent.
 - If a widget is out of flow, the generating widget keeps a reference with the
   type dw::core::Content::WIDGET_OOF_REF, while the containing block refers to
   it as dw::core::Content::WIDGET_OOF_CONT.  For widgets within flow,
