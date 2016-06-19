@@ -12,7 +12,7 @@ CSS&nbsp;2 specification). Consider this snippet (regarding floats):
     <ul>
       <li>Some text.</li>
       <li>
-        <div style="float:right; width=50%">Some longer text, so
+        <div style="float:right; width: 50%">Some longer text, so
           that the effect described in this passage can be
           demonstrated.
         </div>
