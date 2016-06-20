@@ -340,6 +340,9 @@ OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container, int oofmIndex)
    leftFloatsMark = rightFloatsMark = 0;
    lastLeftTBIndex = lastRightTBIndex = 0;
 
+   floatRef = -1;
+   DBG_OBJ_SET_NUM ("floatRef", floatRef);
+
    containerAllocation = *(container->getAllocation());
 
    addWidgetInFlow (this->container, NULL, 0);
@@ -633,32 +636,40 @@ void OOFFloatsMgr::markSizeChange (int ref)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "markSizeChange", "%d", ref);
 
-   Float *vloat;
+   // We implement "incremental resizing" (kind of), by remembering the largest
+   // value for "ref", in "floatRef". It is reset again in getSize(), which is
+   // called by sizeRequest().
+   if (floatRef == -1 || ref > floatRef) {
+      Float *vloat;
 
-   if (isSubRefLeftFloat (ref))
-      vloat = leftFloats->get (getFloatIndexFromSubRef (ref));
-   else if (isSubRefRightFloat (ref))
-      vloat = rightFloats->get (getFloatIndexFromSubRef (ref));
-   else {
-      assertNotReached();
-      vloat = NULL; // compiler happiness
-   }
+      if (isSubRefLeftFloat (ref))
+         vloat = leftFloats->get (getFloatIndexFromSubRef (ref));
+      else if (isSubRefRightFloat (ref))
+         vloat = rightFloats->get (getFloatIndexFromSubRef (ref));
+      else {
+         assertNotReached();
+         vloat = NULL; // compiler happiness
+      }
 
-   vloat->dirty = true;  
-   DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
+      vloat->dirty = true;  
+      DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
 
-   assert (vloat->getWidget()->getWidgetReference() != NULL);
+      assert (vloat->getWidget()->getWidgetReference() != NULL);
      
-   int first = getOOFAwareWidget(vloat->generator)->index;
-   DBG_OBJ_MSGF ("resize.oofm", 1, "updating from %d", first);
+      int first = getOOFAwareWidget(vloat->generator)->index;
+      DBG_OBJ_MSGF ("resize.oofm", 1, "updating from %d", first);
+      
+      tbInfos->get(first)->getOOFAwareWidget()
+         ->updateReference (vloat->getWidget()->getWidgetReference()
+                            ->parentRef);
+      
+      for (int i = first + 1; i < tbInfos->size(); i++)
+         tbInfos->get(i)->getOOFAwareWidget()->updateReference(0);
 
-   tbInfos->get(first)->getOOFAwareWidget()
-      ->updateReference (vloat->getWidget()->getWidgetReference()
-                         ->parentRef);
-
-   for (int i = first + 1; i < tbInfos->size(); i++)
-      tbInfos->get(i)->getOOFAwareWidget()->updateReference(0);
-
+      floatRef = ref;
+      DBG_OBJ_SET_NUM ("floatRef", floatRef);
+   }
+   
    DBG_OBJ_LEAVE ();
 }
 
@@ -924,6 +935,9 @@ void OOFFloatsMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
       max (oofWidthtLeft, oofWidthRight) + container->boxRestWidth ();
    *oofHeight =
       max (oofHeightLeft, oofHeightRight) + container->boxRestHeight ();
+
+   floatRef = -1;
+   DBG_OBJ_SET_NUM ("floatRef", floatRef);
 
    DBG_OBJ_MSGF ("resize.oofm", 1,
                  "=> (l: %d, r: %d => %d) * (l: %d, r: %d => %d)",

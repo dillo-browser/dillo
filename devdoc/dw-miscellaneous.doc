@@ -51,6 +51,11 @@ Widget sizes
 
 Relation between dw::core::Widget::markSizeChange and  dw::core::Widget::queueResize
 ------------------------------------------------------------------------------------
+The following comment should be re-evaluated. Implementing incremental resizing
+for dw::oof::OOFFloatsMgr seems to fix the performance problems, but this should
+be examined further.
+
+<div style="text-decoration: line-through; color: #606060">
 dw::oof::OOFFloatsMgr::markSizeChange (called from
 dw::Textblock::markSizeChange) calls dw::oof::OOFAwareWidget::updateReference,
 whose implementation dw::Textblock::updateReference calls
@@ -77,5 +82,6 @@ You may change the numner (20), or examine smaller cases with
 <a href="http://home.gna.org/rtfl/">RTFL</a>:
 
     (for i in $(seq 1 3); do echo '<div style="float:left"><div></div>'; done) > tmp.html; src/dillo tmp.html | rtfl-objview -OM -A "*" -a resize -a resize.oofm
+</div>
 
 */

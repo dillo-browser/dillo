@@ -3035,18 +3035,7 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::updateReference (int ref)
 {
-   // The condition "(lines->size () > 0)" prevents CPU hogging in some cases,
-   // see devdoc/dw-miscellaneous.doc, "Relation between
-   // dw::core::Widget::markSizeChange and dw::core::Widget::queueResize".
-   //
-   // This condition is safe, since an implementation of
-   // dw::oof::OOFAwareWidget::updateReference should only affect content in
-   // flow, not widgets out of flow, like floats.
-   
-   if (lines->size () > 0)
-      queueResize (ref, false);
-
-   // TODO: "if (words->size () > 0)" has to be considered.
+   queueResize (ref, false);
 }
 
 void Textblock::widgetRefSizeChanged (int externalIndex)
