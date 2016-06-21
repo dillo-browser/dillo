@@ -104,6 +104,7 @@ static bool Html_load_image(BrowserWindow *bw, DilloUrl *url,
                             const DilloUrl *requester, DilloImage *image);
 static void Html_callback(int Op, CacheClient_t *Client);
 static void Html_tag_cleanup_at_close(DilloHtml *html, int TagIdx);
+int a_Html_tag_index(const char *tag);
 
 /*-----------------------------------------------------------------------------
  * Local Data
@@ -119,6 +120,26 @@ typedef struct {
    TagCloseFunct close;   /* Close function */
 } TagInfo;
 extern const TagInfo Tags[];
+
+/* Some element indexes required in scattered places */
+static int
+   i_A = a_Html_tag_index("a"),
+   i_BODY = a_Html_tag_index("body"),
+   i_BUTTON = a_Html_tag_index("button"),
+   i_DD = a_Html_tag_index("dd"),
+   i_DT = a_Html_tag_index("dt"),
+   i_HTML = a_Html_tag_index("html"),
+   i_HR = a_Html_tag_index("hr"),
+   i_LI = a_Html_tag_index("li"),
+   i_OPTGROUP = a_Html_tag_index("optgroup"),
+   i_OPTION = a_Html_tag_index("option"),
+   i_P  = a_Html_tag_index("p"),
+   i_SELECT = a_Html_tag_index("select"),
+   i_TEXTAREA = a_Html_tag_index("textarea"),
+   i_TD = a_Html_tag_index("td"),
+   i_TR = a_Html_tag_index("tr"),
+   i_TH = a_Html_tag_index("th");
+
 
 /*-----------------------------------------------------------------------------
  *-----------------------------------------------------------------------------
@@ -1353,21 +1374,66 @@ static void Html_real_pop_tag(DilloHtml *html)
 }
 
 /*
- * Cleanup the stack to a given index.
+ * Check nesting and cross-nesting between BUTTON, SELECT, TEXTAREA and A.
+ * The cleanup process will close any of them before opening another.
+ * This is not an HTML SPEC restriction , but it avoids lots of trouble
+ * inside dillo (concurrent inputs), and makes almost no sense to have.
+ * return: index of the open element, -1 if none.
  */
-static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
+static inline int Html_forbids_cross_nesting(const int InFlags,
+                                             const int new_idx)
 {
-   static int i_BODY = a_Html_tag_index("body");
-   int s_sz;
-   while ((s_sz = html->stack->size()) > idx) {
+   int f = InFlags, ni = new_idx, oi = -1;
+   if (f & (IN_A | IN_BUTTON | IN_SELECT | IN_TEXTAREA) &&
+       (ni == i_A || ni == i_BUTTON || ni == i_SELECT || ni == i_TEXTAREA))
+      oi = (f & IN_A ? i_A : f & IN_BUTTON ? i_BUTTON : f & IN_SELECT ?
+            i_SELECT : f & IN_TEXTAREA ? i_TEXTAREA : 0);
+   return oi;
+}
+
+/*
+ * Cleanup the stack to a given index.
+ *
+ * 's_idx' stack index to clean up to.
+ * 'new_idx' is the tag index that triggered the cleanup.
+ * 'fi' forbidden tag index. -1 if allowed (most of the time).
+ * 'op' cleanup operation. {'o' =  open, 'c' = close}.
+ */
+static void Html_tag_cleanup_to_idx(DilloHtml *html, int s_idx,
+                                    int new_idx, int fi, char op)
+{
+   int s_top, ni = new_idx;
+   while ((s_top = html->stack->size() - 1) >= s_idx) {
       int toptag_idx = S_TOP(html)->tag_idx;
       TagInfo toptag = Tags[toptag_idx];
-      if (s_sz > idx + 1 && toptag.EndTag != 'O')
-         BUG_MSG("Bad nesting - forcing close of open tag: <%s>.",toptag.name);
-      _MSG("Close: %s sz=%d idx=%d\n", toptag.name, s_sz, idx);
+
+      if (fi >= 0) {
+         // forbidden nesting
+         if (toptag_idx != fi)
+            BUG_MSG("   Nesting cleanup - forcing close of open tag: <%s>.",
+                    toptag.name);
+      } else if (s_top == s_idx && op == 'c') {
+         // target tag, no bug when closing.
+      } else if (toptag.EndTag == 'O') {
+         // optional close, that's OK
+      } else if ((!(toptag.Flags & 4) &&
+                  (Tags[ni].Flags & 4 || !(Tags[ni].Flags & 1))) ||
+                 (Tags[ni].Flags & 1 && !(toptag.Flags & 2))) {
+         // block {element, container} in non block container or
+         // inline element in non inline container
+         BUG_MSG((op == 'o') ?
+            "Bad nesting:  <%s> can't contain <%s>.  -- closing <%s>." :
+            "<%s> must have been closed before </%s>.  -- closing <%s>.",
+            toptag.name, Tags[ni].name, toptag.name);
+      } else {
+         BUG_MSG(
+            "<%s> should have been closed before </%s>.  -- closing <%s>.",
+            toptag.name, Tags[ni].name, toptag.name);
+      }
+      _MSG("op(%c): %s s_top=%d s_idx=%d\n", op, toptag.name, s_top, s_idx);
       if (toptag_idx == i_BODY &&
           !((html->InFlags & IN_EOF) || html->ReqTagClose)) {
-         (idx == 1 ? html->PrevWasHtmlClose : html->PrevWasBodyClose) = true;
+         (s_idx == 1 ? html->PrevWasHtmlClose : html->PrevWasBodyClose) = true;
          break; // only pop {BODY,HTML} upon EOF or redundancy
       }
       if (toptag.close)
@@ -1377,27 +1443,19 @@ static void Html_tag_cleanup_to_idx(DilloHtml *html, int idx)
 }
 
 /*
- * Default close function for tags.
- * (conditional cleanup of the stack)
+ * Conditional cleanup of the stack, called before closing any tag.
+ *
  * There are several ways of doing it. Considering the HTML 4.01 spec
  * which defines optional close tags, and the will to deliver useful diagnose
  * messages for bad-formed HTML, it'll go as follows:
- *   1.- Search the stack for the first tag that requires a close tag.
- *   2.- If it matches, clean all the optional-close tags in between.
- *   3.- Cleanup the matching tag. (on error, give a warning message)
  *
- * If 'w3c_mode' is NOT enabled:
- *   1.- Search the stack for a matching tag based on tag level.
+ *   1.- Search the stack for a matching tag by closing elements that:
+ *       have optional close | are inline in a block container | force closing.
  *   2.- If it exists, clean all the tags in between.
  *   3.- Cleanup the matching tag. (on error, give a warning message)
  */
 static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
 {
-   static int i_A = a_Html_tag_index("a"),
-              i_BUTTON = a_Html_tag_index("button"),
-              i_SELECT = a_Html_tag_index("select"),
-              i_TEXTAREA = a_Html_tag_index("textarea");
-   int w3c_mode = !prefs.w3c_plus_heuristics;
    int stack_idx, tag_idx, matched = 0, expected = 0;
    TagInfo new_tag = Tags[new_idx];
 
@@ -1418,7 +1476,11 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
                  (new_idx == i_TEXTAREA && html->InFlags & IN_TEXTAREA)) {
          /* Let these elements close anything left open inside them */
          continue;
-      } else if (w3c_mode || Tags[tag_idx].TagLevel >= new_tag.TagLevel) {
+      } else if (Tags[new_idx].Flags & 4 &&   // Block container
+                 Tags[stack_idx].Flags & 3) { // Inline element or container
+         /* Let a block container close inline elements left open inside it. */
+         continue;
+      } else {
          /* this is the tag that should have been closed */
          expected = 1;
          break;
@@ -1426,58 +1488,13 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
    }
 
    if (matched) {
-      Html_tag_cleanup_to_idx(html, stack_idx);
+      Html_tag_cleanup_to_idx(html, stack_idx, new_idx, -1, 'c');
    } else if (expected) {
       BUG_MSG("Unexpected closing tag: </%s> -- expected </%s>.",
               new_tag.name, Tags[tag_idx].name);
    } else {
       BUG_MSG("Unexpected closing tag: </%s>.", new_tag.name);
    }
-}
-
-/*
- * Avoid nesting and inter-nesting of BUTTON, SELECT, TEXTAREA and A,
- * by closing them before opening another.
- * This is not an HTML SPEC restriction , but it avoids lots of trouble
- * inside dillo (concurrent inputs), and makes almost no sense to have.
- */
-static void Html_tag_cleanup_nested_elements(DilloHtml *html, int new_idx)
-{
-   static int i_A = a_Html_tag_index("a"),
-              i_BUTTON = a_Html_tag_index("button"),
-              i_SELECT = a_Html_tag_index("select"),
-              i_TEXTAREA = a_Html_tag_index("textarea");
-   int stack_idx, u_idx, matched = 0;
-
-   dReturn_if_fail(html->InFlags & (IN_BUTTON |IN_SELECT |IN_TEXTAREA |IN_A));
-   dReturn_if_fail(new_idx == i_BUTTON || new_idx == i_SELECT ||
-                   new_idx == i_TEXTAREA || new_idx == i_A);
-
-   /* Get the unclosed tag index */
-   u_idx = (html->InFlags & IN_BUTTON) ? i_BUTTON :
-           (html->InFlags & IN_SELECT) ? i_SELECT :
-           (html->InFlags & IN_TEXTAREA) ? i_TEXTAREA : i_A;
-
-   /* Look for it inside the stack */
-   stack_idx = html->stack->size();
-   while (--stack_idx) {
-      if (html->stack->getRef(stack_idx)->tag_idx == u_idx) {
-         /* matching tag found */
-         matched = 1;
-         break;
-      }
-   }
-
-   if (matched) {
-      BUG_MSG("Attempt to nest <%s> element inside <%s> -- closing <%s>.",
-              Tags[new_idx].name, Tags[u_idx].name, Tags[u_idx].name);
-      Html_tag_cleanup_to_idx(html, stack_idx);
-   } else {
-      MSG_WARN("Inconsistent parser state, flag is SET but no '%s' element"
-               "was found in the stack\n", Tags[u_idx].name);
-   }
-
-   html->InFlags &= ~(IN_BUTTON | IN_SELECT | IN_TEXTAREA | IN_A);
 }
 
 
@@ -1877,7 +1894,6 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
 {
    const char *attrbuf;
    int32_t color;
-   int tag_index_a = a_Html_tag_index ("a");
    style::Color *bgColor;
    style::StyleImage *bgImage;
    style::BackgroundRepeat bgRepeat;
@@ -1955,14 +1971,14 @@ static void Html_tag_open_body(DilloHtml *html, const char *tag, int tagsize)
     * On reload style including color for visited links is computed properly
     * according to CSS.
     */
-   html->startElement (tag_index_a);
+   html->startElement (i_A);
    html->styleEngine->setPseudoVisited ();
    if (html->non_css_visited_color != -1) {
       html->styleEngine->setNonCssHint (CSS_PROPERTY_COLOR, CSS_TYPE_COLOR,
                                         html->non_css_visited_color);
    }
    html->visited_color = html->style ()->color->getColor ();
-   html->styleEngine->endElement (tag_index_a);
+   html->styleEngine->endElement (i_A);
 
    if (prefs.contrast_visited_color) {
       /* get a color that has a "safe distance" from text, link and bg */
@@ -3547,7 +3563,7 @@ static void Html_tag_content_wbr(DilloHtml *html, const char *tag, int tagsize)
  */
 
 const TagInfo Tags[] = {
- {"a", B8(01111),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
+ {"a", B8(01011),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
  {"abbr", B8(01011),'R',2, Html_tag_open_abbr, NULL, NULL},
  /* acronym 010101 -- obsolete in HTML5 */
  {"address", B8(01110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
@@ -3713,38 +3729,26 @@ int a_Html_tag_index(const char *tag)
 }
 
 /*
- * For elements with optional close, check whether is time to close.
+ * For elements with optional close, check whether is time to close,
+ * by also following Firefox's de facto rules.
+ * Called at open time.
+ *
  * Return value: (1: Close, 0: Don't close)
  * --tuned for speed.
  */
-static int Html_needs_optional_close(int old_idx, int cur_idx)
+static int Html_triggers_optional_close(int old_idx, int cur_idx)
 {
-   static int i_P = -1, i_LI, i_TD, i_TR, i_TH, i_DD, i_DT, i_OPTION;
-               // i_THEAD, i_TFOOT, i_COLGROUP;
-
-   if (i_P == -1) {
-    /* initialize the indexes of elements with optional close */
-    i_P  = a_Html_tag_index("p"),
-    i_LI = a_Html_tag_index("li"),
-    i_TD = a_Html_tag_index("td"),
-    i_TR = a_Html_tag_index("tr"),
-    i_TH = a_Html_tag_index("th"),
-    i_DD = a_Html_tag_index("dd"),
-    i_DT = a_Html_tag_index("dt"),
-    i_OPTION = a_Html_tag_index("option");
-    // i_THEAD = a_Html_tag_index("thead");
-    // i_TFOOT = a_Html_tag_index("tfoot");
-    // i_COLGROUP = a_Html_tag_index("colgroup");
-   }
-
+   int Flags = Tags[cur_idx].Flags;
    if (old_idx == i_P || old_idx == i_DT) {
-      /* P and DT are closed by block elements */
-      return (!(Tags[cur_idx].Flags & 1));
+      /* P and DT are closed by block elements (i.e. non inline)*/
+      return (!(Flags & 1));
    } else if (old_idx == i_LI) {
-      /* LI closes LI */
+      /* LI closes LI
+       * Note: non-flow should also close it, but FF does not. */
       return (cur_idx == i_LI);
    } else if (old_idx == i_TD || old_idx == i_TH) {
-      /* TD and TH are closed by TD, TH and TR */
+      /* TD and TH are closed by: TD, TH and TR.
+       * Note: non-flow should also close it, but FF does not. */
       return (cur_idx == i_TD || cur_idx == i_TH || cur_idx == i_TR);
    } else if (old_idx == i_TR) {
       /* TR closes TR */
@@ -3752,69 +3756,62 @@ static int Html_needs_optional_close(int old_idx, int cur_idx)
    } else if (old_idx == i_DD) {
       /* DD is closed by DD and DT */
       return (cur_idx == i_DD || cur_idx == i_DT);
+   } else if (old_idx == i_OPTGROUP) {
+      /* i_OPTGROUP can only contain OPTION */
+      return (cur_idx != i_OPTION);
    } else if (old_idx == i_OPTION) {
       return 1;  // OPTION always needs close
    }
 
-   /* HTML, HEAD, BODY are handled by Html_test_section(), not here. */
-   /* TODO: TBODY is pending */
+   /* Don't close HTML, HEAD and BODY. They're handled by Html_test_section().
+    * TODO: TBODY is pending */
    return 0;
 }
 
 
 /*
- * Conditional cleanup of the stack (at open time).
- * - This helps catching block elements inside inline containers (a BUG).
- * - It also closes elements with "optional" close tag.
+ * Conditional cleanup of the stack (at open time). Handles:
+ *  - Forbidden cross nesting (a BUG).
+ *  - Block elements inside non block containers (a BUG).
+ *  - Elements with "optional" close tag (OK).
  *
- * This function is called when opening a block element or <OPTION>.
- *
- * It searches the stack closing open inline containers, and closing
- * elements with optional close tag when necessary.
- *
- * Note: OPTION is the only non-block element with an optional close.
+ * This function is called before opening/pushing a new tag into the stack.
+ * 'ni' is the new tag's index in Tags[].
  */
-static void Html_stack_cleanup_at_open(DilloHtml *html, int new_idx)
+static void Html_stack_cleanup_at_open(DilloHtml *html, int ni)
 {
-   /* We know that the element we're about to push is a block element.
-    * (except for OPTION, which is an empty inline, so is closed anyway)
-    * Notes:
-    *   Its 'tag' is not yet pushed into the stack,
-    *   'new_idx' is its index inside Tags[].
-    */
-
    if (!html->TagSoup)
       return;
 
-   while (html->stack->size() > 1) {
-      int oldtag_idx = S_TOP(html)->tag_idx;
+   int s_top = html->stack->size() - 1, s_idx;
+   int fi = Html_forbids_cross_nesting(html->InFlags, ni);
+   for (s_idx = s_top;  s_idx > 0;  --s_idx) {
+      int ti = html->stack->getRef(s_idx)->tag_idx;
 
-      if (Tags[oldtag_idx].EndTag == 'O') {    // Element with optional close
-         if (!Html_needs_optional_close(oldtag_idx, new_idx))
-            break;
-      } else if (Tags[oldtag_idx].Flags & 4) { // Block container
-         break;
+      if (fi >= 0) {
+         // forbidden cross nesting found
+         if (ti != fi)
+            continue; // don't allow, close
+         --s_idx;
+         BUG_MSG("Forbidden nesting: <%s> can't contain <%s>.  -- closing "
+                 "<%s>.", Tags[fi].name, Tags[ni].name, Tags[fi].name);
+
+      } else if ((html->InFlags & IN_PRE) && ni == i_HR) {
+         break;   // allow Apache's bad HTML directory listings...
+
+      } else if (Tags[ti].EndTag == 'O') {    // Element with optional close
+         if (Html_triggers_optional_close(ti, ni))
+            continue;   // close
+      } else if (!(Tags[ni].Flags & 1) && !(Tags[ti].Flags & 4)) {
+         // Block element over a NON block container
+         continue;   // close
       }
 
-      /* we have an inline (or empty) container... */
-      if (Tags[oldtag_idx].EndTag == 'R') {
-         BUG_MSG("<%s> is not allowed to contain <%s>. -- closing <%s>.",
-                 Tags[oldtag_idx].name, Tags[new_idx].name,
-                 Tags[oldtag_idx].name);
-      }
-
-      /* Workaround for Apache and its bad HTML directory listings... */
-      if ((html->InFlags & IN_PRE) &&
-          strcmp(Tags[new_idx].name, "hr") == 0)
-         break;
-      /* Avoid OPTION closing SELECT */
-      if ((html->InFlags & IN_SELECT) &&
-          strcmp(Tags[new_idx].name,"option") == 0)
-         break;
-
-      /* This call closes the top tag only. */
-      Html_tag_cleanup_at_close(html, oldtag_idx);
+      break;
    }
+
+   if (s_idx < s_top)
+      Html_tag_cleanup_to_idx(html, s_idx + 1, ni, fi, 'o');
 }
 
 /*
@@ -4003,8 +4000,7 @@ static void Html_display_listitem(DilloHtml *html)
  */
 static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 {
-   static int i_HTML = a_Html_tag_index("html");
-   int ci, ni;           /* current and new tag indexes */
+   int ti, ni;           /* stack tag index and new tag index */
    char *start = tag + 1; /* discard the '<' */
    int IsCloseTag = (*start == '/');
 
@@ -4035,24 +4031,19 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
       Html_test_section(html, ni, IsCloseTag);
 
    /* Tag processing */
-   ci = S_TOP(html)->tag_idx;
+   ti = S_TOP(html)->tag_idx;
    switch (IsCloseTag) {
    case 0:
       /* Open function */
 
-      /* Cleanup when opening a block element, or
-       * when openning over an element with optional close */
-      if (!(Tags[ni].Flags & 1) || (ci != -1 && Tags[ci].EndTag == 'O'))
+      /* Cleanup before opening a new tag */
+      if (ti != -1)
          Html_stack_cleanup_at_open(html, ni);
 
-      /* TODO: this is only raising a warning, take some defined action.
-       * Note: apache uses IMG inside PRE (we could use its "alt"). */
+      /* TODO: this is only raising a warning, but allows the element.
+       * Note: Apache uses IMG inside PRE. */
       if ((html->InFlags & IN_PRE) && Html_tag_pre_excludes(html, ni))
          BUG_MSG("<pre> is not allowed to contain <%s>.", Tags[ni].name);
-
-      /* Make sure these elements don't nest each other */
-      if (html->InFlags & (IN_BUTTON | IN_SELECT | IN_TEXTAREA | IN_A))
-         Html_tag_cleanup_nested_elements(html, ni);
 
       /* Push the tag into the stack */
       Html_push_tag(html, ni);
