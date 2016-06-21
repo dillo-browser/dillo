@@ -1410,7 +1410,7 @@ static void Html_tag_cleanup_at_close(DilloHtml *html, int new_idx)
          matched = 1;
          break;
       } else if (Tags[tag_idx].EndTag == 'O') {
-         /* skip an optional tag */
+         /* close elements with optional close */
          continue;
       } else if ((new_idx == i_A && html->InFlags & IN_A) ||
                  (new_idx == i_BUTTON && html->InFlags & IN_BUTTON) ||
@@ -3532,9 +3532,9 @@ static void Html_tag_content_wbr(DilloHtml *html, const char *tag, int tagsize)
  *
  * Explanation for the 'Flags' field:
  *
- *   {"address", B8(010110), ...}
- *                  |||||`- inline element
- *                  ||||`-- block element
+ *   {"address", B8(01110), ...}
+ *                  |||||
+ *                  ||||`-- inline/block element (1/0 resp.)
  *                  |||`--- inline container
  *                  ||`---- block container
  *                  |`----- body element
@@ -3547,129 +3547,128 @@ static void Html_tag_content_wbr(DilloHtml *html, const char *tag, int tagsize)
  */
 
 const TagInfo Tags[] = {
- {"a", B8(011101),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
- {"abbr", B8(010101),'R',2, Html_tag_open_abbr, NULL, NULL},
+ {"a", B8(01111),'R',2, Html_tag_open_a, NULL, Html_tag_close_a},
+ {"abbr", B8(01011),'R',2, Html_tag_open_abbr, NULL, NULL},
  /* acronym 010101 -- obsolete in HTML5 */
- {"address", B8(011110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
- {"area", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_area,
+ {"address", B8(01110),'R',2,Html_tag_open_default, NULL, Html_tag_close_par},
+ {"area", B8(01001),'F',0, Html_tag_open_default, Html_tag_content_area,
                             NULL},
- {"article", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
- {"aside", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
- {"audio", B8(011101),'R',2, Html_tag_open_audio, NULL, Html_tag_close_media},
- {"b", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"base", B8(100001),'F',0, Html_tag_open_base, NULL, NULL},
+ {"article", B8(01110),'R',2, Html_tag_open_sectioning, NULL, NULL},
+ {"aside", B8(01110),'R',2, Html_tag_open_sectioning, NULL, NULL},
+ {"audio", B8(01111),'R',2, Html_tag_open_audio, NULL, Html_tag_close_media},
+ {"b", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"base", B8(10001),'F',0, Html_tag_open_base, NULL, NULL},
  /* basefont 010001 -- obsolete in HTML5 */
  /* bdo 010101 */
- {"big", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"blockquote", B8(011110),'R',2, Html_tag_open_blockquote, NULL,
+ {"big", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"blockquote", B8(01110),'R',2, Html_tag_open_blockquote, NULL,
                                   NULL},
- {"body", B8(011110),'O',1, Html_tag_open_body, NULL, Html_tag_close_body},
- {"br", B8(010001),'F',0, Html_tag_open_default, Html_tag_content_br,
+ {"body", B8(01110),'O',1, Html_tag_open_body, NULL, Html_tag_close_body},
+ {"br", B8(01001),'F',0, Html_tag_open_default, Html_tag_content_br,
                           NULL},
- {"button", B8(011101),'R',2, Html_tag_open_button,NULL,Html_tag_close_button},
+ {"button", B8(01111),'R',2, Html_tag_open_button,NULL,Html_tag_close_button},
  /* caption */
- {"center", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
- {"cite", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"code", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"center", B8(01110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"cite", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"code", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
  /* col 010010 'F' */
  /* colgroup */
- {"dd", B8(011110),'O',1, Html_tag_open_dd, NULL, NULL},
- {"del", B8(011101),'R',2, Html_tag_open_default, NULL, NULL},
- {"dfn", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"dir", B8(011010),'R',2, Html_tag_open_dir, NULL, Html_tag_close_par},
+ {"dd", B8(01110),'O',1, Html_tag_open_dd, NULL, NULL},
+ {"del", B8(01111),'R',2, Html_tag_open_default, NULL, NULL},
+ {"dfn", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"dir", B8(01100),'R',2, Html_tag_open_dir, NULL, Html_tag_close_par},
  /* TODO: complete <div> support! */
- {"div", B8(011110),'R',2, Html_tag_open_div, NULL, NULL},
- {"dl", B8(011010),'R',2, Html_tag_open_dl, NULL, Html_tag_close_par},
- {"dt", B8(010110),'O',1, Html_tag_open_dt, NULL, Html_tag_close_par},
- {"em", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"embed", B8(010001),'F',0, Html_tag_open_embed, Html_tag_content_embed,NULL},
+ {"div", B8(01110),'R',2, Html_tag_open_div, NULL, NULL},
+ {"dl", B8(01100),'R',2, Html_tag_open_dl, NULL, Html_tag_close_par},
+ {"dt", B8(01010),'O',1, Html_tag_open_dt, NULL, Html_tag_close_par},
+ {"em", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"embed", B8(01001),'F',0, Html_tag_open_embed, Html_tag_content_embed,NULL},
  /* fieldset */
- {"figcaption", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
- {"figure", B8(011110),'R',2, Html_tag_open_default, NULL, NULL},
- {"font", B8(010101),'R',2, Html_tag_open_font, NULL, NULL},
- {"footer", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
- {"form", B8(011110),'R',2, Html_tag_open_form, NULL, Html_tag_close_form},
- {"frame", B8(010010),'F',0, Html_tag_open_frame, Html_tag_content_frame,
+ {"figcaption", B8(01110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"figure", B8(01110),'R',2, Html_tag_open_default, NULL, NULL},
+ {"font", B8(01011),'R',2, Html_tag_open_font, NULL, NULL},
+ {"footer", B8(01110),'R',2, Html_tag_open_sectioning, NULL, NULL},
+ {"form", B8(01110),'R',2, Html_tag_open_form, NULL, Html_tag_close_form},
+ {"frame", B8(01000),'F',0, Html_tag_open_frame, Html_tag_content_frame,
                              NULL},
- {"frameset", B8(011110),'R',2, Html_tag_open_default,
+ {"frameset", B8(01110),'R',2, Html_tag_open_default,
                                 Html_tag_content_frameset, NULL},
- {"h1", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
- {"h2", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
- {"h3", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
- {"h4", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
- {"h5", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
- {"h6", B8(010110),'R',2, Html_tag_open_h, NULL, NULL},
- {"head", B8(101101),'O',1, Html_tag_open_head, NULL, Html_tag_close_head},
- {"header", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
- {"hr", B8(010010),'F',0, Html_tag_open_hr, Html_tag_content_hr,
+ {"h1", B8(01010),'R',2, Html_tag_open_h, NULL, NULL},
+ {"h2", B8(01010),'R',2, Html_tag_open_h, NULL, NULL},
+ {"h3", B8(01010),'R',2, Html_tag_open_h, NULL, NULL},
+ {"h4", B8(01010),'R',2, Html_tag_open_h, NULL, NULL},
+ {"h5", B8(01010),'R',2, Html_tag_open_h, NULL, NULL},
+ {"h6", B8(01010),'R',2, Html_tag_open_h, NULL, NULL},
+ {"head", B8(10111),'O',1, Html_tag_open_head, NULL, Html_tag_close_head},
+ {"header", B8(01110),'R',2, Html_tag_open_sectioning, NULL, NULL},
+ {"hr", B8(01000),'F',0, Html_tag_open_hr, Html_tag_content_hr,
                           NULL},
- {"html", B8(001110),'O',1, Html_tag_open_html, NULL, Html_tag_close_html},
- {"i", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"iframe", B8(011101),'R',2, Html_tag_open_frame, Html_tag_content_frame,
+ {"html", B8(00110),'O',1, Html_tag_open_html, NULL, Html_tag_close_html},
+ {"i", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"iframe", B8(01111),'R',2, Html_tag_open_frame, Html_tag_content_frame,
                               NULL},
- {"img", B8(010001),'F',0, Html_tag_open_img, Html_tag_content_img,
+ {"img", B8(01001),'F',0, Html_tag_open_img, Html_tag_content_img,
                            NULL},
- {"input", B8(010001),'F',0, Html_tag_open_input, NULL, NULL},
- {"ins", B8(011101),'R',2, Html_tag_open_default, NULL, NULL},
- {"isindex", B8(110001),'F',0, Html_tag_open_isindex, NULL, NULL},
- {"kbd", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"input", B8(01001),'F',0, Html_tag_open_input, NULL, NULL},
+ {"ins", B8(01111),'R',2, Html_tag_open_default, NULL, NULL},
+ {"isindex", B8(11001),'F',0, Html_tag_open_isindex, NULL, NULL},
+ {"kbd", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
  /* label 010101 */
  /* legend 01?? */
- {"li", B8(011110),'O',1, Html_tag_open_li, NULL, Html_tag_close_li},
- {"link", B8(100001),'F',0, Html_tag_open_link, NULL, NULL},
- {"map", B8(011001),'R',2, Html_tag_open_default, Html_tag_content_map,
+ {"li", B8(01110),'O',1, Html_tag_open_li, NULL, Html_tag_close_li},
+ {"link", B8(10001),'F',0, Html_tag_open_link, NULL, NULL},
+ {"map", B8(01101),'R',2, Html_tag_open_default, Html_tag_content_map,
                            Html_tag_close_map},
- {"mark", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
+ {"mark", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
  /* menu 1010 -- TODO: not exactly 1010, it can contain LI and inline */
- {"menu", B8(011010),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
- {"meta", B8(110001),'F',0, Html_tag_open_meta, NULL, NULL},
- {"nav", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
+ {"menu", B8(01100),'R',2, Html_tag_open_menu, NULL, Html_tag_close_par},
+ {"meta", B8(11001),'F',0, Html_tag_open_meta, NULL, NULL},
+ {"nav", B8(01110),'R',2, Html_tag_open_sectioning, NULL, NULL},
  /* noframes 1011 -- obsolete in HTML5 */
  /* noscript 1011 */
- {"object", B8(111101),'R',2, Html_tag_open_object, Html_tag_content_object,
+ {"object", B8(11111),'R',2, Html_tag_open_object, Html_tag_content_object,
                               NULL},
- {"ol", B8(011010),'R',2, Html_tag_open_ol, NULL, NULL},
- {"optgroup", B8(010101),'O',1, Html_tag_open_optgroup, NULL,
+ {"ol", B8(01100),'R',2, Html_tag_open_ol, NULL, NULL},
+ {"optgroup", B8(01011),'O',1, Html_tag_open_optgroup, NULL,
                                 Html_tag_close_optgroup},
- {"option", B8(010001),'O',0, Html_tag_open_option,NULL,Html_tag_close_option},
- {"p", B8(010110),'O',1, Html_tag_open_p, NULL, NULL},
+ {"option", B8(01001),'O',0, Html_tag_open_option,NULL,Html_tag_close_option},
+ {"p", B8(01010),'O',1, Html_tag_open_p, NULL, NULL},
  /* param 010001 'F' */
- {"pre", B8(010110),'R',2, Html_tag_open_pre, NULL, Html_tag_close_pre},
- {"q", B8(010101),'R',2, Html_tag_open_q, NULL, Html_tag_close_q},
- {"s", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"samp", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"script", B8(111001),'R',2, Html_tag_open_script,NULL,Html_tag_close_script},
- {"section", B8(011110),'R',2, Html_tag_open_sectioning, NULL, NULL},
- {"select", B8(010101),'R',2, Html_tag_open_select,NULL,Html_tag_close_select},
- {"small", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"source", B8(010001),'F',0, Html_tag_open_source, Html_tag_content_source,
+ {"pre", B8(01010),'R',2, Html_tag_open_pre, NULL, Html_tag_close_pre},
+ {"q", B8(01011),'R',2, Html_tag_open_q, NULL, Html_tag_close_q},
+ {"s", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"samp", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"script", B8(11101),'R',2, Html_tag_open_script,NULL,Html_tag_close_script},
+ {"section", B8(01110),'R',2, Html_tag_open_sectioning, NULL, NULL},
+ {"select", B8(01011),'R',2, Html_tag_open_select,NULL,Html_tag_close_select},
+ {"small", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"source", B8(01001),'F',0, Html_tag_open_source, Html_tag_content_source,
                               NULL},
- {"span", B8(010101),'R',2, Html_tag_open_span, NULL, NULL},
- {"strike", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"strong", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"style", B8(100101),'R',2, Html_tag_open_style, NULL, Html_tag_close_style},
- {"sub", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"sup", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"table", B8(011010),'R',5, Html_tag_open_table, Html_tag_content_table,
-                             NULL},
+ {"span", B8(01011),'R',2, Html_tag_open_span, NULL, NULL},
+ {"strike", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"strong", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"style", B8(10011),'R',2, Html_tag_open_style, NULL, Html_tag_close_style},
+ {"sub", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"sup", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"table", B8(01100),'R',5, Html_tag_open_table, Html_tag_content_table, NULL},
  /* tbody */
- {"td", B8(011110),'O',3, Html_tag_open_td, Html_tag_content_td,
+ {"td", B8(01110),'O',3, Html_tag_open_td, Html_tag_content_td,
                           NULL},
- {"textarea", B8(010101),'R', 2, Html_tag_open_textarea,
+ {"textarea", B8(01011),'R', 2, Html_tag_open_textarea,
                           Html_tag_content_textarea, Html_tag_close_textarea},
  /* tfoot */
- {"th", B8(011110),'O',1, Html_tag_open_th, Html_tag_content_th,
+ {"th", B8(01110),'O',1, Html_tag_open_th, Html_tag_content_th,
                           NULL},
  /* thead */
- {"title", B8(100101),'R',2, Html_tag_open_title, NULL, Html_tag_close_title},
- {"tr", B8(011010),'O',4, Html_tag_open_tr, Html_tag_content_tr,
+ {"title", B8(10011),'R',2, Html_tag_open_title, NULL, Html_tag_close_title},
+ {"tr", B8(01100),'O',4, Html_tag_open_tr, Html_tag_content_tr,
                           NULL},
- {"tt", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"u", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"ul", B8(011010),'R',2, Html_tag_open_ul, NULL, NULL},
- {"var", B8(010101),'R',2, Html_tag_open_default, NULL, NULL},
- {"video", B8(011101),'R',2, Html_tag_open_video, NULL, Html_tag_close_media},
- {"wbr", B8(010101),'F',0, Html_tag_open_default, Html_tag_content_wbr, NULL}
+ {"tt", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"u", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"ul", B8(01100),'R',2, Html_tag_open_ul, NULL, NULL},
+ {"var", B8(01011),'R',2, Html_tag_open_default, NULL, NULL},
+ {"video", B8(01111),'R',2, Html_tag_open_video, NULL, Html_tag_close_media},
+ {"wbr", B8(01011),'F',0, Html_tag_open_default, Html_tag_content_wbr, NULL}
 };
 #define NTAGS (sizeof(Tags)/sizeof(Tags[0]))
 
@@ -3740,7 +3739,7 @@ static int Html_needs_optional_close(int old_idx, int cur_idx)
 
    if (old_idx == i_P || old_idx == i_DT) {
       /* P and DT are closed by block elements */
-      return (Tags[cur_idx].Flags & 2);
+      return (!(Tags[cur_idx].Flags & 1));
    } else if (old_idx == i_LI) {
       /* LI closes LI */
       return (cur_idx == i_LI);
@@ -3793,7 +3792,7 @@ static void Html_stack_cleanup_at_open(DilloHtml *html, int new_idx)
       if (Tags[oldtag_idx].EndTag == 'O') {    // Element with optional close
          if (!Html_needs_optional_close(oldtag_idx, new_idx))
             break;
-      } else if (Tags[oldtag_idx].Flags & 8) { // Block container
+      } else if (Tags[oldtag_idx].Flags & 4) { // Block container
          break;
       }
 
@@ -3842,7 +3841,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
       }
    }
 
-   if (Tags[new_idx].Flags & 32) {
+   if (Tags[new_idx].Flags & 16) {
       /* head element */
       if (!(html->InFlags & IN_HEAD) && html->Num_HEAD == 0) {
          tag = "<head>";
@@ -3855,7 +3854,7 @@ static void Html_test_section(DilloHtml *html, int new_idx, int IsCloseTag)
          }
       }
 
-   } else if (Tags[new_idx].Flags & 16) {
+   } else if (Tags[new_idx].Flags & 8) {
       /* body element */
       if (html->InFlags & IN_HEAD) {
          tag = "</head>";
@@ -4043,7 +4042,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
 
       /* Cleanup when opening a block element, or
        * when openning over an element with optional close */
-      if (Tags[ni].Flags & 2 || (ci != -1 && Tags[ci].EndTag == 'O'))
+      if (!(Tags[ni].Flags & 1) || (ci != -1 && Tags[ci].EndTag == 'O'))
          Html_stack_cleanup_at_open(html, ni);
 
       /* TODO: this is only raising a warning, take some defined action.
