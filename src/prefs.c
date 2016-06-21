@@ -115,7 +115,6 @@ void a_Prefs_init(void)
    prefs.ui_tab_active_fg_color = -1;
    prefs.ui_tab_fg_color = -1;
    prefs.ui_text_bg_color = -1;
-   prefs.w3c_plus_heuristics = TRUE;
 
    prefs.penalty_hyphen = 100;
    prefs.penalty_hyphen_2 = 800;

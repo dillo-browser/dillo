@@ -136,15 +136,6 @@
 # text.
 #stretchability_factor=1
 
-#-------------------------------------------------------------------------
-#                            PARSING SECTION
-#-------------------------------------------------------------------------
-
-# If you prefer more accurate HTML bug diagnosis over better rendering
-# (page authors and webmasters) set the following to "NO".
-#
-#w3c_plus_heuristics=YES
-
 
 #-------------------------------------------------------------------------
 #                            NETWORK SECTION

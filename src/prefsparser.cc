@@ -145,7 +145,7 @@ void PrefsParser::parse(FILE *fp)
    int st;
 
    /* Symbol array, sorted alphabetically */
-   SymNode_t symbols[] = {
+   static SymNode_t symbols[] = {
       { "allow_white_bg", &prefs.allow_white_bg, PREFS_BOOL, 0 },
       { "white_bg_replacement", &prefs.white_bg_replacement, PREFS_COLOR, 0 },
       { "bg_color", &prefs.bg_color, PREFS_COLOR, 0 },
@@ -222,7 +222,6 @@ void PrefsParser::parse(FILE *fp)
       { "ui_tab_active_fg_color", &prefs.ui_tab_active_fg_color, PREFS_COLOR, 0 },
       { "ui_tab_fg_color", &prefs.ui_tab_fg_color, PREFS_COLOR, 0 },
       { "ui_text_bg_color", &prefs.ui_text_bg_color, PREFS_COLOR, 0 },
-      { "w3c_plus_heuristics", &prefs.w3c_plus_heuristics, PREFS_BOOL, 0 },
       { "penalty_hyphen", &prefs.penalty_hyphen, PREFS_FRACTION_100, 0 },
       { "penalty_hyphen_2", &prefs.penalty_hyphen_2, PREFS_FRACTION_100, 0 },
       { "penalty_em_dash_left", &prefs.penalty_em_dash_left,
