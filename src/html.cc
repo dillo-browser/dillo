@@ -3735,6 +3735,8 @@ static void Html_stack_cleanup_at_open(DilloHtml *html, int ni)
             continue;   // close
       } else if (!(Tags[ni].Flags & 1) && !(Tags[ti].Flags & 4)) {
          // Block element over a NON block container
+         if (ti == i_A && html->DocTypeVersion >= 5.0f)
+            break;
          continue;   // close
       }
 
