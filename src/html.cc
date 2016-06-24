@@ -3681,7 +3681,7 @@ static void Html_tag_cleanup_to_idx(DilloHtml *html, int s_idx,
          // inline element in non inline container
          BUG_MSG((op == 'o') ?
             "Bad nesting:  <%s> can't contain <%s>.  -- closing <%s>." :
-            "<%s> must have been closed before </%s>.  -- closing <%s>.",
+            "<%s> needs to be closed before </%s>.  -- closing <%s>.",
             toptag.name, Tags[ni].name, toptag.name);
       } else {
          BUG_MSG(
