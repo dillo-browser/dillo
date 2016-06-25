@@ -3109,17 +3109,9 @@ int Textblock::getGeneratorRest (int oofmIndex)
    int xRef, rest;
    OOFAwareWidget *container = oofContainer[oofmIndex];
    
-   if (container != NULL && findSizeRequestReference (container, &xRef, NULL)) {
-      // This method is typically called within sizeRequest; so, this widget has
-      // more information to calculate the width than the container, which will
-      // result in too small values (often negative) of the rest.  For this
-      // reason, we use the possibility to pass values from this widget.
-
-      // (Also notice that the return value may actually be negative.)
-      
-      int width = getGeneratorWidth (0, 0);
-      rest = container->getGeneratorWidth (xRef, width) - (xRef + width);
-   } else {
+   if (container != NULL && findSizeRequestReference (container, &xRef, NULL))
+      rest = container->getGeneratorWidth () - (xRef + getGeneratorWidth ());
+   else {
       // Only callend for floats, so this should not happen:
       assertNotReached ();
       rest = 0;
@@ -3129,22 +3121,54 @@ int Textblock::getGeneratorRest (int oofmIndex)
    return rest;
 }
 
-int Textblock::getGeneratorWidth (int callerX, int callerWidth)
+int Textblock::getGeneratorWidth ()
 {
-   DBG_OBJ_ENTER ("resize", 0, "Textblock::getGeneratorWidth", "%d, %d",
-                  callerX, callerWidth);
+   DBG_OBJ_ENTER0 ("resize", 0, "Textblock::getGeneratorWidth");
    
    // Cf. sizeRequestImpl.
    if (usesMaxGeneratorWidth ()) {
       DBG_OBJ_LEAVE_VAL ("%d", lineBreakWidth);
       return lineBreakWidth;
    } else {
-      int w0 = max (lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0,
-                    callerX + callerWidth),
-         w = min (w0 + leftInnerPadding + boxDiffWidth (), lineBreakWidth);
-      DBG_OBJ_LEAVE_VAL ("min (%d + %d + %d, %d) = %d",
-                         w0, leftInnerPadding, boxDiffWidth (), lineBreakWidth,
-                         w);
+      // In some cases (especially when called from sizeRequest for an
+      // ancestor), the value is not up to date, since content from children is
+      // not yet added to lines. Moreover, this leads to inconsistencies between
+      // this widget and ancestors (as in Textblock::getGeneratorRest). For this
+      // reason, the children are examined recursively.
+      //
+      // Test case:
+      //
+      // <div style="float:left">
+      //     <div div style="float:right">float</div>
+      //     <div>abcdefghijkl mnopqrstuvwx</div>
+      // </div>
+                                                                       
+      int wChild = 0;
+      int firstWordAfterLastLine =
+         lines->size() > 0 ? lines->getLastRef()->lastWord + 1 : 0;
+      for (int i = firstWordAfterLastLine; i < words->size(); i++) {
+         Word *word = words->getRef(i);
+         int xRel;
+         // We only examine instances of dw::Textblock, since they are relevant
+         // for floats, for which this method is only called.
+         if(word->content.type == core::Content::WIDGET_IN_FLOW &&
+            word->content.widget->instanceOf(Textblock::CLASS_ID)) {
+            Textblock *tbChild = (Textblock*)word->content.widget;
+            if(tbChild->findSizeRequestReference(this, &xRel, NULL))
+               wChild = max(wChild, xRel + tbChild->getGeneratorWidth());
+         }
+      }               
+
+      DBG_OBJ_MSGF ("resize", 1, "wChild = %d", wChild);
+          
+      int w0 = lines->size () > 0 ? lines->getLastRef()->maxLineWidth : 0;
+      DBG_OBJ_MSGF ("resize", 1, "w0 = %d", w0);
+      int wThis = min(w0 + leftInnerPadding + boxDiffWidth (), lineBreakWidth);
+      DBG_OBJ_MSGF ("resize", 1, "wThis = min(%d + %d + %d, %d) = %d",
+                    w0, leftInnerPadding, boxDiffWidth (), lineBreakWidth,
+                    wThis);
+      int w = max(wThis, wChild);
+      DBG_OBJ_LEAVE_VAL ("max(%d, %d) = %d", wThis, wChild, w);
       return w;
    }
 }

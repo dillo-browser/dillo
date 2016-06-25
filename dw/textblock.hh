@@ -905,7 +905,7 @@ public:
    void oofSizeChanged (bool extremesChanged);
    int getGeneratorX (int oofmIndex);
    int getGeneratorY (int oofmIndex);
-   int getGeneratorWidth (int callerX, int callerWidth);
+   int getGeneratorWidth ();
    int getMaxGeneratorWidth ();
    bool usesMaxGeneratorWidth ();
    bool isPossibleOOFContainer (int oofmIndex);

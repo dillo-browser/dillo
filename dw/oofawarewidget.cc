@@ -585,7 +585,7 @@ int OOFAwareWidget::getGeneratorY (int oofmIndex)
    return 0;
 }
 
-int OOFAwareWidget::getGeneratorWidth (int callerX, int callerWidth)
+int OOFAwareWidget::getGeneratorWidth ()
 {
    notImplemented ("OOFAwareWidget::getGeneratorWidth");
    return 0;

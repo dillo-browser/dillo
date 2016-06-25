@@ -46,6 +46,16 @@ Should dw::core::Widget::calcExtraSpace be called from
 dw::core::Widget::getExtremes?
 
 
+Widgets out of flow
+===================
+
+dw::Textblock::getGeneratorWidth
+--------------------------------
+Re-evaluate dw::Textblock::getGeneratorWidth (especially the limitation on
+instances of dw::Textblock) for positioned elements. Is this method really only
+called for floats?
+
+
 Widget sizes
 ============
 

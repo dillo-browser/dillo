@@ -476,7 +476,7 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
          // (ii) If there is more than one line, the line break will already be
          //      exceeded, and so be smaller that GB width + float width.
          effGeneratorWidth =
-            min (vloat->generator->getGeneratorWidth (0, 0) + vloat->size.width,
+            min (vloat->generator->getGeneratorWidth () + vloat->size.width,
                  vloat->generator->getMaxGeneratorWidth ());
 
       x = max (generator->getGeneratorX (oofmIndex) + effGeneratorWidth
@@ -868,7 +868,7 @@ bool OOFFloatsMgr::collidesH (Float *vloat, Float *other)
    if (vloat->generator == other->generator)
       collidesH = vloat->size.width + other->size.width
          + vloat->generator->boxDiffWidth()
-         > vloat->generator->getGeneratorWidth (0, 0);
+         > vloat->generator->getGeneratorWidth ();
    else {
       // Again, if the other float is not allocated, there is no
       // collision. Compare to collidesV. (But vloat->size is used
@@ -1039,8 +1039,8 @@ void OOFFloatsMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
       *maxWidth = max (*maxWidth,
                        extr.maxWidth
                        + vloat->generator->getStyle()->boxDiffWidth(),
-                       + max (container->getGeneratorWidth (0, 0)
-                              - vloat->generator->getGeneratorWidth (0, 0),
+                       + max (container->getGeneratorWidth ()
+                              - vloat->generator->getGeneratorWidth (),
                               0));
       
       DBG_OBJ_MSGF ("resize.oofm", 1, "%d / %d => %d / %d",
