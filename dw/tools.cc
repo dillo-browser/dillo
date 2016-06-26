@@ -90,6 +90,8 @@ void SizeParams::forChild (Widget *parent, Widget *child, int xRel, int yRel,
 {
    DBG_OBJ_ENTER ("resize", 0, "forChild", "%p, %p, %d, %d, %p",
                   parent, child, xRel, yRel, childParams);
+
+   childParams->cleanup ();
    
    int numChildReferences = child->numSizeRequestReferences ();
 
