@@ -142,7 +142,7 @@ static int parseOption(char *name, char *value,
 void PrefsParser::parse(FILE *fp)
 {
    char *line, *name, *value, *oldLocale;
-   int st;
+   int st, line_number = 1;
 
    /* Symbol array, sorted alphabetically */
    static SymNode_t symbols[] = {
@@ -246,11 +246,11 @@ void PrefsParser::parse(FILE *fp)
          _MSG("prefsparser: name=%s, value=%s\n", name, value);
          parseOption(name, value, symbols, sizeof(symbols) / sizeof(symbols[0]));
       } else if (st < 0) {
-         MSG_ERR("prefsparser: Syntax error in dillorc:"
-                 " name=\"%s\" value=\"%s\"\n", name, value);
+         MSG_ERR("prefsparser: Syntax error in dillorc line %d:"
+                 " name=\"%s\" value=\"%s\"\n", line_number, name, value);
       }
-
       dFree(line);
+      line_number++;
    }
    fclose(fp);
 
