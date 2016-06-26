@@ -102,8 +102,9 @@ private:
       Side side;
 
    public:
-      inline SortedFloatsVector (OOFFloatsMgr *oofm, Side side) :
-         lout::container::typed::Vector<Float> (1, false)
+      inline SortedFloatsVector (OOFFloatsMgr *oofm, Side side,
+                                 bool ownerOfObjects) :
+         lout::container::typed::Vector<Float> (1, ownerOfObjects)
       { this->oofm = oofm; this->side = side; }
 
       int findFloatIndex (OOFAwareWidget *lastGB, int lastExtIndex);

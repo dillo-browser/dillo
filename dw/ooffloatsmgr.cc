@@ -325,8 +325,8 @@ OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container, int oofmIndex)
    this->container = container;
    this->oofmIndex = oofmIndex;
 
-   leftFloats = new SortedFloatsVector (this, LEFT);
-   rightFloats = new SortedFloatsVector (this, RIGHT);
+   leftFloats = new SortedFloatsVector (this, LEFT, true);
+   rightFloats = new SortedFloatsVector (this, RIGHT, true);
 
    DBG_OBJ_SET_NUM ("leftFloats.size", leftFloats->size());
    DBG_OBJ_SET_NUM ("rightFloats.size", rightFloats->size());
@@ -356,11 +356,11 @@ OOFFloatsMgr::~OOFFloatsMgr ()
    delete tbInfos;
    delete tbInfosByOOFAwareWidget;
 
-   delete leftFloats;
-   delete rightFloats;
-
    delete floatsByWidget;
 
+   delete leftFloats;
+   delete rightFloats;
+   
    DBG_OBJ_DELETE ();
 }
 
