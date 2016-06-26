@@ -53,7 +53,17 @@ OOFPositionedMgr::OOFPositionedMgr (OOFAwareWidget *container)
    children = new Vector<Child> (1, false);
    childrenByWidget = new HashTable<TypedPointer<Widget>, Child> (true, true);
 
-   containerAllocation = *(container->getAllocation());
+   if(container->wasAllocated()) {
+      containerAllocationState = WAS_ALLOCATED;
+      containerAllocation = *(container->getAllocation());
+   } else {
+      containerAllocationState = NOT_ALLOCATED;
+      containerAllocation.x = -1;
+      containerAllocation.y = -1;
+      containerAllocation.width = 1;
+      containerAllocation.ascent = 1;
+      containerAllocation.descent = 0;
+   }
 
    DBG_OBJ_SET_NUM ("children.size", children->size());
 }
