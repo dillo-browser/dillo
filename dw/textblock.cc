@@ -2292,8 +2292,13 @@ bool Textblock::calcSizeOfWidgetInFlow (int wordIndex, Widget *widget,
       
       // Since the child widget will regard floats, we do not have to include
       // floats when calculating left and right border.
+
+      // TODO Actually line1OffsetEff should be used instead of line1Offset, but
+      // it may not initialized here. Anyway, since ignoreLine1OffsetSometimes
+      // is not used, line1OffsetEff is always equal to line1Offset.
+      
       int leftBorder = boxOffsetX () + leftInnerPadding
-         + (lines->size () == 0 ? line1OffsetEff : 0);
+         + (lines->size () == 0 ? line1Offset /* ...Eff, actually */ : 0);
       int rightBorder = boxRestWidth ();
       
       int lastMargin, yLine = yOffsetOfLineToBeCreated (&lastMargin);
