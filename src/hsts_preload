@@ -1,6 +1,6 @@
-# This HTTP Strict Transport Security preload file was created on 2016-06-04
+# This HTTP Strict Transport Security preload file was created on 2016-06-28
 # from the list in
-# https://mxr.mozilla.org/mozilla-central/source/security/manager/ssl/nsSTSPreloadList.inc?raw=1
+# https://hg.mozilla.org/mozilla-central/raw-file/tip/security/manager/ssl/nsSTSPreloadList.inc
 # Format: domain include_subdomains
 
 0.me.uk true
@@ -40,7 +40,6 @@
 18f.gov true
 1972969867.rsc.cdn77.org true
 1a-diamantscheiben.de true
-1a-jva.de true
 1a-vermessung.at true
 1a-werkstattgeraete.de true
 1co-jp.net true
@@ -116,7 +115,6 @@
 777coin.com true
 7kovrikov.ru true
 7sons.de true
-7thheavenrestaurant.com true
 83i.net true
 888azino.com true
 888sport.dk true
@@ -182,7 +180,6 @@ acisonline.net true
 aclu.org false
 acnpacific.com true
 acorns.com true
-acritelli.com true
 acrylicwifi.com true
 acsemb.org true
 acslimited.co.uk true
@@ -287,11 +284,12 @@ agroline.by true
 agwa.name true
 ahd.com true
 ahero4all.org true
-ahmad.works false
+ahmad.works true
 ahmerjamilkhan.org true
 ahoyconference.com true
 ahri.ovh true
 ahwatukeefoothillsmontessori.com true
+ahxxm.com true
 aia.de true
 aidanwoods.com true
 aids.gov true
@@ -436,7 +434,6 @@ anadoluefessporkulubu.org true
 anagra.ms true
 analytic-s.ml true
 ananke.io true
-anarka.org true
 anassiriphotography.com false
 anastasiafond.com true
 and-stuff.nl true
@@ -482,6 +479,7 @@ anitube.ch true
 ankarakart.com.tr true
 ankaraprofesyonelwebtasarim.com true
 ankarauzmanlarnakliyat.com true
+annabellaw.com true
 annahmeschluss.de true
 annarokina.com true
 annetta.com true
@@ -503,8 +501,8 @@ ansdell.net true
 antarcti.co true
 anthenor.co.uk true
 antipolygraph.org true
-antocom.com true
 antoine-roux.fr true
+antoinedeschenes.com true
 antoniomarques.eu true
 antons.io true
 anyprime.net true
@@ -531,7 +529,6 @@ apis.google.com true
 apmg-certified.com true
 apmg-cyber.com true
 apn-einstellungen.de true
-apnakliyat.com true
 apolloyl.com true
 aponow.de true
 aposke.com true
@@ -585,7 +582,6 @@ arivo.com.br false
 arjandejong.eu true
 arksan.com.tr true
 arlen.io true
-arlen.se true
 armingrodon.de true
 armor.com true
 arnaudfeld.de true
@@ -617,6 +613,7 @@ aryasenna.net true
 arzaroth.com false
 arzid.com true
 as.se true
+as9178.net true
 asandu.eu true
 ascamso.com true
 ascii.moe true
@@ -627,6 +624,7 @@ asianodor.com true
 ask.fedoraproject.org true
 ask.stg.fedoraproject.org true
 askfit.cz true
+askmagicconch.com true
 askwhy.cz true
 askwhy.eu true
 asm-x.com true
@@ -686,7 +684,6 @@ augiero.it true
 augustian-life.cz true
 augustiner-kantorei-erfurt.de true
 augustiner-kantorei.de true
-aujapan.ru true
 aukaraoke.su true
 aulo.in false
 aunali1.com true
@@ -695,6 +692,7 @@ ausschreibungen-suedtirol.it true
 aussiecable.org true
 aussiehq.com.au true
 auth.adult true
+authint.com true
 authoritynutrition.com true
 auto-anleitung.de true
 auto-serwis.zgorzelec.pl true
@@ -744,6 +742,7 @@ baalsworld.de true
 babacasino.net true
 babarkata.com true
 babelfisch.eu true
+baby-click.de true
 babybee.ie true
 babyfotograf-schweiz.ch true
 babysaying.me true
@@ -761,6 +760,7 @@ badges.fedoraproject.org true
 badges.stg.fedoraproject.org true
 badhusky.com true
 badkamergigant.com true
+badlink.org true
 badoo.com true
 baer.im true
 baer.one true
@@ -844,7 +844,6 @@ beastowner.li true
 beautykat.ru true
 bebef.de true
 bedabox.com true
-bedreid.dk true
 beeksnetwork.nl true
 beepan.com true
 beercandle.com true
@@ -857,6 +856,7 @@ beikeil.de true
 beinad.com true
 beinad.ru true
 belcompany.nl false
+believablebook.com false
 belliash.eu.org true
 belltower.io true
 belly-button-piercings.com true
@@ -908,6 +908,7 @@ besthost.cz true
 bestlashesandbrows.com true
 bestorangeseo.com true
 betaclean.fr true
+betafive.net true
 betaworx.de true
 betaworx.eu true
 betcafearena.ro false
@@ -965,7 +966,6 @@ bike-shack.com true
 bikermusic.net true
 bikiniseli.com true
 bildermachr.de true
-bildiri.ci true
 billaud.eu.org true
 billiger-mietwagen.de true
 billigssl.dk true
@@ -973,7 +973,7 @@ billin.net true
 billogram.com true
 billpro.com true
 billpro.com.au true
-bilrom.com true
+bilrom.com false
 bimbo.com true
 bimbobakeriesusa.com true
 binaryevolved.com true
@@ -1022,7 +1022,6 @@ bitheus.com true
 bitlish.com true
 bitmex.com true
 bitminter.com true
-bitmoe.com true
 bitmon.net true
 bitnet.io true
 bitok.com true
@@ -1065,6 +1064,7 @@ black-armada.pl true
 blackberrycentral.com true
 blackburn.link true
 blackdesertsp.com true
+blackhelicopters.net true
 blackly.uk true
 blackpayment.ru true
 blaise.io true
@@ -1098,7 +1098,6 @@ blubberladen.de true
 blue-labs.org true
 blue-leaf81.net true
 blue42.net true
-bluechilli.com true
 blueflare.org true
 blueimp.net true
 bluemosh.com true
@@ -1191,8 +1190,6 @@ bregnedalsystems.dk true
 breitbild-beamer.de true
 brejoc.com true
 brewtrackr.com true
-brianpcurran.com true
-brickoo.com true
 brideandgroomdirect.ie true
 bridholm.se true
 brightonbank.com true
@@ -1222,7 +1219,6 @@ brunoramos.org true
 brunosouza.org true
 bryanquigley.com true
 bryn.xyz true
-bsagan.fr true
 bsidessf.com true
 bsklabels.com false
 bsquared.org true
@@ -1235,7 +1231,7 @@ bubblegumblog.com true
 bubulazi.com true
 bubulazy.com true
 buch-cuber.de true
-buchheld.at true
+buchheld.at false
 buck.com true
 budaev-shop.ru true
 buddhistische-weisheiten.org true
@@ -1278,7 +1274,6 @@ business.facebook.com false
 business.medbank.com.mt true
 businessesdirectory.eu true
 businessloanconnection.org true
-buybaby.eu true
 buyinginvestmentproperty.com true
 buzzconf.io true
 bvionline.eu true
@@ -1286,7 +1281,6 @@ bwcscorecard.org true
 by4cqb.cn true
 bygningsregistrering.dk true
 bynet.cz true
-bypro.xyz true
 byronwade.com true
 byrtz.de true
 byte.wtf true
@@ -1384,6 +1378,7 @@ capturethepen.co.uk true
 caputo.com true
 carano-service.de true
 caraudio69.cz true
+carboneselectricosnettosl.info false
 carbonmade.com false
 carck.co.uk true
 cardloan-manual.net true
@@ -1455,7 +1450,6 @@ ceritamalam.net true
 certcenter.com true
 certcenter.de true
 certible.com true
-certifi.io true
 certly.io true
 certnazionale.it true
 cervejista.com true
@@ -1499,6 +1493,7 @@ chartpen.com true
 chateau-belvoir.com true
 chatme.im false
 chatup.cf true
+chaulootz.com true
 chazay.net true
 chcemvediet.sk true
 chch.it true
@@ -1543,7 +1538,7 @@ choosemypc.net true
 chorpinkpoemps.de true
 chotu.net true
 chris-edwards.net true
-chris-web.info false
+chris-web.info true
 chrisandsarahinasia.com true
 chrisbrown.id.au true
 chrisfaber.com true
@@ -1579,10 +1574,9 @@ churchthemes.com true
 ciat.no true
 cidbot.com true
 cienbeaute-lidl.fr true
-cig-dem.com true
 cigarblogs.net true
 cigarterminal.com false
-cimalando.eu true
+cimalando.eu false
 cimballa.com true
 cinefilzonen.se true
 cinema5.ru true
@@ -1612,6 +1606,7 @@ clapping-rhymes.com true
 claralabs.com true
 clarkeaward.com true
 classdojo.com true
+classicday.nl true
 classicsandexotics.com true
 classicshop.ua true
 clawe.de true
@@ -1651,7 +1646,6 @@ cloudey.net true
 cloudflareonazure.com true
 cloudily.com true
 cloudmigrator365.com true
-cloudns.com.au true
 cloudpagesforwork.com true
 cloudpebble.net true
 clouds.webcam true
@@ -1670,10 +1664,13 @@ clubmini.jp true
 clubmix.co.kr true
 clvrwebdesign.com true
 clycat.ru true
+cmacacias.ch true
 cmahy.be true
 cmdline.org true
+cmlachapelle.ch true
 cmlancy.ch true
 cmlignon.ch true
+cmplainpalais.ch true
 cmsbattle.com true
 cnam.net true
 cni-certing.it true
@@ -1752,7 +1749,6 @@ comdurav.com true
 comercialtrading.eu true
 comfortticket.de true
 comhack.com true
-comicspines.com true
 comitesaustria.at true
 comiteshopping.com true
 commencepayments.com true
@@ -1781,7 +1777,6 @@ comssa.org.au true
 concentrade.de true
 condepenalba.com true
 config.schokokeks.org false
-confirm365.com true
 connect.ua false
 connected-verhuurservice.nl true
 connectfss.com true
@@ -1856,6 +1851,7 @@ crackpfer.de true
 cradlepointecm.com true
 craftbeerbarn.co.uk true
 craftedge.xyz true
+craftinginredlipstick.com true
 cranesafe.com true
 cravelyrics.com true
 crazycen.com true
@@ -1872,6 +1868,7 @@ creditkarma.com true
 creditproautos.com true
 creep.im true
 crefelder.com true
+crendontech.com true
 crepererum.net true
 crestasantos.com true
 crestoncottage.com true
@@ -1916,7 +1913,6 @@ cryptopartyutah.org true
 cryptopush.com true
 cryptoseb.pw true
 crystalchandelierservices.com true
-crystalclassics.co.uk true
 csacongress.org true
 csapak.com true
 csbs.fr true
@@ -1924,7 +1920,6 @@ cselzer.com true
 csfm.com true
 csgodicegame.com true
 csokolade.hu true
-cspbuilder.info true
 cspvalidator.org true
 cssu.in true
 cstkit.com true
@@ -1948,7 +1943,6 @@ cupcake.io true
 cupcake.is true
 curacao-license.com true
 curiosity-driven.org true
-curlybracket.co.uk true
 curlyroots.com true
 currency-strength.com true
 curtacircuitos.com.br false
@@ -1966,7 +1960,7 @@ cwagner.me true
 cyberfrancais.ro true
 cyberguerrilla.info true
 cyberguerrilla.org true
-cyberhouse.at true
+cyberhouse.at false
 cyberianhusky.com true
 cyberkov.com true
 cyberoptic.de true
@@ -2030,6 +2024,7 @@ danielheal.net true
 danielrozenberg.com true
 danieltollot.de true
 danielverlaan.nl true
+danilapisarev.com true
 danishenanigans.com true
 danjesensky.com true
 dank.ninja true
@@ -2045,6 +2040,7 @@ daphne.informatik.uni-freiburg.de true
 daplie.com true
 darchoods.net false
 dargasia.is true
+dario.im true
 darioturchetti.me true
 darkag.ovh true
 darkdestiny.ch true
@@ -2098,7 +2094,6 @@ davidlyness.com true
 davidmcevoy.org.uk true
 davidmessenger.co.uk true
 davidnoren.com true
-davidreinhardt.de true
 davidscherzer.at true
 davimun.org true
 davisroi.com true
@@ -2138,7 +2133,6 @@ deathy.ro true
 decafu.co true
 deco.me true
 decoder.link true
-decomplify.com true
 decor-d.com true
 decoratrix.com true
 decoyrouting.com true
@@ -2169,6 +2163,7 @@ dementiapraecox.de true
 demo.swedbank.se true
 democracy.io true
 democracychronicles.com true
+demomanca.com false
 demuzere.be true
 denardbrewing.com true
 denimio.com true
@@ -2217,7 +2212,6 @@ devh.net true
 deviant.email true
 devilshakerz.com true
 deviltraxxx.de true
-devincrow.me true
 devklog.net true
 devlux.ch true
 devmsg.com true
@@ -2253,7 +2247,6 @@ die-partei-reutlingen.de true
 diegelernten.de true
 diegerbers.de true
 dienstplan.cc true
-dienstplan.one true
 dierenkruiden.nl false
 dieselgalleri.com true
 dieti.net true
@@ -2275,6 +2268,7 @@ dillonkorman.com true
 dime-staging.com true
 dime.io true
 dinepont.fr true
+dinge.xyz true
 dinkum.online true
 dinube.com true
 diodeled.com true
@@ -2323,6 +2317,7 @@ dmeevalumate.com true
 dmfd.net true
 dmi.es true
 dmlogic.com true
+dmwall.cn true
 dmxledlights.com true
 dmz.ninja true
 dn42.eu true
@@ -2402,7 +2397,6 @@ dougferris.id.au true
 dovecotadmin.org true
 dovetailnow.com true
 downloadsoftwaregratisan.com true
-downsouthweddings.com.au true
 dpd.com.pl true
 dprd-wonogirikab.go.id true
 dpsg-roden.de true
@@ -2423,6 +2417,7 @@ dreamcreator108.com true
 dreamlinehost.com true
 dreamsforabetterworld.com.au true
 dreamtechie.com true
+dredgepress.com true
 dreid.org true
 dreizwosechs.de true
 drew.red true
@@ -2437,7 +2432,6 @@ drivenes.net true
 driving-lessons.co.uk true
 drkmtrx.xyz true
 drobniuch.pl false
-droidboss.com true
 droidwiki.de false
 dronepit.dk true
 droomhuis-in-friesland-kopen.nl true
@@ -2486,7 +2480,6 @@ dyeager.org true
 dynaloop.net true
 dynamicnet.net true
 dynamicsnetwork.net true
-dynamize.solutions false
 dyrenesverden.no true
 dziekonski.com true
 dzyabchenko.com true
@@ -2505,6 +2498,7 @@ eagleyecs.com true
 eames-clayton.us true
 earga.sm true
 earmarks.gov true
+easez.net true
 eastmontgroup.com true
 easy-rpg.org true
 easyconstat.com true
@@ -2600,7 +2594,6 @@ ekostecki.de true
 eksisozluk.com true
 ekzarta.ru true
 el-soul.com true
-elaintehtaat.fi true
 elanguest.pl true
 elanguest.ro true
 elanguest.ru true
@@ -2789,14 +2782,12 @@ etaes.eu true
 etdonline.co.uk true
 eteesheet.com true
 etelej.com true
-eternitylove.us true
 eth0.nl true
 etha.nz true
 ethack.org true
 ethanfaust.com true
 ethercalc.com true
 ethercalc.org true
-etherpad.fr true
 ethicaldata.co.uk true
 ethicall.org.uk true
 ethil-faer.fr true
@@ -2811,7 +2802,7 @@ etyd.org true
 eugenekay.com true
 eulenleben.de true
 eulerpi.io true
-euro.ro true
+euro.ro false
 europop.com true
 euroshop.or.at true
 euroshop24.net true
@@ -2857,6 +2848,7 @@ exoscale.ch true
 exoticads.com true
 expatads.com true
 experienceoz.com.au true
+expertmile.com true
 experts-en-gestion.fr true
 explodie.org true
 exploit.cz true
@@ -2885,7 +2877,6 @@ f-droid.org true
 f-s-u.co.uk true
 fa-works.com true
 faber.org.ru true
-fabhub.io true
 fabienbaker.com true
 fableforge.nl true
 fabse.net true
@@ -2973,7 +2964,6 @@ feedthebot.com true
 feel.aero true
 feen.us true
 feezmodo.com true
-feirlane.org false
 felisslovakia.sk true
 feliwyn.fr false
 felixrr.pro true
@@ -3078,6 +3068,7 @@ flawlesscowboy.xyz true
 flazznetworks.com false
 fletchto99.com true
 flexapplications.se true
+fleximus.org false
 flexinvesting.fi true
 flexport.com true
 flightschoolbooking.com true
@@ -3116,8 +3107,7 @@ fnb-griffinonline.com true
 fndout.com true
 fniephaus.com true
 fnordserver.eu true
-fnvsecurity.com true
-focusmark.jp true
+focusmark.jp false
 fokkusu.fi true
 folv.es true
 fondanastasia.ru true
@@ -3175,6 +3165,7 @@ frankhaala.com true
 frankierprofi.de true
 franta.biz true
 franta.email true
+franzt.ovh true
 frasys.cloud true
 frasys.io true
 frasys.net true
@@ -3185,13 +3176,10 @@ free.com.tw true
 freeboson.org true
 freebus.org true
 freedom.press false
-freeform4u.de true
 freekdevries.nl true
 freelance.boutique true
 freelance.nl true
 freemanning.de true
-freematthale.net true
-freemedforms.com true
 freemyipod.org true
 freenetproject.org true
 freeshell.de true
@@ -3257,6 +3245,7 @@ funrun.com true
 furgo.love true
 furkancaliskan.com true
 furry.dk true
+fusedrops.com true
 fusionmate.com true
 futbol11.com true
 futos.de true
@@ -3277,6 +3266,7 @@ gabber.scot true
 gaelleetarnaud.com true
 gafachi.com true
 gagniard.org true
+gagor.pl true
 gaichon.com true
 gakkainavi-epsilon.jp true
 gakkainavi-epsilon.net true
@@ -3296,12 +3286,14 @@ gambitprint.com true
 game-files.net true
 game7.de true
 gamecard-shop.nl true
+gamecave.de true
 gamecollector.be true
 gamedevelopers.pl true
 gamegix.com true
 gameisbest.jp true
 gamenected.com true
 gamepad.vg true
+gamepader.com true
 gameparade.de true
 gamercredo.com true
 gamercredo.net true
@@ -3314,10 +3306,8 @@ gamingzoneservers.com true
 gamishou.fr true
 gamoloco.com true
 gampenhof.de true
-gancedo.com.es true
 ganhonet.com.br true
 gar-nich.net true
-garagegoossens.be true
 garantieabschluss.de false
 garbage-juice.com true
 garedtech.com true
@@ -3325,7 +3315,6 @@ garron.net true
 garyjones.co.uk true
 gasbarkenora.com true
 gasnews.net true
-gatapro.net true
 gateworld.fr true
 gatilagata.com.br true
 gaussorgues.me false
@@ -3381,6 +3370,7 @@ geoscan.aero true
 geraintwhite.co.uk true
 gerardozamudio.mx true
 gerencianet.com.br false
+gereon.ch true
 germandarknes.net true
 gernert-server.de true
 gersting.net true
@@ -3539,6 +3529,7 @@ gpo.gov false
 gprs.uk.com true
 gps.com.br true
 gpstuner.com true
+gpsvideocanada.com true
 gr.search.yahoo.com false
 gra2.com true
 graasp.net true
@@ -3578,15 +3569,13 @@ greenpeace.berlin true
 greenroach.ru true
 greensolid.biz true
 greenteamtwente.nl true
-gregmilton.com true
-gregmilton.org true
-gregorytlee.me true
 greiners.net true
 grepular.com true
 gresak.io true
 gresb.com true
 gretchelizartistry.com true
 greysolutions.it true
+grh.am true
 gribani.com true
 grieg-gaarden.no true
 grieg.com true
@@ -3614,11 +3603,7 @@ grossmann.gr true
 groszek.pl true
 groupebaillargeon.com true
 groups.google.com true
-grozip.com true
 grsecurity.net true
-grunex.com true
-gryffin.ga true
-gryffin.tk true
 grytics.com true
 gs-net.at true
 gsnort.com true
@@ -3703,7 +3688,6 @@ handiworker.com true
 handmadetutorials.ro true
 hangouts.google.com true
 hannover-banditen.de true
-hansen.hn true
 hansvaneijsden.com true
 hansvaneijsden.nl true
 hanu.la true
@@ -3728,6 +3712,7 @@ harmoney.co.nz true
 harmoney.com true
 harmoney.com.au true
 harmonycosmetic.com true
+harringtonca.com true
 harrisonsand.com false
 harrisonsdirect.co.uk true
 harristony.com true
@@ -3753,7 +3738,6 @@ haufschild.de true
 hauntedfishtank.com true
 hausarzt-stader-str.de true
 hausverbrauch.de true
-haveeruexaminer.com true
 haveibeenpwned.com true
 havellab.de true
 hawkeyeinsight.com true
@@ -3797,7 +3781,6 @@ heid.ws true
 heijblok.com true
 heinpost.nl true
 heissluft-fritteuse.com true
-hejahanif.se true
 hejsupport.se true
 hele.cz true
 helgakristoffer.com true
@@ -3828,7 +3811,6 @@ herbandpat.org true
 herbert.io true
 herbertmouwen.nl true
 heritagedentistry.ca true
-hermes-net.de true
 herocentral.de true
 herr-webdesign.de true
 herrenfahrt.com true
@@ -3901,7 +3883,6 @@ hochhaus.us true
 hochzeit-dana-laurens.de true
 hodne.io true
 hoffmeister.biz true
-holifestival-freyung.de true
 holisticon.de true
 hollowrap.com true
 holmesian.org true
@@ -3953,7 +3934,6 @@ hostingactive.it true
 hostingfj.com true
 hostinghelp.guru true
 hostinginnederland.nl true
-hostisan.com true
 hostix.de true
 hostmijnpagina.nl true
 hotchillibox.co.za true
@@ -4009,7 +3989,6 @@ humpteedumptee.in true
 hund.io true
 huntshomeinspections.com true
 hup.blue true
-hupp.se true
 hurd.is true
 huren.nl true
 husakbau.at true
@@ -4034,7 +4013,6 @@ i10z.com false
 i5y.co.uk true
 iactu.info true
 iainsimms.me true
-iamcarrico.com true
 iamokay.nl true
 ian.sh true
 ianix.com true
@@ -4045,6 +4023,7 @@ ibarf.nl true
 ibnuwebhost.com true
 ibron.co false
 icarlos.net true
+icebat.dyndns.org true
 iceloch.com true
 icfl.com.br true
 ichoosebtec.com true
@@ -4054,13 +4033,11 @@ icq-project.net true
 ict-concept.nl true
 ictinforensics.org true
 ictual.com true
-icusignature.com true
 id.atlassian.com true
 id.fedoraproject.org false
 id.mayfirst.org false
 id.search.yahoo.com false
 id0-rsa.pub true
-idacmedia.com true
 idahoansforliberty.net true
 idaspis.com true
 ideadozz.hu true
@@ -4089,6 +4066,7 @@ ifasec.de false
 ifcfg.me true
 ifconfig.co true
 iflare.de true
+ifoss.me true
 ifxor.com true
 igforums.com true
 iggprivate.com true
@@ -4098,7 +4076,6 @@ igiftcards.nl true
 igk.de true
 igotoffer.com true
 igrivi.com true
-ihrnationalrat.ch true
 ihsbsd.me true
 iirii.com true
 iispeed.com true
@@ -4130,7 +4107,6 @@ imbrian.org true
 imedikament.de true
 imeds.pl true
 imgg.es true
-imguoguo.com true
 imguploaden.nl true
 imirhil.fr true
 imjad.cn true
@@ -4168,7 +4144,6 @@ incparadise.net true
 indicateurs-flash.fr true
 indiecert.net false
 indievelopment.nl true
-indoorskiassen.nl true
 indovinabank.com.vn true
 indredouglas.me true
 indusfastremit-ca.com true
@@ -4236,19 +4211,17 @@ internethering.de true
 internetofdon.gs true
 internetpro.me true
 internetzentrale.net true
-internl.net true
+internl.net false
 interociter-enterprises.com true
 interviewpipeline.co.uk true
 intervisteperstrada.com true
 interways.de true
-intim-uslugi-kazan.net true
 intimateperrierjouet.com true
 intocities.de false
 inton.biz true
 intramanager.co.uk true
 intramanager.dk true
 intranetsec.fr true
-intrasoft.com.au true
 intxt.net true
 inusasha.de true
 investorforms.com true
@@ -4327,6 +4300,7 @@ isqrl.de true
 israkurort.com true
 isreedyintheuk.com true
 isslshop.com true
+issuesofconcern.in true
 istanbul.systems true
 istanbultravelguide.info true
 istaspirtslietas.lv true
@@ -4356,11 +4330,11 @@ its-v.de true
 its4living.com true
 itsadog.co.uk true
 itsagadget.com true
+itsatrap.nl true
 itsecguy.com true
 itsg-faq.de true
 ivancacic.com true
-ivi-fertility.com true
-ivi.es true
+ivk.website true
 ivpn.net true
 iwalton.com true
 iwannarefill.com true
@@ -4369,16 +4343,17 @@ iwizerunek.pl true
 iww.mx true
 ix8.ru true
 ixds.org true
+izoox.com true
 izzzorgconcerten.nl true
 j-lsolutions.com true
 j-navi.com true
+j0s.at true
 j0s.eu true
 j15t98j.co.uk true
 j3e.de true
 ja-dyck.de true
 ja-publications.com true
 jaba.hosting true
-jabbari.io true
 jabber.at true
 jacekowski.org true
 jackdelik.de true
@@ -4438,7 +4413,6 @@ jasonamorrow.com true
 jasonrobinson.me true
 jasonroe.me true
 jasperhammink.com true
-jastoria.pl true
 jav-collective.com true
 javelinsms.com true
 jayharris.ca true
@@ -4473,7 +4447,6 @@ jennythebaker.com false
 jensrex.dk true
 jeremiahbenes.com true
 jeremye77.com true
-jeremyness.com true
 jerodslay.com true
 jeroendeneef.com true
 jeroenseegers.com true
@@ -4499,6 +4472,7 @@ jira.com true
 jirav.com true
 jirav.io true
 jitsi.org false
+jiveiaktivno.bg true
 jka.io true
 jkirsche.com true
 jkrippen.com true
@@ -4511,9 +4485,8 @@ jobflyapp.com true
 jobmob.co.il true
 jobss.co.uk true
 jodyboucher.com true
-joedavison.me true
 joelj.org true
-joepitt.co.uk true
+joepitt.co.uk false
 joerss.at true
 joestead.codes true
 jogorama.com.br false
@@ -4729,6 +4702,7 @@ keyerror.com true
 keys.fedoraproject.org true
 kg-rating.com true
 kgm-irm.be true
+khanovaskola.cz true
 khetzal.info true
 khipu.com true
 khmath.com true
@@ -4817,6 +4791,7 @@ knccloud.com true
 kngk-group.ru true
 kngk.org true
 knip.ch true
+knot-store.com true
 knowledgehook.com true
 knowledgesnap.com true
 knygos.lt true
@@ -4833,7 +4808,6 @@ kojima-life.co.jp true
 kojipkgs.fedoraproject.org true
 kokenmetaanbiedingen.nl true
 koketteriet.se true
-kollabria.com true
 kollawat.me true
 kolmann.at true
 kolmann.eu true
@@ -4871,10 +4845,10 @@ kpinvest.eu true
 krachtinverbinding.nl true
 kradalby.no true
 kraft.im true
+kraiwan.com true
 kraiwon.com true
 kraken.io true
 krasota.ru false
-kravelindo-adventure.com true
 kraynik.com true
 kream.io true
 kreationnext.com true
@@ -4909,6 +4883,7 @@ kschv-rdeck.de true
 ksfh-mail.de true
 kstan.me true
 kubik-rubik.de false
+kucom.it true
 kuehnel.org true
 kuemmling.eu true
 kulde.net true
@@ -4933,7 +4908,6 @@ kyanite.co true
 kybi.sk true
 kylapps.com true
 kylelaker.com true
-kylinj.com true
 kylling.io true
 kynastonwedding.co.uk true
 kyosaku.org true
@@ -4976,12 +4950,12 @@ langhun.me true
 lansinoh.co.uk true
 laozhu.me true
 lapetition.be true
-lapidge.net true
 laposte.net true
 largescaleforums.com true
 larrysalibra.com true
 lars-ewald.com true
 larsklene.nl true
+lasercloud.ml true
 laserfuchs.de true
 lashstuff.com true
 lasnaves.com true
@@ -5045,7 +5019,6 @@ leninalbertop.com.ve true
 lenn1.de true
 lenovogaming.com true
 lenzw.de true
-leolana.com true
 leominstercu.com false
 leonard.io true
 leonardcamacho.me true
@@ -5067,11 +5040,11 @@ levendwater.org true
 levert.ch true
 levinus.de true
 lewis.li true
-lewisjuggins.co.uk true
 lewislaw.com true
 lexway.pk true
 lgiswa.com.au true
 lgrs.com.au true
+lhalbert.xyz true
 liam-w.com true
 liamjack.fr true
 libbitcoin.org true
@@ -5128,7 +5101,6 @@ linuxfixed.it true
 linuxhostsupport.com true
 linuxlounge.net true
 linuxmonitoring.net true
-linuxwebservertips.in true
 linx.li true
 linx.net true
 linzgau.de true
@@ -5145,7 +5117,7 @@ lists.stg.fedoraproject.org true
 litchidova.nl true
 litespeed.io true
 litevault.net true
-lithesalar.se false
+lithesalar.se true
 little.pw true
 littlefreelibrary.org true
 litvideoserver.de true
@@ -5182,7 +5154,6 @@ locktheirphone.com true
 locomore.com true
 locomotive.ca true
 lodash.com true
-loftboard.eu true
 logario.com.br true
 logement-saisonnier.com true
 logentries.com false
@@ -5205,6 +5176,7 @@ lognot.net true
 logopaediereinhard.de true
 logopoeia.com true
 lokaal.org true
+loli.bz true
 lolicore.ch true
 lolpatrol.de true
 lonal.com true
@@ -5214,8 +5186,6 @@ lone-gunman.be true
 longboarding-ulm.de true
 lookout.com false
 lookyman.net true
-loony.info true
-loophost.com.br true
 loopstart.org true
 lordjevington.co.uk true
 lore.azurewebsites.net true
@@ -5223,11 +5193,11 @@ lost.host false
 lostinsecurity.com true
 lostinweb.eu true
 lotsencafe.de true
+lottosonline.com true
 loucanfixit.com true
 louiewatch.com true
 love-schna.jp true
 loveisourweapon.com true
-lovelive.us true
 lovemomiji.com true
 lover-bg.com true
 loveyounastya.com true
@@ -5265,7 +5235,6 @@ lunarshark.com true
 luneta.nearbuysystems.com false
 lungdoc.us true
 luno.io true
-luoe.ml true
 luoh.cc true
 luoh.me true
 luohua.im true
@@ -5313,12 +5282,10 @@ madebymagnitude.com true
 madebyshore.com true
 madeitwor.se true
 madin.ru true
-madnetwork.org true
 madrants.net true
 madreacqua.org true
 madtec.de true
 maelstrom.ninja true
-mafamane.com true
 maff.scot false
 mafiasi.de true
 magicball.co true
@@ -5332,7 +5299,6 @@ mail.yahoo.com false
 mail4you.in true
 mailbox.org true
 mailchuck.com true
-mailer-dot.de true
 mailfence.com true
 mailgarant.nl true
 mailhost.it true
@@ -5341,7 +5307,6 @@ mailing-jbgg.com true
 mailmag.net true
 mainlined.org true
 mainlywrenches.co true
-majesnix.org true
 make-pizza.info true
 makeyourlaws.org true
 makowitz.cz true
@@ -5365,7 +5330,6 @@ mammothmail.com true
 mammothmail.net true
 mammothmail.org true
 man3s.jp true
-manaboutahor.se true
 manage.cm true
 manage.zenpayroll.com false
 management-companie.ro true
@@ -5450,7 +5414,6 @@ mathembedded.com true
 mathhire.org true
 mathiasbynens.be true
 mathiasgarbe.de true
-matrip.de true
 matt.tf true
 mattandreko.com true
 mattandyana.com true
@@ -5495,7 +5458,6 @@ mbp.banking.co.at false
 mbweir.com true
 mc-venture.net false
 mc81.com true
-mca2017.org true
 mcadmin.net true
 mcard.vn true
 mcatnnlo.org true
@@ -5527,7 +5489,6 @@ mdpraha.cz true
 mdwftw.com true
 me.net.nz true
 mea.in.ua true
-meadowviewfarms.org true
 mealgoo.com true
 meamod.com true
 meap.xyz true
@@ -5567,7 +5528,6 @@ megaplan.ru true
 megasslstore.com true
 mehmetince.net true
 mehrwert.de true
-meifrench.com true
 meillard-auto-ecole.ch true
 mein-webportal.de true
 meine-email-im.net true
@@ -5685,8 +5645,6 @@ mimeit.de true
 mimovrste.com true
 mind-moves.es true
 mindbodycontinuum.com true
-mindcoding.ro true
-mindcraft.ga true
 minecraft-forum.cf true
 minecraft-forum.ga true
 minecraft-forum.gq true
@@ -5728,7 +5686,6 @@ mistacms.com true
 mister.hosting true
 misterl.net true
 mit-uns.org true
-mitell.jp false
 mitnetz-gas.de true
 mitnetz-strom.de true
 mitrecaasd.org true
@@ -5797,7 +5754,6 @@ mommelonline.de true
 mon-partage.fr true
 mona.lu true
 mondopoint.com true
-mondwandler.de true
 moneromerchant.com true
 moneygo.se true
 moniquedekermadec.com true
@@ -5847,7 +5803,6 @@ mothereff.in true
 motionfreight.com true
 motocyklovedily.cz true
 motoryz.nl true
-mottvd.com true
 mountainadventureseminars.com true
 mountainroseherbs.com true
 moveek.com true
@@ -5868,6 +5823,7 @@ mpserver12.org true
 mpsgarage.com.au true
 mr-hosting.com true
 mremallin.ca true
+mrettich.org true
 mrnonz.com true
 mrs-shop.com true
 msa-aesch.ch true
@@ -5889,6 +5845,7 @@ muabannhanh.com false
 mudcrab.us true
 muguayuan.com true
 mujadin.se false
+multibit.org true
 multigamecard.com true
 multigeist.de true
 multitheftauto.com true
@@ -5984,6 +5941,7 @@ myvpl.com true
 myworkinfo.com true
 myworth.com.au true
 myzina.cz false
+mziulu.me true
 n-pix.com false
 n0psled.nl true
 n4l.pw true
@@ -6052,9 +6010,9 @@ ncstep.org true
 nct.org.uk true
 ndarville.com true
 ndbt.com true
+nder.be true
 ne-on.org true
 ne1home.dyndns.org true
-neap.io false
 nearby.in.th true
 nebra.io true
 necesitodinero.org true
@@ -6187,6 +6145,7 @@ nikobradshaw.com true
 nikolasbradshaw.com true
 nikolasgrottendieck.com true
 niloxy.com true
+nilrem.org true
 ninchat.com true
 nine-hells.net false
 ninespec.com true
@@ -6194,7 +6153,6 @@ niouininon.eu true
 nippombashi.net true
 nippon-oku.com true
 nirada.info true
-nitropur.com true
 nixien.fr true
 nixmag.net true
 nkinka.de true
@@ -6291,7 +6249,6 @@ nwgh.org true
 nwra.com true
 nwwc.dk true
 nyan.it true
-nyantec.com true
 nyffo.com false
 nyiad.edu true
 nyip.co.uk true
@@ -6305,6 +6262,7 @@ o0o.one true
 o6asan.com true
 oaic.gov.au true
 oakslighting.co.uk true
+oasis.mobi true
 oasisim.net true
 obdolbacca.ru true
 obermeiers.eu true
@@ -6340,7 +6298,6 @@ ohsocool.org true
 oiepoie.nl false
 okane.love true
 oke.com.tw true
-okhrana.agency true
 okmx.de true
 okok-rent.com true
 okok.rent true
@@ -6350,8 +6307,8 @@ olafnorge.de false
 olcso-vps-szerver.hu true
 oleksii.name true
 olivierlemoal.fr true
-ollehbizev.co.kr true
 ollie.io true
+ollies.cloud true
 olliespage.net true
 ollning.com true
 olmari.fi true
@@ -6361,7 +6318,6 @@ omgaanmetidealen.com true
 omifind.com true
 omitech.co.uk true
 omniasl.com true
-omskit.ru true
 onaboat.se true
 onarto.com true
 ondrej.org true
@@ -6606,7 +6562,6 @@ patriksimek.cz true
 paul.reviews true
 pauladamsmith.com true
 paulbdelaat.nl true
-paulchen.at true
 paulinewesterman.nl true
 paulproell.at true
 paulschreiber.com true
@@ -6636,7 +6591,6 @@ pbscreens.com true
 pcel.com true
 pcfeuerwehr.de true
 pcforum.sk true
-pchax.net true
 pclob.gov true
 pcloud.com true
 pctonic.net true
@@ -6707,7 +6661,7 @@ petrachuk.ru true
 petravdbos.nl true
 petruzz.net true
 petsittersservices.com true
-pettsy.com true
+pewboards.com true
 peytonfarrar.com true
 pfadfinder-aurich.de true
 pfarchimedes-pensioen123.nl true
@@ -6800,7 +6754,6 @@ pixelbash.de true
 pixelhero.co.uk true
 pixelminers.net true
 pixi.chat true
-pixipics.com true
 piyabute.com true
 pjuu.com false
 pkgt.de true
@@ -6818,7 +6771,6 @@ planete-cocoon.com true
 planpharmacy.com true
 plasti-pac.ch true
 play.google.com true
-playflick.com true
 playkh.com true
 playmaker.io true
 please-deny.me true
@@ -6827,14 +6779,15 @@ pleier.it true
 plexusmd.com true
 plfgr.eu.org true
 plhdb.org true
+pliosoft.com true
 plirt.ru false
 plixer.com true
-ploader.ru true
+ploader.ru false
 plogable.co true
 ploxel.com true
 pluff.nl true
 pluga.co true
-plugcubed.net true
+plugcubed.net false
 plugin-planet.com true
 plumlocosoft.com true
 plus.google.com false
@@ -6872,13 +6825,12 @@ polypet.com.sg true
 pompompoes.com true
 ponolau.com true
 pontualcomp.com true
+ponythread.com false
 poolvilla-margarita.net false
 poon.io false
 poon.tech true
 poris.web.id true
 pornstars.me true
-port443.hamburg true
-port80.hamburg true
 portal.tirol.gv.at true
 portalzine.de true
 portercup.com true
@@ -6892,7 +6844,6 @@ postbox.life true
 postcodegarant.nl true
 postcodewise.co.uk true
 posteo.de false
-posterspy.com true
 postfinance.ch true
 postn.eu true
 postpi.com true
@@ -6901,6 +6852,7 @@ potatofrom.space true
 potatoheads.net true
 potbar.com true
 potbox.com true
+pothe.com true
 pothe.de true
 potlytics.com true
 potpourrifestival.de true
@@ -6942,7 +6894,7 @@ pretty.hu true
 prettytunesapp.com true
 preworkout.me true
 prezola.com true
-prgslab.net true
+prgslab.net false
 pridetechdesign.com true
 pridoc.se true
 prilock.com true
@@ -6967,6 +6919,7 @@ professionalboundaries.com true
 profidea.cz true
 profiles.google.com true
 profivps.com true
+profpay.com true
 profundr.com true
 progblog.net true
 progg.no true
@@ -6975,6 +6928,7 @@ progressiveplanning.com true
 prohostonline.fi true
 proitconsulting.com.au true
 projectarmy.net true
+projectascension.io true
 projectbenson.com true
 projectblackbook.us true
 projektzentrisch.de true
@@ -6999,7 +6953,6 @@ protonmail.com true
 protoyou.de true
 proust.media true
 proustmedia.de true
-proxybay.al true
 proxybay.co true
 proxybay.la true
 proxybay.top true
@@ -7086,6 +7039,8 @@ qixxit.de true
 qkka.org true
 qldformulaford.org true
 qlrace.com false
+qonqa.de true
+qop.io true
 qorm.co.uk true
 qrlending.com true
 qtl.me true
@@ -7099,6 +7054,7 @@ qualityhomesystems.com true
 qualityofcourse.com true
 qualityology.com true
 quantacloud.ch true
+quantenteranik.eu true
 quantoras.com true
 quantumfurball.net true
 quchao.com true
@@ -7117,6 +7073,7 @@ quotehex.com true
 quotemaster.co.za true
 quotev.com true
 quppa.net true
+quranserver.net true
 quuz.org true
 qvitoo.com true
 qwant.com true
@@ -7196,6 +7153,7 @@ reaconverter.com true
 reactivarte.es true
 reader.ga true
 readr.pw true
+real-it.nl true
 realcapoeira.ru true
 realgarant-shop.de false
 reallifeforums.com true
@@ -7304,6 +7262,7 @@ retcor.net true
 retroarms.com true
 retroarms.cz true
 retrofitlab.com true
+retrotracks.net true
 reucon.com true
 revamed.com false
 revapost.ch true
@@ -7331,7 +7290,6 @@ ribs.com true
 riccy.org true
 richardhering.de true
 richardwarrender.com true
-richiemail.net true
 richmondsunlight.com false
 richsiciliano.com true
 ricki-z.com true
@@ -7346,13 +7304,13 @@ rigartmichael.be true
 right-to-love.name true
 rightcapital.com true
 righttobuy.gov.uk true
-riiconnect24.net true
 rijschoolgevonden.nl false
 ring0.xyz false
 ringh.am true
 ringingliberty.com true
 riscascape.net true
 rischard.org true
+riseup.net true
 riskmgt.com.au true
 riskmitigation.ch true
 ristioja.ee true
@@ -7388,7 +7346,6 @@ robtex.com true
 robtex.net true
 robtex.org true
 robud.info true
-rochman.id true
 rockcanyonbank.com true
 rocketmill.co.uk true
 rodehutskors.net true
@@ -7436,6 +7393,7 @@ rotunneling.net true
 rotzonline.com false
 roundcube.mayfirst.org false
 rous.se true
+rouvray.org true
 rowancasting.ie true
 royalacademy.org.uk true
 royalhop.co true
@@ -7450,9 +7408,11 @@ rr105.de true
 rring.me true
 rrke.cc true
 rsajeey.info true
+rsampaio.info true
 rsauget.fr true
 rsi.im false
 rssr.se true
+rsync.eu true
 rtcx.net true
 rtd.uk.com true
 ru-sprachstudio.ch true
@@ -7484,14 +7444,14 @@ rws-vertriebsportal.de true
 rww.name true
 rxbusiness.com true
 ryan-goldstein.com true
-ryanhowell.io true
 ryankearney.com true
 ryanmcdonough.co.uk true
-ryansmithphotography.com true
+ryansmithphotography.com false
 s-c.se true
 s-cubed.net true
 s-mdb.com true
 s13d.fr true
+saba-piserver.info true
 sabahattin-gucukoglu.com true
 saccani.net true
 safar.sk true
@@ -7518,7 +7478,7 @@ salmo23.com.br true
 salmododia.net true
 salmos91.com true
 salon.io false
-saltercane.com true
+saltercane.com false
 saltstack.cz true
 salverainha.org true
 samaritansnet.org true
@@ -7534,7 +7494,6 @@ samkelleher.com true
 saml-gateway.org true
 saml2.com true
 samraskauskas.com true
-samsen.club true
 samuelkeeley.com true
 samwu.tw false
 sanandreasstories.com true
@@ -7544,6 +7503,7 @@ sanatfilan.com true
 sanchez.adv.br true
 sandbagexpress.com true
 sandbox.mydigipass.com false
+sanderdorigo.nl true
 sandervankasteel.nl true
 sandobygg.se true
 sandogruppen.se true
@@ -7560,7 +7520,7 @@ sarah-beckett-harpist.com true
 sarahbeckettharpist.com true
 sarahlicity.co.uk false
 sarahlicity.me.uk true
-sarahs-roestcafe.de true
+sarahs-roestcafe.de false
 sarahsweetlife.com true
 sarakas.com true
 saraleebread.com true
@@ -7625,7 +7585,6 @@ schwarzer.it true
 schwarzkopfforyou.de true
 schwarzwaldcon.de true
 schwinabart.com true
-schwinger.me true
 scicasts.com true
 science-texts.de true
 sciencex.com true
@@ -7688,7 +7647,6 @@ securedevelop.net true
 securedrop.org false
 secureideas.com false
 secureonline.co true
-secureradio.net true
 securify.nl true
 security-carpet.com true
 security-taskforce.be true
@@ -7730,6 +7688,7 @@ semps-2fa.de true
 semps.de true
 semyonov.su true
 semyonov.us true
+sendash.com true
 sendc.at true
 sendcat.com true
 sendmeback.de true
@@ -7759,6 +7718,7 @@ seryovpn.com true
 sesha.co.za true
 sessionslogning.dk true
 setfix.de true
+setphaserstostun.org true
 setuid.de true
 setuid.io true
 setuid0.kr true
@@ -7774,6 +7734,7 @@ sgcaccounts.co.uk true
 sh-network.de true
 shaaaaaaaaaaaaa.com true
 shadex.net true
+shadowguardian507-irl.tk true
 shadowkitsune.net true
 shadowmorph.info true
 shadowsocks.net true
@@ -7781,7 +7742,6 @@ shagi29.ru true
 shaitan.eu true
 shakepeers.org true
 shakes4u.com true
-shakespearesolutions.com.au true
 shalott.org true
 shamariki.ru true
 shan.io true
@@ -7803,7 +7763,6 @@ shazbots.org true
 sheilasdrivingschool.com true
 shellfire.de true
 shellvatore.us true
-shenghaiautoparts.com true
 shenyuqi.com true
 shep.co.il true
 sherbers.de true
@@ -7847,6 +7806,7 @@ signing-milter.org true
 signslabelstapesandmore.com false
 signtul.com false
 sigterm.sh true
+sikatehtaat.fi true
 sikayetvar.com true
 silentcircle.com false
 silentkernel.fr true
@@ -7861,7 +7821,6 @@ silverdragonart.com true
 silvergoldbull.com true
 silvergoldbull.de true
 silverwind.io true
-silvistefi.com true
 simbihaiti.com true
 simbolo.co.uk false
 simobilklub.si true
@@ -7873,7 +7832,6 @@ simonkjellberg.com true
 simonkjellberg.se true
 simonreich.de true
 simonsreich.de true
-simonwessel.net true
 simpan.id true
 simphony.cz true
 simple.com false
@@ -7884,7 +7842,6 @@ simpletax.ca false
 simplexsupport.com false
 simplia.cz true
 simplixos.org true
-simply-premium.com true
 simplycharlottemason.com true
 simplyfixit.co.uk true
 simplymozzo.se true
@@ -7911,7 +7868,7 @@ sitesten.com true
 sizingservers.be false
 sizzle.co.uk true
 sjoorm.com true
-skalender.ch true
+skalender.ch false
 skanvordoff.ru true
 skaraborgsassistans.com false
 skarrok.com true
@@ -7928,7 +7885,6 @@ skills2services.com true
 skillseo.com true
 skimming.net true
 skipfault.com true
-skk.io true
 skoda-clever-lead.de true
 skoda-im-dialog.de true
 skoda-nurdiebesten.de true
@@ -7960,7 +7916,6 @@ slevomat.cz true
 sliceone.com true
 slicklines.co.uk true
 slidebatch.com true
-slightfuture.click true
 slightfuture.com true
 slix.io true
 sloancom.com true
@@ -7992,13 +7947,13 @@ smartshiftme.com true
 smartship.co.jp true
 smartsparrow.com true
 smartwurk.nl true
-smb445.com true
 smdavis.us true
 sme-gmbh.net true
 smiatek.name true
 smith.is true
 smithandcanova.co.uk true
 smittix.co.uk true
+smksi2.com false
 smkw.com true
 smm.im true
 smoo.st true
@@ -8015,6 +7970,7 @@ snazel.co.uk true
 snazzie.nl true
 sneakpod.de true
 sneakynote.com true
+sneberger.cz false
 sneezry.com true
 snelxboxlivegold.nl true
 snfdata.com true
@@ -8023,7 +7979,6 @@ sniep.net true
 snl.no true
 snod.land true
 snoozedds.com true
-snoqualmiefiber.org true
 snoupon.com true
 snow-online.com true
 snow-online.de true
@@ -8128,11 +8083,11 @@ sperrstun.de true
 spherenix.org true
 spibe.is true
 spicydog.org true
-spicydog.tk true
 spicymatch.com true
 spideroak.com true
 spiegels.nl true
 spielcasinos.com true
+spiet.nl true
 spins.fedoraproject.org true
 spirit-dev.net true
 spiritbionic.ro true
@@ -8152,7 +8107,6 @@ sprueche-zum-valentinstag.de true
 sprueche-zur-geburt.info true
 sprueche-zur-hochzeit.de true
 sprueche-zur-konfirmation.de true
-sprutech.de true
 spuffin.com true
 spydersec.com true
 spyprofit.ru true
@@ -8303,6 +8257,7 @@ storvann.no true
 storycollective.nl true
 stpatricksguild.com true
 strasweb.fr false
+strbt.de true
 strchr.com true
 streampanel.net false
 streamzilla.com true
@@ -8446,6 +8401,7 @@ syso.name true
 syss.de true
 system.is true
 systemintegra.ru true
+systemreboot.net true
 syzygy-tables.info true
 szagun.net true
 szaszm.tk true
@@ -8513,7 +8469,6 @@ tastycake.net true
 tastyyy.co true
 tatilbus.com false
 tatort-fanpage.de true
-tauchkater.de true
 tavoittaja.fi true
 taxaroo.com true
 taxbench.com true
@@ -8522,7 +8477,6 @@ taxspeaker.com true
 taxsquirrel.com true
 tazemama.biz true
 tazj.in false
-tbarter.com false
 tbitc.ch true
 tbrss.com true
 tbspace.de true
@@ -8530,6 +8484,7 @@ tc-bonito.de true
 tcdw.net true
 tcgrepublic.com true
 tcomms.org true
+tdelmas.eu true
 tdelmas.ovh true
 tdrs.info true
 teabagdesign.co.uk true
@@ -8602,6 +8557,7 @@ teos.online true
 teoskanta.fi true
 tepid.org true
 teriiphotography.com true
+terrab.de true
 terracloud.de true
 terraelectronica.ru true
 terraform.io true
@@ -8613,7 +8569,8 @@ terrty.net true
 tescoirelandpayslips.com true
 tesoro.pr true
 testadren.com true
-testingbot.com true
+testingbot.com false
+testnode.xyz true
 testsuite.org true
 tetsumaki.net true
 teuniz.nl true
@@ -8662,6 +8619,7 @@ theclubjersey.com true
 thecustomizewindows.com true
 thedark1337.com true
 thedevrycommonsbrasil.com true
+thedisc.nl true
 thedreamtravelgroup.co.uk true
 theendofzion.com true
 theescapistswiki.com true
@@ -8676,7 +8634,6 @@ thegraciousgourmet.com true
 thegvoffice.net true
 thehackerblog.com true
 thehiddenbay.eu true
-thehonorguard.org true
 thehotfix.net true
 theinitium.com true
 theintercept.com true
@@ -8690,7 +8647,6 @@ thelastsurprise.com true
 thelinuxspace.com true
 thelittlecraft.com true
 thelocals.ru true
-themarble.co true
 themarshallproject.org true
 themeaudit.com true
 themoderate.xyz true
@@ -8771,6 +8727,7 @@ thyngster.com false
 tiacollection.com true
 tianshili.me true
 ticketmates.com.au true
+ticketoplichting.nl true
 tickettoaster.de true
 tickreport.com true
 tid.jp false
@@ -8898,7 +8855,6 @@ topnovini.com true
 toptexture.com true
 toptranslation.com true
 topyx.com true
-tor2web.org true
 torahanytime.com true
 tormentedradio.com true
 torproject.org false
@@ -8934,6 +8890,7 @@ tp-iryuubun.com true
 tp-kabushiki.com true
 tp-kyouyufudousan.com true
 tp-law.jp true
+tpbcdn.com true
 tpbproxy.co true
 tr.search.yahoo.com false
 traas.org true
@@ -8944,6 +8901,7 @@ tradeacademy.in true
 tradedesk.co.za true
 tradeinvent.co.uk true
 trademan.ky true
+tradiz.org true
 trainex.org true
 trakfusion.com true
 tranos.de true
@@ -8956,7 +8914,6 @@ transitpoint.us true
 translate.fedoraproject.org true
 translate.googleapis.com true
 translate.stg.fedoraproject.org true
-transmithe.net true
 transportal.sk true
 transverify.com true
 trashnothing.com true
@@ -8987,7 +8944,6 @@ tripseats.com true
 troi.de true
 trollme.me true
 trommelwirbel.com true
-trondelan.no true
 trophee-discount.com true
 truckerswereld.nl true
 truckstop-magazin.de true
@@ -9025,7 +8981,6 @@ tuamoronline.com true
 tubepro.de true
 tucny.com true
 tucuxi.org true
-tuingereedschappen.net true
 tuitle.com true
 tumelum.de true
 tumutanzi.com true
@@ -9040,7 +8995,6 @@ turtle.ai true
 turtlementors.com true
 tuvalie.com true
 tuxcall.de true
-tuxcloud.net true
 tuxflow.de true
 tuxgeo.com false
 tuxplace.nl true
@@ -9049,7 +9003,6 @@ tuzaijidi.com true
 tvbeugels.nl true
 tw.search.yahoo.com false
 twaka.com true
-twarog.cc true
 twd2.me true
 twd2.net false
 twee-onder-een-kap-woning-in-brielle-kopen.nl true
@@ -9066,7 +9019,6 @@ ty2u.com true
 tyche.io true
 tyl.io true
 tylerschmidtke.com true
-typeblog.net true
 typecodes.com true
 typeonejoe.com true
 typewolf.com true
@@ -9092,6 +9044,7 @@ ublox.com true
 ubtce.com true
 ucfirst.nl true
 udomain.net true
+uerdingen.info true
 uesociedadlimitada.com true
 ueu.me true
 ufgaming.com true
@@ -9244,6 +9197,7 @@ valsk.is true
 valskis.lt true
 valtoaho.com true
 vandalfsen.me true
+vanderkley.it true
 vanestack.com true
 vanetv.com true
 vangeluwedeberlaere.be true
@@ -9362,7 +9316,6 @@ vitkausk.as true
 vitrado.de true
 vitta.me true
 vivaldi.club true
-vivatv.com.tw true
 vivendi.de true
 viviotech.net false
 vjirovsky.cz true
@@ -9373,6 +9326,7 @@ vleij.se true
 vmem.jp true
 vmoagents.com false
 vn.search.yahoo.com false
+vnd.cloud true
 vnvisa.center true
 vnvisa.ru true
 vocaloid.my true
@@ -9394,7 +9348,6 @@ vozp.cz true
 vpl.me false
 vpn.ht true
 vpnhot.com true
-vpnzoom.com true
 vps-szerver-berles.hu true
 vratny.space true
 vrobert.fr false
@@ -9406,7 +9359,6 @@ vulnerability.ch true
 vulners.com true
 vumetric.com true
 vuosaarenmontessoritalo.fi true
-vux.li true
 vxapps.com true
 vxstream-sandbox.com true
 vyber-odhadce.cz true
@@ -9499,7 +9451,6 @@ webfilings-eu-mirror.appspot.com true
 webfilings-eu.appspot.com true
 webfilings-mirror-hrd.appspot.com true
 webfilings.appspot.com true
-webhosting4.net true
 weblogic.pl true
 weblogzwolle.nl true
 webmail.gigahost.dk false
@@ -9549,6 +9500,7 @@ wellastore.ru true
 welldrake.com true
 wellensteyn.ru true
 welovemail.com true
+welpy.com false
 welteneroberer.de true
 weltengilde.de true
 weltenhueter.de true
@@ -9610,6 +9562,7 @@ whiterabbitcakery.com true
 whiteroom.agency true
 whocalld.com true
 whocalled.us true
+wholebites.com true
 wholesomeharvestbread.com true
 wholikes.us true
 whonix.org true
@@ -9618,7 +9571,6 @@ wideboxmacau.com false
 widemann.de true
 widememory.com true
 wiedu.net true
-wienholding.at true
 wieninternational.at true
 wifimask.com true
 wifirst.net true
@@ -9639,7 +9591,6 @@ wikiversity.org true
 wikivoyage.org true
 wiktionary.org true
 wiktoriaslife.com true
-wildbee.org true
 wilddog.com true
 willberg.bayern true
 willcipriano.com true
@@ -9661,6 +9612,7 @@ wingumd.net true
 winhistory-forum.net true
 winmodels.org true
 winmodels.ru true
+winpack.cf true
 winpack.eu.org true
 winter.engineering false
 winterfeldt.de true
@@ -9721,7 +9673,6 @@ wordpress.com false
 wordsmart.it true
 wordxtra.net true
 woresite.jp true
-workfone.io true
 workingclassmedia.com true
 workray.com true
 worldcubeassociation.org true
@@ -9735,6 +9686,7 @@ wpfortify.com true
 wphostingblog.nl true
 wpletter.de false
 wpmeetup-berlin.de true
+wpostats.com true
 wpserp.com true
 wpvulndb.com true
 wql.zj.cn true
@@ -9863,6 +9815,7 @@ xmpp.dk true
 xmppwocky.net true
 xmr.to true
 xn--3lqp21gwna.cn true
+xn--3lqp21gwna.xn--fiqs8s true
 xn--3lqt7ir4md4tzwa.cn true
 xn--3lqt7ir4md4tzwa.xn--fiqs8s true
 xn--4dbjwf8c.cf true
@@ -9965,7 +9918,6 @@ youkaryote.com true
 youkaryote.org true
 youkok2.com true
 yourself.today true
-yourstrongbox.com true
 yourznc.com true
 youtous.me true
 youyoulemon.com true
@@ -9977,7 +9929,7 @@ ys-shop.biz true
 ytvwld.de true
 yuan.ga true
 yufan.me true
-yuhen.ru true
+yuhen.ru false
 yuko.moe true
 yunity.org true
 yunzhu.li true
