@@ -4061,6 +4061,9 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
                S_TOP(html)->display_none = true;
                break;
             case DISPLAY_INLINE:
+               if (html->style()->vloat != FLOAT_NONE)
+                  Html_display_block(html);
+               break;
             default:
                break;
          }
