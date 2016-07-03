@@ -708,7 +708,7 @@ static uint_t Url_host_public_internal_dots(const char *host)
 
       if (tld_len > 0) {
          /* These TLDs were chosen by examining the current publicsuffix list
-          * in October 2014 and picking out those where it was simplest for
+          * in July 2016 and picking out those where it was simplest for
           * them to describe the situation by beginning with a "*.[tld]" rule
           * or every rule was "[something].[tld]".
           *
@@ -717,8 +717,8 @@ static uint_t Url_host_public_internal_dots(const char *host)
           * poorer approximation of administrative boundaries.
           */
          const char *const tlds[] = {"bd","bn","ck","cy","er","fj","fk",
-                                     "gu","il","jm","ke","kh","kw","mm","mz",
-                                     "ni","np","pg","ye","za","zm","zw"};
+                                     "gu","jm","ke","kh","kw","mm","mz",
+                                     "ni","np","pg","ye","za","zw"};
          uint_t i, tld_num = sizeof(tlds) / sizeof(tlds[0]);
 
          for (i = 0; i < tld_num; i++) {
