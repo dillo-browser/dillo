@@ -838,7 +838,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             dFree(Info);
             break;
          case OpAbort:
-            MSG("ABORT 1B\n");
+            _MSG("ABORT 1B\n");
             Http_socket_free(SKey);
             a_Chain_bcb(OpAbort, Info, NULL, NULL);
             dFree(Info);
@@ -851,7 +851,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
          /* HTTP send-query status branch */
          switch (Op) {
          case OpAbort:
-            MSG("ABORT 1F\n");
+            _MSG("ABORT 1F\n");
             if ((sd = a_Klist_get_data(ValidSocks, SKey)))
                MSG_BW(sd->web, 1, "Can't get %s", URL_STR(sd->url));
             Http_socket_free(SKey);
