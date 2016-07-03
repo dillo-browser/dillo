@@ -24,7 +24,7 @@ AC_ARG_ENABLE(gprof,  [  --enable-gprof          Try to compile and run with pro
                     , enable_gprof=no)
 AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Insure++],
                     , enable_insure=no)
-AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable SSL/HTTPS/TLS (EXPERIMENTAL CODE)],
+AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable SSL/HTTPS/TLS],
                     , enable_ssl=no)
 AC_ARG_WITH(ca-certs-file, [  --with-ca-certs-file=FILE  Specify where to find a bundle of trusted CA certificates for TLS], CA_CERTS_FILE=$withval)
 AC_ARG_WITH(ca-certs-dir, [  --with-ca-certs-dir=DIR     Specify where to find a directory containing trusted CA certificates for TLS], CA_CERTS_DIR=$withval)
@@ -294,19 +294,18 @@ dnl  Test for support for SSL/TLS
 dnl --------------------------
 dnl
 if test "x$enable_ssl" = "xyes"; then
-  AC_CHECK_HEADER(openssl/ssl.h, ssl_ok=yes, ssl_ok=no)
+  AC_CHECK_HEADER(mbedtls/ssl.h, ssl_ok=yes, ssl_ok=no)
 
   if test "x$ssl_ok" = "xyes"; then
     old_libs="$LIBS"
-    AC_CHECK_LIB(ssl, SSL_library_init, ssl_ok=yes, ssl_ok=no, -lcrypto)
+    AC_CHECK_LIB(mbedtls, mbedtls_ssl_init, ssl_ok=yes, ssl_ok=no, -lmbedx509 -lmbedcrypto)
     LIBS="$old_libs"
   fi
 
   if test "x$ssl_ok" = "xyes"; then
-    LIBSSL_LIBS="-lcrypto -lssl"
-    AC_MSG_WARN([*** Enabling SSL/HTTPS/TLS support. THIS IS EXPERIMENTAL CODE ***])
+    LIBSSL_LIBS="-lmbedtls -lmbedx509 -lmbedcrypto"
   else
-    AC_MSG_WARN([*** No libssl found. Disabling SSL/HTTPS/TLS support. ***])
+    AC_MSG_WARN([*** mbed TLS 2 not found. Disabling SSL/HTTPS/TLS support. ***])
   fi
 fi
 

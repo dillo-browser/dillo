@@ -37,7 +37,7 @@ typedef struct {
    int Op;                /* IORead | IOWrite */
    int FD;                /* Current File Descriptor */
    int Flags;             /* Flag array (look definitions above) */
-   int Status;            /* errno code */
+   int Status;            /* nonzero upon IO failure */
    Dstr *Buf;             /* Internal buffer */
 
    void *Info;            /* CCC Info structure for this IO */
@@ -184,9 +184,14 @@ static bool_t IO_read(IOData_t *io)
             ret = TRUE;
             break;
          } else {
-            io->Status = errno;
-            MSG("READ Failed: %s\n", strerror(errno));
-            break;
+            if (conn) {
+               io->Status = St;
+               break;
+            } else {
+               io->Status = errno;
+               MSG("READ Failed with %d: %s\n", St, strerror(errno));
+               break;
+            }
          }
       } else { /* St == 0 */
          break;
@@ -234,8 +239,14 @@ static bool_t IO_write(IOData_t *io)
             ret = TRUE;
             break;
          } else {
-            io->Status = errno;
-            break;
+            if (conn) {
+               io->Status = St;
+               break;
+            } else {
+               io->Status = errno;
+               MSG("WRITE Failed with %d: %s\n", St, strerror(errno));
+               break;
+            }
          }
       } else if (St < io->Buf->len) {
          /* Not all data written */

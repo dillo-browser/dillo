@@ -35,10 +35,9 @@ dillo-3.1 [not released yet]
    Patches: corvid
 +- Doxygen fixes.
    Patch: Jeremy Henty
-+- Move HTTPS from dpi into the browser, enable SNI, add certificate hostname
-   checking from wget, check more locations for CA bundles and add
-   --with-ca-certs-file and --with-ca-certs-dir to configure, some improvement
-   to security warning popups, etc.
++- Move HTTPS from dpi into the browser, enable SNI, check more locations for
+   CA bundles and add --with-ca-certs-file and --with-ca-certs-dir to
+   configure, some improvement to security warning popups, etc.
    Patch: corvid, Benjamin Johnson
 +- Fix bookmarks DPI crash.
  - Fix OSX compilation issue with xembed.
