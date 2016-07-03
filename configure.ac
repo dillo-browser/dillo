@@ -294,7 +294,9 @@ dnl  Test for support for SSL/TLS
 dnl --------------------------
 dnl
 if test "x$enable_ssl" = "xyes"; then
-  AC_CHECK_HEADER(mbedtls/ssl.h, ssl_ok=yes, ssl_ok=no)
+  AC_CHECK_HEADER(mbedtls/ssl.h, ssl_ok=yes, ssl_ok=no,
+                  [#include <mbedtls/platform.h>])
+dnl In mbed TLS 2.3.0, ssl.h needs platform.h but fails to include it.
 
   if test "x$ssl_ok" = "xyes"; then
     old_libs="$LIBS"

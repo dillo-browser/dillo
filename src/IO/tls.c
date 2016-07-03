@@ -42,6 +42,7 @@ void a_Tls_init()
 #include "tls.h"
 #include "Url.h"
 
+#include <mbedtls/platform.h>  /* WORKAROUND: mbed TLS 2.3.0 ssl.h needs it */
 #include <mbedtls/ssl.h>
 #include <mbedtls/ctr_drbg.h>  /* random number generator */
 #include <mbedtls/entropy.h>
