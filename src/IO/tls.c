@@ -946,8 +946,8 @@ static void Tls_connect(int fd, int connkey)
             const char *version = mbedtls_ssl_get_version(ssl),
                        *cipher = mbedtls_ssl_get_ciphersuite(ssl);
 
-            MSG("%s: %s, cipher %s\n", URL_AUTHORITY(conn->url), version,
-                cipher);
+            MSG("%s:%d %s, cipher %s\n", URL_AUTHORITY(conn->url),
+                URL_PORT(conn->url), version, cipher);
          }
          if (srv->cert_status == CERT_STATUS_USER_ACCEPTED ||
              (Tls_examine_certificate(conn->ssl, srv) != -1)) {
@@ -1121,8 +1121,9 @@ static void Tls_cert_authorities_print_summary()
 
       for (j = 0; j < servers_len; j++) {
          Server_t *s = dList_nth_data(ca->servers, j);
+         bool_t ipv6 = a_Url_host_type(s->hostname) == URL_HOST_IPV6;
 
-         MSG("%s:%d ", s->hostname, s->port);
+         MSG("%s%s%s:%d ", ipv6?"[":"", s->hostname, ipv6?"]":"", s->port);
       }
       MSG("\n");
    }

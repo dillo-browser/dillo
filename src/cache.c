@@ -724,7 +724,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
 
    if (prefs.http_strict_transport_security &&
        !dStrAsciiCasecmp(URL_SCHEME(entry->Url), "https") &&
-       !a_Url_host_is_ip(URL_HOST(entry->Url)) &&
+       a_Url_host_type(URL_HOST(entry->Url)) == URL_HOST_NAME &&
        (hsts = Cache_parse_field(header, "Strict-Transport-Security"))) {
       a_Hsts_set(hsts, entry->Url);
       dFree(hsts);

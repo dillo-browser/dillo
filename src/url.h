@@ -16,6 +16,12 @@
 #define URL_HTTP_PORT        80
 #define URL_HTTPS_PORT       443
 
+/* for a_Url_host_type() */
+#define URL_HOST_ERROR      -1
+#define URL_HOST_NAME        0
+#define URL_HOST_IPV4        1
+#define URL_HOST_IPV6        2
+
 /*
  * Values for DilloUrl->flags.
  * Specifies which which action to perform with an URL.
@@ -106,7 +112,7 @@ void a_Url_set_ismap_coords(DilloUrl *u, char *coord_str);
 char *a_Url_decode_hex_str(const char *str);
 char *a_Url_encode_hex_str(const char *str);
 char *a_Url_string_strip_delimiters(const char *str);
-bool_t a_Url_host_is_ip(const char *host);
+int a_Url_host_type(const char *host);
 bool_t a_Url_same_organization(const DilloUrl *u1, const DilloUrl *u2);
 #ifdef __cplusplus
 }

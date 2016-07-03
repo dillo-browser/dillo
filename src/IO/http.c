@@ -570,7 +570,7 @@ static void Http_connect_socket(ChainLink *Info)
          memcpy(&sin6->sin6_addr, dh->data, dh->alen);
          inet_ntop(dh->af, dh->data, buf, sizeof(buf));
          if (a_Web_valid(S->web) && (S->web->flags & WEB_RootUrl))
-            MSG("Connecting to %s:%u\n", buf, S->connect_port);
+            MSG("Connecting to [%s]:%u\n", buf, S->connect_port);
          break;
       }
 #endif
