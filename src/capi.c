@@ -458,7 +458,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
          if (!dStrAsciiCasecmp(scheme, "https")) {
             if (web->flags & WEB_RootUrl)
                a_UIcmd_set_msg(web->bw,
-                               "HTTPS was disabled at compilation time");
+                               "HTTPS was disabled at compilation time.");
             a_Web_free(web);
             return 0;
          }
