@@ -189,7 +189,7 @@ static bool_t IO_read(IOData_t *io)
                break;
             } else {
                io->Status = errno;
-               MSG("READ Failed with %d: %s\n", St, strerror(errno));
+               MSG("READ Failed with %d: %s\n", (int)St, strerror(errno));
                break;
             }
          }
@@ -244,7 +244,7 @@ static bool_t IO_write(IOData_t *io)
                break;
             } else {
                io->Status = errno;
-               MSG("WRITE Failed with %d: %s\n", St, strerror(errno));
+               MSG("WRITE Failed with %d: %s\n", (int)St, strerror(errno));
                break;
             }
          }
