@@ -611,7 +611,10 @@ static void Tls_cert_not_valid_yet(const mbedtls_x509_crt *cert, Dstr *ds)
  */
 static void Tls_cert_bad_hash(const mbedtls_x509_crt *cert, Dstr *ds)
 {
-   const char *hash = (cert->sig_md == MBEDTLS_MD_SHA1) ? "SHA1" :
+   const char *hash = (cert->sig_md == MBEDTLS_MD_MD5) ? "MD5" :
+                      (cert->sig_md == MBEDTLS_MD_MD4) ? "MD4" :
+                      (cert->sig_md == MBEDTLS_MD_MD2) ? "MD2" :
+                      (cert->sig_md == MBEDTLS_MD_SHA1) ? "SHA1" :
                       (cert->sig_md == MBEDTLS_MD_SHA224) ? "SHA224" :
                       (cert->sig_md == MBEDTLS_MD_RIPEMD160) ? "RIPEMD160" :
                       (cert->sig_md == MBEDTLS_MD_SHA256) ? "SHA256" :
