@@ -210,17 +210,6 @@ void a_Dns_init(void)
       dns_server[i].th1 = (pthread_t) -1;
 #endif
    }
-
-#ifdef ENABLE_IPV6
-   /* IPv6 test */
-   {
-      /* If the IPv6 address family is not available there is no point
-         wasting time trying to connect to v6 addresses. */
-      int fd = socket(AF_INET6, SOCK_STREAM, 0);
-      if (fd >= 0)
-         dClose(fd);
-   }
-#endif
 }
 
 /*
