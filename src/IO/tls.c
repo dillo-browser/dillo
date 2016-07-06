@@ -1110,7 +1110,7 @@ static void Tls_cert_authorities_print_summary()
    int i, j;
 
    if (ca_len)
-      dStr_append(ds, "TLS: Trusted during this session:\n");
+      dStr_append(ds, "TLS: Certificate chain roots during this session:\n");
 
    for (i = 0; i < ca_len; i++) {
       CertAuth_t *ca = (CertAuth_t *)dList_nth_data(cert_authorities, i);
