@@ -981,8 +981,8 @@ static void Tls_connect(int fd, int connkey)
          MSG("mbedtls_ssl_handshake() failed: 'Processing of the "
              "ServerKeyExchange handshake message failed.'\n");
       } else if (ret == MBEDTLS_ERR_SSL_CONN_EOF) {
-         MSG("mbedtls_ssl_handshake() failed: 'Read EOF. Connection closed "
-             "by server.\n");
+         MSG("mbedtls_ssl_handshake() failed: Read EOF. Connection closed by "
+             "server.\n");
       } else {
          MSG("mbedtls_ssl_handshake() failed with error -0x%04x\n", -ret);
       }
