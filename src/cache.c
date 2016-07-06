@@ -270,7 +270,7 @@ static void Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
 
    if (!(entry = Cache_entry_search(Url)))
       entry = Cache_entry_add(Url);
-   entry->Flags |= CA_GotHeader + CA_GotLength + CA_InternalUrl;
+   entry->Flags = CA_GotHeader + CA_GotLength + CA_InternalUrl;
    if (data_ds->len)
       entry->Flags &= ~CA_IsEmpty;
    dStr_truncate(entry->Data, 0);
