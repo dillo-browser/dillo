@@ -486,7 +486,8 @@ static void Http_send_query(SocketData_t *S)
    query = Http_make_query_str(S->web, S->flags & HTTP_SOCKET_USE_PROXY);
    dbuf = a_Chain_dbuf_new(query->str, query->len, 0);
 
-   MSG_BW(S->web, 1, "Sending query...");
+   MSG_BW(S->web, 1, "Sending query%s...",
+                     S->flags & HTTP_SOCKET_USE_PROXY ? " through proxy" : "");
 
    /* send query */
    a_Chain_bcb(OpSend, S->Info, dbuf, NULL);
@@ -506,6 +507,7 @@ static void Http_connect_tls(ChainLink *info)
       char *connect_str = Http_get_connect_str(S->url);
       DataBuf *dbuf = a_Chain_dbuf_new(connect_str, strlen(connect_str), 0);
 
+      MSG_BW(S->web, 1, "Tunnel secure connection through proxy...");
       a_Chain_bfcb(OpSend, info, &S->SockFD, "FD");
       S->https_proxy_reply = dStr_new(NULL);
       a_Chain_bcb(OpSend, info, dbuf, NULL);
@@ -943,6 +945,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                          sd->https_proxy_reply->str);
                      dStr_free(sd->https_proxy_reply, 1);
                      sd->https_proxy_reply = NULL;
+                     MSG_BW(sd->web, 1, "Secure connection negotiation...");
                      a_Tls_connect(sd->SockFD, sd->url);
                   } else {
                      MSG_BW(sd->web, 1, "Can't connect through proxy to %s",
