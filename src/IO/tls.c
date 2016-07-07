@@ -383,6 +383,13 @@ void a_Tls_init(void)
                                MBEDTLS_SSL_PRESET_DEFAULT);
    mbedtls_ssl_conf_cert_profile(&ssl_conf, &prof);
 
+   /*
+    * There are security concerns surrounding session tickets --
+    * wrecking forward security, for instance.
+    */
+   mbedtls_ssl_conf_session_tickets(&ssl_conf,
+                                    MBEDTLS_SSL_SESSION_TICKETS_DISABLED);
+
    Tls_remove_psk_ciphersuites();
 
    mbedtls_x509_crt_init(&cacerts);   /* trusted root certificates */
