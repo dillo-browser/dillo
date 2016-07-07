@@ -27,6 +27,7 @@
 #include <arpa/inet.h>          /* for inet_ntop */
 
 #include "IO.h"
+#include "iowatch.hh"
 #include "tls.h"
 #include "Url.h"
 #include "../msg.h"
@@ -53,6 +54,7 @@ static const int HTTP_SOCKET_USE_PROXY   = 0x1;
 static const int HTTP_SOCKET_QUEUED      = 0x2;
 static const int HTTP_SOCKET_TO_BE_FREED = 0x4;
 static const int HTTP_SOCKET_TLS         = 0x8;
+static const int HTTP_SOCKET_IOWATCH_ACTIVE = 0x10;
 
 /* 'web' is just a reference (no need to deallocate it here). */
 typedef struct {
@@ -296,6 +298,10 @@ static void Http_socket_free(int SKey)
    if ((S = a_Klist_get_data(ValidSocks, SKey))) {
       a_Klist_remove(ValidSocks, SKey);
 
+      if (S->flags & HTTP_SOCKET_IOWATCH_ACTIVE) {
+         S->flags &= ~HTTP_SOCKET_IOWATCH_ACTIVE;
+         a_IOwatch_remove_fd(S->SockFD, -1);
+      }
       dStr_free(S->https_proxy_reply, 1);
 
       if (S->flags & HTTP_SOCKET_QUEUED) {
@@ -479,9 +485,7 @@ static void Http_send_query(SocketData_t *S)
    query = Http_make_query_str(S->web, S->flags & HTTP_SOCKET_USE_PROXY);
    dbuf = a_Chain_dbuf_new(query->str, query->len, 0);
 
-   /* actually this message is sent too early.
-    * It should go when the socket is ready for writing (i.e. connected) */
-   _MSG_BW(S->web, 1, "Sending query to %s...", URL_HOST_(S->web->url));
+   MSG_BW(S->web, 1, "Sending query...");
 
    /* send query */
    a_Chain_bcb(OpSend, S->Info, dbuf, NULL);
@@ -509,7 +513,43 @@ static void Http_connect_tls(ChainLink *info)
       dFree(dbuf);
       dFree(connect_str);
    } else {
+      MSG_BW(S->web, 1, "TLS handshake...");
       a_Tls_handshake(S->SockFD, S->url);
+   }
+}
+
+/*
+ * connect() couldn't complete before, but now it's ready, so let's try again.
+ */
+static void Http_connect_socket_cb(int fd, void *data)
+{
+   int SKey = VOIDP2INT(data);
+   SocketData_t *S = a_Klist_get_data(ValidSocks, SKey);
+
+   if (S) {
+      int ret, connect_ret;
+      uint_t connect_ret_size = sizeof(connect_ret);
+
+      a_IOwatch_remove_fd(fd, -1); 
+      S->flags &= ~HTTP_SOCKET_IOWATCH_ACTIVE;
+
+      ret = getsockopt(S->SockFD, SOL_SOCKET, SO_ERROR, &connect_ret,
+                       &connect_ret_size);
+
+      if (ret < 0 || connect_ret != 0) {
+         if (ret < 0) {
+            MSG("Http_connect_socket_cb getsockopt ERROR: %s.\n",
+                dStrerror(errno));
+         } else {
+            MSG("Http_connect_socket_cb connect ERROR: %s.\n",
+                dStrerror(connect_ret));
+         }
+         a_Http_connect_done(S->SockFD, FALSE);
+      } else if (S->flags & HTTP_SOCKET_TLS) {
+         Http_connect_tls(S->Info);
+      } else {
+         a_Http_connect_done(S->SockFD, TRUE);
+      }
    }
 }
 
@@ -519,8 +559,7 @@ static void Http_connect_tls(ChainLink *info)
  */
 static void Http_connect_socket(ChainLink *Info)
 {
-   int i, status;
-   SocketData_t *S;
+   int i;
    DilloHost *dh;
 #ifdef ENABLE_IPV6
    struct sockaddr_in6 name;
@@ -528,13 +567,12 @@ static void Http_connect_socket(ChainLink *Info)
    struct sockaddr_in name;
 #endif
    socklen_t socket_len = 0;
-
-   S = a_Klist_get_data(ValidSocks, VOIDP2INT(Info->LocalKey));
+   SocketData_t *S = a_Klist_get_data(ValidSocks, VOIDP2INT(Info->LocalKey));
 
    /* TODO: iterate this address list until success, or end-of-list */
    for (i = 0; (dh = dList_nth_data(S->addr_list, i)); ++i) {
       if ((S->SockFD = socket(dh->af, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-         MSG("Http_connect_socket ERROR: %s\n", dStrerror(errno));
+         MSG("Http_connect_socket socket() ERROR: %s\n", dStrerror(errno));
          continue;
       }
       Http_fd_map_add_entry(S);
@@ -574,16 +612,25 @@ static void Http_connect_socket(ChainLink *Info)
          break;
       }
 #endif
-      }/*switch*/
+      } /* switch */
       MSG_BW(S->web, 1, "Contacting host...");
-      status = connect(S->SockFD, (struct sockaddr *)&name, socket_len);
-      if (status == -1 && errno != EINPROGRESS) {
-         MSG("Http_connect_socket ERROR: %s\n", dStrerror(errno));
-         a_Http_connect_done(S->SockFD, FALSE);
-      } else if (S->flags & HTTP_SOCKET_TLS) {
-         Http_connect_tls(Info);
+
+      if (connect(S->SockFD, (struct sockaddr *)&name, socket_len) == 0) {
+         /* probably never succeeds immediately on any system */
+         if (S->flags & HTTP_SOCKET_TLS) {
+            Http_connect_tls(Info);
+         } else {
+            a_Http_connect_done(S->SockFD, TRUE);
+         }
       } else {
-         a_Http_connect_done(S->SockFD, TRUE);
+         if (errno == EINPROGRESS) {
+            a_IOwatch_add_fd(S->SockFD, DIO_WRITE, Http_connect_socket_cb,
+                             Info->LocalKey);
+            S->flags |= HTTP_SOCKET_IOWATCH_ACTIVE;
+         } else {
+            MSG("Http_connect_socket connect ERROR: %s\n", dStrerror(errno));
+            a_Http_connect_done(S->SockFD, FALSE);
+         }
       }
       return;
    }
