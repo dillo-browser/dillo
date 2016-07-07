@@ -20,7 +20,7 @@ int a_Tls_connect_ready(const DilloUrl *url);
 void a_Tls_reset_server_state(const DilloUrl *url);
 
 /* Use to initiate a TLS connection. */
-void a_Tls_handshake(int fd, const DilloUrl *url);
+void a_Tls_connect(int fd, const DilloUrl *url);
 
 void *a_Tls_connection(int fd);
 

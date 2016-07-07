@@ -495,8 +495,7 @@ static void Http_send_query(SocketData_t *S)
 }
 
 /*
- * Prepare an HTTPS connection.  If necessary, tunnel it through a proxy.
- * Then perform the TLS handshake.
+ * Prepare an HTTPS connection.  If necessary, tunnel through a proxy first.
  */
 static void Http_connect_tls(ChainLink *info)
 {
@@ -514,8 +513,8 @@ static void Http_connect_tls(ChainLink *info)
       dFree(dbuf);
       dFree(connect_str);
    } else {
-      MSG_BW(S->web, 1, "TLS handshake...");
-      a_Tls_handshake(S->SockFD, S->url);
+      MSG_BW(S->web, 1, "Secure connection negotiation...");
+      a_Tls_connect(S->SockFD, S->url);
    }
 }
 
@@ -944,7 +943,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                          sd->https_proxy_reply->str);
                      dStr_free(sd->https_proxy_reply, 1);
                      sd->https_proxy_reply = NULL;
-                     a_Tls_handshake(sd->SockFD, sd->url);
+                     a_Tls_connect(sd->SockFD, sd->url);
                   } else {
                      MSG_BW(sd->web, 1, "Can't connect through proxy to %s",
                             URL_HOST(sd->url));

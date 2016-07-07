@@ -96,7 +96,7 @@ static Dlist *servers;
 static Dlist *cert_authorities;
 static Dlist *fd_map;
 
-static void Tls_connect_cb(int fd, void *vconnkey);
+static void Tls_handshake_cb(int fd, void *vconnkey);
 
 /*
  * Compare by FD.
@@ -916,7 +916,7 @@ static void Tls_fatal_error_msg(int error_type)
  * Connect, set a callback if it's still not completed. If completed, check
  * the certificate and report back to http.
  */
-static void Tls_connect(int fd, int connkey)
+static void Tls_handshake(int fd, int connkey)
 {
    int ret;
    bool_t ongoing = FALSE, failed = TRUE;
@@ -937,7 +937,7 @@ static void Tls_connect(int fd, int connkey)
          _MSG("iowatching fd %d for tls -- want %s\n", fd,
              ret == MBEDTLS_ERR_SSL_WANT_READ ? "read" : "write");
          a_IOwatch_remove_fd(fd, -1);
-         a_IOwatch_add_fd(fd, want, Tls_connect_cb, INT2VOIDP(connkey));
+         a_IOwatch_add_fd(fd, want, Tls_handshake_cb, INT2VOIDP(connkey));
          ongoing = TRUE;
          failed = FALSE;
       } else if (ret == 0) {
@@ -1007,15 +1007,15 @@ static void Tls_connect(int fd, int connkey)
    }
 }
 
-static void Tls_connect_cb(int fd, void *vconnkey)
+static void Tls_handshake_cb(int fd, void *vconnkey)
 {
-   Tls_connect(fd, VOIDP2INT(vconnkey));
+   Tls_handshake(fd, VOIDP2INT(vconnkey));
 }
 
 /*
- * Perform the TLS handshake on an open socket.
+ * Make TLS connection over a connect()ed socket.
  */
-void a_Tls_handshake(int fd, const DilloUrl *url)
+void a_Tls_connect(int fd, const DilloUrl *url)
 {
    mbedtls_ssl_context *ssl = dNew0(mbedtls_ssl_context, 1);
    bool_t success = TRUE;
@@ -1051,7 +1051,7 @@ void a_Tls_handshake(int fd, const DilloUrl *url)
       a_Tls_reset_server_state(url);
       a_Http_connect_done(fd, success);
    } else {
-      Tls_connect(fd, connkey);
+      Tls_handshake(fd, connkey);
    }
 }
 
