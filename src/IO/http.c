@@ -63,6 +63,7 @@ typedef struct {
    DilloWeb *web;          /* reference to client's web structure */
    DilloUrl *url;
    Dlist *addr_list;       /* Holds the DNS answer */
+   int addr_list_idx;
    ChainLink *Info;        /* Used for CCC asynchronous operations */
    char *connected_to;     /* Used for per-server connection limit */
    uint_t connect_port;
@@ -544,7 +545,9 @@ static void Http_connect_socket_cb(int fd, void *data)
             MSG("Http_connect_socket_cb connect ERROR: %s.\n",
                 dStrerror(connect_ret));
          }
-         a_Http_connect_done(S->SockFD, FALSE);
+         MSG("Http_connect_socket() will try another IP address.\n");
+         S->addr_list_idx++;
+         Http_connect_socket(S->Info);
       } else if (S->flags & HTTP_SOCKET_TLS) {
          Http_connect_tls(S->Info);
       } else {
@@ -559,18 +562,23 @@ static void Http_connect_socket_cb(int fd, void *data)
  */
 static void Http_connect_socket(ChainLink *Info)
 {
-   int i;
    DilloHost *dh;
-#ifdef ENABLE_IPV6
-   struct sockaddr_in6 name;
-#else
-   struct sockaddr_in name;
-#endif
-   socklen_t socket_len = 0;
    SocketData_t *S = a_Klist_get_data(ValidSocks, VOIDP2INT(Info->LocalKey));
 
-   /* TODO: iterate this address list until success, or end-of-list */
-   for (i = 0; (dh = dList_nth_data(S->addr_list, i)); ++i) {
+   for (; (dh = dList_nth_data(S->addr_list, S->addr_list_idx));
+        S->addr_list_idx++) {
+#ifdef ENABLE_IPV6
+      struct sockaddr_in6 name;
+#else
+      struct sockaddr_in name;
+#endif
+      socklen_t socket_len = 0;
+
+      if (S->addr_list_idx > 0 && S->SockFD >= 0) {
+         /* clean up the previous one that failed */
+         Http_fd_map_remove_entry(S->SockFD);
+         dClose(S->SockFD);
+      }
       if ((S->SockFD = socket(dh->af, SOCK_STREAM, IPPROTO_TCP)) < 0) {
          MSG("Http_connect_socket socket() ERROR: %s\n", dStrerror(errno));
          continue;
@@ -619,20 +627,27 @@ static void Http_connect_socket(ChainLink *Info)
          /* probably never succeeds immediately on any system */
          if (S->flags & HTTP_SOCKET_TLS) {
             Http_connect_tls(Info);
+            break;
          } else {
             a_Http_connect_done(S->SockFD, TRUE);
+            break;
          }
       } else {
          if (errno == EINPROGRESS) {
             a_IOwatch_add_fd(S->SockFD, DIO_WRITE, Http_connect_socket_cb,
                              Info->LocalKey);
             S->flags |= HTTP_SOCKET_IOWATCH_ACTIVE;
+            break;
          } else {
             MSG("Http_connect_socket connect ERROR: %s\n", dStrerror(errno));
-            a_Http_connect_done(S->SockFD, FALSE);
+            MSG("We will try another IP address.\n");
          }
       }
-      return;
+   } /* for */
+
+   if (S->addr_list_idx >= dList_length(S->addr_list) ) {
+      MSG("Http_connect_socket ran out of IP addrs to try.\n");
+      a_Http_connect_done(S->SockFD, FALSE);
    }
 }
 
@@ -729,6 +744,7 @@ static void Http_dns_cb(int Status, Dlist *addr_list, void *data)
 
             /* Successful DNS answer; save the IP */
             S->addr_list = addr_list;
+            S->addr_list_idx = 0;
             clean_up = FALSE;
             srv = Http_server_get(host, S->connect_port,
                                  (S->flags & HTTP_SOCKET_TLS));
