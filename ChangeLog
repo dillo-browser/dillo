@@ -32,6 +32,8 @@ dillo-3.1 [not released yet]
  - Fix bug when closing popup using window manager (bug introduced in 3.0.3).
  - Block mixed content.
  - Improve cookies date recognition.
+ - use mbed TLS ( https://tls.mbed.org/ )
+ - Iterate through the IP addrs for a host when trying to connect().
    Patches: corvid
 +- Doxygen fixes.
    Patch: Jeremy Henty
