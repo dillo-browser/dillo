@@ -302,6 +302,7 @@ static void Http_socket_free(int SKey)
       if (S->flags & HTTP_SOCKET_IOWATCH_ACTIVE) {
          S->flags &= ~HTTP_SOCKET_IOWATCH_ACTIVE;
          a_IOwatch_remove_fd(S->SockFD, -1);
+         dClose(S->SockFD);
       }
       dStr_free(S->https_proxy_reply, 1);
 
