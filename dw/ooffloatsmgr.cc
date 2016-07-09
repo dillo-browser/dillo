@@ -861,35 +861,22 @@ bool OOFFloatsMgr::collidesV (Float *vloat, Float *other, int *yReal)
 
 bool OOFFloatsMgr::collidesH (Float *vloat, Float *other)
 {
-   // Only checks horizontal collision. For a complete test, use
-   // collidesV (...) && collidesH (...).
+   // Only checks horizontal collision. For a complete test, use collidesV (...)
+   // && collidesH (...).
    bool collidesH;
 
-   if (vloat->generator == other->generator)
-      collidesH = vloat->size.width + other->size.width
-         + vloat->generator->boxDiffWidth()
-         > vloat->generator->getGeneratorWidth ();
-   else {
-      // Again, if the other float is not allocated, there is no
-      // collision. Compare to collidesV. (But vloat->size is used
-      // here.)
-      if (!other->getWidget()->wasAllocated ())
-         collidesH = false;
-      else {
-         int vloatX = calcFloatX (vloat);
+   int vloatX = calcFloatX (vloat), otherX = calcFloatX (other);
 
-         // Generally: right border of the left float > left border of
-         // the right float (all in canvas coordinates).
-         if (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT)
-            // "vloat" is left, "other" is right
-            collidesH = vloatX + vloat->size.width
-               > other->getWidget()->getAllocation()->x;
-         else
-            // "other" is left, "vloat" is right
-            collidesH = other->getWidget()->getAllocation()->x
-               + other->getWidget()->getAllocation()->width
-               > vloatX;
-      }
+   // Generally: right border of the left float > left border of the right float
+   // (all in canvas coordinates).
+   if (vloat->getWidget()->getStyle()->vloat == FLOAT_LEFT) {
+      // "vloat" is left, "other" is right
+      ensureFloatSize (vloat);
+      collidesH = vloatX + vloat->size.width > otherX;
+   } else {
+      // "other" is left, "vloat" is right
+      ensureFloatSize (other);
+      collidesH = otherX + other->size.width > vloatX;
    }
 
    return collidesH;
