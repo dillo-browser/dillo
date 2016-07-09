@@ -36,7 +36,6 @@ typedef struct {
    int Key;               /* Primary Key (for klist) */
    int Op;                /* IORead | IOWrite */
    int FD;                /* Current File Descriptor */
-   int Flags;             /* Flag array (look definitions above) */
    int Status;            /* nonzero upon IO failure */
    Dstr *Buf;             /* Internal buffer */
 
@@ -67,7 +66,6 @@ static IOData_t *IO_new(int op)
    IOData_t *io = dNew0(IOData_t, 1);
    io->Op = op;
    io->FD = -1;
-   io->Flags = 0;
    io->Key = 0;
    io->Buf = dStr_sized_new(IOBufLen);
 
@@ -128,13 +126,12 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
 {
    int events = 0;
 
-   _MSG("====> begin IO_close_fd (%d) Key=%d CloseCode=%d Flags=%d ",
-       io->FD, io->Key, CloseCode, io->Flags);
+   _MSG("====> begin IO_close_fd (%d) Key=%d CloseCode=%d ",
+       io->FD, io->Key, CloseCode);
 
    /* With HTTP, if we close the writing part, the reading one also gets
-    * closed! (other clients may set 'IOFlag_ForceClose') */
-   if (((io->Flags & IOFlag_ForceClose) || (CloseCode == IO_StopRdWr)) &&
-       io->FD != -1) {
+    * closed! */
+   if ((CloseCode == IO_StopRdWr) && io->FD != -1) {
       dClose(io->FD);
    } else {
       _MSG(" NOT CLOSING ");
