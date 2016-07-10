@@ -176,8 +176,7 @@ int OOFFloatsMgr::Float::CompareGBAndExtIndex::compare (Object *o1, Object *o2)
       }
    }
 
-   DBG_OBJ_MSGF_O ("border", 2, oofm, "result: %d", r);
-   DBG_OBJ_LEAVE_O (oofm);
+   DBG_OBJ_LEAVE_VAL_O (oofm, "%d", r);
    return r;
 }
 
@@ -219,8 +218,7 @@ int OOFFloatsMgr::SortedFloatsVector::findFloatIndex (OOFAwareWidget *lastGB,
    //           get(i)->externalIndex);
    //}
 
-   DBG_OBJ_MSGF_O ("border", 1, oofm, "=> r = %d", r);
-   DBG_OBJ_LEAVE_O (oofm);
+   DBG_OBJ_LEAVE_VAL_O (oofm, "%d", r);
    return r;
 }
 
