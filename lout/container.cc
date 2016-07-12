@@ -140,7 +140,10 @@ void Vector::put(Object *newElement, int newPos)
    if (newPos >= numAlloc) {
       while (newPos >= numAlloc)
          numAlloc *= 2;
-      array = (Object**)realloc(array, numAlloc * sizeof(Object*));
+      void *vp;
+      assert((vp = realloc(array, numAlloc * sizeof(Object*))));
+      if (!vp) exit(-2); // when NDEBUG is defined
+      array = (Object**)vp;
    }
 
    // Insert NULL's into possible gap before new position.
@@ -171,10 +174,13 @@ void Vector::insert(Object *newElement, int pos)
    else {
       numElements++;
 
-      // Allocated memory has to be increased.
       if (numElements >= numAlloc) {
+         // Allocated memory has to be increased.
          numAlloc *= 2;
-         array = (Object**)realloc(array, numAlloc * sizeof(Object*));
+         void *vp;
+         assert((vp = realloc(array, numAlloc * sizeof(Object*))));
+         if (!vp) exit(-2); // when NDEBUG is defined
+         array = (Object**)vp;
       }
 
       for (int i = numElements - 1; i > pos; i--)

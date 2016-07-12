@@ -169,8 +169,11 @@ void BitSet::set(int i, bool val)
       int newNumBytes = numBytes;
       while (8 * i >= newNumBytes)
          newNumBytes *= 2;
-      bits =
-         (unsigned char*)realloc(bits, newNumBytes * sizeof(unsigned char));
+
+      void *vp;
+      assert((vp = realloc(bits, newNumBytes * sizeof(unsigned char))));
+      if (!vp) exit(-2); // when NDEBUG is defined
+      bits = (unsigned char*)vp;
       memset(bits + numBytes, 0, newNumBytes - numBytes);
       numBytes = newNumBytes;
    }
