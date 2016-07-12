@@ -462,6 +462,7 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
 
    if (*services_list != NULL) {
       ERRMSG("fill_services_list", "services_list parameter is not NULL", 0);
+      fclose(dpidrc_stream);
       return -1;
    }
    *services_list = dList_new(8);
