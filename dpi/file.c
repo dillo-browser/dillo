@@ -353,7 +353,7 @@ static void File_info2html(ClientInfo *client, FileInfo *finfo, int n)
    }
 
    /* we could note if it's a symlink... */
-   if S_ISDIR (finfo->mode) {
+   if (S_ISDIR (finfo->mode)) {
       filecont = "Directory";
    } else if (finfo->mode & (S_IXUSR | S_IXGRP | S_IXOTH)) {
       filecont = "Executable";
