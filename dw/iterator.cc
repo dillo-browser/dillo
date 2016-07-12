@@ -121,7 +121,7 @@ void Iterator::scrollTo (Iterator *it1, Iterator *it2, int start, int end,
       y1 = INT_MAX;
       y2 = INT_MIN;
 
-      for (eit3 = (DeepIterator*)eit1->clone (), atStart = true;
+      for (atStart = true, eit3 = (DeepIterator*)eit1->clone ();
            (cmp = eit3->compareTo (eit2)) <= 0;
            eit3->next (), atStart = false) {
          if (atStart)
