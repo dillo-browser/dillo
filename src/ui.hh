@@ -146,7 +146,7 @@ class UI : public CustGroupVertical {
    void make_location(int ww);
    void make_progress_bars(int wide, int thin_up);
    void make_menubar(int x, int y, int w, int h);
-   Fl_Widget *make_filemenu_button();
+   void make_filemenu_button();
    void make_panel(int ww);
    void make_status_bar(int ww, int wh);
 

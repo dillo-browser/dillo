@@ -508,7 +508,7 @@ void UI::make_progress_bars(int wide, int thin_up)
  * Create the "File" menu
  * Static function for File menu callbacks.
  */
-Fl_Widget *UI::make_filemenu_button()
+void UI::make_filemenu_button()
 {
    CustButton *btn;
    int w = 0, h = 0, padding;
@@ -529,7 +529,6 @@ Fl_Widget *UI::make_filemenu_button()
    btn->clear_visible_focus();
    if (!prefs.show_filemenu)
       btn->hide();
-   return btn;
 }
 
 
