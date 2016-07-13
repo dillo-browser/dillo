@@ -1229,7 +1229,7 @@ void a_UIcmd_view_page_bugs(void *vbw)
    if (bw->num_page_bugs > 0) {
       a_Dialog_text_window("Dillo: Detected HTML errors", bw->page_bugs->str);
    } else {
-      a_Dialog_msg("Dillo: Valid HTML!", "Zero detected HTML errors!");
+      a_Dialog_msg("Dillo: Good HTML!", "No HTML errors found while parsing!");
    }
 }
 
