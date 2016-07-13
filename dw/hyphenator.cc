@@ -567,7 +567,7 @@ int Trie::load (FILE *file)
          continue;
 
       char data[LEN + 1];
-      int n = sscanf (s, "%u, %u, %s", &c, &next, data);
+      int n = sscanf (s, "%d, %d, %s", &c, &next, data);
 
       if (n >= 2 && c >= 0 && c < 256 && next >= 0) {
          tree.increase ();
