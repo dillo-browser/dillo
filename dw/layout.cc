@@ -864,94 +864,89 @@ void Layout::resizeIdle ()
 
    enterResizeIdle ();
 
-   //static int calls = 0;
-   //printf ("Layout::resizeIdle calls = %d\n", ++calls);
+   static int calls = 0;
 
-   assert (resizeIdleId != -1);
+   while (resizeIdleId != -1) {
+      printf ("Layout::resizeIdle calls = %d\n", ++calls);
 
-   for (typed::Iterator <Widget> it = queueResizeList->iterator();
-        it.hasNext (); ) {
-      Widget *widget = it.getNext ();
+      for (typed::Iterator <Widget> it = queueResizeList->iterator();
+           it.hasNext (); ) {
+         Widget *widget = it.getNext ();
 
-      //printf ("   the %stop-level %s %p was queued (extremes changed: %s)\n",
-      //        widget->parent ? "non-" : "", widget->getClassName(), widget,
-      //        widget->extremesQueued () ? "yes" : "no");
-
-      if (widget->resizeQueued ()) {
-         widget->setFlags (Widget::NEEDS_RESIZE);
-         widget->unsetFlags (Widget::RESIZE_QUEUED);
-      }
-
-      if (widget->allocateQueued ()) {
-         widget->setFlags (Widget::NEEDS_ALLOCATE);
-         widget->unsetFlags (Widget::ALLOCATE_QUEUED);
-      }
-
-      if (widget->extremesQueued ()) {
-         widget->setFlags (Widget::EXTREMES_CHANGED);
-         widget->unsetFlags (Widget::EXTREMES_QUEUED);
-      }
-   }
-   queueResizeList->clear ();
-
-   // Reset already here, since in this function, queueResize() may be
-   // called again.
-   resizeIdleId = -1;
-
-   // If this method is triggered by a viewport change, we can save
-   // time when the toplevel widget is not affected (as for a toplevel
-   // image resource).
-   if (topLevel && (topLevel->needsResize () || topLevel->needsAllocate ())) {
-      Requisition requisition;
-      Allocation allocation;
-
-      topLevel->sizeRequest (&requisition);
-      DBG_OBJ_MSGF ("resize", 1, "toplevel size: %d * (%d + %d)",
-                    requisition.width, requisition.ascent, requisition.descent);
-
-      // This method is triggered by Widget::queueResize, which will,
-      // in any case, set NEEDS_ALLOCATE (indirectly, as ALLOCATE_QUEUED).
-      // This assertion helps to find inconsistences. (Cases where
-      // this method is triggered by a viewport change, but the
-      // toplevel widget is not affected, are filtered out some lines
-      // above: "if (topLevel && topLevel->needsResize ())".)
-      assert (topLevel->needsAllocate ());
-
-      allocation.x = allocation.y = 0;
-      allocation.width = requisition.width;
-      allocation.ascent = requisition.ascent;
-      allocation.descent = requisition.descent;
-      topLevel->sizeAllocate (&allocation);
-
-      canvasWidth = requisition.width;
-      canvasAscent = requisition.ascent;
-      canvasDescent = requisition.descent;
-
-      emitter.emitCanvasSizeChanged (canvasWidth, canvasAscent, canvasDescent);
-
-      // Tell the view about the new world size.
-      view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
-
-      if (usesViewport) {
-         int currHThickness = currHScrollbarThickness();
-         int currVThickness = currVScrollbarThickness();
-
-         if (!canvasHeightGreater &&
-             canvasAscent + canvasDescent > viewportHeight - currHThickness) {
-            canvasHeightGreater = true;
-            DBG_OBJ_SET_SYM ("canvasHeightGreater",
-                             canvasHeightGreater ? "true" : "false");
-            containerSizeChanged ();
+         if (widget->resizeQueued ()) {
+            widget->setFlags (Widget::NEEDS_RESIZE);
+            widget->unsetFlags (Widget::RESIZE_QUEUED);
          }
 
-         // Set viewport sizes.
-         view->setViewportSize (viewportWidth, viewportHeight,
-                                currHThickness, currVThickness);
+         if (widget->allocateQueued ()) {
+            widget->setFlags (Widget::NEEDS_ALLOCATE);
+            widget->unsetFlags (Widget::ALLOCATE_QUEUED);
+         }
+
+         if (widget->extremesQueued ()) {
+            widget->setFlags (Widget::EXTREMES_CHANGED);
+            widget->unsetFlags (Widget::EXTREMES_QUEUED);
+         }
       }
+      queueResizeList->clear ();
 
-      // views are redrawn via Widget::resizeDrawImpl ()
+      // Reset here, since below, queueResize() may be called again.
+      resizeIdleId = -1;
+
+      // If this method is triggered by a viewport change, we can save
+      // time when the toplevel widget is not affected (as for a toplevel
+      // image resource).
+      if (topLevel && (topLevel->needsResize () || topLevel->needsAllocate ())) {
+         Requisition requisition;
+         Allocation allocation;
+
+         topLevel->sizeRequest (&requisition);
+         DBG_OBJ_MSGF ("resize", 1, "toplevel size: %d * (%d + %d)",
+                       requisition.width, requisition.ascent,
+                       requisition.descent);
+
+         // This method is triggered by Widget::queueResize, which will,
+         // in any case, set NEEDS_ALLOCATE (indirectly, as ALLOCATE_QUEUED).
+         // This assertion helps to find inconsistencies. (Cases where
+         // this method is triggered by a viewport change, but the
+         // toplevel widget is not affected, are filtered out some lines
+         // above: "if (topLevel && topLevel->needsResize ())".)
+         assert (topLevel->needsAllocate ());
+
+         allocation.x = allocation.y = 0;
+         allocation.width = requisition.width;
+         allocation.ascent = requisition.ascent;
+         allocation.descent = requisition.descent;
+         topLevel->sizeAllocate (&allocation);
+
+         canvasWidth = requisition.width;
+         canvasAscent = requisition.ascent;
+         canvasDescent = requisition.descent;
+         emitter.emitCanvasSizeChanged (canvasWidth, 
+                                        canvasAscent, canvasDescent);
+         // Tell the view about the new world size.
+         view->setCanvasSize (canvasWidth, canvasAscent, canvasDescent);
+
+         if (usesViewport) {
+            int currHThickness = currHScrollbarThickness();
+            int currVThickness = currVScrollbarThickness();
+
+            if (!canvasHeightGreater &&
+                canvasAscent + canvasDescent > viewportHeight - currHThickness) {
+               canvasHeightGreater = true;
+               DBG_OBJ_SET_SYM ("canvasHeightGreater",
+                                canvasHeightGreater ? "true" : "false");
+               containerSizeChanged ();
+            }
+
+            // Set viewport sizes.
+            view->setViewportSize (viewportWidth, viewportHeight,
+                                   currHThickness, currVThickness);
+         }
+
+         // views are redrawn via Widget::resizeDrawImpl ()
+      }
    }
-
    updateAnchor ();
 
    DBG_OBJ_MSGF ("resize", 1,
