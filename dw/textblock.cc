@@ -3040,7 +3040,8 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::updateReference (int ref)
 {
-   queueResize (ref, false);
+   if (words->size () > 0)
+      queueResize (ref, false);
 }
 
 void Textblock::widgetRefSizeChanged (int externalIndex)
