@@ -866,6 +866,12 @@ void Layout::resizeIdle ()
 
    static int calls = 0;
 
+   // There are two commits, 2863:b749629fbfc9 and 4645:ab70f9ce4353, the second
+   // reverting the former. Interrestingly, the second fixes a bug. However, it
+   // should still examined what happens here, and what happens the other calls
+   // to Layout::resizeIdle() which should be still in the queue. (See
+   // Layout::queueResize(), where resizeIdleId is indeed checked.)
+
    while (resizeIdleId != -1) {
       printf ("Layout::resizeIdle calls = %d\n", ++calls);
 
@@ -896,7 +902,8 @@ void Layout::resizeIdle ()
       // If this method is triggered by a viewport change, we can save
       // time when the toplevel widget is not affected (as for a toplevel
       // image resource).
-      if (topLevel && (topLevel->needsResize () || topLevel->needsAllocate ())) {
+      if (topLevel &&
+          (topLevel->needsResize () || topLevel->needsAllocate ())) {
          Requisition requisition;
          Allocation allocation;
 
