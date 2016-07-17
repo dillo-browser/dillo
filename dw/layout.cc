@@ -1301,15 +1301,13 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
 
    /* If size changes, redraw this view. */
    if (viewportWidth != width || viewportHeight != height) {
-      canvasHeightGreater = false;   // reset value here
       viewportWidth = width;
       viewportHeight = height;
-      containerSizeChanged ();
 
-      DBG_OBJ_SET_SYM ("canvasHeightGreater",
-                       canvasHeightGreater ? "true" : "false");
       DBG_OBJ_SET_NUM ("viewportWidth", viewportWidth);
       DBG_OBJ_SET_NUM ("viewportHeight", viewportHeight);
+
+      containerSizeChanged ();
    }
 
    DBG_OBJ_LEAVE ();
