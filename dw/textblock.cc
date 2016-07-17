@@ -213,6 +213,7 @@ Textblock::Textblock (bool limitTextWidth, bool treatAsInline)
    line1Offset = 0;
    ignoreLine1OffsetSometimes = false;
    mustQueueResize = false;
+   DBG_OBJ_SET_BOOL ("mustQueueResize", mustQueueResize);
    redrawY = 0;
    DBG_OBJ_SET_NUM ("redrawY", redrawY);
    lastWordDrawn = -1;
@@ -2753,6 +2754,8 @@ void Textblock::addParbreak (int space, core::style::Style *style)
                   word2->content.breakSpace = space;
                   textblock2->queueResize (makeParentRefInFlow (lineno), false);
                   textblock2->mustQueueResize = false;
+                  DBG_OBJ_SET_BOOL_O (textblock2, "mustQueueResize",
+                                      textblock2->mustQueueResize);
                }
             }
             return;
@@ -2945,6 +2948,7 @@ void Textblock::flush ()
 
       queueResize (-1, true);
       mustQueueResize = false;
+      DBG_OBJ_SET_BOOL ("mustQueueResize", mustQueueResize);
    }
 
    DBG_OBJ_LEAVE ();

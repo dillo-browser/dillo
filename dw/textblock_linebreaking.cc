@@ -452,6 +452,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
                            line->contentDescent);
 
    mustQueueResize = true;
+   DBG_OBJ_SET_BOOL ("mustQueueResize", mustQueueResize);
 
    int xWidget = line->textOffset;
    int yLine = yOffsetOfLineCreated (line);
@@ -686,7 +687,7 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
          }
       }
 
-      if(!newLine && !wrapAll)
+      if(!newLine && !wrapAll) {
          // No new line is added. "mustQueueResize" must,
          // nevertheless, be set, so that flush() will call
          // queueResize(), and later sizeRequestImpl() is called,
@@ -694,6 +695,8 @@ int Textblock::wrapWordInFlow (int wordIndex, bool wrapAll)
          // calls this method again, with wrapAll == true, so that
          // newLine is calculated as "true".
          mustQueueResize = true;
+         DBG_OBJ_SET_BOOL ("mustQueueResize", mustQueueResize);
+      }
 
       PRINTF ("[%p] special case? newLine = %s, wrapAll = %s => "
               "mustQueueResize = %s\n", this, newLine ? "true" : "false",
