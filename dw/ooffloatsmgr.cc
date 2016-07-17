@@ -338,8 +338,8 @@ OOFFloatsMgr::OOFFloatsMgr (OOFAwareWidget *container, int oofmIndex)
    leftFloatsMark = rightFloatsMark = 0;
    lastLeftTBIndex = lastRightTBIndex = 0;
 
-   floatRef = -1;
-   DBG_OBJ_SET_NUM ("floatRef", floatRef);
+   SizeChanged = true;
+   DBG_OBJ_SET_BOOL ("SizeChanged", SizeChanged);
 
    containerAllocation = *(container->getAllocation());
 
@@ -630,43 +630,51 @@ OOFFloatsMgr::Float *OOFFloatsMgr::findFloatByWidget (Widget *widget)
    return vloat;
 }
 
+/*
+ * Currently this is a compound recursion for textblocks:
+ * markSizeChange -> updateReference -> queueResize -> markSizeChange
+ * One way to see it is as a widget tree coverage problem. i.e. to cover all
+ * the nodes that need a resize when a float changes its size.
+ * The coverage logic of it is shared between resize code and mark code (here).
+ * 
+ * This implementation works for all the test cases so far. It relies on the
+ * fact that Widget::queueResize should be called whenever a widget changes its
+ * size. When "SizeChanged" is true, we notify the parent, when not, just the
+ * following textblocks.
+ */
 void OOFFloatsMgr::markSizeChange (int ref)
 {
    DBG_OBJ_ENTER ("resize.oofm", 0, "markSizeChange", "%d", ref);
 
-   // We implement "incremental resizing" (kind of), by remembering the largest
-   // value for "ref", in "floatRef". It is reset again in getSize(), which is
-   // called by sizeRequest().
-   if (floatRef == -1 || ref > floatRef) {
-      Float *vloat;
+   // When "SizeChanged" is true, we know this float changed its size.
+   // This helps to prune redundant passes.
+   // "SizeChanged" is set by getSize(), which is called by sizeRequest().
 
-      if (isSubRefLeftFloat (ref))
-         vloat = leftFloats->get (getFloatIndexFromSubRef (ref));
-      else if (isSubRefRightFloat (ref))
-         vloat = rightFloats->get (getFloatIndexFromSubRef (ref));
-      else {
-         assertNotReached();
-         vloat = NULL; // compiler happiness
-      }
+   SortedFloatsVector *list;
+   list = isSubRefLeftFloat(ref) ? leftFloats : rightFloats;
+   Float *vloat = list->get (getFloatIndexFromSubRef (ref));
 
-      vloat->dirty = true;  
-      DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
+   vloat->dirty = true;
+   DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
 
-      assert (vloat->getWidget()->getWidgetReference() != NULL);
-     
-      int first = getOOFAwareWidget(vloat->generator)->index;
-      DBG_OBJ_MSGF ("resize.oofm", 1, "updating from %d", first);
-      
+   assert (vloat->getWidget()->getWidgetReference() != NULL);
+
+   int first = getOOFAwareWidget(vloat->generator)->index;
+   DBG_OBJ_MSGF ("resize.oofm", 1, "updating from %d", first);
+
+   //printf("IN markSizeChange %p ref %d SzCh=%d\n", this, ref,
+   //       (int)SizeChanged);
+
+   if (SizeChanged)
       tbInfos->get(first)->getOOFAwareWidget()
          ->updateReference (vloat->getWidget()->getWidgetReference()
                             ->parentRef);
-      
-      for (int i = first + 1; i < tbInfos->size(); i++)
-         tbInfos->get(i)->getOOFAwareWidget()->updateReference(0);
 
-      floatRef = ref;
-      DBG_OBJ_SET_NUM ("floatRef", floatRef);
-   }
+   for (int i = first + 1; i < tbInfos->size(); i++)
+      tbInfos->get(i)->getOOFAwareWidget()->updateReference(0);
+
+   SizeChanged = false; // Done.
+   DBG_OBJ_SET_BOOL ("SizeChanged", SizeChanged);
    
    DBG_OBJ_LEAVE ();
 }
@@ -921,7 +929,7 @@ void OOFFloatsMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
    *oofHeight =
       max (oofHeightLeft, oofHeightRight) + container->boxRestHeight ();
 
-   floatRef = -1;
+   SizeChanged = true;
    DBG_OBJ_SET_NUM ("floatRef", floatRef);
 
    DBG_OBJ_MSGF ("resize.oofm", 1,
