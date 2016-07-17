@@ -1292,31 +1292,18 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
    DBG_OBJ_ENTER ("resize", 0, "viewportSizeChanged", "%p, %d, %d",
                  view, width, height);
 
-   /* If the width has become higher, we test again, whether the vertical
-    * scrollbar (so to speak) can be hidden again. */
-   if (usesViewport && width > viewportWidth) {
-      canvasHeightGreater = false;
+   /* If size changes, redraw this view. */
+   if (viewportWidth != width || viewportHeight != height) {
+      canvasHeightGreater = false;   // reset value here
+      viewportWidth = width;
+      viewportHeight = height;
+      containerSizeChanged ();
+
       DBG_OBJ_SET_SYM ("canvasHeightGreater",
                        canvasHeightGreater ? "true" : "false");
+      DBG_OBJ_SET_NUM ("viewportWidth", viewportWidth);
+      DBG_OBJ_SET_NUM ("viewportHeight", viewportHeight);
    }
-
-   /* if size changes, redraw this view.
-    * TODO: this is a resize call (redraw/resize code needs a review). */
-   if (viewportWidth != width || viewportHeight != height) {
-      if (topLevel)
-         // similar to addWidget()
-         topLevel->queueResize (-1, false);
-      else
-         queueResize (false);
-   }
-
-   viewportWidth = width;
-   viewportHeight = height;
-
-   DBG_OBJ_SET_NUM ("viewportWidth", viewportWidth);
-   DBG_OBJ_SET_NUM ("viewportHeight", viewportHeight);
-
-   containerSizeChanged ();
 
    DBG_OBJ_LEAVE ();
 }
