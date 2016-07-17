@@ -165,7 +165,7 @@ private:
                                      TBInfo> *tbInfosByOOFAwareWidget;
 
    int lastLeftTBIndex, lastRightTBIndex, leftFloatsMark, rightFloatsMark;
-   bool SizeChanged;
+   int floatRef;
 
    void moveExternalIndices (lout::container::typed::Vector<Float> *list,
                              int oldStartIndex, int diff);
