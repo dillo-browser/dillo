@@ -170,6 +170,7 @@ private:
    void moveExternalIndices (lout::container::typed::Vector<Float> *list,
                              int oldStartIndex, int diff);
    Float *findFloatByWidget (core::Widget *widget);
+   void updateGenerators (Float *vloat);
    int findTBInfo (int y);
 
    void sizeAllocateFloats (Side side);
