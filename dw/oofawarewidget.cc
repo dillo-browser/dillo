@@ -555,11 +555,6 @@ void OOFAwareWidget::widgetRefSizeChanged (int externalIndex)
    notImplemented ("OOFAwareWidget::widgetRefSizeChanged");
 }
 
-void OOFAwareWidget::clearPositionChanged ()
-{
-   notImplemented ("OOFAwareWidget::clearPositionChanged");
-}
-
 void OOFAwareWidget::oofSizeChanged (bool extremesChanged)
 {
    DBG_OBJ_ENTER ("resize", 0, "oofSizeChanged", "%s",

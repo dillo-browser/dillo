@@ -263,11 +263,6 @@ public:
    virtual void widgetRefSizeChanged (int externalIndex);
    
    /**
-    * TODO Needed after SRDOP?
-    */
-   virtual void clearPositionChanged ();
-
-   /**
     * Called by an implementation of dw::oof::OutOfFlowMgr when the size of the
     * container has changed, typically in sizeAllocateEnd.
     */
