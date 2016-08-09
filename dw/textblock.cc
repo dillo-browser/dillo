@@ -3044,8 +3044,14 @@ void Textblock::queueDrawRange (int index1, int index2)
 
 void Textblock::updateReference (int ref)
 {
-   if (words->size () > 0)
+   DBG_OBJ_ENTER ("resize", 0, "updateReference", "%d", ref);
+
+   // Only `queueResize` when there're words or float clearance
+   // (float clearance may change `extraSpace.top`).
+   if (words->size () > 0 || getStyle()->clear != core::style::CLEAR_NONE)
       queueResize (ref, false);
+
+   DBG_OBJ_LEAVE ();
 }
 
 void Textblock::widgetRefSizeChanged (int externalIndex)

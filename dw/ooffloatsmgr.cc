@@ -657,6 +657,19 @@ void OOFFloatsMgr::markSizeChange (int ref)
    vloat->dirty = true;
    DBG_OBJ_SET_BOOL_O (vloat->getWidget (), "<Float>.dirty", vloat->dirty);
 
+   updateGenerators (vloat);
+
+   DBG_OBJ_LEAVE ();
+}
+
+/**
+ * \brief Update all generators which are affected by a given float.
+ */
+void OOFFloatsMgr::updateGenerators (Float *vloat)
+{
+   DBG_OBJ_ENTER ("resize.oofm", 0, "updateGenerators", "#%d [%p]",
+                  vloat->index, vloat->getWidget ());
+
    assert (vloat->getWidget()->getWidgetReference() != NULL);
 
    int first = getOOFAwareWidget(vloat->generator)->index;
@@ -674,8 +687,7 @@ void OOFFloatsMgr::markSizeChange (int ref)
       tbInfos->get(i)->getOOFAwareWidget()->updateReference(0);
 
    SizeChanged = false; // Done.
-   DBG_OBJ_SET_BOOL ("SizeChanged", SizeChanged);
-   
+
    DBG_OBJ_LEAVE ();
 }
 
@@ -749,6 +761,8 @@ void OOFFloatsMgr::tellPosition1 (Widget *widget, int x, int y)
    getFloatsListsAndSide (vloat, &listSame, &listOpp, &side);
    ensureFloatSize (vloat);
 
+   int oldYReal = vloat->yReal;
+
    // "yReal" may change due to collisions (see below).
    vloat->yReq = vloat->yReal = y;
 
@@ -812,6 +826,25 @@ void OOFFloatsMgr::tellPosition1 (Widget *widget, int x, int y)
 
    DBG_OBJ_MSGF ("resize.oofm", 1, "vloat->yReq = %d, vloat->yReal = %d",
                  vloat->yReq, vloat->yReal);
+
+   // In some cases, an explicit update is neccessary, as in this example:
+   //
+   // <body>
+   //     <div id="a">
+   //         <div id="b" style="float:left">main</div>
+   //     </div>
+   //     <div id="c" style="clear:both">x</div>
+   //     <div id="d">footer</div>
+   // </body>
+   //
+   // Without an explicit update, #c would keep an old value for extraSpace.top,
+   // based on the old value of vloat->yReal.
+   //
+   // Notice that #c would be updated otherwise, if it had at least one word
+   // content.
+
+   if (vloat->yReal != oldYReal)
+      updateGenerators (vloat);
 
    DBG_OBJ_LEAVE ();
 }
