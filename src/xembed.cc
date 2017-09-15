@@ -18,7 +18,7 @@
 
 #include "xembed.hh"
 
-#ifdef X_PROTOCOL
+#if !(defined(WIN32) || defined(__APPLE__))
 #include <FL/x.H>
 
 typedef enum {
