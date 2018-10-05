@@ -40,6 +40,8 @@ AC_ARG_ENABLE(gif,    [  --disable-gif           Disable support for GIF images]
 AC_ARG_ENABLE(threaded-dns,[  --disable-threaded-dns  Disable the advantage of a reentrant resolver library],
               enable_threaded_dns=$enableval, enable_threaded_dns=yes)
 AC_ARG_ENABLE(rtfl,   [  --enable-rtfl           Build with rtfl messages (for debugging rendering)])
+AC_ARG_ENABLE(xembed,[  --disable-xembed       Don't compile with X11 XEmbed support],
+                    , enable_xembed=yes)
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
@@ -458,6 +460,9 @@ if test "x$enable_threaded_dns" = "xyes" ; then
 fi
 if test "x$enable_rtfl" = "xyes" ; then
   CXXFLAGS="$CXXFLAGS -DDBG_RTFL"
+fi
+if test "x$enable_xembed" = "xno" ; then
+  CXXFLAGS="$CFLAGS -DDISABLE_XEMBED"
 fi
 
 dnl -----------------------

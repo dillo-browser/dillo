@@ -18,7 +18,7 @@
 
 #include "xembed.hh"
 
-#if !(defined(WIN32) || defined(__APPLE__))
+#if !( defined(DISABLE_XEMBED) || defined(WIN32) || defined(__APPLE__) )
 #include <FL/x.H>
 
 typedef enum {
