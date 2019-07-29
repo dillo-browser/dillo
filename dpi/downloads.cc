@@ -318,11 +318,13 @@ DLItem::DLItem(const char *full_filename, const char *url)
    /* avoid malicious SMTP relaying with FTP urls */
    if (dStrnAsciiCasecmp(esc_url, "ftp:/", 5) == 0)
       Filter_smtp_hack(esc_url);
-   dl_argv = new char*[8];
+   dl_argv = new char*[10];
    int i = 0;
    dl_argv[i++] = (char*)"wget";
    if (stat(fullname, &ss) == 0)
       init_bytesize = (int)ss.st_size;
+   dl_argv[i++] = (char*)"-U";
+   dl_argv[i++] = (char*)"dillo/3.0.5";
    dl_argv[i++] = (char*)"-c";
    dl_argv[i++] = (char*)"--load-cookies";
    dl_argv[i++] = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
