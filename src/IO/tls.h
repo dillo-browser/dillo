@@ -35,6 +35,7 @@ int a_Tls_write(void *conn, void *buf, size_t len);
 #define a_Tls_connect_ready(url) TLS_CONNECT_NEVER
 #define a_Tls_reset_server_state(url) ;
 #define a_Tls_handshake(fd, url) ;
+#define a_Tls_connect(fd, url) ;
 #define a_Tls_connection(fd) NULL
 #define a_Tls_freeall() ;
 #define a_Tls_close_by_fd(fd) ;
