@@ -1,5 +1,7 @@
 /*
    Copyright (C) 2003  Ferdi Franceschini <ferdif@optusnet.com.au>
+                 2020  Axel Beckert <abe@debian.org>
+                 2023  Michal Grezl <walley@walley.org>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,6 +33,24 @@
 #include "../dpip/dpip.h"
 
 sigset_t mask_sigchld;
+
+/* fix for gcc 10 */
+
+enum {
+   no_errors,
+   dpid_srs_addrinuse /* dpid service request socket address already in use */
+} dpi_errno;
+
+char *srs_name;
+int numdpis;
+fd_set sock_set;
+struct dp *dpi_attr_list;
+Dlist *services_list;
+int numsocks;
+int srs_fd;
+;
+
+// end of fix
 
 
 /* Start a dpi filter plugin after accepting the pending connection
