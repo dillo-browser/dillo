@@ -3533,7 +3533,7 @@ static const TagInfo Tags[] = {
  {"sub", B8(01011),'R', Html_tag_open_default, NULL, NULL},
  {"sup", B8(01011),'R', Html_tag_open_default, NULL, NULL},
  {"table", B8(01100),'R', Html_tag_open_table, Html_tag_content_table, NULL},
- /* tbody */
+ {"tbody", B8(01110),'O', Html_tag_open_tbody, Html_tag_content_tbody, NULL},
  {"td", B8(01110),'O', Html_tag_open_td, Html_tag_content_td, NULL},
  {"textarea", B8(01011),'R', Html_tag_open_textarea, Html_tag_content_textarea,
                              Html_tag_close_textarea},

@@ -245,6 +245,19 @@ void Html_tag_content_td(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
+ * <tbody>
+ */
+void Html_tag_open_tbody(DilloHtml *html, const char *tag, int tagsize)
+{
+//   Html_tag_open_table_cell (html, tag, tagsize, dw::core::style::TEXT_ALIGN_LEFT);
+}
+
+void Html_tag_content_tbody(DilloHtml *html, const char *tag, int tagsize)
+{
+//   Html_tag_content_table_cell (html, tag, tagsize);
+}
+
+/*
  * <TH>
  */
 void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
