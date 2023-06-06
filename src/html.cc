@@ -3537,7 +3537,7 @@ static const TagInfo Tags[] = {
  {"td", B8(01110),'O', Html_tag_open_td, Html_tag_content_td, NULL},
  {"textarea", B8(01011),'R', Html_tag_open_textarea, Html_tag_content_textarea,
                              Html_tag_close_textarea},
- /* tfoot */
+ {"tfoot", B8(01010),'O', Html_tag_open_tfoot, NULL, NULL},
  {"th", B8(01110),'O', Html_tag_open_th, Html_tag_content_th, NULL},
  /* thead */
  {"title", B8(10011),'R', Html_tag_open_title, NULL, Html_tag_close_title},

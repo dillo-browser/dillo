@@ -256,6 +256,13 @@ void Html_tag_content_tbody(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
+ * <tfoot>
+ */
+void Html_tag_open_tfoot(DilloHtml *html, const char *tag, int tagsize)
+{
+}
+
+/*
  * <TH>
  */
 void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
