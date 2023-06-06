@@ -245,6 +245,17 @@ void Html_tag_content_td(DilloHtml *html, const char *tag, int tagsize)
 }
 
 /*
+ * <tbody>
+ */
+void Html_tag_open_tbody(DilloHtml *html, const char *tag, int tagsize)
+{
+}
+
+void Html_tag_content_tbody(DilloHtml *html, const char *tag, int tagsize)
+{
+}
+
+/*
  * <TH>
  */
 void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize)
