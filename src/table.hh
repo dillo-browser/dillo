@@ -17,6 +17,10 @@ void Html_tag_open_tr(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_content_tr(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_open_td(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_content_td(DilloHtml *html, const char *tag, int tagsize);
+void Html_tag_open_tbody(DilloHtml *html, const char *tag, int tagsize);
+void Html_tag_content_tbody(DilloHtml *html, const char *tag, int tagsize);
+void Html_tag_open_tfoot(DilloHtml *html, const char *tag, int tagsize);
+void Html_tag_open_thead(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_open_th(DilloHtml *html, const char *tag, int tagsize);
 void Html_tag_content_th(DilloHtml *html, const char *tag, int tagsize);
 
