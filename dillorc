@@ -291,6 +291,8 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # they are the main foreground color and the main background color,
 # respectively.
 #
+# ui_tab_height controls the height of the tabs (default 20).
+#
 # Note to packagers: leaving these variables for the system to guess
 # gives different results in different environments, so we played it safe
 # by defining the traditional colors.  Please choose the color theme that

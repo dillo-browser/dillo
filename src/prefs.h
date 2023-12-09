@@ -2,6 +2,7 @@
  * Preferences
  *
  * Copyright (C) 2006-2009 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,6 +59,7 @@ typedef struct {
    int32_t ui_tab_active_fg_color;
    int32_t ui_tab_bg_color;
    int32_t ui_tab_fg_color;
+   int32_t ui_tab_height;
    int32_t ui_text_bg_color;
    bool_t contrast_visited_color;
    bool_t show_tooltip;

@@ -2,6 +2,7 @@
  * Preferences parser
  *
  * Copyright (C) 2006-2009 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -222,6 +223,7 @@ void PrefsParser::parse(FILE *fp)
       { "ui_tab_bg_color", &prefs.ui_tab_bg_color, PREFS_COLOR, 0 },
       { "ui_tab_active_fg_color", &prefs.ui_tab_active_fg_color, PREFS_COLOR, 0 },
       { "ui_tab_fg_color", &prefs.ui_tab_fg_color, PREFS_COLOR, 0 },
+      { "ui_tab_height", &prefs.ui_tab_height, PREFS_INT32, 0 },
       { "ui_text_bg_color", &prefs.ui_text_bg_color, PREFS_COLOR, 0 },
       { "penalty_hyphen", &prefs.penalty_hyphen, PREFS_FRACTION_100, 0 },
       { "penalty_hyphen_2", &prefs.penalty_hyphen_2, PREFS_FRACTION_100, 0 },

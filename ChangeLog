@@ -52,6 +52,8 @@ dillo-3.1 [not released yet]
  - Add automatic rendering tests (only enabled with --enable-html-tests).
  - Fix width calculation when using 'min-width' and 'max-width'.
  - Update website URL to https://dillo-browser.github.io/
+ - Add ui_tab_height option to control the tab height. Default value increased
+   from 16 to 20 pixels to improve usability.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------

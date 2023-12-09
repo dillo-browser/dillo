@@ -2,6 +2,7 @@
  * File: uicmd.cc
  *
  * Copyright (C) 2005-2011 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -550,7 +551,7 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
       win = new Fl_Double_Window(ww, wh);
 
    win->box(FL_NO_BOX);
-   CustTabs *DilloTabs = new CustTabs(ww, wh, 16);
+   CustTabs *DilloTabs = new CustTabs(ww, wh, prefs.ui_tab_height);
    win->end();
    win->resizable(DilloTabs->wizard());
 
