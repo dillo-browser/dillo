@@ -40,6 +40,9 @@
 # Set your default directory for download/save operations
 #save_dir=/tmp
 
+# Mouse wheel scroll step in pixels
+#scroll_step=100
+
 #-------------------------------------------------------------------------
 #                           RENDERING SECTION
 #-------------------------------------------------------------------------

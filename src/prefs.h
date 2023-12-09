@@ -72,6 +72,7 @@ typedef struct {
    double font_factor;
    int32_t font_max_size;
    int32_t font_min_size;
+   int32_t scroll_step;
    bool_t show_back;
    bool_t show_forw;
    bool_t show_home;

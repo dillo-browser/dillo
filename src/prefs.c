@@ -81,6 +81,7 @@ void a_Prefs_init(void)
    prefs.panel_size = P_medium;
    prefs.parse_embedded_css=TRUE;
    prefs.save_dir = dStrdup(PREFS_SAVE_DIR);
+   prefs.scroll_step = 100;
    prefs.search_urls = dList_new(16);
    dList_append(prefs.search_urls, dStrdup(PREFS_SEARCH_URL));
    prefs.search_url_idx = 0;
