@@ -1,6 +1,4 @@
-===================
- Dillo web browser
-===================
+# Dillo web browser
 
 Dillo is a multi-platform graphical web browser, known for its
 speed and small footprint, that is developed with a focus on
