@@ -8,6 +8,7 @@ liblout_a_SOURCES = \
 	container.cc \
 	container.hh \
 	debug.hh \
+	debug_rtfl.hh \
 	identity.cc \
 	identity.hh \
 	misc.cc \
