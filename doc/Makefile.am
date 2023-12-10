@@ -8,3 +8,5 @@ EXTRA_DIST = \
 
 dillo.1: $(srcdir)/dillo.1.in Makefile
 	sed 's%/usr/local%${prefix}%g' < $(srcdir)/dillo.1.in > dillo.1
+
+DISTCLEANFILES = dillo.1
