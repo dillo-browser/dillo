@@ -44,6 +44,8 @@ dillo-3.1 [not released yet]
 +- Fix bookmarks DPI crash.
  - Fix OSX compilation issue with xembed.
    Patches: Johannes Hofmann
++- Fix DuckDuckGo search links
+   Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------
 
