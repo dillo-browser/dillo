@@ -16,7 +16,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install FLTK
-      run: sudo apt install -y libfltk1.3-dev
+      run: sudo apt install -y libfltk1.3-dev libmbedtls-dev
     - name: autogen
       run: ./autogen.sh
     - name: configure
