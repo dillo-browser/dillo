@@ -24,8 +24,8 @@ AC_ARG_ENABLE(gprof,  [  --enable-gprof          Try to compile and run with pro
                     , enable_gprof=no)
 AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Insure++],
                     , enable_insure=no)
-AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable SSL/HTTPS/TLS],
-                    , enable_ssl=no)
+AC_ARG_ENABLE(ssl,    [  --disable-ssl           Disable SSL/HTTPS/TLS support],
+                    , enable_ssl=yes)
 AC_ARG_WITH(ca-certs-file, [  --with-ca-certs-file=FILE  Specify where to find a bundle of trusted CA certificates for TLS], CA_CERTS_FILE=$withval)
 AC_ARG_WITH(ca-certs-dir, [  --with-ca-certs-dir=DIR     Specify where to find a directory containing trusted CA certificates for TLS], CA_CERTS_DIR=$withval)
 AC_ARG_ENABLE(ipv6,   [  --enable-ipv6           Build with support for IPv6], , )
@@ -309,7 +309,7 @@ dnl In mbed TLS 2.3.0, ssl.h needs platform.h but fails to include it.
   if test "x$ssl_ok" = "xyes"; then
     LIBSSL_LIBS="-lmbedtls -lmbedx509 -lmbedcrypto"
   else
-    AC_MSG_WARN([*** mbed TLS 2 not found. Disabling SSL/HTTPS/TLS support. ***])
+    AC_MSG_ERROR([mbed TLS 2 not found. To disable SSL/TLS support use --disable-ssl])
   fi
 fi
 
