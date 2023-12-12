@@ -535,6 +535,8 @@ AC_CONFIG_FILES([
     src/Makefile
     src/IO/Makefile
     test/Makefile
+    test/unit/Makefile
+    test/dw/Makefile
 ])
 
 AC_OUTPUT
