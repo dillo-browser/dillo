@@ -14,13 +14,13 @@ TESTS = \
 	identity \
 	liang \
 	notsosimplevector \
-	shapes
+	shapes \
+	unicode_test
 
 # Some test are broken, so only build them
 check_PROGRAMS = $(TESTS) \
 	cookies \
-	trie \
-	unicode_test
+	trie
 
 containers_SOURCES = containers.cc
 notsosimplevector_SOURCES = notsosimplevector.cc
