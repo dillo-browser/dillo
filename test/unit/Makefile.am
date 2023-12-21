@@ -22,6 +22,10 @@ check_PROGRAMS = $(TESTS) \
 	cookies \
 	trie
 
+EXTRA_DIST = \
+	hyph-en-us.pat \
+	hyph-de.pat
+
 containers_SOURCES = containers.cc
 notsosimplevector_SOURCES = notsosimplevector.cc
 hyphenation_LDADD = \
