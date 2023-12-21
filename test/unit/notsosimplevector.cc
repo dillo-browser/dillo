@@ -1,4 +1,4 @@
-#include "../lout/misc.hh"
+#include "lout/misc.hh"
 
 static void print (lout::misc::NotSoSimpleVector<int> *v)
 {

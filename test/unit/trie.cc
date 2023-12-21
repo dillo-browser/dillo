@@ -1,4 +1,4 @@
-#include "../dw/hyphenator.hh"
+#include "dw/hyphenator.hh"
 
 int main (int argc, char *argv[])
 {

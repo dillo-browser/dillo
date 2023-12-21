@@ -1,10 +1,10 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 
-#include "../dw/core.hh"
-#include "../dw/fltkcore.hh"
-#include "../dw/fltkviewport.hh"
-#include "../dw/textblock.hh"
+#include "dw/core.hh"
+#include "dw/fltkcore.hh"
+#include "dw/fltkviewport.hh"
+#include "dw/textblock.hh"
 
 using namespace dw;
 using namespace dw::core;

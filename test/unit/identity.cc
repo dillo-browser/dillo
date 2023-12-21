@@ -10,7 +10,7 @@
  * assumed that B is a subclass of A.)
  */
 
-#include "../lout/identity.hh"
+#include "lout/identity.hh"
 
 using namespace lout::identity;
 
