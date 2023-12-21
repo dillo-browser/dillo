@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,24 +18,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
-#include "../dw/core.hh"
+#include "dw/core.hh"
 
 using namespace dw::core;
 using namespace lout::misc;
 
 int main()
 {
-   Polygon poly;
-   poly.addPoint (50, 10);
-   poly.addPoint (90, 90);
-   poly.addPoint (10, 90);
+	Polygon poly;
+	poly.addPoint(50, 10);
+	poly.addPoint(90, 90);
+	poly.addPoint(10, 90);
 
-   printf("first test\n");
-   assert (poly.isPointWithin (50, 50));
-   printf("second test\n");
-   assert (!poly.isPointWithin (10, 10));
-   printf("third test\n");
-   assert (!poly.isPointWithin (90, 50));
+	if (!poly.isPointWithin(50, 50)) {
+		printf("poly.isPointWithin(50, 50) failed\n");
+		exit(1);
+	}
+
+	if (poly.isPointWithin(10, 10)) {
+		printf("!poly.isPointWithin(10, 10) failed\n");
+		exit(1);
+	}
+
+	if (poly.isPointWithin(90, 50)) {
+		printf("!poly.isPointWithin(90, 50) failed\n");
+		exit(1);
+	}
+
+	return 0;
 }
