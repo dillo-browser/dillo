@@ -48,8 +48,8 @@
 #define MSG_ERR(...) MSG_INNARDS("** ERROR **: ", __VA_ARGS__)
 
 
-#include "../dlib/dlib.h"
-#include "../dpip/dpip.h"
+#include "dlib/dlib.h"
+#include "dpip/dpip.h"
 
 static uint_t failed = 0;
 static uint_t passed = 0;

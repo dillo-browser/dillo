@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +23,12 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 
-#include "../dw/core.hh"
-#include "../dw/fltkcore.hh"
-#include "../dw/fltkviewport.hh"
-#include "../dw/table.hh"
-#include "../dw/textblock.hh"
-#include "../dw/ui.hh"
+#include "dw/core.hh"
+#include "dw/fltkcore.hh"
+#include "dw/fltkviewport.hh"
+#include "dw/table.hh"
+#include "dw/textblock.hh"
+#include "dw/ui.hh"
 #include "form.hh"
 
 using namespace lout::object;

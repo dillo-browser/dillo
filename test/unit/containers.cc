@@ -1,5 +1,5 @@
-#include "../lout/object.hh"
-#include "../lout/container.hh"
+#include "lout/object.hh"
+#include "lout/container.hh"
 
 using namespace lout::object;
 using namespace lout::container::typed;

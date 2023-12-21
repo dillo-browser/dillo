@@ -1,8 +1,8 @@
 #ifndef __TEST_FORM_HH__
 #define __TEST_FORM_HH__
 
-#include "../dw/core.hh"
-#include "../dw/ui.hh"
+#include "dw/core.hh"
+#include "dw/ui.hh"
 
 namespace form {
 
