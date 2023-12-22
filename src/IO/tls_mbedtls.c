@@ -1,15 +1,15 @@
 /*
- * File: tls.c
+ * File: tls_mbedtls.c
  *
  * Copyright (C) 2011 Benjamin Johnson <obeythepenguin@users.sourceforge.net>
  * (for the https code offered from dplus browser that formed the basis...)
  * Copyright 2016 corvid
+ * Copyright (C) 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- *
  */
 
 /*
@@ -23,14 +23,9 @@
 #include "config.h"
 #include "../msg.h"
 
-#ifndef ENABLE_SSL
-
-void a_Tls_init()
-{
-   MSG("TLS: Disabled at compilation time.\n");
-}
-
-#else
+#ifndef ENABLE_TLS
+# error "ENABLE_TLS not defined"
+#endif
 
 #include <assert.h>
 #include <errno.h>
@@ -49,7 +44,11 @@ void a_Tls_init()
 #include <mbedtls/error.h>
 #include <mbedtls/oid.h>
 #include <mbedtls/x509.h>
+#if MBEDTLS_VERSION_NUMBER < 0x03000000
 #include <mbedtls/net.h>    /* net_send, net_recv */
+#else
+#include <mbedtls/net_sockets.h>    /* net_send, net_recv */
+#endif
 
 #define CERT_STATUS_NONE 0
 #define CERT_STATUS_RECEIVING 1
@@ -144,7 +143,7 @@ static void Tls_fd_map_remove_entry(int fd)
  * Return TLS connection information for a given file
  * descriptor, or NULL if no TLS connection was found.
  */
-void *a_Tls_connection(int fd)
+void *a_Tls_mbedtls_connection(int fd)
 {
    Conn_t *conn;
 
@@ -352,7 +351,7 @@ static void Tls_remove_psk_ciphersuites()
 /*
  * Initialize the mbed TLS library.
  */
-void a_Tls_init(void)
+void a_Tls_mbedtls_init(void)
 {
    int ret;
 
@@ -449,7 +448,7 @@ static int Tls_servers_by_url_cmp(const void *v1, const void *v2)
  *
  * Return: TLS_CONNECT_READY or TLS_CONNECT_NOT_YET or TLS_CONNECT_NEVER.
  */
-int a_Tls_connect_ready(const DilloUrl *url)
+int a_Tls_mbedtls_connect_ready(const DilloUrl *url)
 {
    Server_t *s;
    int ret = TLS_CONNECT_READY;
@@ -495,7 +494,7 @@ static int Tls_user_said_no(const DilloUrl *url)
  * Did everything seem proper with the certificate -- no warnings to
  * click through?
  */
-int a_Tls_certificate_is_clean(const DilloUrl *url)
+int a_Tls_mbedtls_certificate_is_clean(const DilloUrl *url)
 {
    return Tls_cert_status(url) == CERT_STATUS_CLEAN;
 }
@@ -618,15 +617,23 @@ static void Tls_cert_not_valid_yet(const mbedtls_x509_crt *cert, Dstr *ds)
  */
 static void Tls_cert_bad_hash(const mbedtls_x509_crt *cert, Dstr *ds)
 {
-   const char *hash = (cert->sig_md == MBEDTLS_MD_MD5) ? "MD5" :
-                      (cert->sig_md == MBEDTLS_MD_MD4) ? "MD4" :
-                      (cert->sig_md == MBEDTLS_MD_MD2) ? "MD2" :
-                      (cert->sig_md == MBEDTLS_MD_SHA1) ? "SHA1" :
-                      (cert->sig_md == MBEDTLS_MD_SHA224) ? "SHA224" :
-                      (cert->sig_md == MBEDTLS_MD_RIPEMD160) ? "RIPEMD160" :
-                      (cert->sig_md == MBEDTLS_MD_SHA256) ? "SHA256" :
-                      (cert->sig_md == MBEDTLS_MD_SHA384) ? "SHA384" :
-                      (cert->sig_md == MBEDTLS_MD_SHA512) ? "SHA512" :
+#if MBEDTLS_VERSION_NUMBER < 0x03000000
+   mbedtls_md_type_t md = cert->sig_md;
+#else
+   mbedtls_md_type_t md = cert->MBEDTLS_PRIVATE(sig_md);
+#endif
+   const char *hash = (md == MBEDTLS_MD_MD5) ? "MD5" :
+                      (md == MBEDTLS_MD_SHA1) ? "SHA1" :
+                      (md == MBEDTLS_MD_SHA224) ? "SHA224" :
+                      (md == MBEDTLS_MD_RIPEMD160) ? "RIPEMD160" :
+                      (md == MBEDTLS_MD_SHA256) ? "SHA256" :
+                      (md == MBEDTLS_MD_SHA384) ? "SHA384" :
+                      (md == MBEDTLS_MD_SHA512) ? "SHA512" :
+#if MBEDTLS_VERSION_NUMBER < 0x03000000
+/* In version 3, these are removed: */
+                      (md == MBEDTLS_MD_MD4) ? "MD4" :
+                      (md == MBEDTLS_MD_MD2) ? "MD2" :
+#endif
                       "Unrecognized";
 
    dStr_sprintfa(ds, "This certificate's hash algorithm is not accepted "
@@ -803,7 +810,7 @@ static int Tls_examine_certificate(mbedtls_ssl_context *ssl, Server_t *srv)
  * If the connection was closed before we got the certificate, we need to
  * reset state so that we'll try again.
  */
-void a_Tls_reset_server_state(const DilloUrl *url)
+void a_Tls_mbedtls_reset_server_state(const DilloUrl *url)
 {
    if (servers) {
       Server_t *s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp);
@@ -821,7 +828,7 @@ static void Tls_close_by_key(int connkey)
    Conn_t *c;
 
    if ((c = a_Klist_get_data(conn_list, connkey))) {
-      a_Tls_reset_server_state(c->url);
+      a_Tls_mbedtls_reset_server_state(c->url);
       if (c->connecting) {
          a_IOwatch_remove_fd(c->fd, -1);
          dClose(c->fd);
@@ -934,7 +941,12 @@ static void Tls_handshake(int fd, int connkey)
       return;
    }
 
-   if (conn->ssl->state != MBEDTLS_SSL_HANDSHAKE_OVER) {
+#if MBEDTLS_VERSION_NUMBER < 0x03000000
+   int ssl_state = conn->ssl->state;
+#else
+   int ssl_state = conn->ssl->MBEDTLS_PRIVATE(state);
+#endif
+   if (ssl_state != MBEDTLS_SSL_HANDSHAKE_OVER) {
       ret = mbedtls_ssl_handshake(conn->ssl);
 
       if (ret == MBEDTLS_ERR_SSL_WANT_READ ||
@@ -977,16 +989,22 @@ static void Tls_handshake(int fd, int connkey)
           * soon, unless there are radical changes". It seems to be the best of
           * the alternatives.
           */
+#if MBEDTLS_VERSION_NUMBER < 0x03000000
          Tls_fatal_error_msg(conn->ssl->in_msg[1]);
+#else
+         Tls_fatal_error_msg(conn->ssl->MBEDTLS_PRIVATE(in_msg[1]));
+#endif
       } else if (ret == MBEDTLS_ERR_SSL_INVALID_RECORD) {
          MSG("mbedtls_ssl_handshake() failed upon receiving 'an invalid "
              "record'.\n");
       } else if (ret == MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE) {
          MSG("mbedtls_ssl_handshake() failed: 'The requested feature is not "
              "available.'\n");
+#if MBEDTLS_VERSION_NUMBER < 0x03000000
       } else if (ret == MBEDTLS_ERR_SSL_BAD_HS_SERVER_KEY_EXCHANGE) {
          MSG("mbedtls_ssl_handshake() failed: 'Processing of the "
              "ServerKeyExchange handshake message failed.'\n");
+#endif
       } else if (ret == MBEDTLS_ERR_SSL_CONN_EOF) {
          MSG("mbedtls_ssl_handshake() failed: Read EOF. Connection closed by "
              "server.\n");
@@ -1022,7 +1040,7 @@ static void Tls_handshake_cb(int fd, void *vconnkey)
 /*
  * Make TLS connection over a connect()ed socket.
  */
-void a_Tls_connect(int fd, const DilloUrl *url)
+void a_Tls_mbedtls_connect(int fd, const DilloUrl *url)
 {
    mbedtls_ssl_context *ssl = dNew0(mbedtls_ssl_context, 1);
    bool_t success = TRUE;
@@ -1055,7 +1073,7 @@ void a_Tls_connect(int fd, const DilloUrl *url)
    }
 
    if (!success) {
-      a_Tls_reset_server_state(url);
+      a_Tls_mbedtls_reset_server_state(url);
       a_Http_connect_done(fd, success);
    } else {
       Tls_handshake(fd, connkey);
@@ -1065,7 +1083,7 @@ void a_Tls_connect(int fd, const DilloUrl *url)
 /*
  * Read data from an open TLS connection.
  */
-int a_Tls_read(void *conn, void *buf, size_t len)
+int a_Tls_mbedtls_read(void *conn, void *buf, size_t len)
 {
    Conn_t *c = (Conn_t*)conn;
    int ret = mbedtls_ssl_read(c->ssl, buf, len);
@@ -1089,7 +1107,7 @@ int a_Tls_read(void *conn, void *buf, size_t len)
 /*
  * Write data to an open TLS connection.
  */
-int a_Tls_write(void *conn, void *buf, size_t len)
+int a_Tls_mbedtls_write(void *conn, void *buf, size_t len)
 {
    Conn_t *c = (Conn_t*)conn;
    int ret = mbedtls_ssl_write(c->ssl, buf, len);
@@ -1100,7 +1118,7 @@ int a_Tls_write(void *conn, void *buf, size_t len)
    return ret;
 }
 
-void a_Tls_close_by_fd(int fd)
+void a_Tls_mbedtls_close_by_fd(int fd)
 {
    FdMapEntry_t *fme = dList_find_custom(fd_map, INT2VOIDP(fd),
                                          Tls_fd_map_cmp);
@@ -1204,7 +1222,7 @@ static void Tls_fd_map_remove_all()
 /*
  * Clean up
  */
-void a_Tls_freeall(void)
+void a_Tls_mbedtls_freeall(void)
 {
    if (prefs.show_msg)
       Tls_cert_authorities_print_summary();
@@ -1213,5 +1231,3 @@ void a_Tls_freeall(void)
    Tls_cert_authorities_freeall();
    Tls_servers_freeall();
 }
-
-#endif /* ENABLE_SSL */
