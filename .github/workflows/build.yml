@@ -1,15 +1,9 @@
 name: CI
 
-on:
-  push:
-    branches:
-    - master
-  pull_request:
-    branches:
-    - master
+on: [push]
 
 jobs:
-  build:
+  build-no-tls:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -20,7 +14,43 @@ jobs:
     - name: autogen
       run: ./autogen.sh
     - name: configure
-      run: ./configure
+      run: ./configure --disable-tls
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  build-mbedtls2:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install FLTK
+      run: sudo apt install -y libfltk1.3-dev libmbedtls-dev
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-openssl
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  build-openssl:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install FLTK
+      run: sudo apt install -y libfltk1.3-dev libssl-dev
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-mbedtls
     - name: make
       run: make
     - name: make check
