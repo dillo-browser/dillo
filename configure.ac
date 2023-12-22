@@ -243,6 +243,7 @@ dnl ----------------
 dnl Test for libjpeg
 dnl ----------------
 dnl
+jpeg_ok=no
 if test "x$enable_jpeg" = "xyes"; then
   AC_CHECK_HEADER(jpeglib.h, jpeg_ok=yes, jpeg_ok=no)
 
@@ -291,6 +292,7 @@ dnl ---------------
 dnl Test for libpng
 dnl ---------------
 dnl
+png_ok="no"
 if test "x$enable_png" = "xyes"; then
   AC_MSG_CHECKING([for libpng-config])
 
@@ -658,3 +660,21 @@ AC_CONFIG_FILES([
 ])
 
 AC_OUTPUT
+
+_AS_ECHO([])
+_AS_ECHO([Configuration summary:])
+_AS_ECHO([])
+_AS_ECHO([  CXX     : ${CXX}])
+_AS_ECHO([  CXXFLAGS: ${CXXFLAGS}])
+_AS_ECHO([])
+_AS_ECHO([  TLS enabled: ${tls_ok}])
+_AS_ECHO([  TLS library: ${tls_impl}])
+_AS_ECHO([  TLS flags  : ${LIBSSL_LIBS}])
+_AS_ECHO([])
+_AS_ECHO([  Cookies enabled: ${enable_cookies}])
+_AS_ECHO([  XEmbed enabled : ${enable_xembed}])
+_AS_ECHO([  RTFL enabled   : ${enable_rtfl}])
+_AS_ECHO([  JPEG enabled   : ${jpeg_ok}])
+_AS_ECHO([  PNG enabled    : ${png_ok}])
+_AS_ECHO([  GIF enabled    : ${enable_gif}])
+_AS_ECHO([])
