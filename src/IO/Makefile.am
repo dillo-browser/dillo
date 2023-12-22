@@ -9,6 +9,19 @@ AM_CXXFLAGS = @LIBFLTK_CXXFLAGS@
 
 noinst_LIBRARIES = libDiof.a
 
+if USE_OPENSSL
+TLS_OPENSSL = tls_openssl.c tls_openssl.h
+else
+TLS_OPENSSL =
+endif
+
+if USE_MBEDTLS
+TLS_MBEDTLS = tls_mbedtls.c tls_mbedtls.h
+else
+TLS_MBEDTLS =
+endif
+
+
 libDiof_a_SOURCES = \
 	mime.c \
 	mime.h \
@@ -17,6 +30,8 @@ libDiof_a_SOURCES = \
 	http.c \
 	tls.h \
 	tls.c \
+	$(TLS_OPENSSL) \
+	$(TLS_MBEDTLS) \
 	dpi.c \
 	IO.c \
 	iowatch.cc \

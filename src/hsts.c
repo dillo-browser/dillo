@@ -3,6 +3,7 @@
  * HTTP Strict Transport Security
  *
  * Copyright 2015 corvid
+ * Copyright (C) 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -195,7 +196,7 @@ static void Hsts_eat_value(const char **str)
  */
 void a_Hsts_set(const char *header, const DilloUrl *url)
 {
-   long max_age;
+   long max_age = 0;
    const char *host = URL_HOST(url);
    bool_t max_age_valid = FALSE, subdomains = FALSE;
 

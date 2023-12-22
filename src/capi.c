@@ -2,6 +2,7 @@
  * File: capi.c
  *
  * Copyright 2002-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -454,7 +455,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
                  !dStrAsciiCasecmp(scheme, "https")) {
          /* http request */
 
-#ifndef ENABLE_SSL
+#ifndef ENABLE_TLS
          if (!dStrAsciiCasecmp(scheme, "https")) {
             if (web->flags & WEB_RootUrl)
                a_UIcmd_set_msg(web->bw,
