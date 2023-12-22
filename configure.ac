@@ -79,9 +79,9 @@ AC_ARG_ENABLE([xembed],
   [enable_xembed=yes])
 
 AC_ARG_ENABLE([ssl],
-  [AS_HELP_STRING([--enable-ssl], [Enable TLS support (for HTTPS)])],
+  [AS_HELP_STRING([--disable-ssl], [Disable TLS support (for HTTPS)])],
   [enable_ssl=$enableval],
-  [enable_ssl=no])
+  [enable_ssl=yes])
 
 AC_ARG_WITH([ca-certs-file],
   [AS_HELP_STRING([--with-ca-certs-file=FILE], [Specify where to find a bundle of trusted CA certificates for TLS])],
