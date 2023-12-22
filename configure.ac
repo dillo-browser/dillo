@@ -15,33 +15,82 @@ sysconfdir=${sysconfdir}/${PACKAGE}
 
 dnl Options
 
-AC_ARG_WITH(jpeg-lib, [  --with-jpeg-lib=DIR     Specify where to find libjpeg], LIBJPEG_LIBDIR=$withval)
-AC_ARG_WITH(jpeg-inc, [  --with-jpeg-inc=DIR     Specify where to find libjpeg's headers], LIBJPEG_INCDIR=$withval)
+AC_ARG_WITH([jpeg-lib],
+  [AS_HELP_STRING([--with-jpeg-lib=DIR], [Specify where to find libjpeg])],
+  LIBJPEG_LIBDIR=$withval)
 
-AC_ARG_ENABLE(efence, [  --enable-efence         Try to compile and run with Electric Fence],
-                    , enable_efence=no)
-AC_ARG_ENABLE(gprof,  [  --enable-gprof          Try to compile and run with profiling enabled],
-                    , enable_gprof=no)
-AC_ARG_ENABLE(insure, [  --enable-insure         Try to compile and run with Insure++],
-                    , enable_insure=no)
-AC_ARG_ENABLE(ssl,    [  --enable-ssl            Enable SSL/HTTPS/TLS],
-                    , enable_ssl=no)
-AC_ARG_WITH(ca-certs-file, [  --with-ca-certs-file=FILE  Specify where to find a bundle of trusted CA certificates for TLS], CA_CERTS_FILE=$withval)
-AC_ARG_WITH(ca-certs-dir, [  --with-ca-certs-dir=DIR     Specify where to find a directory containing trusted CA certificates for TLS], CA_CERTS_DIR=$withval)
-AC_ARG_ENABLE(ipv6,   [  --enable-ipv6           Build with support for IPv6], , )
-AC_ARG_ENABLE(cookies,[  --disable-cookies       Don't compile support for cookies],
-                    , enable_cookies=yes)
-AC_ARG_ENABLE(png,    [  --disable-png           Disable support for PNG images],
-              enable_png=$enableval, enable_png=yes)
-AC_ARG_ENABLE(jpeg,   [  --disable-jpeg          Disable support for JPEG images],
-              enable_jpeg=$enableval, enable_jpeg=yes)
-AC_ARG_ENABLE(gif,    [  --disable-gif           Disable support for GIF images],
-              enable_gif=$enableval, enable_gif=yes)
-AC_ARG_ENABLE(threaded-dns,[  --disable-threaded-dns  Disable the advantage of a reentrant resolver library],
-              enable_threaded_dns=$enableval, enable_threaded_dns=yes)
-AC_ARG_ENABLE(rtfl,   [  --enable-rtfl           Build with rtfl messages (for debugging rendering)])
-AC_ARG_ENABLE(xembed,[  --disable-xembed       Don't compile with X11 XEmbed support],
-                    , enable_xembed=yes)
+AC_ARG_WITH([jpeg-inc],
+  [AS_HELP_STRING([--with-jpeg-inc=DIR], [Specify where to find libjpeg headers])],
+  LIBJPEG_INCDIR=$withval)
+
+AC_ARG_ENABLE([efence],
+  [AS_HELP_STRING([--enable-efence], [Try to compile and run with Electric Fence])],
+  [enable_efence=$enableval],
+  [enable_efence=no])
+
+AC_ARG_ENABLE([gprof],
+  [AS_HELP_STRING([--enable-gprof], [Try to compile and run with profiling enabled])],
+  [enable_gprof=$enableval],
+  [enable_gprof=no])
+
+AC_ARG_ENABLE([insure],
+  [AS_HELP_STRING([--enable-insure], [Try to compile and run with Insure++])],
+  [enable_insure=$enableval],
+  [enable_insure=no])
+
+AC_ARG_ENABLE([ipv6],
+  [AS_HELP_STRING([--enable-ipv6], [Build with support for IPv6])],
+  [enable_ipv6=$enableval],
+  [enable_ipv6=no])
+
+AC_ARG_ENABLE([cookies],
+  [AS_HELP_STRING([--disable-cookies], [Dont compile support for cookies])],
+  [enable_cookies=$enableval],
+  [enable_cookies=yes])
+
+AC_ARG_ENABLE([png],
+  [AS_HELP_STRING([--disable-png], [Disable support for PNG images])],
+  [enable_png=$enableval],
+  [enable_png=yes])
+
+AC_ARG_ENABLE([jpeg],
+  [AS_HELP_STRING([--disable-jpeg], [Disable support for JPEG images])],
+  [enable_jpeg=$enableval],
+  [enable_jpeg=yes])
+
+AC_ARG_ENABLE([gif],
+  [AS_HELP_STRING([--disable-gif], [Disable support for GIF images])],
+  [enable_gif=$enableval],
+  [enable_gif=yes])
+
+AC_ARG_ENABLE([threaded-dns],
+  [AS_HELP_STRING([--disable-threaded-dns], [Disable the advantage of a reentrant resolver library])],
+  [enable_threaded_dns=$enableval],
+  [enable_threaded_dns=yes])
+
+AC_ARG_ENABLE([rtfl],
+  [AS_HELP_STRING([--enable-rtfl], [Build with RTFL messages (for debugging rendering)])],
+  [enable_rtfl=$enableval],
+  [enable_rtfl=no])
+
+AC_ARG_ENABLE([xembed],
+  [AS_HELP_STRING([--disable-xembed], [Disable support for X11 XEmbed])],
+  [enable_xembed=$enableval],
+  [enable_xembed=yes])
+
+AC_ARG_ENABLE([ssl],
+  [AS_HELP_STRING([--enable-ssl], [Enable TLS support (for HTTPS)])],
+  [enable_ssl=$enableval],
+  [enable_ssl=no])
+
+AC_ARG_WITH([ca-certs-file],
+  [AS_HELP_STRING([--with-ca-certs-file=FILE], [Specify where to find a bundle of trusted CA certificates for TLS])],
+  CA_CERTS_FILE=$withval)
+
+AC_ARG_WITH([ca-certs-dir],
+  [AS_HELP_STRING([--with-ca-certs-dir=DIR], [Specify where to find a directory containing trusted CA certificates for TLS])],
+  CA_CERTS_DIR=$withval)
+
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
