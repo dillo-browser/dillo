@@ -257,7 +257,7 @@ void a_Tls_openssl_init(void)
    }
 
    /* Create SSL context */
-   ssl_context = SSL_CTX_new(SSLv23_client_method());
+   ssl_context = SSL_CTX_new(TLS_client_method());
    if (ssl_context == NULL) {
       MSG_ERR("Disabling HTTPS: Error creating SSL context.\n");
       return;
