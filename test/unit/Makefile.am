@@ -28,12 +28,6 @@ EXTRA_DIST = \
 
 containers_SOURCES = containers.cc
 notsosimplevector_SOURCES = notsosimplevector.cc
-hyphenation_LDADD = \
-	$(top_builddir)/dw/libDw-widgets.a \
-	$(top_builddir)/dw/libDw-fltk.a \
-	$(top_builddir)/dw/libDw-core.a \
-	$(top_builddir)/lout/liblout.a \
-	@LIBFLTK_LIBS@ @LIBX11_LIBS@
 identity_SOURCES = identity.cc
 cookies_SOURCES = cookies.c
 cookies_LDADD = \
