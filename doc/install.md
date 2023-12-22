@@ -16,14 +16,27 @@ install it:
 
 https://www.fltk.org/doc-1.3/intro.html
 
-Then, to install Dillo:
+Additionally, it is **strongly recommended** that you install a TLS
+library to browse HTTPS pages. Currently, Dillo supports any of the
+following libraries:
+
+ - OpenSSL
+ - mbedTLS 2 or 3
+
+If you don't want to use a TLS library, use the configure option
+`--disable-tls` to disable TLS support. You can use `--disable-openssl`
+and `--disable-mbedtls` to control the search. By default OpenSSL is
+search first, then mbedTLS.
+
+Then, to build and install Dillo:
 
 ### From a release
 
 ```sh
 $ tar jxvf dillo-3.0.5.tar.bz2
 $ cd dillo-3.0.5
-$ ./configure; make
+$ ./configure
+$ make
 $ sudo make install-strip
 ```
 
