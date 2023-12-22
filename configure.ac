@@ -78,10 +78,26 @@ AC_ARG_ENABLE([xembed],
   [enable_xembed=$enableval],
   [enable_xembed=yes])
 
+AC_ARG_ENABLE([tls],
+  [AS_HELP_STRING([--disable-tls], [Disable TLS support (for HTTPS)])],
+  [enable_tls=$enableval],
+  [enable_tls=yes])
+
+dnl Deprecated, if given it will cause an error
 AC_ARG_ENABLE([ssl],
-  [AS_HELP_STRING([--disable-ssl], [Disable TLS support (for HTTPS)])],
+  [AS_HELP_STRING([--disable-ssl], [Disable TLS support (deprecated, use --disable-tls)])],
   [enable_ssl=$enableval],
-  [enable_ssl=yes])
+  [enable_ssl=])
+
+AC_ARG_ENABLE([openssl],
+  [AS_HELP_STRING([--disable-openssl], [Disable support for OpenSSL])],
+  [enable_openssl=$enableval],
+  [enable_openssl=yes])
+
+AC_ARG_ENABLE([mbedtls],
+  [AS_HELP_STRING([--disable-mbedtls], [Disable support for mbedTLS])],
+  [enable_mbedtls=$enableval],
+  [enable_mbedtls=yes])
 
 AC_ARG_WITH([ca-certs-file],
   [AS_HELP_STRING([--with-ca-certs-file=FILE], [Specify where to find a bundle of trusted CA certificates for TLS])],
@@ -90,6 +106,14 @@ AC_ARG_WITH([ca-certs-file],
 AC_ARG_WITH([ca-certs-dir],
   [AS_HELP_STRING([--with-ca-certs-dir=DIR], [Specify where to find a directory containing trusted CA certificates for TLS])],
   CA_CERTS_DIR=$withval)
+
+if test "x$enable_ssl" = "xno"; then
+  AC_MSG_ERROR([The flag --disable-ssl is deprecated, use --disable-tls])
+fi
+dnl Also catch --enable-ssl=maybe
+if test "x$enable_ssl" != "x"; then
+  AC_MSG_ERROR([The flag --enable-ssl is deprecated, use --enable-tls])
+fi
 
 AC_PROG_CC
 AC_PROG_CXX
