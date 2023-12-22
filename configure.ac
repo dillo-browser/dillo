@@ -368,27 +368,72 @@ dnl --------------------------
 dnl  Test for support for SSL/TLS
 dnl --------------------------
 dnl
-if test "x$enable_ssl" = "xyes"; then
-  AC_CHECK_HEADER(mbedtls/ssl.h, ssl_ok=yes, ssl_ok=no,
-                  [#include <mbedtls/platform.h>])
-dnl In mbed TLS 2.3.0, ssl.h needs platform.h but fails to include it.
 
-  if test "x$ssl_ok" = "xyes"; then
-    old_libs="$LIBS"
-    AC_CHECK_LIB(mbedtls, mbedtls_ssl_init, ssl_ok=yes, ssl_ok=no, -lmbedx509 -lmbedcrypto)
-    LIBS="$old_libs"
-  fi
+tls_ok="no"
+tls_impl="none"
+if test "x$enable_tls" = "xyes"; then
+  if test "x$enable_openssl" = "xyes"; then
+    dnl Search for OpenSSL headers first
+    AC_CHECK_HEADER(openssl/ssl.h, openssl_ok=yes, openssl_ok=no)
 
-  if test "x$ssl_ok" = "xyes"; then
-    LIBSSL_LIBS="-lmbedtls -lmbedx509 -lmbedcrypto"
+    dnl If the headers are found, try to link with -lssl and -lcrypto
+    if test "x$openssl_ok" = "xyes"; then
+      old_libs="$LIBS"
+      AC_CHECK_LIB(ssl, SSL_write, openssl_ok=yes, openssl_ok=no, -lcrypto)
+      LIBS="$old_libs"
+    fi
+
+    dnl If all went good, set OpenSSL
+    if test "x$openssl_ok" = "xyes"; then
+      AC_MSG_NOTICE([Using OpenSSL as TLS library.])
+      tls_impl="OpenSSL"
+      AC_DEFINE([HAVE_OPENSSL], [1], [OpenSSL works])
+      LIBSSL_LIBS="-lcrypto -lssl"
+    else
+      AC_MSG_NOTICE([Cannot find OpenSSL, trying mbedTLS...])
+    fi
   else
-    AC_MSG_WARN([*** mbed TLS 2 not found. Disabling SSL/HTTPS/TLS support. ***])
+    AC_MSG_NOTICE([Skipping OpenSSL search, as it is disabled])
+  fi
+
+  dnl Try to find mbedTLS if OpenSSL failed or is disabled
+  if test "x$enable_mbedtls" = "xyes"; then
+    if test "x$openssl_ok" != "xyes"; then
+      dnl In mbed TLS 2.3.0, ssl.h needs platform.h but fails to include it.
+      AC_CHECK_HEADER(mbedtls/ssl.h, mbedtls_ok=yes, mbedtls_ok=no, [#include <mbedtls/platform.h>])
+
+      dnl If the headers are found, try to link with mbedTLS
+      if test "x$mbedtls_ok" = "xyes"; then
+        old_libs="$LIBS"
+        AC_CHECK_LIB(mbedtls, mbedtls_ssl_init, mbedtls_ok=yes, mbedtls_ok=no, -lmbedx509 -lmbedcrypto)
+        LIBS="$old_libs"
+      fi
+
+      dnl If it went good, use it, otherwise disable TLS support
+      if test "x$mbedtls_ok" = "xyes"; then
+        AC_MSG_NOTICE([Using mbedTLS as TLS library.])
+        tls_impl="mbedTLS"
+        AC_DEFINE([HAVE_MBEDTLS], [1], [mbedTLS works])
+        LIBSSL_LIBS="-lmbedtls -lmbedx509 -lmbedcrypto"
+      else
+        AC_MSG_NOTICE([Cannot find mbedTLS])
+      fi
+    fi
+  else
+    AC_MSG_NOTICE([Skipping mbedTLS search, as it is disabled])
+  fi
+
+  dnl Only need one that works
+  if test "x$openssl_ok" = "xyes" -o "x$mbedtls_ok" = "xyes"; then
+    tls_ok="yes"
+    AC_DEFINE([ENABLE_TLS], [1], [Enable TLS support])
+  else
+    AC_MSG_ERROR([No TLS library available])
   fi
 fi
 
-if test "x$ssl_ok" = "xyes"; then
-  AC_DEFINE([ENABLE_SSL], [1], [Enable SSL/HTTPS/TLS support])
-fi
+AM_CONDITIONAL([USE_OPENSSL],  [test "x$openssl_ok" = "xyes"])
+AM_CONDITIONAL([USE_MBEDTLS],  [test "x$mbedtls_ok" = "xyes"])
 
 dnl --------------------------------------------------------------
 dnl Test for iconv functionality in libc or for libiconv usability
