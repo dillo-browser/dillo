@@ -46,6 +46,9 @@ dillo-3.1 [not released yet]
    Patches: Johannes Hofmann
 +- Fix DuckDuckGo search links
  - Add scroll_step option to control the mouse wheel vertical step
+ - Add support for OpenSSL, mbedTLS 2 and mbedTLS 3
+ - Replace configure flag --enable-ssl to --enable-tls
+ - Enable TLS support by default for https.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------
