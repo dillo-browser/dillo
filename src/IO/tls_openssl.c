@@ -491,7 +491,11 @@ static bool_t Tls_check_cert_strength(SSL *ssl, Server_t *srv, int *choice)
          if (print_chain)
             MSG("%s ", buf);
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+         key_type = EVP_PKEY_type(EVP_PKEY_id(public_key));
+#else
          key_type = EVP_PKEY_type(EVP_PKEY_get_id(public_key));
+#endif
          type_str = key_type == EVP_PKEY_RSA ? "RSA" :
                     key_type == EVP_PKEY_DSA ? "DSA" :
                     key_type == EVP_PKEY_DH ? "DH" :
