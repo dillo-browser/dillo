@@ -834,6 +834,7 @@ static int Tls_examine_certificate(SSL *ssl, Server_t *srv)
          ret = 0;
          break;
       case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
+         ; /* Case follows declaration */
          /* Either self signed and untrusted */
          /* Extract CN from certificate name information */
          X509_NAME *subject_name = X509_get_subject_name(remote_cert);
