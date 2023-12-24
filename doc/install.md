@@ -20,7 +20,7 @@ Additionally, it is **strongly recommended** that you install a TLS
 library to browse HTTPS pages. Currently, Dillo supports any of the
 following libraries:
 
- - OpenSSL
+ - OpenSSL 1.1 or 3
  - mbedTLS 2 or 3
 
 If you don't want to use a TLS library, use the configure option
