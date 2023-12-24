@@ -39,8 +39,26 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
-  build-openssl:
+  build-openssl-3:
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install FLTK
+      run: sudo apt install -y libfltk1.3-dev libssl-dev
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-mbedtls
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  build-openssl-1-1:
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
       with:
