@@ -3,13 +3,13 @@ name: CI
 on: [push]
 
 jobs:
-  build-no-tls:
+  ubuntu-latest-no-tls:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
-    - name: Install FLTK
+    - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev
     - name: autogen
       run: ./autogen.sh
@@ -21,13 +21,13 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
-  build-mbedtls2:
+  ubuntu-latest-mbedtls2:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
-    - name: Install FLTK
+    - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev libmbedtls-dev
     - name: autogen
       run: ./autogen.sh
@@ -39,13 +39,13 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
-  build-openssl-3:
+  ubuntu-latest-openssl-3:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
-    - name: Install FLTK
+    - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev libssl-dev
     - name: autogen
       run: ./autogen.sh
@@ -57,14 +57,32 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
-  build-openssl-1-1:
+  ubuntu-20-04-openssl-1-1:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
-    - name: Install FLTK
+    - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev libssl-dev
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-mbedtls
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  macOS-13-openssl-1-1:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: brew install autoconf automake fltk
     - name: autogen
       run: ./autogen.sh
     - name: configure
