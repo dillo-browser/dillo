@@ -91,3 +91,20 @@ Solaris is very inconsistent so you may need to add/remove:
 ```
 
 at link time.
+
+## MacOS
+
+To build Dillo on MacOS you would need to get FLTK as well as
+autoconf and automake if you are building Dillo from the git repository.
+They are available in the brew package manager:
+
+```
+$ brew install autoconf automake fltk
+```
+
+For OpenSSL you can use either 1.1 or 3.X (recommended):
+
+```
+$ brew install openssl@1.1
+$ brew install openssl@3
+```
