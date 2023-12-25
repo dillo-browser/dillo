@@ -6,11 +6,19 @@ AM_TESTS_ENVIRONMENT = env \
 LOG_COMPILER = $(srcdir)/driver.sh
 
 TESTS = \
+	render/b-div.html \
 	render/float-img-justify.html \
 	render/img-aspect-ratio.html \
+	render/max-width-body.html \
+	render/max-width-div.html \
+	render/max-width-html.html \
+	render/max-width-nested-div.html \
+	render/min-width-body.html \
+	render/min-width-div.html \
+	render/min-width-html.html \
+	render/min-width-nested-div.html \
 	render/table-thead-tfoot.html \
-	render/white-space.html \
-	render/b-div.html
+	render/white-space.html
 
 # To be fixed
 XFAIL_TESTS = \

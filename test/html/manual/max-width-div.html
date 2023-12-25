@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test min-width and max-width CSS properties</title>
+    <style>
+      body {margin: 20px}
+      .min {width: 400px; background: lightgreen}
+      .max {width: 600px; background: lightgreen}
+      .test {min-width: 400px; max-width: 600px; background: lightgrey}
+    </style>
+  </head>
+  <body>
+    <div class="min">
+      <p>By resizing the window, the content below in gray should stay
+      within the limits of minimum and maximum width.</p>
+      <p>Minimum width 400 px</p>
+    </div>
+    <div class="test">
+      <p>This is a rather long text to increase the maximal paragraph
+      width. Sed ut perspiciatis, unde omnis iste natus error sit
+      voluptatem accusantium doloremque laudantium, totam rem aperiam
+      eaque ipsa, quae ab illo inventore veritatis et quasi architecto
+      beatae vitae dicta sunt, explicabo. nemo enim ipsam voluptatem,
+      quia voluptas sit, aspernatur aut odit aut fugit, sed quia
+      consequuntur magni dolores eos, qui ratione voluptatem sequi
+      nesciunt, neque porro quisquam est, qui dolorem ipsum, quia dolor
+      sit, amet, consectetur, adipisci velit, sed quia non numquam eius
+      modi tempora incidunt, ut labore et dolore magnam aliquam quaerat
+      voluptatem. ut enim ad minima veniam, quis nostrum exercitationem
+      ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi
+      consequatur?</p>
+    </div>
+    <div class="max"><p>Maximum width 600 px</p></div>
+  </body>
+</html>
