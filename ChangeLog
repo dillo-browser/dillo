@@ -50,6 +50,7 @@ dillo-3.1 [not released yet]
  - Replace configure flag --enable-ssl to --enable-tls
  - Enable TLS support by default for https.
  - Add automatic rendering tests (only enabled with --enable-html-tests).
+ - Fix width calculation when using 'min-width' and 'max-width'.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------
