@@ -427,13 +427,20 @@ fi
 AM_CONDITIONAL([USE_OPENSSL],  [test "x$openssl_ok" = "xyes"])
 AM_CONDITIONAL([USE_MBEDTLS],  [test "x$mbedtls_ok" = "xyes"])
 
-dnl --------------------------------------------------------------
-dnl Test for iconv functionality in libc or for libiconv usability
-dnl --------------------------------------------------------------
+dnl ----------------------------------------------------------------
+dnl Test for iconv implementation first in libiconv and then in libc
+dnl ----------------------------------------------------------------
 AC_CHECK_HEADER(iconv.h, iconv_ok=yes, iconv_ok=no)
 if test "x$iconv_ok" = "xyes"; then
-  AC_CHECK_LIB(c, iconv_open, LIBICONV_LIBS="",
-    AC_CHECK_LIB(iconv, iconv_open, LIBICONV_LIBS="-liconv", iconv_ok=no))
+  dnl First try to link with the libiconv library if available, otherwise
+  dnl fall back to the implementation of libc. It is required to be done
+  dnl in this order because FreeBSD distributes libiconv headers in
+  dnl /usr/include/local/iconv.h, in the same place the headers for FLTK
+  dnl are placed. If we select to link with libc, the headers provided by
+  dnl libiconv will be used while linking with libc. This causes a linkage
+  dnl error.
+  AC_CHECK_LIB(iconv, iconv_open, LIBICONV_LIBS="-liconv",
+    AC_CHECK_LIB(c, iconv_open, LIBICONV_LIBS="", iconv_ok=no))
 fi
 if test "x$iconv_ok" = "xno"; then
   dnl Test for OpenBSD
