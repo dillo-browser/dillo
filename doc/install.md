@@ -70,14 +70,34 @@ will be installed under ~/.dillo).
 
 ## BSD
 
-Dillo compiles on BSD systems; please report on this anyway, and note
-that you'll need GNU make. If your dillo crashes or locks at times, use:
+On FreeBSD 14.0 you can install the required dependencies from ports as:
 
 ```
-$ ./configure --disable-threaded-dns
+$ pkg install -y automake fltk
 ```
 
-So dillo uses a single thread for name resolving.
+Notice that on BSD systems, some required dependencies like FLTK are
+available as ports and are installed in /usr/local (instead of /usr).
+Additionally, the compiler won't look for headers or libraries in
+/usr/local by default (you can check with $CC -v), however the `$PATH`
+may include /usr/local/bin, so the binaries may be available but not the
+headers. Some dependencies like FLTK are searched invoking the
+`fltk-config` command that inform where to find the headers and
+libraries for that package.
+
+Other libraries are searched by attempting to locate the headers and
+libraries directly. By default, the configure script won't look in
+non-default paths of the compiler, so to add /usr/local to the search
+path, invoke the configure script with the following options:
+
+```
+$ ./configure CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib'
+```
+
+Note that you'll need GNU make to build Dillo.
+
+If it crashes or locks at times, use the `--disable-threaded-dns`
+option, so Dillo uses a single thread for name resolution.
 
 ## Solaris
 
