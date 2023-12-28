@@ -143,16 +143,6 @@ dnl -----------------------------------------------------------------
 dnl
 BASE_CUR_WORKING_DIR=`pwd`
 
-dnl --------------------------------------
-dnl Check whether to add /usr/local or not
-dnl (this is somewhat a religious problem)
-dnl --------------------------------------
-dnl
-if test "`$CPP -v < /dev/null 2>&1 | grep '/usr/local/include' 2>&1`" = ""; then
-  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-  LDFLAGS="$LDFLAGS -L/usr/local/lib"
-fi
-
 dnl ------------------------------------
 dnl Check for socket libs (AIX, Solaris)
 dnl ------------------------------------
