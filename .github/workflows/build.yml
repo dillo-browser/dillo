@@ -113,3 +113,26 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
+  freebsd-14-openssl-3:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: FreeBSD VM build
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        release: "14.0"
+        usesh: true
+        prepare: |
+          set -x
+          pkg install -y automake fltk
+        run: |
+          set -x
+          pwd
+          freebsd-version
+          ./autogen.sh
+          ./configure CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib'
+          cat config.log
+          make
+          make check
+          ldd src/dillo
