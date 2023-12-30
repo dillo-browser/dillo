@@ -107,6 +107,12 @@ AC_ARG_WITH([ca-certs-dir],
   [AS_HELP_STRING([--with-ca-certs-dir=DIR], [Specify where to find a directory containing trusted CA certificates for TLS])],
   CA_CERTS_DIR=$withval)
 
+
+AC_ARG_ENABLE([html-tests],
+  [AS_HELP_STRING([--enable-html-tests], [Enable HTML tests (requires xvfb, xwd and imagemagick)])],
+  [enable_html_tests=$enableval],
+  [enable_html_tests=no])
+
 if test "x$enable_ssl" = "xno"; then
   AC_MSG_ERROR([The flag --disable-ssl is deprecated, use --disable-tls])
 fi
@@ -550,6 +556,37 @@ pthread_ok=yes, pthread_ok=no)
 esac
 fi
 
+dnl ----------
+dnl HTML tests
+dnl ----------
+dnl
+html_tests_ok=no
+if test "x$enable_html_tests" = "xyes" ; then
+  html_tests_ok=yes
+  AC_CHECK_PROG(xvfb_ok, Xvfb, yes, no)
+  AC_CHECK_PROG(xwd_ok, xwd, yes, no)
+  AC_CHECK_PROG(xwininfo_ok, xwininfo, yes, no)
+  AC_CHECK_PROG(convert_ok, convert, yes, no)
+
+  if test "x$xvfb_ok" != "xyes"; then
+    html_tests_ok=no
+  fi
+  if test "x$xwd_ok" != "xyes"; then
+    html_tests_ok=no
+  fi
+  if test "x$xwininfo_ok" != "xyes"; then
+    html_tests_ok=no
+  fi
+  if test "x$convert_ok" != "xyes"; then
+    html_tests_ok=no
+  fi
+  if test "x$html_tests_ok" != "xyes"; then
+    AC_MSG_ERROR([Cannot find all tools to enable HTML tests])
+  fi
+fi
+
+AM_CONDITIONAL([ENABLE_HTML_TESTS],  [test "x$html_tests_ok" = "xyes"])
+
 dnl --------------------
 dnl Command line options
 dnl --------------------
@@ -654,6 +691,7 @@ AC_CONFIG_FILES([
     test/Makefile
     test/unit/Makefile
     test/dw/Makefile
+    test/html/Makefile
 ])
 
 AC_OUTPUT
@@ -674,4 +712,6 @@ _AS_ECHO([  RTFL enabled   : ${enable_rtfl}])
 _AS_ECHO([  JPEG enabled   : ${jpeg_ok}])
 _AS_ECHO([  PNG enabled    : ${png_ok}])
 _AS_ECHO([  GIF enabled    : ${enable_gif}])
+_AS_ECHO([])
+_AS_ECHO([  HTML tests     : ${html_tests_ok}])
 _AS_ECHO([])

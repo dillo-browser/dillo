@@ -49,6 +49,7 @@ dillo-3.1 [not released yet]
  - Add support for OpenSSL 1.1, OpenSSL 3, mbedTLS 2 and mbedTLS 3
  - Replace configure flag --enable-ssl to --enable-tls
  - Enable TLS support by default for https.
+ - Add automatic rendering tests (only enabled with --enable-html-tests).
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------

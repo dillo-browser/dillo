@@ -136,3 +136,38 @@ jobs:
           make
           make check
           ldd src/dillo
+  ubuntu-latest-html-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libssl-dev xvfb x11-apps x11-utils imagemagick
+
+    - name: autogen
+      run: ./autogen.sh
+    - name: Make install dir
+      run: mkdir install
+    - name: configure
+      run: ./configure --prefix=$(readlink -f install) --enable-html-tests
+    - name: make
+      run: make
+    - name: make install
+      run: make install
+    - name: Copy config to .dillo
+      run: |
+        mkdir -p ~/.dillo/
+        cp install/etc/dillo/* ~/.dillo/
+    - name: make check
+      run: |
+        export DILLOBIN=$(readlink -f install/bin/dillo)
+        make check || (cat test/html/test-suite.log; false)
+#   - name: Remove pipes
+#     run: find test/html -type p -delete || true
+#   - name: Archive production artifacts
+#     uses: actions/upload-artifact@v3
+#     with:
+#       name: upload-html-test-results
+#       path: |
+#         build/test/html
