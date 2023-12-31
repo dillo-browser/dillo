@@ -3,139 +3,6 @@ name: CI
 on: [push]
 
 jobs:
-  ubuntu-latest-no-tls:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-tls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  ubuntu-latest-mbedtls2:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libmbedtls-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-openssl
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  ubuntu-latest-openssl-3:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-mbedtls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  ubuntu-20-04-openssl-1-1:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-mbedtls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  macOS-13-openssl-1-1:
-    runs-on: macos-13
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: brew install autoconf automake fltk
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-mbedtls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  macOS-13-openssl-3:
-    runs-on: macos-13
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Remove old OpenSSL 1.1
-      run: brew uninstall openssl@1.1
-    - name: Install dependencies
-      run: brew install autoconf automake fltk openssl@3
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-mbedtls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  freebsd-14-openssl-3:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: FreeBSD VM build
-      id: test
-      uses: vmactions/freebsd-vm@v1
-      with:
-        release: "14.0"
-        usesh: true
-        prepare: |
-          set -x
-          pkg install -y automake fltk
-        run: |
-          set -x
-          pwd
-          freebsd-version
-          ./autogen.sh
-          ./configure CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib'
-          cat config.log
-          make
-          make check
-          ldd src/dillo
   ubuntu-latest-html-tests:
     runs-on: ubuntu-latest
     steps:
@@ -171,3 +38,143 @@ jobs:
 #       name: upload-html-test-results
 #       path: |
 #         build/test/html
+  ubuntu-latest-no-tls:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-tls
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  ubuntu-latest-mbedtls2:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libmbedtls-dev
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-openssl
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  ubuntu-latest-openssl-3:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libssl-dev
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-mbedtls
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  ubuntu-20-04-openssl-1-1:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libssl-dev
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-mbedtls
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  macOS-13-openssl-1-1:
+    needs: ubuntu-latest-html-tests
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: brew install autoconf automake fltk
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-mbedtls
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  macOS-13-openssl-3:
+    needs: ubuntu-latest-html-tests
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Remove old OpenSSL 1.1
+      run: brew uninstall openssl@1.1
+    - name: Install dependencies
+      run: brew install autoconf automake fltk openssl@3
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-mbedtls
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+  freebsd-14-openssl-3:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: FreeBSD VM build
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        release: "14.0"
+        usesh: true
+        prepare: |
+          set -x
+          pkg install -y automake fltk
+        run: |
+          set -x
+          pwd
+          freebsd-version
+          ./autogen.sh
+          ./configure CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib'
+          cat config.log
+          make
+          make check
+          ldd src/dillo
