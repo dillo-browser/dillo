@@ -872,6 +872,16 @@ void Widget::correctExtremes (Extremes *extremes, bool useAdjustmentWidth)
    DBG_OBJ_LEAVE_VAL ("%d / %d", extremes->minWidth, extremes->maxWidth);
 }
 
+/** Computes a width value in pixels from cssValue.
+ *
+ * If cssValue is absolute, the absolute value is used.
+ * If cssValue is relative, then it is applied to refWidth.
+ * Otherwise, -1 is used.
+ *
+ * In any case, the returned value is clamped so that is not smaller
+ * than limitMinWidth.
+ *
+ */
 int Widget::calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
                        int limitMinWidth, bool forceValue)
 {
@@ -912,6 +922,10 @@ int Widget::calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
 }
 
 // *finalWidth may be -1.
+/*
+ * If style has minWidth or maxWidth set, the returned value in
+ * *finalWidth is constrained to not exceed any of the set limits.
+ * */
 void Widget::calcFinalWidth (style::Style *style, int refWidth,
                              Widget *refWidget, int limitMinWidth,
                              bool forceValue, int *finalWidth)
@@ -931,9 +945,12 @@ void Widget::calcFinalWidth (style::Style *style, int refWidth,
    
    if (width != -1)
       *finalWidth = width;
-   if (minWidth != -1 && *finalWidth != -1 && *finalWidth < minWidth)
+
+   /* Set the width if the min or max value is set and finalWidth is
+    * still -1 or exceeds the limit */
+   if (minWidth != -1 && (*finalWidth == -1 || *finalWidth < minWidth))
       *finalWidth = minWidth;
-   if (maxWidth != -1 && *finalWidth == -1 && *finalWidth > maxWidth)
+   if (maxWidth != -1 && (*finalWidth == -1 || *finalWidth > maxWidth))
       *finalWidth = maxWidth;
 
    DBG_OBJ_LEAVE_VAL ("%d", *finalWidth);
