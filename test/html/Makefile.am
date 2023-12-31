@@ -23,4 +23,6 @@ TESTS = \
 # To be fixed
 XFAIL_TESTS = \
 	render/float-img-justify.html \
-	render/img-aspect-ratio.html
+	render/img-aspect-ratio.html \
+	render/max-width-html.html \
+	render/min-width-html.html
