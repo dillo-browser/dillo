@@ -46,7 +46,7 @@ jpeg.c and png.c)
 
    5.- The dpi framework: a gateway to interface the browser with
 external programs (Example: the bookmarks server plugin).
-Dpi spec: http://www.dillo.org/dpi1.html
+Dpi spec: https://dillo-browser.github.io/old/dpi1.html
 
 
                       -------------------------

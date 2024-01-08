@@ -752,7 +752,7 @@ Length StyleImage::ExternalWidgetImgRenderer::getBackgroundPositionY ()
  * use a trapezium as draw polygon, or drawTypedLine() for dots and dashes.
  * Although the concept is simple, achieving pixel accuracy is laborious [1].
  *
- * [1] http://www.dillo.org/css_compat/tests/border-style.html
+ * [1] https://dillo-browser.github.io/old/css_compat/tests/border-style.html
  */
 static void drawBorderTop(View *view, Style *style,
                           int x1, int y1, int x2, int y2)

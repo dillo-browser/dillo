@@ -273,7 +273,7 @@ static void Menu_bugmeter_validate_wdg_cb(Fl_Widget*, void*)
  */
 static void Menu_bugmeter_about_cb(Fl_Widget*, void*)
 {
-   a_UIcmd_open_urlstr(popup_bw, "http://www.dillo.org/help/bug_meter.html");
+   a_UIcmd_open_urlstr(popup_bw, "https://dillo-browser.github.io/old/help/bug_meter.html");
 }
 
 /*

@@ -16,7 +16,7 @@ Nomenclature:
 
   dpi1:
     specific term for dillo's plugin spec version 1.
-    at: http://www.dillo.org/dpi1.html
+    at: https://dillo-browser.github.io/old/dpi1.html
 
   dpi program:
     any plugin program itself.

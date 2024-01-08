@@ -637,7 +637,7 @@ void Textblock::sizeAllocateImpl (core::Allocation *allocation)
             */
             /* align=bottom (base line) */
             /* Commented lines break the n2 and n3 test cases at
-             * http://www.dillo.org/test/img/ */
+             * https://dillo-browser.github.io/old/test/img/ */
             childAllocation.y = lineYOffsetCanvas (line, allocation)
                + (line->borderAscent - word->size.ascent);
 

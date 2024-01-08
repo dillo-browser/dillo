@@ -42,8 +42,8 @@ handling  of data and its error control was put under the control
 of the CCC (Concomitant Control Chain), and the old widget system
 was  replaced  with  a new one (Dw). The source code is currently
 regarded   as   "very   stable   beta",   and   is  available  at
-<http://www.dillo.org>. Dillo is a project licensed under the GNU
-General Public License.
+<https://github.com/dillo-browser/dillo>. Dillo is a project
+licensed under the GNU General Public License.
 
    This  paper covers basic design aspects of the hybrid approach
 that  the  Dillo  web  browser  uses  to  solve  several  latency

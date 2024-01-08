@@ -3,8 +3,8 @@ Dillo project
 =============================================================================
 
 Here we list changes that are relatively significant and/or visible to the
-user. For a history of changes in full detail, see our Mercurial repository
-at http://hg.dillo.org/dillo
+user. For a history of changes in full detail, see our Git repository
+at https://github.com/dillo-browser/dillo
 
 
 dillo-3.1 [not released yet]
@@ -51,6 +51,7 @@ dillo-3.1 [not released yet]
  - Enable TLS support by default for https.
  - Add automatic rendering tests (only enabled with --enable-html-tests).
  - Fix width calculation when using 'min-width' and 'max-width'.
+ - Update website URL to https://dillo-browser.github.io/
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------
