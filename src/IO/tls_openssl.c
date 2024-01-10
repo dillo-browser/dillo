@@ -375,7 +375,8 @@ int a_Tls_openssl_connect_ready(const DilloUrl *url)
    Server_t *s;
    int ret = TLS_CONNECT_READY;
 
-   dReturn_val_if_fail(ssl_context, TLS_CONNECT_NEVER);
+   if (ssl_context == NULL)
+      return TLS_CONNECT_NEVER;
 
    if ((s = dList_find_sorted(servers, url, Tls_servers_by_url_cmp))) {
       if (s->cert_status == CERT_STATUS_RECEIVING)
@@ -580,7 +581,8 @@ static bool_t pattern_match (const char *pattern, const char *string)
 static bool_t Tls_check_cert_hostname(X509 *cert, const char *host,
                                       int *choice)
 {
-   dReturn_val_if_fail(cert && host, FALSE);
+   if (cert == NULL || host == NULL)
+      return FALSE;
 
    char *msg;
    GENERAL_NAMES *subjectAltNames;
