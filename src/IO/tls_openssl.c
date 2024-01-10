@@ -8,7 +8,7 @@
  * (for the certificate hostname checking from wget)
  * Copyright (C) 2011 Benjamin Johnson <obeythepenguin@users.sourceforge.net>
  * (for the https code offered from dplus browser that formed the basis...)
- * Copyright (C) 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <openssl/x509v3.h>    /* for hostname checking */
+#include <openssl/crypto.h>    /* OpenSSL_version */
 
 #define CERT_STATUS_NONE 0
 #define CERT_STATUS_RECEIVING 1
@@ -246,6 +247,7 @@ static void Tls_load_certificates()
  */
 void a_Tls_openssl_init(void)
 {
+   MSG("TLS library: %s\n", OpenSSL_version(OPENSSL_VERSION));
    SSL_library_init();
    SSL_load_error_strings();
    if (RAND_status() != 1) {

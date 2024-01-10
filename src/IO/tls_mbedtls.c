@@ -4,7 +4,7 @@
  * Copyright (C) 2011 Benjamin Johnson <obeythepenguin@users.sourceforge.net>
  * (for the https code offered from dplus browser that formed the basis...)
  * Copyright 2016 corvid
- * Copyright (C) 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@
 #include <mbedtls/error.h>
 #include <mbedtls/oid.h>
 #include <mbedtls/x509.h>
+#include <mbedtls/version.h>
 #if MBEDTLS_VERSION_NUMBER < 0x03000000
 #include <mbedtls/net.h>    /* net_send, net_recv */
 #else
@@ -354,6 +355,9 @@ static void Tls_remove_psk_ciphersuites()
 void a_Tls_mbedtls_init(void)
 {
    int ret;
+   char version[128];
+   mbedtls_version_get_string_full(version);
+   MSG("TLS library: %s\n", version);
 
     /* As of 2.3.0 in 2016, the 'default' profile allows SHA1, RIPEMD160,
      * and SHA224 (in addition to the stronger ones), and the 'next' profile
