@@ -246,6 +246,18 @@ int CustTabs::handle(int e)
          a_Timeout_add(0.0, a_UIcmd_close_all_bw, NULL);
          ret = 1;
       }
+   } else if (e == FL_MOUSEWHEEL) {
+      /* Move to the next or previous tab using the mouse wheel */
+      int dx = Fl::event_dx();
+      int dy = Fl::event_dy();
+      int dir = dy ? dy : dx;
+
+      if (dir > 0)
+         next_tab();
+      else if (dir < 0)
+         prev_tab();
+
+      ret = 1;
    }
 
    return (ret) ? ret : Fl_Group::handle(e);
