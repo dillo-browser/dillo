@@ -1087,6 +1087,8 @@ static void Tls_connect(int fd, int connkey)
 
    ret = SSL_connect(conn->ssl);
 
+   a_IOwatch_remove_fd(fd, -1);
+
    if (ret <= 0) {
       int err1_ret = SSL_get_error(conn->ssl, ret);
       if (err1_ret == SSL_ERROR_WANT_READ ||
@@ -1095,7 +1097,6 @@ static void Tls_connect(int fd, int connkey)
 
          _MSG("iowatching fd %d for tls -- want %s\n", fd,
              err1_ret == SSL_ERROR_WANT_READ ? "read" : "write");
-         a_IOwatch_remove_fd(fd, -1);
          a_IOwatch_add_fd(fd, want, Tls_connect_cb, INT2VOIDP(connkey));
          ongoing = TRUE;
          failed = FALSE;
