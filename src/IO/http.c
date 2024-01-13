@@ -2,6 +2,7 @@
  * File: http.c
  *
  * Copyright (C) 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -866,8 +867,11 @@ static void Http_socket_reuse(int SKey)
             return;
          }
       }
-      dClose(old_sd->SockFD);
+      /* Free the connection before closing the file descriptor, so more data
+       * can be written. */
+      int old_fd = old_sd->SockFD;
       Http_socket_free(SKey);
+      dClose(old_fd);
    }
 }
 
