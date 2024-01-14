@@ -80,6 +80,7 @@ typedef struct {
    DilloUrl *url;
    SSL *ssl;
    bool_t connecting;
+   bool_t in_connect;
 } Conn_t;
 
 /* List of active TLS connections */
@@ -166,6 +167,7 @@ static int Tls_conn_new(int fd, const DilloUrl *url, SSL *ssl)
    conn->url = a_Url_dup(url);
    conn->ssl = ssl;
    conn->connecting = TRUE;
+   conn->in_connect = FALSE;
 
    key = a_Klist_insert(&conn_list, conn);
 
@@ -1076,6 +1078,13 @@ static void Tls_connect(int fd, int connkey)
       return;
    }
 
+   if (conn->in_connect) {
+      MSG("Tls_connect: nested call to Tls_connect(), aborting\n");
+      abort();
+   } else {
+      conn->in_connect = TRUE;
+   }
+
    if (ERR_peek_error()) {
       unsigned long err;
       while ((err = ERR_get_error())) {
@@ -1169,6 +1178,8 @@ static void Tls_connect(int fd, int connkey)
          MSG("Connection disappeared. Too long with a popup popped up?\n");
       }
    }
+
+   conn->in_connect = FALSE;
 }
 
 static void Tls_connect_cb(int fd, void *vconnkey)
