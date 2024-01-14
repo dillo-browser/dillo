@@ -1076,7 +1076,14 @@ static void Tls_connect(int fd, int connkey)
       return;
    }
 
-   assert(!ERR_get_error());
+   if (ERR_peek_error()) {
+      unsigned long err;
+      while ((err = ERR_get_error())) {
+         MSG("Tls_connect: queued error: %s\n",
+               ERR_error_string(err, NULL));
+      }
+      abort();
+   }
 
    ret = SSL_connect(conn->ssl);
 
@@ -1184,7 +1191,14 @@ void a_Tls_openssl_connect(int fd, const DilloUrl *url)
       success = FALSE;
    }
 
-   assert(!ERR_get_error());
+   if (ERR_peek_error()) {
+      unsigned long err;
+      while ((err = ERR_get_error())) {
+         MSG("a_Tls_openssl_connect: queued error: %s\n",
+               ERR_error_string(err, NULL));
+      }
+      abort();
+   }
 
    if (success && !(ssl = SSL_new(ssl_context))) {
       unsigned long err_ret = ERR_get_error();
