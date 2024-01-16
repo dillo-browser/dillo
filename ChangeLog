@@ -54,6 +54,8 @@ dillo-3.1 [not released yet]
  - Update website URL to https://dillo-browser.github.io/
  - Add ui_tab_height option to control the tab height. Default value increased
    from 16 to 20 pixels to improve usability.
+ - Switch tabs using the mouse wheel by default. Use the new option
+   scroll_switches_tabs to disable the behavior.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------
