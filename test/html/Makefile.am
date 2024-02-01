@@ -9,6 +9,7 @@ TESTS = \
 	render/b-div.html \
 	render/float-img-justify.html \
 	render/img-aspect-ratio.html \
+	render/margin-auto.html \
 	render/max-width-body.html \
 	render/max-width-div.html \
 	render/max-width-html.html \
@@ -24,5 +25,6 @@ TESTS = \
 XFAIL_TESTS = \
 	render/float-img-justify.html \
 	render/img-aspect-ratio.html \
+	render/margin-auto.html \
 	render/max-width-html.html \
 	render/min-width-html.html
