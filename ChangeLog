@@ -64,6 +64,7 @@ dillo-3.1 [not released yet]
  - Add support for the <main> HTML tag.
  - Fix W3C validator and remove broken WDG validator.
  - Simplify bookmark DPI page style and improve readability.
+ - Improve the Dillo manual available from the help button.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------

@@ -1,366 +1,791 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
-
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <title> Dillo Web Browser ::
-
-  Help for New Users
-
-</title>
+  <title>Dillo User Manual</title>
+    <style type="text/css">
+body {
+  background: white;
+  color: black;
+  line-height: 1.5;
+  margin: 3em;
+  font-family: sans-serif;
+  font-size: 16px;
+}
+.main {
+  margin: 0 auto; /* won't work on Dillo, yet */
+  max-width: 40em;
+  min-width: 20em;
+}
+ul.toc {
+  font-size: 14px;
+  padding: 1em;
+}
+ul.toc li {
+  padding: 0px;
+}
+h1 {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em
+}
+h2 {
+  padding: 0.5em;
+  margin-top: 1em;
+  text-align: center;
+}
+h3 {
+  border-top: 1px solid #eee;
+  padding-top: 1em;
+}
+pre {
+  border-left: 4px solid #ccc;
+  padding: 0.5em;
+  background-color: #f8f8f8;
+  font-size: 14px;
+}
+ul {
+  margin-left: 0px;
+  padding-left: 1.5em;
+}
+li {
+  padding: 0.2em;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,td {
+  padding: 0.25em;
+  border-spacing: 0px;
+  border-top: solid 1px #ccc;
+  border-bottom: solid 1px #ccc;
+}
+th {
+  background-color: #eee;
+}
+footer {
+  color: #777;
+  margin: 2em;
+  font-size: 14px;
+  text-align: center;
+}
+  </style>
 </head>
 
-<body text="#0f0f0f" link="#2020e0" vlink="#403090" bgcolor="#607cf8">
+<body>
+<div class="main">
+<h1>Dillo User Manual</h1>
 
-  <table width="100%" bgcolor="#8080f0" cellspacing="4" cellpadding="5"
-   border="0o">
-   <tr><td><big><font color="#302080">Welcome to Dillo 3</font></big>
-  </table>
-  <p>
+<p>Welcome to the user manual of the Dillo browser. The manual is divided into
+<em>sections</em> but is written in a <em>single page</em> to allow search by
+keywords.</p>
 
-  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-    <h4><font color="green">Basics:</font></h4>
-    </td></tr>
-
-    <tr><td WIDTH="100%" bgcolor="#70a0c0">
+<details><!-- Not supported in Dillo, but decays ok -->
+<summary class="toc">Table of contents:</summary>
+<ul class="toc">
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#reading">Reading</a>
     <ul>
-      <li>You can tell a link from plain content by the hand-shaped cursor.
-
-      <li> Besides browsing the web, Dillo also has basic file browsing
-           capabilities included. So, entering <code>file:</code> in your
-           Dillo URL window will give you the contents of your current
-           working directory, and <code>file:~</code> entered in the
-           same place will point your Dillo browser right to your home
-           directory...
-
-      <li> Dillo, at this stage of development, is not ready
-           to render pages that use <b><font color="#5040a0">frames</font></b>.
-           Nevertheless, it comes with a tiny handler (lynx/w3m-like) that will
-           let you choose which frame to visit, one by one.
-
-      <li> Dillo has <b><font color="#5040a0">context
-           sensitive menus</font></b> using the right  mouse  button
-           (available on pages, links, images, forms, the Back
-           and Forward buttons, and the bug meter).
-
-      <li> Some  of the functions in Dillo are handled by independent
-           processes.  For  instance,  downloads come through
-           <em><a href="http://www.gnu.org/software/wget/">wget</a></em>.
-           If Dillo exits, the downloads continue (more details
-           below).
-
-
+      <li><a href="#basics">Basics</a></li>
+      <li><a href="#scrolling">Scrolling</a></li>
+      <li><a href="#find-text">Find text</a></li>
+      <li><a href="#copy-and-paste">Copy and paste</a></li>
     </ul>
-    </td></tr>
-  </table>
-
-  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-    <h4><font color="green">Usage:</font></h4>
-    </td></tr>
-
-    <tr><td BGCOLOR="#70a0c0">
+  </li>
+  <li><a href="#navigation">Navigation</a>
     <ul>
-      <li> You can scroll around your Dillo main window using
-           {PgUp|PgDn|Home|End} or using the mouse middle button
-           or mouse wheel. If nothing happens when keys are pressed, try
-           <b> <font color="#5040a0">focusing</font></b> your Dillo main
-           window first by clicking it (not on any link!:)).
-
-      <li>You can use the space key as PgDn, and {'b' | 'B'} as PgUp.</li>
-
-      <li> Similarly, you can use "<b>,</b>" and "<b>.</b>" as shortcuts for
-           forward and backward buttons (mnemonic: those
-           keys are usually labeled "<" and ">").
-
-      <li> <b>Configuration:</b> If you want to change Dillo's
-           appearance or behaviour, look at the options in your
-           <b><font color="#5040a0">dillorc</font></b>
-           file (if you don't have a copy in your ~/.dillo/ directory, get it
-           <a href='https://raw.githubusercontent.com/dillo-browser/dillo/master/dillorc'>here</a>).
-
-      <li> Clicking the "Reload" button always requests an end-to-end reload
-           of the page currently viewed, but it will *not* reload embedded
-           images during this process.
-
-      <li> Dialogs can be closed with the ESC key.
-           (ESC also hides the findbar and control panels)
-
-      <li> If you want to try a different control panel, right-click over the
-           tools button and select one that suits your needs, then make
-           it the default in your <code>dillorc</code> file.
-
-      <li> The whole window area can be used to display the page (ESC key).
-
+      <li><a href="#hyperlinks">Hyperlinks</a></li>
+      <li><a href="#history">History</a></li>
+      <li><a href="#location-bar">Location bar</a></li>
+      <li><a href="#web-search">Web search</a></li>
+      <li><a href="#tabs">Tabs</a></li>
+      <li><a href="#bookmarks">Bookmarks</a></li>
     </ul>
-    </td></tr>
-  </table>
-
-  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-    <h4><font color="green">Downloads:</font></h4>
-    </td></tr>
-
-    <tr><td BGCOLOR="#70a0c0">
-    <p>
-    Downloads are made using
-    <b><font color="#5040a0">
-    <a href="http://www.gnu.org/software/wget/">wget</a></font></b>
-    with a <a href="http://www.fltk.org">FLTK</a>-based GUI wrapper, through
-    the Dillo plugin (dpi) framework.
-    If you close the browser window, downloads will continue.
-    <p>
-    </td></tr>
-  </table>
-
-  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-    <h4><font color="green">Find text:</font></h4>
-    </td></tr>
-
-    <tr><td bgcolor="#70a0c0">
-    <p>
-    This one is very useful; it can be found in the right-mouse-button menu.
-    Find text is tuned for speed, so don't hesitate to use it even for minimal
-    searches.
-    <p>
-    <u>Semantics:</u>
+  </li>
+  <li><a href="#privacy-and-network">Privacy and Network</a>
     <ul>
-      <li> You can search for substrings, words and sentences. </li>
-      <li> To find a substring or word, just enter its text. </li>
-      <li> To find a left-aligned substring, prepend it with a space. </li>
-      <li> To find a right-aligned substring, append a space to it.</li>
-      <li> To find full words only, prepend and append spaces to them. </li>
-      <li> To find a sentence, enter the words and remember that
-           the above rules apply for every word in it. </li>
+      <li><a href="#https">HTTPS</a></li>
+      <li><a href="#cookies">Cookies</a></li>
+      <li><a href="#proxy">Proxy</a></li>
+      <li><a href="#ad-blocking">Ad-blocking</a></li>
+      <li><a href="#downloads">Downloads</a></li>
+      <li><a href="#images-off-mode">Images-off mode</a></li>
     </ul>
-    <p>
-    Dillo will scroll the page and highlight found text.
-    <p>
-    <small>Default shortcut: [CTRL]+"F".</small>
-
-    </td></tr>
-  </table>
-
-  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-    <h4><font color="green">Copy&amp;Paste:</font></h4>
-    </td></tr>
-
-    <tr><td bgcolor="#70a0c0">
-    <p>
-    Just hold down the left mouse button and move to select the
-    area to copy. To paste, go to the target application and
-    press the middle mouse button.
-    <p>
-    If you want to select more than one screen, hold the mouse button
-    down and scroll with PgUp, PgDn or the arrow keys.
-    <P>
-    If you want to paste an URL into Dillo, do it on the "clear-URL"
-    button (the "X" next to the location bar).
-    <p>
-    Note: If it doesn't work, please try again. There's a bug lurking there.
-    </td></tr>
-  </table>
-
-  <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-    <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-    <h4><font color="green">Navigation history:</font></h4>
-    </td></tr>
-
-    <tr><td bgcolor="#70a0c0">
-    <p>
-    Currently, navigation history supports the navigation-stack model; just
-    right-click on the Back or Forward buttons and they will pop up!
-    <p> <u>Remember:</u>
+  <li><a href="#configuration">Configuration</a>
     <ul>
-      <li> These history menus are relative to the current page. </li>
-      <li> They show the page-title but the status bar shows the URL. </li>
-      <li> Left-click jumps to the selected item. </li>
-      <li> Middle-click opens the item in a new browser tab/window. </li>
+      <li><a href="#dillorc">Dillorc</a></li>
+      <li><a href="#cookiesrc">Cookiesrc</a></li>
+      <li><a href="#domainrc">Domainrc</a></li>
+      <li><a href="#style-css">Style.css</a></li>
+      <li><a href="#dpidrc">Dpidrc</a></li>
+      <li><a href="#bm-txt">bm.txt</a></li>
+      <li><a href="#keysrc">Keysrc</a></li>
     </ul>
-    </td></tr>
- </table>
+  </li>
+  <li><a href="#advanced-usage">Advanced usage</a>
+    <ul>
+      <li><a href="#plugins">Plugins</a></li>
+      <li><a href="#bug-meter">Bug meter</a></li>
+      <li><a href="#keyboard-shortcuts">Keyboard shortcuts</a></li>
+    </ul>
+  </li>
+</ul>
+</details> 
 
- <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-   <h4><font color="green">Cookies:</font></h4>
-   </td></tr>
+<h2 id="introduction">Introduction</h2>
+<p>Dillo is a web browser designed to be fast, use few resources and support
+slow and unreliable Internet connections on resource-constrained machines. It
+can load local and remote files via HTTP, HTTPS and FTP. Other protocols like
+Gemini, Gopher, IPFS and others are available as 
+<a href="#plugins">plugins</a>.</p>
 
-   <tr><td bgcolor="#70a0c0">
-   <p>
-   Due to privacy concerns, cookies are disabled by default.
-   That is, if you just compile and use dillo, it will reject
-   every single cookie sent to it!
-   <p>
-   If you want to enable cookies in dillo, please read
-   <a href="Cookies.txt">Cookies.txt</a>. It's very easy --
-   just a matter of setting up a <code>cookiesrc</code> file).
-   </td></tr>
- </table>
+<p>Dillo supports a subset of HTML 4.01 and CSS 2.1 but it <b>doesn't support
+JavaScript</b> and only implements some elements of HTML 5 and CSS 3. It also
+renders plain text documents and images in PNG, JPG and GIF formats.</p>
 
- <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-   <h4><font color="green">Ad blocking:</font></h4>
-   </td></tr>
+<h2 id="reading">Reading</h2>
+<p>In this section we cover the basics to read a web page, scrolling and finding
+or copying text.</p>
+<h3 id="basics">Basics</h3>
+<p>
+The graphical interface is designed to be used with a mouse or pointing
+device. In the top of the browser window you have the location bar and the main
+buttons to control the browser. You can leave the mouse for a brief moment over
+any part of the menu to show a tooltip with more information.
+<p>
+Dillo has <em>context sensitive menus</em>, which are opened with the right mouse
+button, available on pages, links, images, forms, the Back and Forward buttons,
+and the bug meter. They show different actions to be performed specific to the
+element. For example, to save a page you can right-click on the page and select
+"Save page as...". Or to copy a link URL you can right-click on a link and
+select "Copy link location".
+<p>
+Dillo can hide the pannels and use the whole window area to display the page. To
+switch between modes use the ESC key. You can also choose the control panel size
+by going to the Tools button and selecting a different one under "Panel size".
+<p>
+If you need to access this manual again press the top right "?" button to open
+it. It doesn't require a network connection.
 
-   <tr><td bgcolor="#70a0c0">
-   <p>
-   With a
-   <code>~/.dillo/<a href="https://raw.githubusercontent.com/dillo-browser/dillo/master/src/domainrc">domainrc</a></code>
-   file, you can control how dillo handles automatic requests for resources
-   (like images and style sheets) that aren't at the same domain as the
-   original page.
-   </td></tr>
- </table>
+<h3 id="scrolling">Scrolling</h3>
 
- <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-   <h4><font color="green">Tabs:</font></h4>
-   </td></tr>
+<p>There are several methods to move or scroll the view of the current page.</p>
 
-   <tr><td bgcolor="#70a0c0">
-   <p>
-   Dillo has tabbed browsing. Just middle click to open a link or submit a
-   form in a new tab. It will be automatically focused. If you want to
-   customize this behaviour, adjust these dillorc options:
-   <ul>
-    <li><code>middle_click_opens_new_tab</code>
-    <li><code>focus_new_tab</code>
-   </ul>
-   Press SHIFT to temporarily reverse the focusing behaviour.
-   <p>
-   You can <b><font color="#5040a0">close</font></b>
-   a tab with middle-click on its label (the default),
-   or with right-click by setting this dillorc option:
-   <ul><li><code>right_click_closes_tab</code></ul>
-   </td></tr>
- </table>
+<ul>
+  <li>Using the <em>keyboard</em>:
+    <ul>
+      <li>Use the <code>Home</code> or <code>End</code> keys to jump to the top
+        or to the end of a page.</li>
+      <li>Use <code>PgUp</code> or <code>PgDn</code> to advance a whole
+        <em>page</em> (window size).</li>
+      <li>Use the arrow keys to move the view a <em>step</em> in that
+        direction.</li>
+      <li>You can also use the <code>Space</code> key as <code>PgDn</code> and
+        <code>b</code> as PgUp.</li>
+    </ul>
+  </li>
+  <li>Using the <em>mouse</em> or <em>pointing device</em>:
+    <ul>
+      <li>Rotate the mouse wheel to move one <em>step</em> in that direction.
+      <li>Keep the middle button (or mouse wheel button) pressed while
+        dragging to scroll the page precisely.
+    </ul>
+  </li>
+  <li>Using the <em>scrollbar</em>:
+    <ul>
+      <li>Drag the thumb in the scrollbar on the side up or down to scroll the
+        page.
+      <li>Left-click or right-click on the scrollbar above or below the thumb to
+        move one <em>page</em> in that direction.
+      <li>Middle-click on the scrollbar above or below the thumb to jump to that
+        specific position of the page.
+      <li>Click the scrollbar arrows to move the view one <em>step</em> in
+          that direction.
+    </ul>
+  </li>
+</ul>
 
- <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-   <h4><font color="green">Images-off mode:</font></h4>
-   </td></tr>
-   <tr><td bgcolor="#70a0c0">
-   <p>
-   You can browse without images now:
-   <ul>
-   <li>There is an option in the Tools menu to disable automatic image loading.
-   An image's alt text (or <code>[IMG]</code> placeholder) will appear in the
-   page.
-   <li>If you want to load an individual image, left click on its text.
-   <li>You can set "no images" as the default mode in dillorc.
-   </ul>
-   </td></tr>
- </table>
+<p>You can control the <b>size of a <em>step</em></b> by setting the
+<code>scroll_step</code> option in the <a href="#dillorc">dillorc</a>
+configuration file. By default it will scroll 100 pixels per step.</p>
 
- <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-   <h4><font color="green">Bookmarks:</font></h4>
-   </td></tr>
+<h3 id="find-text">Find text</h3>
+<p>
+To find text in a document right-click to open the <em>Page menu</em> and select
+<em>Find text</em>. It is also available by the default shortcut
+<code>Ctrl+F</code>. Then type the substring that you want to find and click
+Next (or the <code>Enter</code> key).
+</p>
+Dillo will scroll the page and highlight found text starting from the top. To
+find a word (not a substring) use spaces around it to limit the search to
+matching words only. 
+<p>
+To close the find bar you can click on the red X on the bottom right or press
+ESC.
 
-   <tr><td bgcolor="#70a0c0">
-   <p>
-   Bookmarks are handled by the Dillo plugin
-   (<a href='https://dillo-browser.github.io/old/dpi1.html'>dpi</a>) framework.
-   This should be transparent to the end user. Please note that:
-   <ul>
-     <li>It is a good idea to keep a backup of your
-         <code>~/.dillo/bm.txt</code>
-     <li>The server will stay alive after closing dillo.
-     <li>You can stop the server by sending it a KILL signal. Dillo
-         will automatically restart it when it is needed.
-     <li>If you don't have root access, install <em>dpid</em> and
-         the <em>dpis</em>
-         inside your <code>~/.dillo/</code> directory as explained
-         in the README file.
-   </ul>
-   </td></tr>
- </table>
+<h3 id="copy-and-paste">Copy and paste</h3>
+<p>
+To copy some text just hold down the left mouse button and move to select the
+area to copy. To paste, go to the target application and press the middle mouse
+button.
+<p>
+If you want to select more than one screen, hold the mouse button down and
+scroll with PgUp, PgDn or the arrow keys.
+<P>
+If you want to paste an URL into Dillo, do it on the "clear-URL"
+button (the "X" next to the <a href="#location-bar">location bar</a>).
+<p>
 
- <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-   <h4><font color="green">Bug Meter:</font></h4>
-   </td></tr>
-   <tr><td bgcolor="#70a0c0">
-   <p>
-   Dillo's <em><a href='https://dillo-browser.github.io/old/help/bug_meter.html'>Bug
-   meter</a></em> shows the
-   number of <b><font color="#5040a0">detected bugs</font></b> inside the
-   page. The bugs are caught at parsing time, so the
-   error  messages also show the line where they occur and provide a
-   <b><font color="#5040a0">hint</font></b> of what was expected instead!
-   <p>
-   The primary purpose of the bug meter is to
-   <b><font color="#5040a0">help</font></b> webmasters and page
-   authors to polish the contents of their sites with a view to making
-   them standards-compliant.
-   <p>
-   The Bug meter is located at the lower right corner of
-   Dillo. Left-click to see the messages, right-click for a menu.
-   </td></tr>
- </table>
+<h2 id="navigation">Navigation</h2>
+This section focuses on how to navigate to other pages by following hyperlinks,
+using bookmarks, typing or pasting a new URL or using the history.
 
- <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-   <h4><font color="green">Web search from the Location bar:</font></h4>
-   </td></tr>
-   <tr><td bgcolor="#70a0c0">
-   <p>
-   Besides the GUI, you can also use the location bar as a CLI for quick
-   web search. You can specify a prefix in <b><font color="#5040a0">dillorc</font></b>
-   for each search engine and use it from the location bar.
-   <p>
-   Example, in dillorc:<br>
-   <blockquote>
-    <code>search_url="dd Duckduckgo http://duckduckgo.com/lite/?kp=-1&amp;kd=-1&amp;q=%s"</code>
-   </blockquote>
-   means you can reach the location bar (CTRL+L), then type:
-   <blockquote>
-    <code>dd dillo browser</code>
-   </blockquote>
-   to web-search with Duckduckgo for the keywords: <code>dillo browser</code>.
-   </td></tr>
- </table>
+<h3 id="hyperlinks">Hyperlinks</h3>
 
- <table WIDTH="100%" BORDER=1 CELLSPACING=0 CELLPADDING=3>
-   <tr ALIGN=LEFT VALIGN=TOP><td bgcolor="wheat">
-   <h4><font color="green">Keyboard shortcuts:</font></h4>
-   </td></tr>
-   <tr><td bgcolor="#70a0c0">
-<table border=1 width="100%">
+<p>Hyperlinks to other pages change the cursor to a hand to indicate that
+an element can be clicked with the left button:
+<p style="text-align: center">
+<img
+  style="border: solid 1px #ddd;"
+  src="data:image/gif;base64,R0lGODlhGAAYAPYAAAAAAAEBAQICAgQEBAcHBx4eHiwsLC8vLzo6Oj09PVZWVldXV1xcXF1dXWlpaWxsbG5uboODg52dnZ6enqCgoKKioqWlpaampqioqKqqqq+vr7S0tLW1tbe3t7u7u7y8vL6+vr+/v8HBwcTExMfHx8jIyMzMzNLS0tPT09jY2Nra2tvb29zc3N3d3d7e3t/f3+Dg4OLi4uPj4+Tk5OXl5efn5+jo6Onp6erq6uvr6+zs7O7u7u/v7/Hx8fLy8vT09Pb29vf39/j4+Pn5+fr6+vv7+/z8/P39/f7+/v///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAAAAAAALAAAAAAYABgAAAfMgEmCg4SFhoeFQUGIjINEIDQ0IESNiDoxCQg0OZWHMUkAAEkunYakoUkqpYWnoidBRIqrrUmRHJEePYuNtJlJmTqRk4y0qKiZm4ZEy6qhLsaiqKSOJioqHCNEodsNzqiqgz0iDgYSOdrb6duphDkgD6EGEer07IM6GTkL9Pyi4IJEYlCg0a1fOnuOXJjbZxAAASLTCEFc2NCAiogSFdJ4QIBfAREDEUGkMMyQwBK7DhGhMUKDhZcwM3A40aNTEB05curMoYPSqp9ADQUCADs=">
+<p>
+Links to other pages usually appear in
+<span style="color:blue; text-decoration: underline">blue and underlined</span>
+by default and once they are visited they change to 
+<span style="color:purple; text-decoration: underline">purple</span>.
+However, this is not always the case, so using the mouse cursor shape is the
+best indicator of a
+<em><a style="color:black; text-decoration: none" href="#">link</a></em>. 
+<p>
+When you follow a link by clicking on it, the previous pages will be remembered
+in case you want to go back to them. Use the Back and Forw buttons on the top
+bar to navigate among history pages.
+<p>
+
+<h3 id="history">History</h3>
+<p>
+When you follow several links across different web pages, they are remembered in
+case you can to go back. Use the "Back" and "Forward" buttons of the panel to go
+to the previous or next page.
+<p>
+You can also right-click on the Back or Forward buttons to open a menu with the
+list of previous or next pages available, so you can jump directly to them. Use
+the left button to open them in the current tab or the middle button to open
+them in a new tab.
+<p>
+The <code>,</code> (comma) and <code>.</code> (dot) keys can be used to jump
+backwards or forward (mnemonic: those keys are usually labeled "&lt;" and
+"&gt;").
+
+<h3 id="location-bar">Location bar</h3>
+<p>
+The location bar on the top displays the URL of the current page loaded and can
+be used to access other pages by typing the new URL or by pasting it and
+pressing Enter.
+<p>
+The red <b style="color: darkred">x</b>
+on the left clears the location bar content when left clicked. Then you can type
+or paste a new address from the clipboard by middle clicking on the location
+bar.
+As these two actions are usually performed together, you can simply middle-click
+on the 
+<b style="color: darkred">x</b>
+button to go to the URL in the clipboard.
+<p>
+You can also select the location bar content from the keyboard by pressing
+<code>Ctrl+L</code>.
+
+<h3 id="web-search">Web search</h3>
+<p>
+Several search engines are available by pressing the magnifying glass icon next
+to the location bar or by pressing <code>Ctrl+s</code>. The search engines are
+configured in <a href="#dillorc">Dillorc</a> with the option
+<code>search_url</code>. Use it multiple times to define multiple search
+engines.
+<p>
+The location bar can also be used to search the web by using an special prefix
+for each search engine. For example, the following line:<br>
+<pre>
+search_url="dd DuckDuckGo http://duckduckgo.com/lite/?kp=-1&amp;kd=-1&amp;q=%s"
+</pre>
+<p>
+Defines the "DuckDuckGo" search engine with the prefix "<code>dd</code>", so you
+can type in the location bar "<code>dd dillo browser</code>" to search with
+DuckDuckGo for the keywords "dillo browser".
+
+<h3 id="tabs">Tabs</h3>
+<p>
+Dillo can open different web pages into tabs. To open a link in a new tab click
+the middle button instead of the left button. The same applies to buttons to
+submit a form.
+<p>
+By default the new tab will be automatically focused. If you want to change
+this behaviour, adjust the following options in the 
+<a href="#dillorc">dillorc</a> configuration file:
+<pre>
+middle_click_opens_new_tab
+focus_new_tab
+</pre>
+<p>
+Press <code>Shift</code> to temporarily reverse the focusing behaviour while
+middle-clicking on a link.
+<p>
+To close a tab press the X button on the top right (only visible with multiple
+tabs). You can also close the tab by clicking with the right button on the tab
+label. The middle button can be used instead setting the option:
+<pre>
+right_click_closes_tab=NO
+</pre>
+
+<h3 id="bookmarks">Bookmarks</h3>
+<p>
+Dillo can save URLs of web pages as bookmarks so you can open them later. To
+bookmark the current page, open the page menu by left-clicking on the page
+and select "Bookmark this page" (it also works over a link).
+<p>
+To see or edit the bookmarks, click on the Bookmarks button on the pannel or
+press <code>Ctrl+B</code>.
+<p>
+Bookmarks are handled by a builtin Dillo plugin named <code>bm</code> (read more
+about plugins in the <a href="#plugins">Plugins section</a>) and are
+synchronized across all instances of the browser. The list of bookmarks can also
+be shown by opening the URL <a href="dpi:/bm/"><code>dpi:/bm/</code></a>.
+<p>
+The bookmarks are stored in a simple plain text file named <code>bm.txt</code>
+(see the details of this file in the <a href="#bm-txt">bm.txt section</a>). You
+can edit the file directly to change the bookmarks.
+
+<h2 id="privacy-and-network">Privacy and network</h2>
+
+<p>The default privacy policy in Dillo attempts to keep the user safe from
+tracking, <em>even if this policy breaks a lot of website functionality</em>. In
+this section you can add exceptions or relax the configuration at your own risk.
+
+<h3 id="https">HTTPS</h3>
+
+<p>Dillo has support for HTTPS, allowing it to connect securely to remote
+websites. Use the protocol "<code>https:</code>" to specify the use of HTTPS.
+When a problem is encountered with the remote certificate, a warning dialog
+explains the details and allows you to choose what to do: continue loading the
+website or cancel.
+<p>
+By default Dillo looks for a TLS library at build time, which can be OpenSSL or
+mbedTLS. You can see which library is being used by looking at the messages of
+Dillo when it starts:
+<pre>
+$ dillo
+dillo_dns_init: Here we go! (threaded)
+TLS library: <b>OpenSSL 3.2.1 30 Jan 2024</b>
+...
+</pre>
+
+<h3 id="cookies">Cookies</h3>
+<p>
+Due to privacy concerns, <b>cookies are disabled by default</b> unless
+explicitly enabled in the configuration.
+<p>
+Support for cookies is implemented using a plugin that shares them
+between several instances of Dillo and follows the 
+<a href="http://tools.ietf.org/html/rfc6265">RFC 6265</a>
+specification. Current cookie limits are 20 per domain and
+1200 in total.
+
+<p>Cookies are configured by the <code>cookiesrc</code> configuration file. See
+the <a href="#cookiesrc">Cookiesrc section</a> to see how to enable cookies for
+some domains or accept them by default.</p>
+
+<h3 id="proxy">Proxy</h3>
+<p>Dillo can use a HTTP proxy by setting the environment variable
+<code>http_proxy</code> or the
+<a href="#dillorc">configuration option</a> with the same name. All HTTP and
+HTTPS traffic will be sent through the proxy.
+
+<p><b>Note</b>: Plugins may not implement proxy support.
+</p>
+
+<h3 id="ad-blocking">Ad blocking</h3>
+<p>Dillo has the ability to block content when loading a page based on the domain
+the embeded content is being loaded from. You can control how Dillo handles
+automatic requests for resources (like images and style sheets) that aren't at
+the same domain as the original page.</p>
+
+<p>See the <a href="#domainrc">domainrc</a> configuration file to find out how to
+specify which domains are blocked or allowed.</p>
+
+<h3 id="downloads">Downloads</h3>
+<p>Downloads are made using 
+<a href="http://www.gnu.org/software/wget/">wget</a>
+with a <a href="http://www.fltk.org">FLTK</a>-based GUI wrapper, through
+the <a href="#plugins">Dillo plugin (dpi) framework</a>.
+If you close the browser window, downloads will continue.</p>
+
+<h3 id="images-off-mode">Images-off mode</h3>
+<p>
+You can browse without images now:
+<ul>
+<li>There is an option in the Tools menu to disable automatic image loading.
+An image's alt text (or <code>[IMG]</code> placeholder) will appear in the
+page.
+<li>If you want to load an individual image, left click on its text.
+<li>You can set "no images" as the default mode in dillorc.
+</ul>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>Dillo has <b>several configuration files</b> that control the behavior of the
+browser. Each configuration file is searched <em>first</em> in the
+<a href="file:~/.dillo"><code>~/.dillo</code></a> directory and,
+<em>if not found</em>, in the default system configuration directory (typically
+<code>/etc/dillo</code>).</p>
+
+<p>Most configuration files can include comments by <em>starting</em> a line
+with the "<code>#</code>" symbol. Their specific syntax is described in the
+following sections.</p>
+
+<h3 id="dillorc">Dillorc</h3>
+
+<p>The main configuration of Dillo is controled by the
+<a href="file:~/.dillo/dillorc"><code>dillorc</code></a> file.
+The list of all available options can be found in the system
+configuration file, typically 
+<a href="file:/etc/dillo/dillorc"><code>/etc/dillo/dillorc</code></a>. You may
+want to copy it into
+<a href="file:~/.dillo/dillorc"><code>~/.dillo/dillorc</code></a>
+and edit it to suit your needs.</p>
+
+The file is commented to describe what each option does. The default value for
+each option as well as other interesting values are also available as comments:
+<ul>
+  <li>"<code>#option=...</code>" shows the built-in default.</li>
+  <li>"<code># option=...</code>" is an additional example.</li>
+  <li>"<code>option=...</code>" overrides the built-in value.</li>
+</ul>
+
+<p>Some options can be specified multiple times, for example 
+<code>search_url</code>:
+<pre>
+search_url="dd DuckDuckGo (https) https://duckduckgo.com/lite/?kp=-1&amp;q=%s"
+search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&amp;go=Go"
+</pre>
+
+<h3 id="cookiesrc">Cookiesrc</h3>
+
+<p>Cookies are configured in the
+<a href="file:~/.dillo/cookiesrc"><code>~/.dillo/cookiesrc</code></a>
+file by using rules, with one rule per line. The rule syntax is very simple,
+first specify the <em>host</em> and then the <em>action</em>, separated by
+whitespaces. Comment lines start with <code>#</code> as the first character and
+the whole line is ignored.
+<p>
+The host can be in the form <code>example.com</code> to match only that
+domain or <code>.example.com</code> to match all subdomains of example.com. The
+special word <code>DEFAULT</code> specifies the default policy, when no other
+match occurs.
+<p>
+The action can be: <code>DENY</code> to ignore cookies,
+<code>ACCEPT_SESSION</code> to only accept session cookies but don't save them
+to disk and <code>ACCEPT</code> to accept and store cookies in disk (this will
+allow sites to track you over time).
+<p>
+When the cookies plugin exits, only the accepted cookies by <code>ACCEPT</code>
+are saved to
+<a href="file:~/.dillo/cookies.txt"><code>~/.dillo/cookies.txt</code></a>,
+and ACCEPT_SESSION cookies are
+forgotten. The cookies plugin normally exits after a period of inactivity, but
+you can force it to exit with the command <code>dpidc stop</code>.
+<p>
+Here is an example <code>cookiesrc</code> file:
+<pre>
+# host        action
+DEFAULT       DENY
+fltk.org      ACCEPT
+.example.com  ACCEPT_SESSION
+</pre>
+<p> Which is parsed as follows:</p>
+<ul>
+  <li>Line 1: Comment line begins with <code>#</code>.</li>
+  <li>Line 2: Deny all cookies from all domains not otherwise specified (this is
+    the default).
+  <li>Line 3: Accept all cookies from fltk.org, and save them to disk when the
+    cookie plugin exits.</li>
+  <li>Line 4: Accept all cookies from all subdomains of example.com, but do not
+    save them when the cookie plugin exits.</li>
+</ul>
+<p>
+Dillo is especially concerned about privacy and security issues. Our advice is
+to <em>avoid cookies whenever possible</em> and at most set ACCEPT_SESSION to
+<em>specific trusted sites</em>.
+
+<h3 id="domainrc">Domainrc</h3>
+
+<p>With the
+<code>~/.dillo/domainrc</code>
+file, you can control how Dillo handles automatic requests for resources
+(like images and style sheets) that aren't at the same domain as the
+original page.
+<p>
+The file contains one rule per line. Comments are specified by starting the line
+with the <code>#</code> symbol. The default rule is either
+<code>default accept</code> or <code>default deny</code> and will cause Dillo
+to, respectively, accept all requests by default or deny all requests by
+default.
+<p>
+Depending on the default rule, the next rules behave as exceptions by denying
+specific connections or allowing specific connections, respectively.
+<p>
+Exceptions to the default rule are written in the format
+<code>source destination</code>, and match request from the source domain to the
+destination domain. The source and destination domains can be specified in three
+ways:
+<ul>
+	<li>"<code>*</code>" to match any domain</li>
+	<li>"<code>example.com</code>" to match the specific host example.com</li>
+	<li>"<code>.example.com</code>" to match example.com and any of its
+		subdomains</li>
+</ul>
+<p>
+Here is an example:
+<pre>
+# Accept all requests by default
+default accept
+# But block some ad-sites and trackers from any domain
+* .doubleclick.net
+* .googleadservices.com
+* .quantserve.com
+</pre>
+
+<h3 id="style-css">Style.css</h3>
+
+<p>Custom
+<a href="https://en.wikipedia.org/wiki/CSS">CSS styles</a> can be placed in the 
+<a href="file:~/.dillo/style.css"><code>~/.dillo/style.css</code></a>
+file to set default web page styles. To override page styles add the
+"<code>!important</code>" flag.
+
+<h3 id="dpidrc">Dpidrc</h3>
+
+<p>The configuration for <a href="#plugins">plugins</a> is placed in the 
+<a href="file:~/.dillo/dpidrc"><code>~/.dillo/dpidrc</code></a> file.</p>
+
+<p>Plugins are searched in the <code>~/.dillo/dpi/</code> directory first, and
+then in the system directory if not found. The <code>dpi_dir</code> option
+sets the system <code>dpi</code> directory and must be specified once. Here is
+an example:</p>
+
+<pre>
+dpi_dir=/usr/lib/dillo/dpi
+</pre>
+
+<p>By default, plugins will receive requests at the URL
+<code>dpi:/<em>name</em>/</code>, for example bookmarks are available at
+<a href="dpi:/bm/"><code>dpi:/bm/</code></a>.
+
+<p>Plugins can also be associated with a protocol (like "<code>file:</code>").
+When a request is made using the given protocol the associated plugin is used to
+process the request. The rest of the file assigns a plugin to a protocol, one
+per line. The syntax is
+<code>proto.<em>name</em>=<em>path-to-plugin.dpi</em></code>. The path of the
+plugin is relative to the <code>dpi</code> directory. Here are some
+examples of the builtin plugins:</p>
+
+<pre>
+proto.file=file/file.dpi
+proto.ftp=ftp/ftp.filter.dpi
+proto.data=datauri/datauri.filter.dpi
+</pre>
+
+<p>Here ( 
+<img alt="red dot"
+src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" />
+) is an example image using the <code>data:</code> protocol used to define a PNG
+image inline in a HTML document.
+</p>
+
+<h3 id="bm-txt">bm.txt</h3>
+
+<p>Web page URLs can be saved as bookmarks so they can be accessed in the future.
+Bookmarks are stored in a plain text file located at
+<a href="file:~/.dillo/bm.txt"><code>~/.dillo/bm.txt</code></a>. The file can be
+modified by using the
+<a href="dpi:/bm/">Book button</a>
+in the toolbar and the context menu on a page or link, but they can also be
+edited manually. Bookmarks are organized into sections and are given a
+description (usually the page title).</p>
+
+<p>The syntax of the <code>bm.txt</code> file is described as follows:</p>
+
+<p>First, the sections are defined at the beginning, prefixed with a
+<code>:s<em>N</em>:</code> identifier, along with the description of the
+section:</p>
+<pre>
+:s0: News
+:s1: Blog
+</pre>
+<p>Then every bookmark is added in a single line, by writing the section
+identifier, the URL and a description:</p>
+<pre>
+s0 https://slashdot.org Slashdot
+s0 https://news.ycombinator.com/ Hacker News
+s1 https://100r.co/site/log.html 100 Rabbits Log
+</pre>
+<p>The <code>bm.txt</code> file is designed to be <em>easily</em> read by humans
+and is suitable to be kept updated among machines by using a version control
+tool.
+
+<h3 id="keysrc">Keysrc</h3>
+
+<p>The mapping of keys in Dillo is contolled by the
+<a href="file:~/.dillo/keysrc"><code>~/.dillo/keysrc</code></a> file.
+The format is "<code>key = action</code>" or
+"<code>&lt;modifier&gt;key = action</code>". Lines that begin with a "#" are comments.
+The commented-out bindings below show the defaults built into Dillo.
+
+<ul>
+<li>Modifiers recognized: Shift, Ctrl, Alt, Meta (on Mac OS X use "Meta" for
+Command).
+
+<li>Key names recognized: Backspace, Delete, Down, End, Esc, F1 through
+F12, Home, Insert, Left, Menu, PageDown, PageUp, Print, Return, Right, Space,
+Tab, Up.
+
+<li>Multimedia keys: Back, Favorites, Forward, HomePage, Mail, MediaNext,
+MediaPlay, MediaPrev, MediaStop, Refresh, Search, Sleep, Stop, VolumeDown,
+VolumeMute, VolumeUp.
+</ul>
+
+<p>If Dillo is running under X11, keys whose names are not recognized can be
+specified using their keysym value in hexadecimal. Use <code>xev</code> to get
+the keysym, for example:
+<pre>
+0x1008ff27 = forward
+</pre>
+
+<p>The action "nop" (no operation) can be used to remove a binding.
+
+<p>Example file:</p>
+<pre>
+# "close-all" closes all tabs/windows and exits.
+&lt;ctrl&gt;q = close-all
+
+# "left-tab" and "right-tab" switch to the left/right of the current tab.
+&lt;ctrl&gt;&lt;shift&gt;tab = left-tab
+
+# Use HJKL to move around
+k = line-up
+j = line-down
+h = left
+l = right
+</pre>
+
+<h2 id="advanced-usage">Advanced usage</h2>
+
+These sections are regarded to experienced users of Dillo.
+
+<h3 id="plugins">Plugins</h3>
+<p>The functionality of Dillo can be extended by using plugins, which can
+translate other formats to HTML, implement new protocols or provide a custom
+service.</p>
+
+<p>Plugins can be written in <em>any programing language</em> and they 
+interact with the browser using the 
+<a href="https://dillo-browser.github.io/old/dpi1.html">DPI protocol</a>. A
+<a href="https://dillo-browser.github.io/#plugins">list of plugins</a>
+is available on the Dillo website. Some plugins are just a 
+<a href="https://raw.githubusercontent.com/dillo-browser/dillo-plugin-man/master/man.filter.dpi">few 
+lines of shell script</a>, so you are encouraged to read them to learn how to
+write your own plugins. Plugins are searched by looking for files that end with
+the <code>.dpi</code> extension (or <code>.dpi.exe</code> in Windows) in
+<code>~/.dillo/dpi</code> and <code>dpi_dir</code> (see the
+<a href="#dpidrc">Dpidrc</a> configuration section).</p>
+
+<p>There are two types of plugins: <em>filters</em> and <em>servers</em>.
+Filters are executed for each request like a
+<a href="https://en.wikipedia.org/wiki/Pipeline_(Unix)">UNIX pipe</a>,
+they read from the
+standard input and write to the standard output. The name of filter plugin
+programs must end in <code>.filter.dpi</code>. On the other hand, servers listen
+on a socket for new requests. They can process several requests at the same
+time, preventing the overhead of spawning multiple processes and they can easily
+share information among requests.</p>
+
+<p>You can install plugins from any third party, but you should always
+review the source before running code written by others. To install a new
+plugin, copy the files to <code>~/.dillo/dpi/<em>name</em>/</code> and
+then associate the <em>name</em> protocol to the program that must run in
+the
+<a href="file:~/.dillo/dpidrc"><code>~/.dillo/dpidrc</code></a> file.
+Plugins may have other software dependencies required for it to work.</p>
+
+<p>Here is an example of how to manually install the
+<a href="https://github.com/dillo-browser/dillo-plugin-gemini">Gemini protocol plugin</a>
+(it comes with a Makefile that automates the process, so this is not necessary),
+which is a filter plugin written in shell script:</p>
+<pre>
+$ mkdir -p ~/.dillo/dpi/gemini
+$ cp gemini.filter.dpi ~/.dillo/dpi/gemini/
+$ chmod +x ~/.dillo/dpi/gemini/gemini.filter.dpi
+$ echo "proto.gemini=gemini/gemini.filter.dpi" >> ~/.dillo/dpidrc
+$ dpidc stop
+</pre>
+<p>Now, when a request is made to an URL that begins with the
+<code>gemini:</code> protocol, it will be processed by the
+<code>gemini/gemini.filter.dpi</code> program, and the output will be displayed
+by Dillo.</p>
+
+<h3 id="bug-meter">Bug Meter</h3>
+<p>
+Dillo includes a
+<a 	href='https://dillo-browser.github.io/old/help/bug_meter.html'>bug meter</a>
+which shows the number of detected bugs inside the page. The bugs are caught at
+parsing time, so the error messages also show the line where they occur and
+provide a hint of what was expected instead.
+<p>
+The primary purpose of the bug meter is to help webmasters and page authors to
+polish the contents of their sites with a view to making them
+compliant with HTML standars.
+<p>
+The bug meter is located at the lower right corner of Dillo. Use the left-click
+to see the messages, right-click for a menu to open other HTML validators.
+
+<h3 id="keyboard-shortcuts">Keyboard shortcuts</h3>
+<p>
+Most actions can be issued by using a keyboard shortcut. The key bindings can be
+changed in the
+<code><a href="file:~/.dillo/keysrc">~/.dillo/keysrc</a></code> file (see the
+<a href="#keysrc">keysrc</a> section).
+The list of default bindings is given in the following table.
+<p>
+<table>
 <tr><th>Shortcut                   <th>Mnemonic        <th>Function
-<tr><td>Ctrl-L                     <td>Location        <td>enter a new URL
-<tr><td>Ctrl-F                     <td>Find            <td>find text
-<tr><td>Ctrl-S                     <td>Search          <td>search the web
-<tr><td>Ctrl-R                     <td>Reload          <td>reload current page
+<tr><td>Ctrl-L                     <td>Location        <td>Enter a new URL
+<tr><td>Ctrl-F                     <td>Find            <td>Find text
+<tr><td>Ctrl-S                     <td>Search          <td>Search the web
+<tr><td>Ctrl-R                     <td>Reload          <td>Reload current page
 <tr><td>Ctrl-N                     <td>New             <td>New browser window
 <tr><td>Ctrl-T                     <td>Tab             <td>New tab
-<tr><td>Ctrl-W                     <td>Window          <td>quit tab/window
+<tr><td>Ctrl-W                     <td>Window          <td>Quit tab/window
 <tr><td>Ctrl-O                     <td>Open            <td>Open file
-<tr><td>Ctrl-U                     <td>(conventional)  <td>view source
-<tr><td>Ctrl-B                     <td>Bookmarks       <td>view bookmarks
+<tr><td>Ctrl-U                     <td>                <td>View source
+<tr><td>Ctrl-B                     <td>Bookmarks       <td>View bookmarks
 <tr><td>Ctrl-Q                     <td>Quit            <td>Quit dillo
-<tr><td>Back       or "<b>,</b>"   <td><               <td>previous page
-<tr><td>Shift-Back or "<b>.</b>"   <td>>               <td>next page
-<tr><td>Alt-F                      <td>File            <td>file menu
-<tr><td>Ctrl-TabKey       or
-        Ctrl-PageDown              <td>TabKey          <td>Next tab
-<tr><td>Ctrl-Shift-TabKey or
-        Ctrl-PageUp                <td>TabKey          <td>Previous tab
-<tr><td>Esc                        <td>escape          <td>close dialog,
-                                                           close findbar,<br>
+<tr><td>Back       or "<b>,</b>"   <td>&lt;            <td>Previous page
+<tr><td>Shift-Back or "<b>.</b>"   <td>&gt;            <td>Next page
+<tr><td>Alt-F                      <td>File            <td>File menu
+<tr><td>Ctrl-Tab       or<br>
+        Ctrl-PageDown              <td>Tab             <td>Next tab
+<tr><td>Ctrl-Shift-Tab or<br>
+        Ctrl-PageUp                <td>Tab             <td>Previous tab
+<tr><td>Esc                        <td>escape          <td>Close dialog,
+                                                           Close findbar,<br>
                                                      Hide/show control panels
 </table>
-<p>
-You can <b><font color="#5040a0">change</font></b> the bindings using a
-<code>~/.dillo/<a href="https://raw.githubusercontent.com/dillo-browser/dillo/master/src/keysrc">keysrc</a></code>
-file.
-   </td></tr>
- </table>
-
-
+<footer>
+<p>This manual has been written in HTML <em>by hand</em> using Vim.<br>
+If you find any issue, please report it via
+<a href="https://github.com/dillo-browser/dillo/issues/new">GitHub</a> or
+<a href="mailto:dillo-dev@mailman3.com">email</a>.
+</footer>
+</div>
 </body>
 </html>
 
