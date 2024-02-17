@@ -1249,12 +1249,49 @@ void a_Tls_openssl_connect(int fd, const DilloUrl *url)
 }
 
 /*
+ * Traduces an SSL I/O error into something understandable by IO.c
+ *
+ * Returns: -1 if there is an error and sets errno to the appropriate error,
+ * otherwise return the number of bytes read/written (which may be 0).
+ */
+static int Tls_handle_error(SSL *ssl, int ret, const char *where)
+{
+   int err1_ret = SSL_get_error(ssl, ret);
+   if (err1_ret == SSL_ERROR_NONE) {
+      errno = 0;
+      return ret;
+   } else if (err1_ret == SSL_ERROR_WANT_READ || err1_ret == SSL_ERROR_WANT_WRITE) {
+      errno = EAGAIN;
+      return -1;
+   } else if (err1_ret == SSL_ERROR_SYSCALL) {
+      MSG("%s failed: SSL_ERROR_SYSCALL\n", where);
+      errno = EPROTO;
+      return -1;
+   } else if (err1_ret == SSL_ERROR_SSL) {
+      unsigned long err2_ret = ERR_get_error();
+      if (err2_ret) {
+         do {
+            MSG("%s failed: %s\n", where, ERR_error_string(err2_ret, NULL));
+         } while ((err2_ret = ERR_get_error()));
+      } else {
+         MSG("%s failed: SSL_ERROR_SSL\n", where);
+      }
+      errno = EPROTO;
+      return -1;
+   }
+
+   MSG("%s failed: SSL_get_error() returned %d\n", where, err1_ret);
+   errno = EPROTO;
+   return -1;
+}
+
+/*
  * Read data from an open TLS connection.
  */
 int a_Tls_openssl_read(void *conn, void *buf, size_t len)
 {
    Conn_t *c = (Conn_t*)conn;
-   return SSL_read(c->ssl, buf, len);
+   return Tls_handle_error(c->ssl, SSL_read(c->ssl, buf, len), "SSL_read()");
 }
 
 /*
@@ -1263,7 +1300,7 @@ int a_Tls_openssl_read(void *conn, void *buf, size_t len)
 int a_Tls_openssl_write(void *conn, void *buf, size_t len)
 {
    Conn_t *c = (Conn_t*)conn;
-   return SSL_write(c->ssl, buf, len);
+   return Tls_handle_error(c->ssl, SSL_write(c->ssl, buf, len), "SSL_write()");
 }
 
 void a_Tls_openssl_close_by_fd(int fd)

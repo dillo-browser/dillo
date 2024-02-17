@@ -56,6 +56,7 @@ dillo-3.1 [not released yet]
    from 16 to 20 pixels to improve usability.
  - Switch tabs using the mouse wheel by default. Use the new option
    scroll_switches_tabs to disable the behavior.
+ - Fix OpenSSL handling of unexpected EOF without close notify alert.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------
