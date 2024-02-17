@@ -81,6 +81,7 @@ typedef struct {
    SSL *ssl;
    bool_t connecting;
    bool_t in_connect;
+   bool_t do_shutdown;
 } Conn_t;
 
 /* List of active TLS connections */
@@ -168,6 +169,7 @@ static int Tls_conn_new(int fd, const DilloUrl *url, SSL *ssl)
    conn->ssl = ssl;
    conn->connecting = TRUE;
    conn->in_connect = FALSE;
+   conn->do_shutdown = TRUE;
 
    key = a_Klist_insert(&conn_list, conn);
 
@@ -1048,11 +1050,13 @@ static void Tls_close_by_key(int connkey)
          a_IOwatch_remove_fd(c->fd, -1);
          dClose(c->fd);
       }
-      if (!SSL_in_init(c->ssl)) {
+      if (c->do_shutdown && !SSL_in_init(c->ssl)) {
          /* openssl 1.0.2f does not like shutdown being called during
           * handshake, resulting in ssl_undefined_function in the error queue.
           */
          SSL_shutdown(c->ssl);
+      } else {
+         MSG("Tls_close_by_key: Avoiding SSL shutdown for: %s\n", URL_STR(c->url));
       }
       SSL_free(c->ssl);
 
@@ -1110,6 +1114,12 @@ static void Tls_connect(int fd, int connkey)
          ongoing = TRUE;
          failed = FALSE;
       } else if (err1_ret == SSL_ERROR_SYSCALL || err1_ret == SSL_ERROR_SSL) {
+         /* From the OpenSSL documentation: "Note that SSL_shutdown() must not
+          * be called if a previous fatal error has occurred on a connection
+          * i.e. if SSL_get_error() has returned SSL_ERROR_SYSCALL or
+          * SSL_ERROR_SSL." */
+         conn->do_shutdown = FALSE;
+
          unsigned long err2_ret = ERR_get_error();
 
          if (err2_ret) {
@@ -1254,8 +1264,9 @@ void a_Tls_openssl_connect(int fd, const DilloUrl *url)
  * Returns: -1 if there is an error and sets errno to the appropriate error,
  * otherwise return the number of bytes read/written (which may be 0).
  */
-static int Tls_handle_error(SSL *ssl, int ret, const char *where)
+static int Tls_handle_error(Conn_t *conn, int ret, const char *where)
 {
+   SSL *ssl = conn->ssl;
    int err1_ret = SSL_get_error(ssl, ret);
    if (err1_ret == SSL_ERROR_NONE) {
       errno = 0;
@@ -1263,18 +1274,17 @@ static int Tls_handle_error(SSL *ssl, int ret, const char *where)
    } else if (err1_ret == SSL_ERROR_WANT_READ || err1_ret == SSL_ERROR_WANT_WRITE) {
       errno = EAGAIN;
       return -1;
-   } else if (err1_ret == SSL_ERROR_SYSCALL) {
-      MSG("%s failed: SSL_ERROR_SYSCALL\n", where);
-      errno = EPROTO;
-      return -1;
-   } else if (err1_ret == SSL_ERROR_SSL) {
+   } else if (err1_ret == SSL_ERROR_SYSCALL || err1_ret == SSL_ERROR_SSL) {
+      conn->do_shutdown = FALSE;
       unsigned long err2_ret = ERR_get_error();
       if (err2_ret) {
          do {
             MSG("%s failed: %s\n", where, ERR_error_string(err2_ret, NULL));
          } while ((err2_ret = ERR_get_error()));
       } else {
-         MSG("%s failed: SSL_ERROR_SSL\n", where);
+         /* Provide a generic message, as there is none in the queue */
+         const char *which = err1_ret == SSL_ERROR_SYSCALL ? "SYSCALL" : "SSL";
+         MSG("%s failed: SSL_ERROR_%s\n", where, which);
       }
       errno = EPROTO;
       return -1;
@@ -1291,7 +1301,7 @@ static int Tls_handle_error(SSL *ssl, int ret, const char *where)
 int a_Tls_openssl_read(void *conn, void *buf, size_t len)
 {
    Conn_t *c = (Conn_t*)conn;
-   return Tls_handle_error(c->ssl, SSL_read(c->ssl, buf, len), "SSL_read()");
+   return Tls_handle_error(c, SSL_read(c->ssl, buf, len), "SSL_read()");
 }
 
 /*
@@ -1300,7 +1310,7 @@ int a_Tls_openssl_read(void *conn, void *buf, size_t len)
 int a_Tls_openssl_write(void *conn, void *buf, size_t len)
 {
    Conn_t *c = (Conn_t*)conn;
-   return Tls_handle_error(c->ssl, SSL_write(c->ssl, buf, len), "SSL_write()");
+   return Tls_handle_error(c, SSL_write(c->ssl, buf, len), "SSL_write()");
 }
 
 void a_Tls_openssl_close_by_fd(int fd)
