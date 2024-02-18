@@ -2,6 +2,7 @@
  * File: file.c :)
  *
  * Copyright (C) 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,7 +139,7 @@ static const char *File_get_content_type_from_data(void *Data, size_t Size)
    char *p = Data;
    size_t i, non_ascci;
 
-   _MSG("File_get_content_type_from_data:: Size = %d\n", Size);
+   _MSG("File_get_content_type_from_data:: Size = %zu\n", Size);
 
    /* HTML try */
    for (i = 0; i < Size && dIsspace(p[i]); ++i);
@@ -790,6 +791,7 @@ static int File_parse_hex_octet(const char *s)
 
 /*
  * Make a file URL into a human (and machine) readable path.
+ * The home tile '~' character is expanded from the value of $HOME.
  * The idea is to always have a path that starts with only one slash.
  * Embedded slashes are ignored.
  */
@@ -797,16 +799,35 @@ static char *File_normalize_path(const char *orig)
 {
    char *str = (char *) orig, *basename = NULL, *ret = NULL, *p;
 
-   dReturn_val_if (orig == NULL, ret);
+   if (str == NULL)
+      return NULL;
 
-   /* Make sure the string starts with "file:/" */
-   if (dStrnAsciiCasecmp(str, "file:/", 5) != 0)
+   /* Make sure the string starts with "file:" */
+   if (dStrnAsciiCasecmp(str, "file:", 5))
       return ret;
-   str += 5;
 
-   /* Skip "localhost" */
-   if (dStrnAsciiCasecmp(str, "//localhost/", 12) == 0)
+   str += 5; /* skip "file:" */
+
+   Dstr *tmp = dStr_sized_new(32);
+
+   if (str[0] == '~' && (str[1] == '/' || str[1] == '\0')) {
+      /* Expand home tilde "~" into "/home/userxyz" */
+      const char *home = getenv("HOME");
+      if (home == NULL || home[0] == '\0') {
+         _MSG("cannot get home path from the environment variable HOME\n");
+         return NULL;
+      }
+      /* Add separator if needed */
+      char *sep = home[strlen(home) - 1] == '/' ? "" : "/";
+      char *next = str + 1;
+      while (*next == '/')
+         next++;
+      dStr_sprintf(tmp, "%s%s%s", home, sep, next);
+      str = tmp->str;
+   } else if (dStrnAsciiCasecmp(str, "//localhost/", 12) == 0) {
+      /* Skip "//localhost" */
       str += 11;
+   }
 
    /* Skip packed slashes, and leave just one */
    while (str[0] == '/' && str[1] == '/')

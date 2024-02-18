@@ -730,8 +730,6 @@ void a_UIcmd_open_urlstr(void *vbw, const char *urlstr)
          ch = new_urlstr[5];
          if (!ch || ch == '.') {
             url = a_Url_new(Paths::getOldWorkingDir(), "file:");
-         } else if (ch == '~') {
-            url = a_Url_new(dGethomedir(), "file:");
          } else {
             url = a_Url_new(new_urlstr, "file:");
          }
