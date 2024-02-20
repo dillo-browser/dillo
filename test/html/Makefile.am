@@ -19,6 +19,7 @@ TESTS = \
 	render/min-width-html.html \
 	render/min-width-nested-div.html \
 	render/span-padding.html \
+	render/table-td-width-percent.html \
 	render/table-thead-tfoot.html \
 	render/white-space.html
 
@@ -29,4 +30,5 @@ XFAIL_TESTS = \
 	render/margin-auto.html \
 	render/max-width-html.html \
 	render/min-width-html.html \
-	render/span-padding.html
+	render/span-padding.html \
+	render/table-td-width-percent.html

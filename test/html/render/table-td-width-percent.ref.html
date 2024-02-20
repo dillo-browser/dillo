@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>Test relative width column</title>
+    <style type="text/css">
+      body { margin: 0px; padding: 0px }
+      .first { background: lightblue;  }
+      .second { background: lightgreen }
+      td, img { margin: 0px; padding: 0px; border: solid 1px black }
+    </style>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td width="300" class="first">
+          The next cell should have a 50% width of the table width.
+        </td>
+        <td width="100" class="second">
+          This text should use the whole cell width, but for some reason is not
+          doing it?
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
