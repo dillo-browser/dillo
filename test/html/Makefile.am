@@ -32,5 +32,4 @@ XFAIL_TESTS = \
 	render/max-width-html.html \
 	render/min-width-html.html \
 	render/span-padding.html \
-	render/table-td-width-percent-img.html \
 	render/table-td-width-percent.html

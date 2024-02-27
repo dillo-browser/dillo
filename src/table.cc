@@ -2,6 +2,7 @@
  * File: table.cc
  *
  * Copyright 2008 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -414,9 +415,17 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       a_Html_tag_set_align_attr (html, tag, tagsize);
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width"))) {
-         html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
-                                           CSS_TYPE_LENGTH_PERCENTAGE,
-                                           a_Html_parse_length (html, attrbuf));
+         CssLength l = a_Html_parse_length (html, attrbuf);
+         /* Only apply the width if the width is given in pixels,
+          * otherwise the percent value is applied to the size of the
+          * cell instead of to the table available width */
+         if (CSS_LENGTH_TYPE(l) == CSS_LENGTH_TYPE_PX) {
+            html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
+                  CSS_TYPE_LENGTH, l);
+         } else {
+            /* TODO: Support relative sizes for HTML 4.01 pages in
+             * transitional mode */
+         }
          if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
             BUG_MSG("<t%c> width attribute is obsolete.",
                (tagsize >=3 && (D_ASCII_TOLOWER(tag[2]) == 'd')) ? 'd' : 'h');
@@ -433,7 +442,7 @@ static void Html_tag_open_table_cell(DilloHtml *html,
             BUG_MSG("<t%c> bgcolor attribute is obsolete.",
                (tagsize >=3 && (D_ASCII_TOLOWER(tag[2]) == 'd')) ? 'd' : 'h');
       }
-
+      break;
    default:
       /* compiler happiness */
       break;
@@ -457,7 +466,7 @@ static void Html_tag_content_table_cell(DilloHtml *html,
       BUG_MSG("<t%c> outside <tr>.",
               (tagsize >=3 && (D_ASCII_TOLOWER(tag[2]) == 'd')) ? 'd' : 'h');
       /* a_Dw_table_add_cell takes care that dillo does not crash. */
-      /* continues */
+      /* fallthrough */
    case DILLO_HTML_TABLE_MODE_TR:
    case DILLO_HTML_TABLE_MODE_TD:
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "colspan"))) {
