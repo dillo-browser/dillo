@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <title>Test table in container with max-width and min-width</title>
+    <style type="text/css">
+      .main {
+        background: lightgreen;
+        max-width: 500px;
+        min-width: 200px;
+        padding: 10px;
+      }
+      .ruler {
+        background: red;
+        width: 500px;
+        height: 20px;
+        padding: 0px;
+        margin: 10px;
+      }
+      table, th, td {
+        padding: 0.25em;
+        background: lightblue;
+        border: solid 1px black;
+      }
+  </style>
+</head>
+<body>
+  <div class="ruler"></div>
+  <div class="main">
+    <table width="100%">
+      <tr>
+        <th>AAAAAA</th>
+        <th>BBBBBB</th>
+        <th>CCCCCC</th>
+      </tr>
+      <tr>
+        <td>aaaaaa</td>
+        <td>bbbbbb</td>
+        <td>cccccc</td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>
