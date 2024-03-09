@@ -1,11 +1,14 @@
 /*
+ * Copyright Geoff Lane nov 1999 zzassgl@twirl.mcc.ac.uk
+ * Copyright Luca Rota, Jorge Arellano Cid, Eric Gaudet 2000
+ * Copyright Jorge Arellano Cid 2009
+ */
+
+/**
+ * @file
  * The png decoder for Dillo. It is responsible for decoding PNG data
  * and transferring it to the dicache.
- *
- * Geoff Lane nov 1999 zzassgl@twirl.mcc.ac.uk
- * Luca Rota, Jorge Arellano Cid, Eric Gaudet 2000
- * Jorge Arellano Cid 2009
- *
+ * 
  * "PNG: The Definitive Guide" by Greg Roelofs, O'Reilly
  * ISBN 1-56592-542-4
  */
@@ -37,8 +40,8 @@ static char *prog_state_name[] =
 };
 #endif
 
-/*
- * This holds the data that must be saved between calls to this module.
+/**
+ * Holds the data that must be saved between calls to this module.
  * Each time it is called it is supplied with a vector of data bytes
  * obtained from the web server. The module can process any amount of the
  * supplied data.  The next time the module is called, the vector may be
@@ -57,24 +60,23 @@ static char *prog_state_name[] =
  * png_ptr and into_ptr so the FSM is very simple - much simpler than the
  * ones for XBM and PNM are.
  */
-
 typedef struct {
-   DilloImage *Image;           /* Image meta data */
-   DilloUrl *url;               /* Primary Key for the dicache */
-   int version;                 /* Secondary Key for the dicache */
-   int bgcolor;                 /* Parent widget background color */
+   DilloImage *Image;           /**< Image meta data */
+   DilloUrl *url;               /**< Primary Key for the dicache */
+   int version;                 /**< Secondary Key for the dicache */
+   int bgcolor;                 /**< Parent widget background color */
 
-   png_uint_32 width;           /* png image width */
-   png_uint_32 height;          /* png image height */
-   png_structp png_ptr;         /* libpng private data */
-   png_infop info_ptr;          /* libpng private info */
-   uchar_t *image_data;         /* decoded image data    */
-   uchar_t **row_pointers;      /* pntr to row starts    */
-   jmp_buf jmpbuf;              /* png error processing */
-   int error;                   /* error flag */
+   png_uint_32 width;           /**< png image width */
+   png_uint_32 height;          /**< png image height */
+   png_structp png_ptr;         /**< libpng private data */
+   png_infop info_ptr;          /**< libpng private info */
+   uchar_t *image_data;         /**< decoded image data    */
+   uchar_t **row_pointers;      /**< pntr to row starts    */
+   jmp_buf jmpbuf;              /**< png error processing */
+   int error;                   /**< error flag */
    png_uint_32 previous_row;
-   int rowbytes;                /* No. bytes in image row */
-   short channels;              /* No. image channels */
+   int rowbytes;                /**< No. bytes in image row */
+   short channels;              /**< No. image channels */
 
 /*
  * 0                                              last byte
@@ -85,13 +87,13 @@ typedef struct {
  * ipbuf    ipbufstart                            ipbufsize
  */
 
-   uchar_t *ipbuf;              /* image data in buffer */
-   int ipbufstart;              /* first valid image byte */
-   int ipbufsize;               /* size of valid data in */
+   uchar_t *ipbuf;              /**< image data in buffer */
+   int ipbufstart;              /**< first valid image byte */
+   int ipbufsize;               /**< size of valid data in */
 
-   enum prog_state state;       /* FSM current state  */
+   enum prog_state state;       /**< FSM current state  */
 
-   uchar_t *linebuf;            /* o/p raster data */
+   uchar_t *linebuf;            /**< o/p raster data */
 
 } DilloPng;
 
@@ -292,7 +294,7 @@ static void Png_dataend_callback(png_structp png_ptr, png_infop info_ptr)
    png->state = IS_finished;
 }
 
-/*
+/**
  * Free up the resources for this image.
  */
 static void Png_free(DilloPng *png)
@@ -309,7 +311,7 @@ static void Png_free(DilloPng *png)
    dFree(png);
 }
 
-/*
+/**
  * Finish the decoding process (and free the memory)
  */
 static void Png_close(DilloPng *png, CacheClient_t *Client)
@@ -320,7 +322,7 @@ static void Png_close(DilloPng *png, CacheClient_t *Client)
    Png_free(png);
 }
 
-/*
+/**
  * Receive and process new chunks of PNG image data
  */
 static void Png_write(DilloPng *png, void *Buf, uint_t BufSize)
@@ -389,19 +391,20 @@ static void Png_write(DilloPng *png, void *Buf, uint_t BufSize)
    }
 }
 
-/*
- * Op:  Operation to perform.
- *   If (Op == 0)
+/**
+ * PNG callback.
+ * - Op:  Operation to perform.
+ *  - If (Op == 0)
  *      start or continue processing an image if image data exists.
- *   else
+ *  - else
  *       terminate processing, cleanup any allocated memory,
  *       close down the decoding process.
  *
- * Client->CbData  : pointer to previously allocated DilloPng work area.
- *  This holds the current state of the image processing and is kept
- *  across calls to this routine.
- * Client->Buf     : Pointer to data start.
- * Client->BufSize : the size of the data buffer.
+ * - Client->CbData  : pointer to previously allocated DilloPng work area.
+ *    This holds the current state of the image processing and is kept
+ *    across calls to this routine.
+ * - Client->Buf     : Pointer to data start.
+ * - Client->BufSize : the size of the data buffer.
  *
  * You have to keep track of where you are in the image data and
  * how much has been processed.
@@ -424,7 +427,7 @@ void a_Png_callback(int Op, void *data)
    }
 }
 
-/*
+/**
  * Create the image state data that must be kept between calls
  */
 void *a_Png_new(DilloImage *Image, DilloUrl *url, int version)

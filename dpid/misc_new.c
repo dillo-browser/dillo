@@ -125,7 +125,7 @@ int a_Misc_nohang_rdtag(int socket, int timeout, Dstr **tag)
 }
 */
 
-/*
+/**
  * Alternative to mkdtemp().
  * Not as strong as mkdtemp, but enough for creating a directory.
  */
@@ -141,8 +141,8 @@ char *a_Misc_mkdtemp(char *template)
    return template;
 }
 
-/*
- * Return a new, nonexistent file name from a template
+/**
+ * Return a new, nonexistent file name from a template.
  * (adapted from dietlibc; alternative to mkdtemp())
  */
 char *a_Misc_mkfname(char *template)
@@ -176,7 +176,7 @@ char *a_Misc_mkfname(char *template)
    }
 }
 
-/*
+/**
  * Return a new, random hexadecimal string of 'nchar' characters.
  */
 char *a_Misc_mksecret(int nchar)

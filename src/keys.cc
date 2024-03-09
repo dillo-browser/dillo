@@ -142,7 +142,7 @@ static Dlist *bindings;
 
 
 
-/*
+/**
  * Initialize the bindings list
  */
 void Keys::init()
@@ -163,7 +163,7 @@ void Keys::init()
    }
 }
 
-/*
+/**
  * Free data
  */
 void Keys::free()
@@ -178,7 +178,7 @@ void Keys::free()
    dList_free(bindings);
 }
 
-/*
+/**
  * Compare function by {key,modifier} pairs.
  */
 int Keys::nodeByKeyCmp(const void *node, const void *key)
@@ -188,7 +188,7 @@ int Keys::nodeByKeyCmp(const void *node, const void *key)
    return (n->key != k->key) ? (n->key - k->key) : (n->modifier - k->modifier);
 }
 
-/*
+/**
  * Look if the just pressed key is bound to a command.
  * Return value: The command if found, KEYS_NOP otherwise.
  */
@@ -221,7 +221,7 @@ KeysCommand_t Keys::getKeyCmd()
    return ret;
 }
 
-/*
+/**
  * Remove a key binding from the table.
  */
 void Keys::delKeyCmd(int key, int mod)
@@ -238,7 +238,7 @@ void Keys::delKeyCmd(int key, int mod)
    }
 }
 
-/*
+/**
  * Takes a key name and looks it up in the mapping table. If
  * found, its key code is returned. Otherwise -1 is given
  * back.
@@ -255,7 +255,7 @@ int Keys::getKeyCode(char *keyName)
    return -1;
 }
 
-/*
+/**
  * Takes a command name and searches it in the mapping table.
  * Return value: command code if found, -1 otherwise
  */
@@ -270,7 +270,7 @@ KeysCommand_t Keys::getCmdCode(const char *commandName)
    return KEYS_INVALID;
 }
 
-/*
+/**
  * Takes a modifier name and looks it up in the mapping table. If
  * found, its key code is returned. Otherwise -1 is given back.
  */
@@ -286,7 +286,7 @@ int Keys::getModifier(char *modifierName)
    return -1;
 }
 
-/*
+/**
  * Given a keys command, return a shortcut for it, or 0 if there is none
  * (e.g., for KEYS_NEW_WINDOW, return CTRL+'n').
  */
@@ -302,7 +302,7 @@ int Keys::getShortcut(KeysCommand_t cmd)
    return 0;
 }
 
-/*
+/**
  * Parse a key-combination/command-name pair, and
  * insert it into the bindings list.
  */
@@ -368,7 +368,7 @@ void Keys::parseKey(char *key, char *commandName)
    }
 }
 
-/*
+/**
  * Parse the keysrc.
  */
 void Keys::parse(FILE *fp)

@@ -21,7 +21,7 @@ typedef struct Decode {
 typedef struct DecodeTransfer {
    Dstr *leftover;
    void *state;
-   bool_t finished;    /* has the terminating chunk been seen? */
+   bool_t finished;    /**< has the terminating chunk been seen? */
 } DecodeTransfer;
 
 DecodeTransfer *a_Decode_transfer_init(const char *format);

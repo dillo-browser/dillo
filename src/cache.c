@@ -10,6 +10,7 @@
  */
 
 /*
+ * @file
  * Dillo's cache module
  */
 
@@ -35,9 +36,9 @@
 #include "timeout.hh"
 #include "uicmd.hh"
 
-/* Maximum initial size for the automatically-growing data buffer */
+/** Maximum initial size for the automatically-growing data buffer */
 #define MAX_INIT_BUF  1024*1024
-/* Maximum filesize for a URL, before offering a download */
+/** Maximum filesize for a URL, before offering a download */
 #define HUGE_FILESIZE 15*1024*1024
 
 /*
@@ -45,37 +46,37 @@
  */
 
 typedef struct {
-   const DilloUrl *Url;      /* Cached Url. Url is used as a primary Key */
-   char *TypeDet;            /* MIME type string (detected from data) */
-   char *TypeHdr;            /* MIME type string as from the HTTP Header */
-   char *TypeMeta;           /* MIME type string from META HTTP-EQUIV */
-   char *TypeNorm;           /* MIME type string normalized */
-   Dstr *Header;             /* HTTP header */
-   const DilloUrl *Location; /* New URI for redirects */
-   Dlist *Auth;              /* Authentication fields */
-   Dstr *Data;               /* Pointer to raw data */
-   Dstr *UTF8Data;           /* Data after charset translation */
-   int DataRefcount;         /* Reference count */
-   DecodeTransfer *TransferDecoder;  /* Transfer decoder (e.g., chunked) */
-   Decode *ContentDecoder;   /* Data decoder (e.g., gzip) */
-   Decode *CharsetDecoder;   /* Translates text to UTF-8 encoding */
-   int ExpectedSize;         /* Goal size of the HTTP transfer (0 if unknown)*/
-   int TransferSize;         /* Actual length of the HTTP transfer */
-   uint_t Flags;             /* See Flag Defines in cache.h */
+   const DilloUrl *Url;      /**< Cached Url. Url is used as a primary Key */
+   char *TypeDet;            /**< MIME type string (detected from data) */
+   char *TypeHdr;            /**< MIME type string as from the HTTP Header */
+   char *TypeMeta;           /**< MIME type string from META HTTP-EQUIV */
+   char *TypeNorm;           /**< MIME type string normalized */
+   Dstr *Header;             /**< HTTP header */
+   const DilloUrl *Location; /**< New URI for redirects */
+   Dlist *Auth;              /**< Authentication fields */
+   Dstr *Data;               /**< Pointer to raw data */
+   Dstr *UTF8Data;           /**< Data after charset translation */
+   int DataRefcount;         /**< Reference count */
+   DecodeTransfer *TransferDecoder;  /**< Transfer decoder (e.g., chunked) */
+   Decode *ContentDecoder;   /**< Data decoder (e.g., gzip) */
+   Decode *CharsetDecoder;   /**< Translates text to UTF-8 encoding */
+   int ExpectedSize;         /**< Goal size of the HTTP transfer (0 if unknown)*/
+   int TransferSize;         /**< Actual length of the HTTP transfer */
+   uint_t Flags;             /**< See Flag Defines in cache.h */
 } CacheEntry_t;
 
 
 /*
  *  Local data
  */
-/* A sorted list for cached data. Holds pointers to CacheEntry_t structs */
+/** A sorted list for cached data. Holds pointers to CacheEntry_t structs */
 static Dlist *CachedURLs;
 
-/* A list for cache clients.
+/** A list for cache clients.
  * Although implemented as a list, we'll call it ClientQueue  --Jcid */
 static Dlist *ClientQueue;
 
-/* A list for delayed clients (it holds weak pointers to cache entries,
+/** A list for delayed clients (it holds weak pointers to cache entries,
  * which are used to make deferred calls to Cache_process_queue) */
 static Dlist *DelayedQueue;
 static uint_t DelayedQueueIdleId = 0;
@@ -89,7 +90,7 @@ static void Cache_delayed_process_queue(CacheEntry_t *entry);
 static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw);
 static void Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds);
 
-/*
+/**
  * Determine if two cache entries are equal (used by CachedURLs)
  */
 static int Cache_entry_cmp(const void *v1, const void *v2)
@@ -99,7 +100,7 @@ static int Cache_entry_cmp(const void *v1, const void *v2)
    return a_Url_cmp(d1->Url, d2->Url);
 }
 
-/*
+/**
  * Determine if two cache entries are equal, using a URL as key.
  */
 static int Cache_entry_by_url_cmp(const void *v1, const void *v2)
@@ -110,7 +111,7 @@ static int Cache_entry_by_url_cmp(const void *v1, const void *v2)
    return a_Url_cmp(u1, u2);
 }
 
-/*
+/**
  * Initialize cache data
  */
 void a_Cache_init(void)
@@ -131,7 +132,7 @@ void a_Cache_init(void)
 
 /* Client operations ------------------------------------------------------ */
 
-/*
+/**
  * Add a client to ClientQueue.
  *  - Every client-field is just a reference (except 'Web').
  *  - Return a unique number for identifying the client.
@@ -162,7 +163,7 @@ static int Cache_client_enqueue(const DilloUrl *Url, DilloWeb *Web,
    return ClientKey;
 }
 
-/*
+/**
  * Compare function for searching a Client by its key
  */
 static int Cache_client_by_key_cmp(const void *client, const void *key)
@@ -170,7 +171,7 @@ static int Cache_client_by_key_cmp(const void *client, const void *key)
    return ((CacheClient_t *)client)->Key - VOIDP2INT(key);
 }
 
-/*
+/**
  * Remove a client from the queue
  */
 static void Cache_client_dequeue(CacheClient_t *Client)
@@ -185,7 +186,7 @@ static void Cache_client_dequeue(CacheClient_t *Client)
 
 /* Entry operations ------------------------------------------------------- */
 
-/*
+/**
  * Set safe values for a new cache entry
  */
 static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
@@ -209,7 +210,7 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->Flags = CA_IsEmpty | CA_InProgress | CA_KeepAlive;
 }
 
-/*
+/**
  * Get the data structure for a cached URL (using 'Url' as the search key)
  * If 'Url' isn't cached, return NULL
  */
@@ -218,7 +219,7 @@ static CacheEntry_t *Cache_entry_search(const DilloUrl *Url)
    return dList_find_sorted(CachedURLs, Url, Cache_entry_by_url_cmp);
 }
 
-/*
+/**
  * Given a URL, find its cache entry, following redirections.
  */
 static CacheEntry_t *Cache_entry_search_with_redirect(const DilloUrl *Url)
@@ -242,7 +243,7 @@ static CacheEntry_t *Cache_entry_search_with_redirect(const DilloUrl *Url)
    return entry;
 }
 
-/*
+/**
  * Allocate and set a new entry in the cache list
  */
 static CacheEntry_t *Cache_entry_add(const DilloUrl *Url)
@@ -260,7 +261,7 @@ static CacheEntry_t *Cache_entry_add(const DilloUrl *Url)
    return new_entry;
 }
 
-/*
+/**
  * Inject full page content directly into the cache.
  * Used for "about:splash". May be used for "about:cache" too.
  */
@@ -279,7 +280,7 @@ static void Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
    entry->ExpectedSize = entry->TransferSize = entry->Data->len;
 }
 
-/*
+/**
  *  Free Authentication fields.
  */
 static void Cache_auth_free(Dlist *auth)
@@ -291,7 +292,7 @@ static void Cache_auth_free(Dlist *auth)
    dList_free(auth);
 }
 
-/*
+/**
  *  Free the components of a CacheEntry_t struct.
  */
 static void Cache_entry_free(CacheEntry_t *entry)
@@ -315,7 +316,7 @@ static void Cache_entry_free(CacheEntry_t *entry)
    dFree(entry);
 }
 
-/*
+/**
  * Remove an entry, from the cache.
  * All the entry clients are removed too! (it may stop rendering of this
  * same resource on other windows, but nothing more).
@@ -349,7 +350,7 @@ static void Cache_entry_remove(CacheEntry_t *entry, DilloUrl *url)
    Cache_entry_free(entry);
 }
 
-/*
+/**
  * Wrapper for capi.
  */
 void a_Cache_entry_remove_by_url(DilloUrl *url)
@@ -359,7 +360,7 @@ void a_Cache_entry_remove_by_url(DilloUrl *url)
 
 /* Misc. operations ------------------------------------------------------- */
 
-/*
+/**
  * Try finding the url in the cache. If it hits, send the cache contents
  * from there. If it misses, set up a new connection.
  *
@@ -369,7 +370,7 @@ void a_Cache_entry_remove_by_url(DilloUrl *url)
  *   Note: 'Call' and/or 'CbData' can be NULL, in that case they get set
  *   later by a_Web_dispatch_by_type, based on content/type and 'Web' data.
  *
- * Return value: A primary key for identifying the client,
+ * @return A primary key for identifying the client,
  */
 int a_Cache_open_url(void *web, CA_Callback_t Call, void *CbData)
 {
@@ -398,7 +399,7 @@ int a_Cache_open_url(void *web, CA_Callback_t Call, void *CbData)
    return ClientKey;
 }
 
-/*
+/**
  * Get cache entry status
  */
 uint_t a_Cache_get_flags(const DilloUrl *url)
@@ -407,7 +408,7 @@ uint_t a_Cache_get_flags(const DilloUrl *url)
    return (entry ? entry->Flags : 0);
 }
 
-/*
+/**
  * Get cache entry status (following redirections).
  */
 uint_t a_Cache_get_flags_with_redirection(const DilloUrl *url)
@@ -416,7 +417,7 @@ uint_t a_Cache_get_flags_with_redirection(const DilloUrl *url)
    return (entry ? entry->Flags : 0);
 }
 
-/*
+/**
  * Reference the cache data.
  */
 static void Cache_ref_data(CacheEntry_t *entry)
@@ -434,7 +435,7 @@ static void Cache_ref_data(CacheEntry_t *entry)
    }
 }
 
-/*
+/**
  * Unreference the cache data.
  */
 static void Cache_unref_data(CacheEntry_t *entry)
@@ -455,7 +456,7 @@ static void Cache_unref_data(CacheEntry_t *entry)
    }
 }
 
-/*
+/**
  * Get current content type.
  */
 static const char *Cache_current_content_type(CacheEntry_t *entry)
@@ -464,7 +465,7 @@ static const char *Cache_current_content_type(CacheEntry_t *entry)
           : entry->TypeHdr ? entry->TypeHdr : entry->TypeDet;
 }
 
-/*
+/**
  * Get current Content-Type for cache entry found by URL.
  */
 const char *a_Cache_get_content_type(const DilloUrl *url)
@@ -474,7 +475,7 @@ const char *a_Cache_get_content_type(const DilloUrl *url)
    return (entry) ? Cache_current_content_type(entry) : NULL;
 }
 
-/*
+/**
  * Get pointer to entry's data.
  */
 static Dstr *Cache_data(CacheEntry_t *entry)
@@ -482,10 +483,10 @@ static Dstr *Cache_data(CacheEntry_t *entry)
    return entry->UTF8Data ? entry->UTF8Data : entry->Data;
 }
 
-/*
+/**
  * Change Content-Type for cache entry found by url.
  * from = { "http" | "meta" }
- * Return new content type.
+ * @return new content type.
  */
 const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
                                      const char *from)
@@ -538,9 +539,9 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
    return curr;
 }
 
-/*
+/**
  * Get the pointer to the URL document, and its size, from the cache entry.
- * Return: 1 cached, 0 not cached.
+ * @return 1 cached, 0 not cached.
  */
 int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
 {
@@ -558,7 +559,7 @@ int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
    return (entry ? 1 : 0);
 }
 
-/*
+/**
  * Unreference the data buffer when no longer using it.
  */
 void a_Cache_unref_buf(const DilloUrl *Url)
@@ -567,10 +568,10 @@ void a_Cache_unref_buf(const DilloUrl *Url)
 }
 
 
-/*
+/**
  * Extract a single field from the header, allocating and storing the value
  * in 'field'. ('fieldname' must not include the trailing ':')
- * Return a new string with the field-content if found (NULL on error)
+ * @return a new string with the field-content if found (NULL on error)
  * (This function expects a '\r'-stripped header, with one-line header fields)
  */
 static char *Cache_parse_field(const char *header, const char *fieldname)
@@ -604,7 +605,7 @@ static char *Cache_parse_field(const char *header, const char *fieldname)
    return NULL;
 }
 
-/*
+/**
  * Extract multiple fields from the header.
  */
 static Dlist *Cache_parse_multiple_fields(const char *header,
@@ -646,7 +647,7 @@ static Dlist *Cache_parse_multiple_fields(const char *header,
    return fields;
 }
 
-/*
+/**
  * Scan, allocate, and set things according to header info.
  * (This function needs the whole header to work)
  */
@@ -810,7 +811,7 @@ static void Cache_parse_header(CacheEntry_t *entry)
    Cache_ref_data(entry);
 }
 
-/*
+/**
  * Consume bytes until the whole header is got (up to a "\r\n\r\n" sequence)
  * (Also unfold multi-line fields and strip '\r' chars from header)
  */
@@ -879,7 +880,7 @@ static void Cache_finish_msg(CacheEntry_t *entry)
    }
 }
 
-/*
+/**
  * Receive new data, update the reception buffer (for next read), update the
  * cache, and service the client queue.
  *
@@ -982,7 +983,7 @@ bool_t a_Cache_process_dbuf(int Op, const char *buf, size_t buf_size,
    return done;
 }
 
-/*
+/**
  * Process redirections (HTTP 30x answers)
  * (This is a work in progress --not finished yet)
  */
@@ -1041,7 +1042,7 @@ typedef struct {
    BrowserWindow *bw;
 } CacheAuthData_t;
 
-/*
+/**
  * Ask for user/password and reload the page.
  */
 static void Cache_auth_callback(void *vdata)
@@ -1056,7 +1057,7 @@ static void Cache_auth_callback(void *vdata)
    a_Timeout_remove();
 }
 
-/*
+/**
  * Set a timeout function to ask for user/password.
  */
 static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw)
@@ -1079,9 +1080,9 @@ static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw)
    }
 }
 
-/*
+/**
  * Check whether a URL scheme is downloadable.
- * Return: 1 enabled, 0 disabled.
+ * @return 1 enabled, 0 disabled.
  */
 int a_Cache_download_enabled(const DilloUrl *url)
 {
@@ -1092,7 +1093,7 @@ int a_Cache_download_enabled(const DilloUrl *url)
    return 0;
 }
 
-/*
+/**
  * Don't process data any further, but let the cache fill the entry.
  * (Currently used to handle WEB_RootUrl redirects,
  *  and to ignore image redirects --Jcid)
@@ -1119,7 +1120,7 @@ typedef struct {
    DilloUrl *url;
 } Cache_savelink_t;
 
-/*
+/**
  * Save link from behind a timeout so that Cache_process_queue() can
  * get on with its work.
  */
@@ -1132,7 +1133,7 @@ static void Cache_savelink_cb(void *vdata)
    dFree(data);
 }
 
-/*
+/**
  * Let the client know that we're not following a redirection.
  */
 static void Cache_provide_redirection_blocked_page(CacheEntry_t *entry,
@@ -1153,7 +1154,7 @@ static void Cache_provide_redirection_blocked_page(CacheEntry_t *entry,
    dFree(client->Buf);
 }
 
-/*
+/**
  * Update cache clients for a single cache-entry
  * Tasks:
  *   - Set the client function (if not already set)
@@ -1161,7 +1162,7 @@ static void Cache_provide_redirection_blocked_page(CacheEntry_t *entry,
  *   - Remove clients when done
  *   - Call redirect handler
  *
- * Return: Cache entry, which may be NULL if it has been removed.
+ * @return Cache entry, which may be NULL if it has been removed.
  *
  * TODO: Implement CA_Abort Op in client callback
  */
@@ -1349,7 +1350,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
    return entry;
 }
 
-/*
+/**
  * Callback function for Cache_delayed_process_queue.
  */
 static void Cache_delayed_process_queue_callback()
@@ -1367,7 +1368,7 @@ static void Cache_delayed_process_queue_callback()
    a_Timeout_remove();
 }
 
-/*
+/**
  * Set a call to Cache_process_queue from the main cycle.
  */
 static void Cache_delayed_process_queue(CacheEntry_t *entry)
@@ -1383,9 +1384,9 @@ static void Cache_delayed_process_queue(CacheEntry_t *entry)
    }
 }
 
-/*
+/**
  * Last Client for this entry?
- * Return: Client if true, NULL otherwise
+ * @return Client if true, NULL otherwise
  * (cache.c has only one call to a capi function. This avoids a second one)
  */
 CacheClient_t *a_Cache_client_get_if_unique(int Key)
@@ -1404,7 +1405,7 @@ CacheClient_t *a_Cache_client_get_if_unique(int Key)
    return (n == 1) ? Client : NULL;
 }
 
-/*
+/**
  * Remove a client from the client queue
  * TODO: notify the dicache and upper layers
  */
@@ -1434,7 +1435,7 @@ void a_Cache_stop_client(int Key)
 }
 
 
-/*
+/**
  * Memory deallocator (only called at exit time)
  */
 void a_Cache_freeall(void)

@@ -28,7 +28,7 @@ typedef enum {
 } UIButton;
 
 typedef enum {
-   UI_NORMAL = 0,     /* make sure it's compatible with bool */
+   UI_NORMAL = 0,     /**< make sure it's compatible with bool */
    UI_HIDDEN = 1
 } UIPanelmode;
 
@@ -43,7 +43,7 @@ class CustTabs;
 
 
 // Class definitions ---------------------------------------------------------
-/*
+/**
  * Used to reposition group's widgets when some of them are hidden.
  * All children get the height of the group but retain their original width.
  * The resizable child get's the remaining space.
@@ -155,7 +155,7 @@ public:
    UI(int x,int y,int w,int h, const char* label = 0, const UI *cur_ui=NULL);
    ~UI();
 
-   // To manage what events to catch and which to let pass
+   /** To manage what events to catch and which to let pass */
    int handle(int event);
 
    const char *get_location();

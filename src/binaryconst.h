@@ -1,13 +1,15 @@
 #ifndef __BINARYCONST_H__
 #define __BINARYCONST_H__
 
-/* binaryconst.h was integrated into the Dillo project in April 2004, and
+/* @file
+ *
+ * Macros for allowing binary constants in C.
+ * By Tom Torfs - donated to the public domain
+ *
+ * binaryconst.h was integrated into the Dillo project in April 2004, and
  * presumably comes from the ancestor of the code found at
  * http://cprog.tomsweb.net/binconst.txt
  */
-
-/* Macros for allowing binary constants in C
- * By Tom Torfs - donated to the public domain */
 
 #define HEX__(n) 0x##n##LU
 

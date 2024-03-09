@@ -19,7 +19,7 @@
 #include "msg.h"
 #include "misc.h"
 
-/*
+/**
  * Escape characters as %XX sequences.
  * Return value: New string.
  */
@@ -47,7 +47,7 @@ char *a_Misc_escape_chars(const char *str, const char *esc_set)
 }
 
 #define TAB_SIZE 8
-/*
+/**
  * Takes a string and converts any tabs to spaces.
  */
 int
@@ -123,7 +123,7 @@ typedef enum {
    DT_IMAGE_JPG,
 } DetectedContentType;
 
-/*
+/**
  * Detects 'Content-Type' from a data stream sample.
  *
  * It uses the magic(5) logic from file(1). Currently, it
@@ -203,7 +203,7 @@ int a_Misc_get_content_type_from_data(void *Data, size_t Size, const char **PT)
    return st;
 }
 
-/*
+/**
  * Parse Content-Type string, e.g., "text/html; charset=utf-8".
  * Content-Type is defined in RFC 2045 section 5.1.
  */
@@ -267,7 +267,7 @@ void a_Misc_parse_content_type(const char *type, char **major, char **minor,
    }
 }
 
-/*
+/**
  * Compare two Content-Type strings.
  * Return 0 if they are equivalent, and 1 otherwise.
  */
@@ -301,13 +301,13 @@ int a_Misc_content_type_cmp(const char *ct1, const char *ct2)
    return ret;
 }
 
-/*
+/**
  * Check the server-supplied 'Content-Type' against our detected type.
  * (some servers seem to default to "text/plain").
  *
- * Return value:
- *  0,  if they match
- *  -1, if a mismatch is detected
+ * @return
+ *  - 0,  if they match
+ *  - -1, if a mismatch is detected
  *
  * There are many MIME types Dillo doesn't know, they're handled
  * as "application/octet-stream" (as the SPEC says).
@@ -354,7 +354,7 @@ int a_Misc_content_type_check(const char *EntryType, const char *DetectedType)
    return st;
 }
 
-/*
+/**
  * Parse a geometry string.
  */
 int a_Misc_parse_geometry(char *str, int *x, int *y, int *w, int *h)
@@ -384,8 +384,8 @@ int a_Misc_parse_geometry(char *str, int *x, int *y, int *w, int *h)
    return ret;
 }
 
-/*
- * Parse dillorc's search_url string ("[<label> ]<url>")
+/**
+ * Parse dillorc's search_url string (`[<label> ]<url>`)
  * Return value: -1 on error, 0 on success (and label and urlstr pointers)
  */
 int a_Misc_parse_search_url(char *source, char **label, char **urlstr)
@@ -418,7 +418,7 @@ int a_Misc_parse_search_url(char *source, char **label, char **urlstr)
    return ret;
 }
 
-/*
+/**
  * Encodes string using base64 encoding.
  * Return value: new string or NULL if input string is empty.
  */
@@ -456,7 +456,7 @@ char *a_Misc_encode_base64(const char *in)
    return out;
 }
 
-/*
+/**
  * Load a local file into a dStr.
  * Return value: dStr on success, NULL on error.
  * TODO: a filesize threshold may be implemented.

@@ -72,7 +72,7 @@ int MyInput::handle(int e)
    return ret;
 }
 
-/*
+/**
  * Find next occurrence of input key
  */
 void Findbar::search_cb(Fl_Widget *, void *vfb)
@@ -86,7 +86,7 @@ void Findbar::search_cb(Fl_Widget *, void *vfb)
                               key, case_sens, false);
 }
 
-/*
+/**
  * Find previous occurrence of input key
  */
 void Findbar::searchBackwards_cb(Fl_Widget *, void *vfb)
@@ -101,7 +101,7 @@ void Findbar::searchBackwards_cb(Fl_Widget *, void *vfb)
    }
 }
 
-/*
+/**
  * Hide the search bar
  */
 void Findbar::hide_cb(Fl_Widget *, void *vfb)
@@ -109,7 +109,7 @@ void Findbar::hide_cb(Fl_Widget *, void *vfb)
    a_UIcmd_findbar_toggle(a_UIcmd_get_bw_by_widget(vfb), 0);
 }
 
-/*
+/**
  * Construct text search bar
  */
 Findbar::Findbar(int width, int height) :
@@ -176,7 +176,7 @@ Findbar::~Findbar()
    delete hideImg;
 }
 
-/*
+/**
  * Handle events. Used to catch FL_Escape events.
  */
 int Findbar::handle(int event)
@@ -192,7 +192,7 @@ int Findbar::handle(int event)
    return Fl_Group::handle(event);
 }
 
-/*
+/**
  * Show the findbar and focus the input field
  */
 void Findbar::show()

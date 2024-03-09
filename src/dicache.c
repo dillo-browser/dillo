@@ -29,7 +29,7 @@ enum {
 };
 
 
-/*
+/**
  * List of DICacheEntry. May hold several versions of the same image,
  * although most of the time it holds just one.
  */
@@ -39,7 +39,7 @@ static uint_t dicache_size_total; /* invariant: dicache_size_total is
                                    * the sum of the image sizes (3*w*h)
                                    * of all the images in the dicache. */
 
-/*
+/**
  * Compare function for image entries
  */
 static int Dicache_entry_cmp(const void *v1, const void *v2)
@@ -56,7 +56,7 @@ static int Dicache_entry_cmp(const void *v1, const void *v2)
    return st;
 }
 
-/*
+/**
  * Initialize dicache data
  */
 void a_Dicache_init(void)
@@ -65,7 +65,7 @@ void a_Dicache_init(void)
    dicache_size_total = 0;
 }
 
-/*
+/**
  * Create, and initialize a new, empty, dicache entry
  */
 static DICacheEntry *Dicache_entry_new(void)
@@ -93,7 +93,7 @@ static DICacheEntry *Dicache_entry_new(void)
    return entry;
 }
 
-/*
+/**
  * Add a new entry in the dicache
  * (a single URL may have several entries)
  */
@@ -117,9 +117,9 @@ static DICacheEntry *Dicache_add_entry(const DilloUrl *Url)
    return entry;
 }
 
-/*
+/**
  * Search a particular version of a URL in the Dicache.
- * Return value: a pointer to the entry if found; NULL otherwise.
+ * @return a pointer to the entry if found; NULL otherwise.
  *
  * Notes: DIC_Last means last version of the image.
  *        version zero is not allowed.
@@ -138,7 +138,7 @@ DICacheEntry *a_Dicache_get_entry(const DilloUrl *Url, int version)
    return entry;
 }
 
-/*
+/**
  * Actually free a dicache entry, given the URL and the version number.
  */
 static void Dicache_remove(const DilloUrl *Url, int version)
@@ -168,7 +168,7 @@ static void Dicache_remove(const DilloUrl *Url, int version)
    dFree(entry);
 }
 
-/*
+/**
  * Unrefs the counter of a dicache entry (it counts cache clients).
  * If there're no clients and no imgbuf, remove the entry.
  * Otherwise, let a_Dicache_cleanup() do the job later
@@ -188,7 +188,7 @@ void a_Dicache_unref(const DilloUrl *Url, int version)
    }
 }
 
-/*
+/**
  * Refs the counter of a dicache entry.
  */
 DICacheEntry* a_Dicache_ref(const DilloUrl *Url, int version)
@@ -201,7 +201,7 @@ DICacheEntry* a_Dicache_ref(const DilloUrl *Url, int version)
    return entry;
 }
 
-/*
+/**
  * Invalidate this entry. This is used for the reloading mechanism.
  * Can't erase current versions, but a_Dicache_get_entry(url, DIC_Last)
  * must return NULL.
@@ -216,7 +216,7 @@ void a_Dicache_invalidate_entry(const DilloUrl *Url)
 
 /* ------------------------------------------------------------------------- */
 
-/*
+/**
  * Set image's width, height & type
  * - 'width' and 'height' come from the image data.
  * - HTML width and height attrs are handled with setNonCssHint.
@@ -253,7 +253,7 @@ void a_Dicache_set_parms(DilloUrl *url, int version, DilloImage *Image,
    dicache_size_total += DicEntry->TotalSize;
 }
 
-/*
+/**
  * Implement the set_cmap method for the Image
  */
 void a_Dicache_set_cmap(DilloUrl *url, int version, int bg_color,
@@ -277,7 +277,7 @@ void a_Dicache_set_cmap(DilloUrl *url, int version, int bg_color,
    DicEntry->State = DIC_SetCmap;
 }
 
-/*
+/**
  * Reset for a new scan from a multiple-scan image.
  */
 void a_Dicache_new_scan(const DilloUrl *url, int version)
@@ -297,7 +297,7 @@ void a_Dicache_new_scan(const DilloUrl *url, int version)
    a_Imgbuf_new_scan(DicEntry->v_imgbuf);
 }
 
-/*
+/**
  * Implement the write method
  * (Write a scan line into the Dicache entry)
  * buf: row buffer
@@ -320,7 +320,7 @@ void a_Dicache_write(DilloUrl *url, int version, const uchar_t *buf, uint_t Y)
    DicEntry->State = DIC_Write;
 }
 
-/*
+/**
  * Implement the close method of the decoding process
  */
 void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
@@ -350,16 +350,15 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
 
 /* ------------------------------------------------------------------------- */
 
-/*
+/**
  * Generic MIME handler for GIF, JPEG and PNG.
  * Sets a_Dicache_callback as the cache-client,
  * and also sets the image decoder.
  *
- * Parameters:
- *   Type: MIME type
- *   Ptr:  points to a Web structure
- *   Call: Dillo calls this with more data/eod
- *   Data: Decoding data structure
+ * @param Type MIME type
+ * @param Ptr  points to a \ref DilloWeb structure
+ * @param Call Dillo calls this with more data/eod
+ * @param Data Decoding data structure
  */
 static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
                            CA_Callback_t *Call, void **Data)
@@ -406,7 +405,7 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    return (a_Image_get_dw (web->Image));
 }
 
-/*
+/**
  * PNG wrapper for Dicache_image()
  */
 void *a_Dicache_png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
@@ -415,7 +414,7 @@ void *a_Dicache_png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
    return Dicache_image(DIC_Png, Type, Ptr, Call, Data);
 }
 
-/*
+/**
  * GIF wrapper for Dicache_image()
  */
 void *a_Dicache_gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
@@ -424,7 +423,7 @@ void *a_Dicache_gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
    return Dicache_image(DIC_Gif, Type, Ptr, Call, Data);
 }
 
-/*
+/**
  * JPEG wrapper for Dicache_image()
  */
 void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
@@ -433,7 +432,7 @@ void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
    return Dicache_image(DIC_Jpeg, Type, Ptr, Call, Data);
 }
 
-/*
+/**
  * This function is a cache client; (but feeds its clients from dicache)
  */
 void a_Dicache_callback(int Op, CacheClient_t *Client)
@@ -501,7 +500,7 @@ void a_Dicache_callback(int Op, CacheClient_t *Client)
 
 /* ------------------------------------------------------------------------- */
 
-/*
+/**
  * Free the imgbuf (RGB data) of unused entries.
  */
 void a_Dicache_cleanup(void)
@@ -526,7 +525,7 @@ void a_Dicache_cleanup(void)
 
 /* ------------------------------------------------------------------------- */
 
-/*
+/**
  * Deallocate memory used by dicache module
  * (Call this one at exit time, with no cache clients queued)
  */

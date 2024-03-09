@@ -25,6 +25,9 @@
 #include "tls_openssl.h"
 #include "tls_mbedtls.h"
 
+/**
+ * Initialize TLS library.
+ */
 void a_Tls_init()
 {
 #if ! defined(ENABLE_TLS)
@@ -38,7 +41,7 @@ void a_Tls_init()
 #endif
 }
 
-/*
+/**
  * Return TLS connection information for a given file
  * descriptor, or NULL if no TLS connection was found.
  */
@@ -55,7 +58,7 @@ void *a_Tls_connection(int fd)
 #endif
 }
 
-/*
+/**
  * The purpose here is to permit a single initial connection to a server.
  * Once we have the certificate, know whether we like it -- and whether the
  * user accepts it -- HTTP can run through queued sockets as normal.
@@ -75,9 +78,9 @@ int a_Tls_connect_ready(const DilloUrl *url)
 #endif
 }
 
-/*
+/**
  * Did everything seem proper with the certificate -- no warnings to
- * click through?
+ * click through?.
  */
 int a_Tls_certificate_is_clean(const DilloUrl *url)
 {
@@ -92,8 +95,8 @@ int a_Tls_certificate_is_clean(const DilloUrl *url)
 #endif
 }
 
-/*
- * Clean up the OpenSSL library
+/**
+ * Clean up the TLS library.
  */
 void a_Tls_freeall(void)
 {

@@ -21,40 +21,42 @@ typedef enum {
 } CssOrigin;
 
 typedef enum {
-   CSS_TYPE_INTEGER,            /* This type is only used internally, for x-*
+   CSS_TYPE_INTEGER,            /**< This type is only used internally, for x-*
                                    properties. */
-   CSS_TYPE_ENUM,               /* Value is i, if represented by
+   CSS_TYPE_ENUM,               /**< Value is i, if represented by
                                    enum_symbols[i]. */
-   CSS_TYPE_MULTI_ENUM,         /* For all enum_symbols[i], 1 << i are
+   CSS_TYPE_MULTI_ENUM,         /**< For all enum_symbols[i], 1 << i are
                                    combined. */
-   CSS_TYPE_LENGTH_PERCENTAGE,  /* <length> or <percentage>. Represented by
+   CSS_TYPE_LENGTH_PERCENTAGE,  /**< <length> or <percentage>. Represented by
                                    CssLength. */
-   CSS_TYPE_LENGTH,             /* <length>, represented as CssLength.
+   CSS_TYPE_LENGTH,             /**< <length>, represented as CssLength.
                                    Note: In some cases, CSS_TYPE_LENGTH is used
                                    instead of CSS_TYPE_LENGTH_PERCENTAGE,
                                    only because Dw cannot handle percentages
                                    in this particular case (e.g.
                                    'margin-*-width'). */
-   CSS_TYPE_SIGNED_LENGTH,      /* As CSS_TYPE_LENGTH but may be negative. */
+   CSS_TYPE_SIGNED_LENGTH,      /**< As CSS_TYPE_LENGTH but may be negative. */
    CSS_TYPE_LENGTH_PERCENTAGE_NUMBER,  /* <length> or <percentage>, or <number> */
-   CSS_TYPE_AUTO,               /* Represented as CssLength of type
+   CSS_TYPE_AUTO,               /**< Represented as CssLength of type
                                    CSS_LENGTH_TYPE_AUTO */
-   CSS_TYPE_COLOR,              /* Represented as integer. */
-   CSS_TYPE_FONT_WEIGHT,        /* this very special and only used by
+   CSS_TYPE_COLOR,              /**< Represented as integer. */
+   CSS_TYPE_FONT_WEIGHT,        /**< this very special and only used by
                                    'font-weight' */
-   CSS_TYPE_STRING,             /* <string> */
-   CSS_TYPE_SYMBOL,             /* Symbols, which are directly copied (as
+   CSS_TYPE_STRING,             /**< <string> */
+   CSS_TYPE_SYMBOL,             /**< Symbols, which are directly copied (as
                                    opposed to CSS_TYPE_ENUM and
                                    CSS_TYPE_MULTI_ENUM). Used for
                                    'font-family'. */
-   CSS_TYPE_URI,                /* <uri> */
+   CSS_TYPE_URI,                /**< <uri> */
    CSS_TYPE_BACKGROUND_POSITION,
-   CSS_TYPE_UNUSED              /* Not yet used. Will itself get unused some
+   CSS_TYPE_UNUSED              /**< Not yet used. Will itself get unused some
                                    day. */
 } CssValueType;
 
-/*
+/**
  * Lengths are represented as int in the following way:
+ *
+ * @verbatim
  *
  *    | <------   integer value   ------> |
  *
@@ -67,24 +69,25 @@ typedef enum {
  *
  *    | <------ fixed point value ------> |
  *
+ * @endverbatim
+ *
  * where type is one of the CSS_LENGTH_TYPE_* values.
  * CSS_LENGTH_TYPE_PX values are stored as
  * 29 bit signed integer, all other types as fixed point values.
  */
-
 typedef int CssLength;
 
 typedef enum {
    CSS_LENGTH_TYPE_NONE,
    CSS_LENGTH_TYPE_PX,
-   CSS_LENGTH_TYPE_MM,         /* "cm", "in", "pt" and "pc" are converted into
+   CSS_LENGTH_TYPE_MM,         /**< "cm", "in", "pt" and "pc" are converted into
                                   millimeters. */
    CSS_LENGTH_TYPE_EM,
    CSS_LENGTH_TYPE_EX,
    CSS_LENGTH_TYPE_PERCENTAGE,
-   CSS_LENGTH_TYPE_RELATIVE,   /* This does not exist in CSS but
+   CSS_LENGTH_TYPE_RELATIVE,   /**< This does not exist in CSS but
                                   is used in HTML */
-   CSS_LENGTH_TYPE_AUTO        /* This can be used as a simple value. */
+   CSS_LENGTH_TYPE_AUTO        /**< This can be used as a simple value. */
 } CssLengthType;
 
 inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {

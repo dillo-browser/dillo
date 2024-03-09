@@ -39,7 +39,7 @@ void a_Web_init(void)
    ValidWebs = dList_new(32);
 }
 
-/*
+/**
  * Given the MIME content type, and a fd to read it from,
  * this function connects the proper MIME viewer to it.
  * Return value:
@@ -113,7 +113,7 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
 }
 
 
-/*
+/**
  * Allocate and set safe values for a DilloWeb structure
  */
 DilloWeb* a_Web_new(BrowserWindow *bw, const DilloUrl *url,
@@ -136,7 +136,7 @@ DilloWeb* a_Web_new(BrowserWindow *bw, const DilloUrl *url,
    return web;
 }
 
-/*
+/**
  * Validate a DilloWeb pointer
  */
 int a_Web_valid(DilloWeb *web)
@@ -144,7 +144,7 @@ int a_Web_valid(DilloWeb *web)
    return (dList_find(ValidWebs, web) != NULL);
 }
 
-/*
+/**
  * Deallocate a DilloWeb structure
  */
 void a_Web_free(DilloWeb *web)

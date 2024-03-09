@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-/*
+/** @file
  * Dillo's event driven IO engine
  */
 
@@ -58,7 +58,7 @@ void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,
 
 /* IO API  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/*
+/**
  * Return a new, initialized, 'io' struct
  */
 static IOData_t *IO_new(int op)
@@ -74,7 +74,7 @@ static IOData_t *IO_new(int op)
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/*
+/**
  * Register an IO in ValidIOs
  */
 static void IO_ins(IOData_t *io)
@@ -86,7 +86,7 @@ static void IO_ins(IOData_t *io)
        io->Key, a_Klist_length(ValidIOs));
 }
 
-/*
+/**
  * Remove an IO from ValidIOs
  */
 static void IO_del(IOData_t *io)
@@ -98,7 +98,7 @@ static void IO_del(IOData_t *io)
    _MSG(" -->ValidIOs: %d\n", a_Klist_length(ValidIOs));
 }
 
-/*
+/**
  * Return a io by its Key (NULL if not found)
  */
 static IOData_t *IO_get(int Key)
@@ -106,7 +106,7 @@ static IOData_t *IO_get(int Key)
    return (IOData_t *)a_Klist_get_data(ValidIOs, Key);
 }
 
-/*
+/**
  * Free an 'io' struct
  */
 static void IO_free(IOData_t *io)
@@ -115,7 +115,7 @@ static void IO_free(IOData_t *io)
    dFree(io);
 }
 
-/*
+/**
  * Close an open FD, and remove io controls.
  * (This function can be used for Close and Abort operations)
  * BUG: there's a race condition for Abort. The file descriptor is closed
@@ -151,7 +151,7 @@ static void IO_close_fd(IOData_t *io, int CloseCode)
    _MSG(" end IO close (%d) <=====\n", io->FD);
 }
 
-/*
+/**
  * Read data from a file descriptor into a specific buffer
  */
 static bool_t IO_read(IOData_t *io)
@@ -213,7 +213,7 @@ static bool_t IO_read(IOData_t *io)
    return ret;
 }
 
-/*
+/**
  * Write data, from a specific buffer, into a file descriptor
  */
 static bool_t IO_write(IOData_t *io)
@@ -258,8 +258,8 @@ static bool_t IO_write(IOData_t *io)
    return ret;
 }
 
-/*
- * Handle background IO for a given FD (reads | writes)
+/**
+ * Handle background IO for a given FD (reads | writes).
  * (This function gets called when there's activity in the FD)
  */
 static int IO_callback(IOData_t *io)
@@ -277,7 +277,7 @@ static int IO_callback(IOData_t *io)
    return (ret) ? 1 : 0;
 }
 
-/*
+/**
  * Handle the READ event of a FD.
  */
 static void IO_fd_read_cb(int fd, void *data)
@@ -300,7 +300,7 @@ static void IO_fd_read_cb(int fd, void *data)
    }
 }
 
-/*
+/**
  * Handle the WRITE event of a FD.
  */
 static void IO_fd_write_cb(int fd, void *data)
@@ -321,7 +321,7 @@ static void IO_fd_write_cb(int fd, void *data)
    }
 }
 
-/*
+/**
  * Receive an IO request (IORead | IOWrite),
  * Set a watch for it, and let it flow!
  */
@@ -352,8 +352,8 @@ static void IO_submit(IOData_t *r_io)
    }
 }
 
-/*
- * CCC function for the IO module
+/**
+ * CCC function for the IO module.
  * ( Data1 = IOData_t* ; Data2 = NULL )
  */
 void a_IO_ccc(int Op, int Branch, int Dir, ChainLink *Info,

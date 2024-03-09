@@ -10,7 +10,7 @@
  * (at your option) any later version.
  */
 
-/*
+/** @file
  * The GIF decoder for dillo. It is responsible for decoding GIF data
  * and transferring it to the dicache.
  */
@@ -94,10 +94,10 @@ typedef struct {
 
    uint_t y;
 
-   /* state for lwz_read_byte */
+   /** state for lwz_read_byte */
    int code_size;
 
-   /* The original GifScreen from giftopnm */
+   /** The original GifScreen from giftopnm */
    uint_t Width;
    uint_t Height;
    size_t ColorMap_ofs;
@@ -109,7 +109,7 @@ typedef struct {
    uint_t AspectRatio;    /* AspectRatio (not used) */
 #endif
 
-   /* Gif89 extensions */
+   /** Gif89 extensions */
    int transparent;
 #if 0
    /* None are used: */
@@ -119,10 +119,10 @@ typedef struct {
 #endif
 
    /* state for the new push-oriented decoder */
-   int packet_size;       /* The amount of the data block left to process */
+   int packet_size;       /**< The amount of the data block left to process */
    uint_t window;
    int bits_in_window;
-   uint_t last_code;        /* Last "compressed" code in the look up table */
+   uint_t last_code;        /**< Last "compressed" code in the look up table */
    uint_t line_index;
    uchar_t **spill_lines;
    int num_spill_lines_max;
@@ -147,7 +147,7 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *buf,
                                 int bufsize, void *Buf);
 
 
-/*
+/**
  * Create a new gif structure for decoding a gif into a RGB buffer
  */
 void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version)
@@ -174,7 +174,7 @@ void *a_Gif_new(DilloImage *Image, DilloUrl *url, int version)
    return gif;
 }
 
-/*
+/**
  * Free the gif-decoding data structure.
  */
 static void Gif_free(DilloGif *gif)
@@ -192,7 +192,7 @@ static void Gif_free(DilloGif *gif)
    dFree(gif);
 }
 
-/*
+/**
  * This function is a cache client, it receives data from the cache
  * and dispatches it to the appropriate gif-processing functions
  */
@@ -209,7 +209,7 @@ void a_Gif_callback(int Op, void *data)
    }
 }
 
-/*
+/**
  * Receive and process new chunks of GIF image data
  */
 static void Gif_write(DilloGif *gif, void *Buf, uint_t BufSize)
@@ -236,7 +236,7 @@ static void Gif_write(DilloGif *gif, void *Buf, uint_t BufSize)
    _MSG("exit Gif_write, bufsize=%ld\n", (long)bufsize);
 }
 
-/*
+/**
  * Finish the decoding process (and free the memory)
  */
 static void Gif_close(DilloGif *gif, CacheClient_t *Client)
@@ -249,8 +249,8 @@ static void Gif_close(DilloGif *gif, CacheClient_t *Client)
 
 /* --- GIF Extensions ----------------------------------------------------- */
 
-/*
- * This reads a sequence of GIF data blocks.. and ignores them!
+/**
+ * This reads a sequence of GIF data blocks and ignores them.
  * Buf points to the first data block.
  *
  * Return Value
@@ -273,13 +273,13 @@ static inline size_t Gif_data_blocks(const uchar_t *Buf, size_t BSize)
    return Size + 1;
 }
 
-/*
+/**
  * This is a GIF extension.  We ignore it with this routine.
  * Buffer points to just after the extension label.
  *
- * Return Value
- * 0 -- block not processed
- * otherwise the size of the extension label.
+ * @return
+ *  - 0 -- block not processed
+ *  - otherwise the size of the extension label.
  */
 static inline size_t Gif_do_generic_ext(const uchar_t *Buf, size_t BSize)
 {
@@ -384,7 +384,7 @@ static void Gif_lwz_init(DilloGif *gif)
    gif->line_index = 0;
 }
 
-/*
+/**
  * Send the image line to the dicache, also handling the interlacing.
  */
 static void Gif_emit_line(DilloGif *gif, const uchar_t *linebuf)
@@ -427,7 +427,7 @@ static void Gif_emit_line(DilloGif *gif, const uchar_t *linebuf)
    }
 }
 
-/*
+/**
  * Decode the packetized lwz bytes
  */
 static void Gif_literal(DilloGif *gif, uint_t code)
@@ -558,10 +558,10 @@ static void Gif_sequence(DilloGif *gif, uint_t code)
    gif->spill_line_index = spill_line_index;
 }
 
-/*
- * ?
+/**
+ * 
  *
- * Return Value:
+ * @return
  *   2 -- quit
  *   1 -- new last code needs to be done
  *   0 -- okay, but reset the code table

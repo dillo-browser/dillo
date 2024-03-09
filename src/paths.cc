@@ -24,7 +24,7 @@
 // Dillo works from an unmounted directory (/tmp)
 static char* oldWorkingDir = NULL;
 
-/*
+/**
  * Changes current working directory to /tmp and creates ~/.dillo
  * if not exists.
  */
@@ -58,7 +58,7 @@ void Paths::init(void)
    dFree(path);
 }
 
-/*
+/**
  * Return the initial current working directory in a string.
  */
 char *Paths::getOldWorkingDir(void)
@@ -66,7 +66,7 @@ char *Paths::getOldWorkingDir(void)
    return oldWorkingDir;
 }
 
-/*
+/**
  * Free memory
  */
 void Paths::free(void)
@@ -74,7 +74,7 @@ void Paths::free(void)
    dFree(oldWorkingDir);
 }
 
-/*
+/**
  * Examines the path for "rcFile" and assign its file pointer to "fp".
  */
 FILE *Paths::getPrefsFP(const char *rcFile)

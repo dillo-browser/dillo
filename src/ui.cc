@@ -9,7 +9,9 @@
  * (at your option) any later version.
  */
 
-// UI for Dillo
+/** @file
+ * UI for Dillo
+ */
 
 #include <unistd.h>
 #include <stdio.h>
@@ -87,8 +89,8 @@ static struct iconset *icons = &standard_icons;
 
 //----------------------------------------------------------------------------
 
-/*
- * (Used to avoid certain shortcuts in the location bar)
+/**
+ * Used to avoid certain shortcuts in the location bar
  */
 class CustInput : public TipWinInput {
 public:
@@ -97,7 +99,7 @@ public:
    virtual int handle(int e);
 };
 
-/*
+/**
  * Disable keys: Up, Down, Page_Up, Page_Down, Tab and
  * CTRL+{o,r,Home,End}  SHIFT+{Left,Right}.
  */
@@ -162,7 +164,7 @@ int CustInput::handle(int e)
 
 //----------------------------------------------------------------------------
 
-/*
+/**
  * Used to handle "paste" within the toolbar's Clear button.
  */
 class CustPasteButton : public CustButton {
@@ -187,7 +189,7 @@ int CustPasteButton::handle(int e)
 
 //----------------------------------------------------------------------------
 
-/*
+/**
  * Used to resize the progress boxes automatically.
  */
 class CustProgressBox : public Fl_Box {
@@ -219,7 +221,7 @@ public:
 // Callback functions --------------------------------------------------------
 //
 
-/*
+/**
  * Callback for the search button.
  */
 static void search_cb(Fl_Widget *wid, void *data)
@@ -231,7 +233,7 @@ static void search_cb(Fl_Widget *wid, void *data)
    }
 }
 
-/*
+/**
  * Callback for the help button.
  */
 static void help_cb(Fl_Widget *w, void *)
@@ -251,7 +253,7 @@ static void help_cb(Fl_Widget *w, void *)
    dFree(path);
 }
 
-/*
+/**
  * Callback for the File menu button.
  */
 static void filemenu_cb(Fl_Widget *wid, void *)
@@ -262,7 +264,7 @@ static void filemenu_cb(Fl_Widget *wid, void *)
    }
 }
 
-/*
+/**
  * Callback for the location's clear-button.
  */
 static void clear_cb(Fl_Widget *w, void *data)
@@ -278,7 +280,7 @@ static void clear_cb(Fl_Widget *w, void *data)
    }
 }
 
-/*
+/**
  * Send the browser to the new URL in the location.
  */
 static void location_cb(Fl_Widget *wid, void *data)
@@ -294,7 +296,7 @@ static void location_cb(Fl_Widget *wid, void *data)
 }
 
 
-/*
+/**
  * Callback handler for button press on the panel
  */
 static void b1_cb(Fl_Widget *wid, void *cb_data)
@@ -358,7 +360,7 @@ static void b1_cb(Fl_Widget *wid, void *cb_data)
    }
 }
 
-/*
+/**
  * Callback for the bug meter button.
  */
 static void bugmeter_cb(Fl_Widget *wid, void *data)
@@ -379,7 +381,7 @@ static void bugmeter_cb(Fl_Widget *wid, void *data)
 // Panel construction methods
 //----------------------------
 
-/*
+/**
  * Make a generic navigation button
  */
 CustButton *UI::make_button(const char *label, Fl_Image *img, Fl_Image *deimg,
@@ -402,7 +404,7 @@ CustButton *UI::make_button(const char *label, Fl_Image *img, Fl_Image *deimg,
    return b;
 }
 
-/*
+/**
  * Create the archetipic browser buttons
  */
 void UI::make_toolbar(int tw, int th)
@@ -441,7 +443,7 @@ void UI::make_toolbar(int tw, int th)
    Tools->set_tooltip("Settings");
 }
 
-/*
+/**
  * Create the location box (Clear/Input/Search)
  */
 void UI::make_location(int ww)
@@ -486,7 +488,7 @@ void UI::make_location(int ww)
 
 }
 
-/*
+/**
  * Create the progress bars
  */
 void UI::make_progress_bars(int wide, int thin_up)
@@ -504,8 +506,8 @@ void UI::make_progress_bars(int wide, int thin_up)
     PProg->update_label(wide ? "Page\n0.0 KB" : "0.0 KB");
 }
 
-/*
- * Create the "File" menu
+/**
+ * Create the "File" menu.
  * Static function for File menu callbacks.
  */
 void UI::make_filemenu_button()
@@ -532,7 +534,7 @@ void UI::make_filemenu_button()
 }
 
 
-/*
+/**
  * Create the control panel
  */
 void UI::make_panel(int ww)
@@ -612,7 +614,7 @@ void UI::make_panel(int ww)
    }
 }
 
-/*
+/**
  * Create the status panel
  */
 void UI::make_status_bar(int ww, int wh)
@@ -643,7 +645,7 @@ void UI::make_status_bar(int ww, int wh)
    StatusBar->rearrange();
 }
 
-/*
+/**
  * User Interface constructor
  */
 UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
@@ -700,7 +702,7 @@ UI::UI(int x, int y, int ui_w, int ui_h, const char* label, const UI *cur_ui) :
    }
 }
 
-/*
+/**
  * UI destructor
  */
 UI::~UI()
@@ -708,7 +710,7 @@ UI::~UI()
    _MSG("UI::~UI()\n");
 }
 
-/*
+/**
  * FLTK event handler for this window.
  */
 int UI::handle(int event)
@@ -802,7 +804,7 @@ int UI::handle(int event)
 // API for the User Interface
 //----------------------------
 
-/*
+/**
  * Get the text from the location input-box.
  */
 const char *UI::get_location()
@@ -810,7 +812,7 @@ const char *UI::get_location()
    return Location->value();
 }
 
-/*
+/**
  * Set a new URL in the location input-box.
  */
 void UI::set_location(const char *str)
@@ -820,7 +822,7 @@ void UI::set_location(const char *str)
    Location->position((Fl::focus() == Location) ? strlen(str) : 0);
 }
 
-/*
+/**
  * Focus location entry.
  * If it's not visible, show it until the callback is done.
  */
@@ -835,7 +837,7 @@ void UI::focus_location()
    Location->position(Location->size(), 0);
 }
 
-/*
+/**
  * Focus Main area.
  */
 void UI::focus_main()
@@ -843,7 +845,7 @@ void UI::focus_main()
    Main->take_focus();
 }
 
-/*
+/**
  * Set a new message in the status bar.
  */
 void UI::set_status(const char *str)
@@ -851,8 +853,8 @@ void UI::set_status(const char *str)
    StatusOutput->value(str);
 }
 
-/*
- * Set the page progress text
+/**
+ * Set the page progress text.
  * cmd: 0 Deactivate, 1 Update, 2 Clear
  */
 void UI::set_page_prog(size_t nbytes, int cmd)
@@ -883,8 +885,8 @@ void UI::set_page_prog(size_t nbytes, int cmd)
    }
 }
 
-/*
- * Set the image progress text
+/**
+ * Set the image progress text.
  * cmd: 0 Deactivate, 1 Update, 2 Clear
  */
 void UI::set_img_prog(int n_img, int t_img, int cmd)
@@ -905,7 +907,7 @@ void UI::set_img_prog(int n_img, int t_img, int cmd)
    }
 }
 
-/*
+/**
  * Set the bug meter progress text
  */
 void UI::set_bug_prog(int n_bug)
@@ -927,7 +929,7 @@ void UI::set_bug_prog(int n_bug)
    StatusBar->rearrange();
 }
 
-/*
+/**
  * Customize the UI's panel (show/hide buttons)
  */
 void UI::customize()
@@ -967,7 +969,7 @@ void UI::customize()
       LocBar->rearrange();
 }
 
-/*
+/**
  * On-the-fly panel style change
  */
 void UI::change_panel(int new_size, int small_icons)
@@ -998,7 +1000,7 @@ void UI::change_panel(int new_size, int small_icons)
    dFree(loc_text);
 }
 
-/*
+/**
  * Set 'nw' as the main render area widget
  */
 void UI::set_render_layout(Fl_Group *nw)
@@ -1013,7 +1015,7 @@ void UI::set_render_layout(Fl_Group *nw)
    TopGroup->resizable(Main);
 }
 
-/*
+/**
  * Set button sensitivity (Back/Forw/Stop)
  */
 void UI::button_set_sens(UIButton btn, int sens)
@@ -1033,7 +1035,7 @@ void UI::button_set_sens(UIButton btn, int sens)
    }
 }
 
-/*
+/**
  * Paste a middle-click-selection into "Clear" button as URL
  */
 void UI::paste_url()
@@ -1041,7 +1043,7 @@ void UI::paste_url()
    Fl::paste(*Clear, false);
 }
 
-/*
+/**
  * Adjust space for the findbar (if necessary) and show or remove it
  */
 void UI::findbar_toggle(bool add)
@@ -1069,7 +1071,7 @@ void UI::findbar_toggle(bool add)
    TopGroup->rearrange();
 }
 
-/*
+/**
  * Make panels disappear growing the render area.
  * WORKAROUND: here we avoid hidden widgets resize by setting their
  *             size to (0,0) while hidden.

@@ -25,7 +25,7 @@ static int num_exceptions_max = 1;
 
 static bool_t default_deny = FALSE;
 
-/*
+/**
  * Parse domainrc.
  */
 void a_Domain_parse(FILE *fp)
@@ -87,7 +87,7 @@ void a_Domain_freeall(void)
    dFree(exceptions);
 }
 
-/*
+/**
  * Wildcard ('*') pattern always matches.
  * "example.org" pattern matches "example.org".
  * ".example.org" pattern matches "example.org" and "sub.example.org".
@@ -110,7 +110,7 @@ static bool_t Domain_match(const char *host, const char *pattern) {
    return cmp ? FALSE : TRUE;
 }
 
-/*
+/**
  * Is the resource at 'source' permitted to request the resource at 'dest'?
  */
 bool_t a_Domain_permit(const DilloUrl *source, const DilloUrl *dest)

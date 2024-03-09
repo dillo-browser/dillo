@@ -37,23 +37,23 @@ extern "C" {
 
 typedef struct CacheClient CacheClient_t;
 
-/*
+/**
  * Callback type for cache clients
  */
 typedef void (*CA_Callback_t)(int Op, CacheClient_t *Client);
 
-/*
+/**
  * Data structure for cache clients.
  */
 struct CacheClient {
-   int Key;                 /* Primary Key for this client */
-   const DilloUrl *Url;     /* Pointer to a cache entry Url */
-   int Version;             /* Dicache version of this Url (0 if not used) */
-   void *Buf;               /* Pointer to cache-data */
-   uint_t BufSize;          /* Valid size of cache-data */
-   CA_Callback_t Callback;  /* Client function */
-   void *CbData;            /* Client function data */
-   void *Web;               /* Pointer to the Web structure of our client */
+   int Key;                 /**< Primary Key for this client */
+   const DilloUrl *Url;     /**< Pointer to a cache entry Url */
+   int Version;             /**< Dicache version of this Url (0 if not used) */
+   void *Buf;               /**< Pointer to cache-data */
+   uint_t BufSize;          /**< Valid size of cache-data */
+   CA_Callback_t Callback;  /**< Client function */
+   void *CbData;            /**< Client function data */
+   void *Web;               /**< Pointer to the Web structure of our client */
 };
 
 /*

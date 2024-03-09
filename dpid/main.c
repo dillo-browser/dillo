@@ -53,7 +53,7 @@ int srs_fd;
 // end of fix
 
 
-/* Start a dpi filter plugin after accepting the pending connection
+/** Start a dpi filter plugin after accepting the pending connection
  * \Return
  * \li Child process ID on success
  * \li 0 on failure
@@ -188,7 +188,7 @@ static int get_command(Dsh *sh, char *dpi_tag)
    return (COMMAND);
 }
 
-/*
+/**
  * Check whether a dpi server is running
  */
 static int server_is_running(char *server_id)
@@ -205,7 +205,7 @@ static int server_is_running(char *server_id)
 }
 
 
-/*
+/**
  * Get MAX open FD limit (yes, it's tricky --Jcid).
  */
 static int get_open_max(void)

@@ -9,14 +9,16 @@
  * (at your option) any later version.
  */
 
-// Simple ADT for timeout functions
+/** @file
+ * Simple ADT for timeout functions
+ */
 
 #include <FL/Fl.H>
 #include "timeout.hh"
 
 // C++ functions with C linkage ----------------------------------------------
 
-/*
+/**
  * Hook a one-time timeout function 'cb' after 't' seconds
  * with 'cbdata" as its data.
  */
@@ -25,7 +27,7 @@ void a_Timeout_add(float t, TimeoutCb_t cb, void *cbdata)
    Fl::add_timeout(t, cb, cbdata);
 }
 
-/*
+/**
  * To be called from inside the 'cb' function when it wants to keep running
  */
 void a_Timeout_repeat(float t, TimeoutCb_t cb, void *cbdata)
@@ -33,7 +35,7 @@ void a_Timeout_repeat(float t, TimeoutCb_t cb, void *cbdata)
    Fl::add_timeout(t, cb, cbdata);
 }
 
-/*
+/**
  * Stop running a timeout function
  */
 void a_Timeout_remove()

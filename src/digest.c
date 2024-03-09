@@ -35,7 +35,7 @@ static Dstr *md5hexdigest(const Dstr *data)
    return result;
 }
 
-/*
+/**
  * Returns a pointer to a newly allocated string containing a cnonce
  */
 char *a_Digest_create_cnonce(void)
@@ -48,7 +48,7 @@ char *a_Digest_create_cnonce(void)
    return result;
 }
 
-/*
+/**
  * This portion only has to be calculated once.
  */
 int a_Digest_compute_digest(AuthRealm_t *realm, const char *username,
@@ -86,7 +86,7 @@ int a_Digest_compute_digest(AuthRealm_t *realm, const char *username,
    return 1;
 }
 
-/*
+/**
  * This portion is calculatd for each request.
  */
 static Dstr *Digest_create_response(AuthRealm_t *realm, const char *method,
@@ -158,7 +158,7 @@ static void Digest_Dstr_append_token_value(Dstr *str, int delimiter,
    }
 }
 
-/*
+/**
  * Construct Digest Authorization header.
  *
  * Field ordering: furaisanjin reports that his DVD recorder requires the

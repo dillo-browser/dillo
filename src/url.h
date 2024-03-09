@@ -3,6 +3,9 @@
  *
  * Copyright (C) 2001 Jorge Arellano Cid <jcid@dillo.org>
  *
+ */
+
+/** @file
  * Parse and normalize all URL's inside Dillo.
  */
 
@@ -93,10 +96,10 @@ typedef struct {
    const char *hostname;          /**/
    int port;
    int flags;
-   Dstr *data;                    /* POST */
-   int ismap_url_len;             /* Used by server side image maps */
-   int illegal_chars;             /* number of illegal chars */
-   int illegal_chars_spc;         /* number of illegal space chars */
+   Dstr *data;                    /**< POST */
+   int ismap_url_len;             /**< Used by server side image maps */
+   int illegal_chars;             /**< number of illegal chars */
+   int illegal_chars_spc;         /**< number of illegal space chars */
 } DilloUrl;
 
 

@@ -22,16 +22,16 @@ extern "C" {
 typedef struct _DilloWeb DilloWeb;
 
 struct _DilloWeb {
-  DilloUrl *url;              /* Requested URL */
-  DilloUrl *requester;        /* URL that caused this request, or
-                               * NULL if user-initiated. */
-  BrowserWindow *bw;          /* The requesting browser window [reference] */
-  int flags;                  /* Additional info */
+  DilloUrl *url;              /**< Requested URL */
+  DilloUrl *requester;        /**< URL that caused this request, or
+                               **< NULL if user-initiated. */
+  BrowserWindow *bw;          /**< The requesting browser window [reference] */
+  int flags;                  /**< Additional info */
 
-  DilloImage *Image;          /* For image urls [reference] */
+  DilloImage *Image;          /**< For image urls [reference] */
 
-  int32_t bgColor;            /* for image backgrounds */
-  char *filename;             /* Variables for Local saving */
+  int32_t bgColor;            /**< for image backgrounds */
+  char *filename;             /**< Variables for Local saving */
   FILE *stream;
   int SavedBytes;
 };

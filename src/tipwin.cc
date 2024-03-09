@@ -34,7 +34,7 @@
 static void show_timeout(void*);
 static void recent_timeout(void*);
 
-/*
+/**
  * Custom tooltip window
  */
 TipWin::TipWin() : Fl_Menu_Window(1, 1)     // will autosize
@@ -125,7 +125,7 @@ static void recent_timeout(void*) {
 
 //---------------------------------------------------------------------------
 
-/*
+/**
  * A Button sharing a custom tooltip window
  */
 TipWinButton::TipWinButton(int x, int y, int w, int h, const char *l) :
@@ -167,7 +167,7 @@ void TipWinButton::set_tooltip(const char *s)
 
 //---------------------------------------------------------------------------
 
-/*
+/**
  * A Light Button sharing a custom tooltip window
  */
 CustButton::CustButton(int x, int y, int w, int h, const char *l) :
@@ -202,7 +202,7 @@ void CustButton::hl_color(Fl_Color col)
 
 //---------------------------------------------------------------------------
 
-/*
+/**
  * An Input with custom tooltip window
  */
 TipWinInput::TipWinInput (int x, int y, int w, int h, const char *l) :

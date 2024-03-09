@@ -10,7 +10,7 @@
  * (at your option) any later version.
  */
 
-/*
+/** @file
  * HTTP connect functions
  */
 
@@ -112,7 +112,7 @@ static Dlist *servers;
  */
 static Dlist *fd_map;
 
-/*
+/**
  * Initialize proxy vars and Accept-Language header
  */
 int a_Http_init(void)
@@ -141,8 +141,8 @@ int a_Http_init(void)
    return 0;
 }
 
-/*
- * Tell whether the proxy auth is already set (user:password)
+/**
+ * Tell whether the proxy auth is already set (user:password).
  * Return: 1 Yes, 0 No
  */
 int a_Http_proxy_auth(void)
@@ -150,7 +150,7 @@ int a_Http_proxy_auth(void)
    return (HTTP_Proxy_Auth_base64 ? 1 : 0);
 }
 
-/*
+/**
  * Activate entered proxy password for HTTP.
  */
 void a_Http_set_proxy_passwd(const char *str)
@@ -160,7 +160,7 @@ void a_Http_set_proxy_passwd(const char *str)
    dFree(http_proxyauth);
 }
 
-/*
+/**
  * Create and init a new SocketData_t struct, insert into ValidSocks,
  * and return a primary key for it.
  */
@@ -171,7 +171,7 @@ static int Http_sock_new(void)
    return a_Klist_insert(&ValidSocks, S);
 }
 
-/*
+/**
  * Compare by FD.
  */
 static int Http_fd_map_cmp(const void *v1, const void *v2)
@@ -196,7 +196,7 @@ static void Http_fd_map_add_entry(SocketData_t *sd)
    dList_append(fd_map, e);
 }
 
-/*
+/**
  * Remove and free entry from fd_map.
  */
 static void Http_fd_map_remove_entry(int fd)
@@ -290,7 +290,7 @@ static void Http_connect_queued_sockets(Server_t *srv)
    }
 }
 
-/*
+/**
  * Free SocketData_t struct
  */
 static void Http_socket_free(int SKey)
@@ -328,9 +328,9 @@ static void Http_socket_free(int SKey)
    }
 }
 
-/*
+/**
  * Make the HTTP header's Referer line according to preferences
- * (default is "host" i.e. "scheme://hostname/" )
+ * (default is "host" i.e. "scheme://hostname/" ).
  */
 static char *Http_get_referer(const DilloUrl *url)
 {
@@ -350,7 +350,7 @@ static char *Http_get_referer(const DilloUrl *url)
    return referer;
 }
 
-/*
+/**
  * Generate Content-Type header value for a POST query.
  */
 static Dstr *Http_make_content_type(const DilloUrl *url)
@@ -377,7 +377,7 @@ static Dstr *Http_make_content_type(const DilloUrl *url)
    return dstr;
 }
 
-/*
+/**
  * Make the http query string
  */
 static Dstr *Http_make_query_str(DilloWeb *web, bool_t use_proxy)
@@ -476,7 +476,7 @@ static Dstr *Http_make_query_str(DilloWeb *web, bool_t use_proxy)
    return query;
 }
 
-/*
+/**
  * Create and submit the HTTP query to the IO engine
  */
 static void Http_send_query(SocketData_t *S)
@@ -497,7 +497,7 @@ static void Http_send_query(SocketData_t *S)
    dStr_free(query, 1);
 }
 
-/*
+/**
  * Prepare an HTTPS connection.  If necessary, tunnel through a proxy first.
  */
 static void Http_connect_tls(ChainLink *info)
@@ -522,7 +522,7 @@ static void Http_connect_tls(ChainLink *info)
    }
 }
 
-/*
+/**
  * connect() couldn't complete before, but now it's ready, so let's try again.
  */
 static void Http_connect_socket_cb(int fd, void *data)
@@ -559,7 +559,7 @@ static void Http_connect_socket_cb(int fd, void *data)
    }
 }
 
-/*
+/**
  * This function is called after the DNS succeeds in solving a hostname.
  * Task: Finish socket setup and start connecting the socket.
  */
@@ -654,8 +654,8 @@ static void Http_connect_socket(ChainLink *Info)
    }
 }
 
-/*
- * Test proxy settings and check the no_proxy domains list
+/**
+ * Test proxy settings and check the no_proxy domains list.
  * Return value: whether to use proxy or not.
  */
 static int Http_must_use_proxy(const char *hostname)
@@ -685,7 +685,7 @@ static int Http_must_use_proxy(const char *hostname)
    return ret;
 }
 
-/*
+/**
  * Return a new string for the request used to tunnel HTTPS through a proxy.
  */
 static char *Http_get_connect_str(const DilloUrl *url)
@@ -726,7 +726,7 @@ static char *Http_get_connect_str(const DilloUrl *url)
    return retstr;
 }
 
-/*
+/**
  * Callback function for the DNS resolver.
  * Continue connecting the socket, or abort upon error condition.
  * S->web is checked to assert the operation wasn't aborted while waiting.
@@ -768,8 +768,8 @@ static void Http_dns_cb(int Status, Dlist *addr_list, void *data)
    }
 }
 
-/*
- * Asynchronously create a new http connection for 'Url'
+/**
+ * Asynchronously create a new http connection for 'Url'.
  * We'll set some socket parameters; the rest will be set later
  * when the IP is known.
  * ( Data1 = Web structure )
@@ -811,8 +811,8 @@ static int Http_get(ChainLink *Info, void *Data1)
    return 0;
 }
 
-/*
- * Can the old socket's fd be reused for the new socket?
+/**
+ * Can the old socket's fd be reused for the new socket?.
  *
  * NOTE: old and new must come from the same Server_t.
  * This is not built to accept arbitrary sockets.
@@ -833,7 +833,7 @@ static bool_t Http_socket_reuse_compatible(SocketData_t *old,
    return FALSE;
 }
 
-/*
+/**
  * If any entry in the socket data queue can reuse our connection, set it up
  * and send off a new query.
  */
@@ -875,7 +875,7 @@ static void Http_socket_reuse(int SKey)
    }
 }
 
-/*
+/**
  * CCC function for the HTTP module
  */
 void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
@@ -1030,7 +1030,7 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
    }
 }
 
-/*
+/**
  * Add socket data to the queue. Pages/stylesheets/etc. have higher priority
  * than images.
  */
@@ -1119,8 +1119,8 @@ static void Http_fd_map_remove_all()
    dList_free(fd_map);
 }
 
-/*
- * Deallocate memory used by http module
+/**
+ * Deallocate memory used by http module.
  * (Call this one at exit time)
  */
 void a_Http_freeall(void)

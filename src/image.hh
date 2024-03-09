@@ -1,7 +1,8 @@
 #ifndef __IMAGE_HH__
 #define __IMAGE_HH__
 
-// The DilloImage data-structure and methods
+/** @file
+ * The DilloImage data-structure and methods */
 
 
 #ifdef __cplusplus
@@ -16,7 +17,7 @@ extern "C" {
  * Defines
  */
 
-/* Arbitrary maximum for image size (to avoid image size-crafting attacks). */
+/** Arbitrary maximum for image size. To avoid image size-crafting attacks. */
 #define IMAGE_MAX_AREA (6000 * 6000)
 
 /*
@@ -35,12 +36,12 @@ typedef enum {
 
 /* These will reflect the Image's "state" */
 typedef enum {
-   IMG_Empty,      /* Just created the entry */
-   IMG_SetParms,   /* Parameters set */
-   IMG_SetCmap,    /* Color map set */
-   IMG_Write,      /* Feeding the entry */
-   IMG_Close,      /* Whole image got! */
-   IMG_Abort       /* Image transfer aborted */
+   IMG_Empty,      /**< Just created the entry */
+   IMG_SetParms,   /**< Parameters set */
+   IMG_SetCmap,    /**< Color map set */
+   IMG_Write,      /**< Feeding the entry */
+   IMG_Close,      /**< Whole image got! */
+   IMG_Abort       /**< Image transfer aborted */
 } ImageState;
 
 struct _DilloImage {
@@ -50,12 +51,12 @@ struct _DilloImage {
    uint_t width;
    uint_t height;
 
-   int32_t bg_color;        /* Background color */
-   bitvec_t *BitVec;        /* Bit vector for decoded rows */
-   uint_t ScanNumber;       /* Current decoding scan */
-   ImageState State;        /* Processing status */
+   int32_t bg_color;        /**< Background color */
+   bitvec_t *BitVec;        /**< Bit vector for decoded rows */
+   uint_t ScanNumber;       /**< Current decoding scan */
+   ImageState State;        /**< Processing status */
 
-   int RefCount;            /* Reference counter */
+   int RefCount;            /**< Reference counter */
 };
 
 

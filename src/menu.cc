@@ -9,7 +9,10 @@
  * (at your option) any later version.
  */
 
-// Functions/Methods for menus
+/**
+ * @file
+ * Functions for menus
+ */
 
 #include <FL/Fl.H>
 #include <FL/Fl_Menu_Item.H>
@@ -57,7 +60,7 @@ static void Menu_nop_cb(Fl_Widget*, void*)
 {
 }
 
-/*
+/**
  * Static function for File menu callbacks.
  */
 static void filemenu_cb(Fl_Widget*, void *data)
@@ -86,7 +89,7 @@ static void Menu_copy_urlstr_cb(Fl_Widget*, void *user_data)
    }
 }
 
-/*
+/**
  * Open URL
  */
 static void Menu_open_url_cb(Fl_Widget*, void *user_data)
@@ -96,7 +99,7 @@ static void Menu_open_url_cb(Fl_Widget*, void *user_data)
    a_UIcmd_open_url(popup_bw, url);
 }
 
-/*
+/**
  * Open URL in new window
  */
 static void Menu_open_url_nw_cb(Fl_Widget*, void *user_data)
@@ -106,7 +109,7 @@ static void Menu_open_url_nw_cb(Fl_Widget*, void *user_data)
    a_UIcmd_open_url_nw(popup_bw, url);
 }
 
-/*
+/**
  * Open URL in new Tab
  */
 static void Menu_open_url_nt_cb(Fl_Widget*, void *user_data)
@@ -117,7 +120,7 @@ static void Menu_open_url_nt_cb(Fl_Widget*, void *user_data)
    a_UIcmd_open_url_nt(popup_bw, url, focus);
 }
 
-/*
+/**
  * Add bookmark
  */
 static void Menu_add_bookmark_cb(Fl_Widget*, void *user_data)
@@ -126,7 +129,7 @@ static void Menu_add_bookmark_cb(Fl_Widget*, void *user_data)
    a_UIcmd_add_bookmark(popup_bw, url);
 }
 
-/*
+/**
  * Find text
  */
 static void Menu_find_text_cb(Fl_Widget*, void*)
@@ -134,7 +137,7 @@ static void Menu_find_text_cb(Fl_Widget*, void*)
    ((UI *)popup_bw->ui)->findbar_toggle(1);
 }
 
-/*
+/**
  * Save link
  */
 static void Menu_save_link_cb(Fl_Widget*, void *user_data)
@@ -143,7 +146,7 @@ static void Menu_save_link_cb(Fl_Widget*, void *user_data)
    a_UIcmd_save_link(popup_bw, url);
 }
 
-/*
+/**
  * Save current page
  */
 static void Menu_save_page_cb(Fl_Widget*, void*)
@@ -151,7 +154,7 @@ static void Menu_save_page_cb(Fl_Widget*, void*)
    a_UIcmd_save(popup_bw);
 }
 
-/*
+/**
  * View current page source
  */
 static void Menu_view_page_source_cb(Fl_Widget*, void *user_data)
@@ -160,7 +163,7 @@ static void Menu_view_page_source_cb(Fl_Widget*, void *user_data)
    a_UIcmd_view_page_source(popup_bw, url);
 }
 
-/*
+/**
  * View current page's bugs
  */
 static void Menu_view_page_bugs_cb(Fl_Widget*, void*)
@@ -168,7 +171,7 @@ static void Menu_view_page_bugs_cb(Fl_Widget*, void*)
    a_UIcmd_view_page_bugs(popup_bw);
 }
 
-/*
+/**
  * Load images on current page that match URL pattern
  */
 static void Menu_load_images_cb(Fl_Widget*, void *user_data)
@@ -180,7 +183,7 @@ static void Menu_load_images_cb(Fl_Widget*, void *user_data)
       a_Html_load_images(doc, popup_url);
 }
 
-/*
+/**
  * Submit form
  */
 static void Menu_form_submit_cb(Fl_Widget*, void*)
@@ -191,7 +194,7 @@ static void Menu_form_submit_cb(Fl_Widget*, void*)
       a_Html_form_submit(doc, popup_form);
 }
 
-/*
+/**
  * Reset form
  */
 static void Menu_form_reset_cb(Fl_Widget*, void*)
@@ -202,7 +205,7 @@ static void Menu_form_reset_cb(Fl_Widget*, void*)
       a_Html_form_reset(doc, popup_form);
 }
 
-/*
+/**
  * Toggle display of 'hidden' form controls.
  */
 static void Menu_form_hiddens_cb(Fl_Widget*, void *user_data)
@@ -251,7 +254,7 @@ static void Menu_bugmeter_validate(const char *validator_url)
    }
 }
 
-/*
+/**
  * Validate URL with the W3C
  */
 static void Menu_bugmeter_validate_w3c_cb(Fl_Widget*, void*)
@@ -259,7 +262,7 @@ static void Menu_bugmeter_validate_w3c_cb(Fl_Widget*, void*)
    Menu_bugmeter_validate("http://validator.w3.org/check?uri=%s");
 }
 
-/*
+/**
  * Validate URL with the WDG
  */
 static void Menu_bugmeter_validate_wdg_cb(Fl_Widget*, void*)
@@ -268,7 +271,7 @@ static void Menu_bugmeter_validate_wdg_cb(Fl_Widget*, void*)
       "http://www.htmlhelp.org/cgi-bin/validate.cgi?url=%s&warnings=yes");
 }
 
-/*
+/**
  * Show info page for the bug meter
  */
 static void Menu_bugmeter_about_cb(Fl_Widget*, void*)
@@ -276,7 +279,7 @@ static void Menu_bugmeter_about_cb(Fl_Widget*, void*)
    a_UIcmd_open_urlstr(popup_bw, "https://dillo-browser.github.io/old/help/bug_meter.html");
 }
 
-/*
+/**
  * Navigation History callback.
  * Go to selected URL.
  */
@@ -335,7 +338,7 @@ static void Menu_popup_cb(void *data)
    a_Timeout_remove();
 }
 
-/*
+/**
  * Page popup menu (construction & popup)
  */
 void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
@@ -437,7 +440,7 @@ static void Menu_set_link_menu_user_data(void *user_data)
       link_menu[i].user_data(user_data);
 }
 
-/*
+/**
  * Link popup menu (construction & popup)
  */
 void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
@@ -455,7 +458,7 @@ void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
    a_Timeout_add(0.0, Menu_popup_cb, (void*)&link_data);
 }
 
-/*
+/**
  * Image popup menu (construction & popup)
  */
 void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
@@ -514,7 +517,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
    a_Timeout_add(0.0, Menu_popup_cb, (void*)&image_data);
 }
 
-/*
+/**
  * Form popup menu (construction & popup)
  */
 void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
@@ -542,7 +545,7 @@ void a_Menu_form_popup(BrowserWindow *bw, const DilloUrl *page_url,
    a_Timeout_add(0.0, Menu_popup_cb, (void*)&form_data);
 }
 
-/*
+/**
  * File popup menu (construction & popup)
  */
 void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
@@ -575,7 +578,7 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
    a_Timeout_add(0.0, Menu_simple_popup_cb, (void*)pm);
 }
 
-/*
+/**
  * Bugmeter popup menu (construction & popup)
  */
 void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
@@ -597,8 +600,8 @@ void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
    a_Timeout_add(0.0, Menu_simple_popup_cb, (void*)pm);
 }
 
-/*
- * Navigation History popup menu (construction & popup)
+/**
+ * Navigation History popup menu (construction & popup).
  *
  * direction: {backward = -1, forward = 1}
  */
@@ -634,7 +637,7 @@ void a_Menu_history_popup(BrowserWindow *bw, int x, int y, int direction)
    a_Timeout_add(0.0, Menu_simple_popup_cb, (void*)pm);
 }
 
-/*
+/**
  * Toggle use of remote stylesheets
  */
 static void Menu_remote_css_cb(Fl_Widget *wid, void*)
@@ -646,7 +649,7 @@ static void Menu_remote_css_cb(Fl_Widget *wid, void*)
    a_UIcmd_repush(popup_bw);
 }
 
-/*
+/**
  * Toggle use of embedded CSS style
  */
 static void Menu_embedded_css_cb(Fl_Widget *wid, void*)
@@ -668,7 +671,7 @@ static void Menu_panel_change_cb(Fl_Widget*, void *user_data)
       ui->change_panel(VOIDP2INT(user_data), ui->get_smallicons());
 }
 
-/*
+/**
  * Toggle loading of images -- and load them if enabling.
  */
 static void Menu_imgload_toggle_cb(Fl_Widget *wid, void*)
@@ -687,7 +690,7 @@ static void Menu_imgload_toggle_cb(Fl_Widget *wid, void*)
    }
 }
 
-/*
+/**
  * Toggle loading of background images.
  */
 static void Menu_bgimg_load_toggle_cb(Fl_Widget *wid, void*)
@@ -699,8 +702,8 @@ static void Menu_bgimg_load_toggle_cb(Fl_Widget *wid, void*)
    a_UIcmd_repush(popup_bw);
 }
 
-/*
- * Tools popup menu (construction & popup)
+/**
+ * Tools popup menu (construction & popup).
  */
 void a_Menu_tools_popup(BrowserWindow *bw, int x, int y)
 {

@@ -10,8 +10,9 @@
  * (at your option) any later version.
  */
 
-/*
- * Cache API
+/**
+ * @file
+ * Cache API.
  * This is the module that manages the cache and starts the CCC chains
  * to get the requests served. Kind of a broker.
  */
@@ -36,7 +37,7 @@
 #include "bookmark.h"
 
 typedef struct {
-   DilloUrl *url;           /* local copy of web->url */
+   DilloUrl *url;           /**< local copy of web->url */
    void *bw;
    char *server;
    char *datastr;
@@ -48,7 +49,7 @@ typedef struct {
    int Ref;
 } capi_conn_t;
 
-/* Flags for conn */
+/** Flags for conn */
 enum {
    PENDING = 1,
    TIMEOUT = 2,  /* unused */
@@ -58,10 +59,10 @@ enum {
 /*
  * Local data
  */
-/* Data list for active dpi connections */
+/** Data list for active dpi connections */
 static Dlist *CapiConns;      /* Data list for active connections; it holds
                                * pointers to capi_conn_t structures. */
-/* Last URL asked for view source */
+/** Last URL asked for view source */
 static DilloUrl *CapiVsUrl = NULL;
 
 /*
@@ -73,7 +74,7 @@ void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
 
 /* ------------------------------------------------------------------------- */
 
-/*
+/**
  * Initialize capi&cache data
  */
 void a_Capi_init(void)
@@ -86,7 +87,7 @@ void a_Capi_init(void)
 
 /* ------------------------------------------------------------------------- */
 
-/*
+/**
  * Create a new connection data structure
  */
 static capi_conn_t *
@@ -107,16 +108,16 @@ static capi_conn_t *
    return conn;
 }
 
-/*
+/**
  * Validate a capi_conn_t pointer.
- * Return value: NULL if not valid, conn otherwise.
+ * @return NULL if not valid, conn otherwise.
  */
 static capi_conn_t *Capi_conn_valid(capi_conn_t *conn)
 {
    return dList_find(CapiConns, conn);
 }
 
-/*
+/**
  * Increment the reference count and add to the list if not present
  */
 static void Capi_conn_ref(capi_conn_t *conn)
@@ -128,7 +129,7 @@ static void Capi_conn_ref(capi_conn_t *conn)
    _MSG(" Capi_conn_ref #%d %p\n", conn->Ref, conn);
 }
 
-/*
+/**
  * Decrement the reference count (and remove from list when zero)
  */
 static void Capi_conn_unref(capi_conn_t *conn)
@@ -148,7 +149,7 @@ static void Capi_conn_unref(capi_conn_t *conn)
    _MSG(" Capi_conn_unref CapiConns=%d\n", dList_length(CapiConns));
 }
 
-/*
+/**
  * Compare function for searching a conn by server string
  */
 static int Capi_conn_by_server_cmp(const void *v1, const void *v2)
@@ -159,7 +160,7 @@ static int Capi_conn_by_server_cmp(const void *v1, const void *v2)
    return strcmp(node->server, server);
 }
 
-/*
+/**
  * Find connection data by server
  */
 static capi_conn_t *Capi_conn_find(char *server)
@@ -167,7 +168,7 @@ static capi_conn_t *Capi_conn_find(char *server)
    return dList_find_custom(CapiConns, (void*)server, Capi_conn_by_server_cmp);
 }
 
-/*
+/**
  * Resume connections that were waiting for dpid to start.
  */
 static void Capi_conn_resume(void)
@@ -189,7 +190,7 @@ static void Capi_conn_resume(void)
    }
 }
 
-/*
+/**
  * Abort the connection for a given url, using its CCC.
  * (OpAbort 2,BCK removes the cache entry)
  * TODO: when conn is already done, the cache entry isn't removed.
@@ -216,7 +217,7 @@ void a_Capi_conn_abort_by_url(const DilloUrl *url)
 
 /* ------------------------------------------------------------------------- */
 
-/*
+/**
  * Store the last URL requested by "view source"
  */
 void a_Capi_set_vsource_url(const DilloUrl *url)
@@ -225,7 +226,7 @@ void a_Capi_set_vsource_url(const DilloUrl *url)
    CapiVsUrl = a_Url_dup(url);
 }
 
-/*
+/**
  * Safety test: only allow GET|POST dpi-urls from dpi-generated pages.
  */
 int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
@@ -262,7 +263,7 @@ int a_Capi_dpi_verify_request(BrowserWindow *bw, DilloUrl *url)
    return allow;
 }
 
-/*
+/**
  * If the url belongs to a dpi server, return its name.
  */
 static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
@@ -295,7 +296,7 @@ static int Capi_url_uses_dpi(DilloUrl *url, char **server_ptr)
    return ((*server_ptr = server) ? 1 : 0);
 }
 
-/*
+/**
  * Build the dpip command tag, according to URL and server.
  */
 static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
@@ -314,7 +315,7 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
    return cmd;
 }
 
-/*
+/**
  * Send the requested URL's source to the "view source" dpi
  */
 static void Capi_dpi_send_source(BrowserWindow *bw, DilloUrl *url)
@@ -340,7 +341,7 @@ static void Capi_dpi_send_source(BrowserWindow *bw, DilloUrl *url)
    dFree(cmd);
 }
 
-/*
+/**
  * Shall we permit this request to open a URL?
  */
 static bool_t Capi_request_permitted(DilloWeb *web)
@@ -380,13 +381,13 @@ static bool_t Capi_request_permitted(DilloWeb *web)
    return permit;
 }
 
-/*
+/**
  * Most used function for requesting a URL.
  * TODO: clean up the ad-hoc bindings with an API that allows dynamic
  *       addition of new plugins.
  *
- * Return value: A primary key for identifying the client,
- *               0 if the client is aborted in the process.
+ * @return A primary key for identifying the client,
+ *         0 if the client is aborted in the process.
  */
 int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
 {
@@ -492,7 +493,7 @@ int a_Capi_open_url(DilloWeb *web, CA_Callback_t Call, void *CbData)
    return ret;
 }
 
-/*
+/**
  * Convert cache-defined flags to Capi ones.
  */
 static int Capi_map_cache_flags(uint_t flags)
@@ -513,7 +514,7 @@ static int Capi_map_cache_flags(uint_t flags)
    return status;
 }
 
-/*
+/**
  * Return status information of an URL's content-transfer process.
  */
 int a_Capi_get_flags(const DilloUrl *Url)
@@ -523,7 +524,7 @@ int a_Capi_get_flags(const DilloUrl *Url)
    return status;
 }
 
-/*
+/**
  * Same as a_Capi_get_flags() but following redirections.
  */
 int a_Capi_get_flags_with_redirection(const DilloUrl *Url)
@@ -533,7 +534,7 @@ int a_Capi_get_flags_with_redirection(const DilloUrl *Url)
    return status;
 }
 
-/*
+/**
  * Get the cache's buffer for the URL, and its size.
  * Return: 1 cached, 0 not cached.
  */
@@ -542,7 +543,7 @@ int a_Capi_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
    return a_Cache_get_buf(Url, PBuf, BufSize);
 }
 
-/*
+/**
  * Unref the cache's buffer when no longer using it.
  */
 void a_Capi_unref_buf(const DilloUrl *Url)
@@ -550,7 +551,7 @@ void a_Capi_unref_buf(const DilloUrl *Url)
    a_Cache_unref_buf(Url);
 }
 
-/*
+/**
  * Get the Content-Type associated with the URL
  */
 const char *a_Capi_get_content_type(const DilloUrl *url)
@@ -558,7 +559,7 @@ const char *a_Capi_get_content_type(const DilloUrl *url)
    return a_Cache_get_content_type(url);
 }
 
-/*
+/**
  * Set the Content-Type for the URL.
  */
 const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
@@ -567,8 +568,8 @@ const char *a_Capi_set_content_type(const DilloUrl *url, const char *ctype,
    return a_Cache_set_content_type(url, ctype, from);
 }
 
-/*
- * Send data to a dpi (e.g. add_bookmark, open_url, send_preferences, ...)
+/**
+ * Send data to a dpi (e.g. add_bookmark, open_url, send_preferences, ...).
  * Most of the time we send dpi commands, but it also serves for raw data
  * as with "view source".
  */
@@ -603,7 +604,7 @@ int a_Capi_dpi_send_data(const DilloUrl *url, void *bw,
    return 0;
 }
 
-/*
+/**
  * Send a dpi cmd.
  * (For instance: add_bookmark, open_url, send_preferences, ...)
  */
@@ -613,7 +614,7 @@ int a_Capi_dpi_send_cmd(DilloUrl *url, void *bw, char *cmd, char *server,
    return a_Capi_dpi_send_data(url, bw, cmd, strlen(cmd), server, flags);
 }
 
-/*
+/**
  * Remove a client from the cache client queue.
  * force = also abort the CCC if this is the last client.
  */
@@ -631,7 +632,7 @@ void a_Capi_stop_client(int Key, int force)
    a_Cache_stop_client(Key);
 }
 
-/*
+/**
  * CCC function for the CAPI module
  */
 void a_Capi_ccc(int Op, int Branch, int Dir, ChainLink *Info,

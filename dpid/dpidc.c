@@ -41,7 +41,7 @@ static void error(char *msg)
    exit(1);
 }
 
-/*
+/**
  * Read dpid's communication keys from its saved file.
  * Return value: 1 on success, -1 on error.
  */

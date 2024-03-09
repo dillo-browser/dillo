@@ -10,8 +10,10 @@
  * (at your option) any later version.
  */
 
-// Functions/Methods for commands triggered from the UI
-
+/**
+ * @file
+ * Functions/Methods for commands triggered from the UI
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -80,7 +82,7 @@ static void UIcmd_set_window_labels(Fl_Window *win, const char *str);
  * CustTabs ---------------------------------------------------------------
  */
 
-/*
+/**
  * stores the respective UI pointer
  */
 class CustTabButton : public Fl_Button {
@@ -102,7 +104,7 @@ static int btn_cmp(const void *p1, const void *p2)
            (*(CustTabButton * const *)p2)->focus_num() );
 }
 
-/*
+/**
  * Allows fine control of the tabbed interface
  */
 class CustTabs : public Fl_Group {
@@ -182,7 +184,7 @@ public:
    void set_tab_label(UI *ui, const char *title);
 };
 
-/*
+/**
  * Callback for mouse click
  */
 static void tab_btn_cb (Fl_Widget *w, void *cb_data)
@@ -200,7 +202,7 @@ static void tab_btn_cb (Fl_Widget *w, void *cb_data)
    }
 }
 
-/*
+/**
  * Callback for the close-tab button
  */
 static void close_tab_btn_cb (Fl_Widget *, void *cb_data)
@@ -263,7 +265,7 @@ int CustTabs::handle(int e)
    return (ret) ? ret : Fl_Group::handle(e);
 }
 
-/*
+/**
  * Create a new tab with its own UI
  */
 UI *CustTabs::add_new_tab(UI *old_ui, int focus)
@@ -320,7 +322,7 @@ UI *CustTabs::add_new_tab(UI *old_ui, int focus)
    return new_ui;
 }
 
-/*
+/**
  * Remove tab by UI
  */
 void CustTabs::remove_tab(UI *ui)
@@ -377,8 +379,8 @@ int CustTabs::get_btn_idx(UI *ui)
    return -1;
 }
 
-/*
- * Keep active tab visible
+/**
+ * Keep active tab visible.
  * (Pack children have unusable x() coordinate)
  */
 void CustTabs::update_pack_offset()
@@ -410,8 +412,8 @@ void CustTabs::update_pack_offset()
    _MSG(" >>scr_x=%d btn0_x=%d\n", scr_x, Pack->child(0)->x());
 }
 
-/*
- * Make cbtn's tab the active one
+/**
+ * Make cbtn's tab the active one.
  */
 void CustTabs::switch_tab(CustTabButton *cbtn)
 {
@@ -471,8 +473,8 @@ void CustTabs::next_tab()
       switch_tab((CustTabButton*)Pack->child((idx+1<num_tabs()) ? idx+1 : 0));
 }
 
-/*
- * Set this UI's tab button label
+/**
+ * Set this UI's tab button label.
  */
 void CustTabs::set_tab_label(UI *ui, const char *label)
 {

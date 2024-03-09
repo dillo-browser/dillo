@@ -10,6 +10,11 @@
  * (at your option) any later version.
  */
 
+/**
+ * @file
+ * Table parsing functions
+ */
+
 #include "table.hh"
 #include "html_common.hh"
 
@@ -288,7 +293,7 @@ void Html_tag_content_th(DilloHtml *html, const char *tag, int tagsize)
  * Utilities
  */
 
-/*
+/**
  * The table border model is stored in the table's stack item
  */
 static int Html_table_get_border_model(DilloHtml *html)
@@ -303,7 +308,7 @@ static int Html_table_get_border_model(DilloHtml *html)
    return html->stack->getRef(s_idx)->table_border_mode;
 }
 
-/*
+/**
  * Set current table's border model
  */
 static void Html_table_set_border_model(DilloHtml *html,
@@ -362,7 +367,7 @@ static void Html_set_collapsing_border_model(DilloHtml *html, Widget *col_tb)
    }
 }
 
-/*
+/**
  * Adjust style for separate border model.
  * (Dw uses this model internally).
  */

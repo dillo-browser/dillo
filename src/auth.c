@@ -10,7 +10,8 @@
  * (at your option) any later version.
  */
 
-/* Handling of HTTP AUTH takes place here.
+/** @file
+ * Handling of HTTP AUTH takes place here.
  * This implementation aims to follow RFC 2617:
  * http://www.ietf.org/rfc/rfc2617.txt
  */
@@ -47,12 +48,12 @@ typedef struct {
    const DilloUrl *url;
 } AuthDialogData_t;
 
-/*
+/**
  *  Local data
  */
 static Dlist *auth_hosts;
 
-/*
+/**
  * Initialize the auth module.
  */
 void a_Auth_init(void)
@@ -97,7 +98,7 @@ static int Auth_path_is_inside(const char *path1, const char *path2, int len)
       (path1[len] == '\0' || path1[len] == '/');
 }
 
-/*
+/**
  * Check valid chars.
  * Return: 0 if invalid, 1 otherwise.
  */
@@ -107,7 +108,7 @@ static int Auth_is_token_char(char c)
    return (!isascii(c) || strchr(invalid, c) || iscntrl((uchar_t)c)) ? 0 : 1;
 }
 
-/*
+/**
  * Unquote the content of a (potentially) quoted string.
  * Return: newly allocated unquoted content.
  *
@@ -152,7 +153,7 @@ typedef int (Auth_parse_token_value_callback_t)(AuthParse_t *auth_parse,
                                                 const char *value);
 
 
-/*
+/**
  * Parse authentication challenge into token-value pairs
  * and feed them into the callback function.
  *
@@ -350,7 +351,7 @@ static void Auth_parse_challenge(AuthParse_t *auth_parse, char *challenge)
    Auth_parse_challenge_args(auth_parse, &challenge, cb);
 }
 
-/*
+/**
  * Return the host that contains a URL, or NULL if there is no such host.
  */
 static AuthHost_t *Auth_host_by_url(const DilloUrl *url)
@@ -366,7 +367,7 @@ static AuthHost_t *Auth_host_by_url(const DilloUrl *url)
    return NULL;
 }
 
-/*
+/**
  * Search all realms for the one with the given name.
  */
 static AuthRealm_t *Auth_realm_by_name(const AuthHost_t *host,
@@ -382,7 +383,7 @@ static AuthRealm_t *Auth_realm_by_name(const AuthHost_t *host,
    return NULL;
 }
 
-/*
+/**
  * Search all realms for the one with the best-matching path.
  */
 static AuthRealm_t *Auth_realm_by_path(const AuthHost_t *host,
@@ -463,7 +464,7 @@ static void Auth_realm_add_path(AuthRealm_t *realm, const char *path)
    dList_append(realm->paths, n_path);
 }
 
-/*
+/**
  * Return the authorization header for an HTTP query.
  * request_uri is a separate argument because we want it precisely as
  *   formatted in the request.
@@ -487,7 +488,7 @@ char *a_Auth_get_auth_str(const DilloUrl *url, const char *request_uri)
    return ret;
 }
 
-/*
+/**
  * Determine whether the user needs to authenticate.
  */
 static int Auth_do_auth_required(const AuthParse_t *auth_parse,
@@ -639,7 +640,7 @@ static int Auth_do_auth_dialog(const AuthParse_t *auth_parse,
    return ret;
 }
 
-/*
+/**
  * Do authorization for an auth string.
  */
 static int Auth_do_auth(char *challenge, enum AuthParseHTTPAuthType_t type,
@@ -662,7 +663,7 @@ static int Auth_do_auth(char *challenge, enum AuthParseHTTPAuthType_t type,
    return reload;
 }
 
-/*
+/**
  * Given authentication challenge(s), prepare authorization.
  * Return: 0 on failure
  *         nonzero on success. A new query will be sent to the server.

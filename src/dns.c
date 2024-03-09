@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-/*
+/* @file
  * Non blocking pthread-handled Dns scheme
  */
 
@@ -57,26 +57,26 @@ typedef enum {
 } DnsServerState_t;
 
 typedef struct {
-   int channel;            /* Index of this channel [0 based] */
+   int channel;            /**< Index of this channel [0 based] */
    DnsServerState_t state;
-   Dlist *addr_list;       /* IP address */
-   char *hostname;         /* Address to resolve */
-   int status;             /* errno code for resolving function */
+   Dlist *addr_list;       /**< IP address */
+   char *hostname;         /**< Address to resolve */
+   int status;             /**< errno code for resolving function */
 #ifdef D_DNS_THREADED
-   pthread_t th1;          /* Thread id */
+   pthread_t th1;          /**< Thread id */
 #endif
 } DnsServer;
 
 typedef struct {
-   char *hostname;         /* host name for cache */
-   Dlist *addr_list;       /* addresses of host */
+   char *hostname;         /**< host name for cache */
+   Dlist *addr_list;       /**< addresses of host */
 } GDnsCache;
 
 typedef struct {
-   int channel;            /* -2 if waiting, otherwise index to dns_server[] */
-   char *hostname;         /* The one we're resolving */
-   DnsCallback_t cb_func;  /* callback function */
-   void *cb_data;          /* extra data for the callback function */
+   int channel;            /**< -2 if waiting, otherwise index to dns_server[] */
+   char *hostname;         /**< The one we're resolving */
+   DnsCallback_t cb_func;  /**< callback function */
+   void *cb_data;          /**< extra data for the callback function */
 } GDnsQueue;
 
 
@@ -111,7 +111,7 @@ static void Dns_queue_add(int channel, const char *hostname,
    dns_queue_size++;
 }
 
-/*
+/**
  * Find hostname index in dns_queue
  * (if found, returns queue index; -1 if not)
  */
@@ -126,7 +126,7 @@ static int Dns_queue_find(const char *hostname)
    return -1;
 }
 
-/*
+/**
  * Given an index, remove an entry from the dns_queue
  */
 static void Dns_queue_remove(int index)
@@ -158,7 +158,7 @@ void Dns_queue_print()
 }
  */
 
-/*
+/**
  *  Add an IP/hostname pair to Dns-cache
  */
 static void Dns_cache_add(char *hostname, Dlist *addr_list)
@@ -171,7 +171,7 @@ static void Dns_cache_add(char *hostname, Dlist *addr_list)
 }
 
 
-/*
+/**
  *  Initializer function
  */
 void a_Dns_init(void)
@@ -212,7 +212,7 @@ void a_Dns_init(void)
    }
 }
 
-/*
+/**
  * Allocate a host structure and add it to the list
  */
 
@@ -259,7 +259,7 @@ static void Dns_note_hosts(Dlist *list, struct addrinfo *res0)
    }
 }
 
-/*
+/**
  *  Server function (runs on its own thread)
  */
 static void *Dns_server(void *data)
@@ -334,7 +334,7 @@ static void *Dns_server(void *data)
 }
 
 
-/*
+/**
  *  Request function (spawn a server and let it handle the request)
  */
 static void Dns_server_req(int channel, const char *hostname)
@@ -364,7 +364,7 @@ static void Dns_server_req(int channel, const char *hostname)
 #endif
 }
 
-/*
+/**
  * Return the IP for the given hostname using a callback.
  * Side effect: a thread is spawned when hostname is not cached.
  */
@@ -406,7 +406,7 @@ void a_Dns_resolve(const char *hostname, DnsCallback_t cb_func, void *cb_data)
    }
 }
 
-/*
+/**
  * Give answer to all queued callbacks on this channel
  */
 static void Dns_serve_channel(int channel)
@@ -424,7 +424,7 @@ static void Dns_serve_channel(int channel)
    }
 }
 
-/*
+/**
  * Assign free channels to waiting clients (-2)
  */
 static void Dns_assign_channels(void)
@@ -454,7 +454,7 @@ static void Dns_assign_channels(void)
    }
 }
 
-/*
+/**
  * This function is called on the main thread and
  * reads the DNS results.
  */
@@ -481,8 +481,8 @@ static void Dns_timeout_client(int fd, void *data)
 }
 
 
-/*
- *  Dns memory-deallocation
+/**
+ *  Dns memory-deallocation.
  *  (Call this one at exit time)
  *  The Dns_queue is deallocated at execution time (no need to do that here)
  *  'dns_cache' is the only one that grows dynamically
@@ -503,7 +503,7 @@ void a_Dns_freeall(void)
    dFree(dns_cache);
 }
 
-/*
+/**
  *  Writes a string representation of the given DilloHost
  *  into dst. dst will be \0 terminated.
  *  Please note that dst must be at least 40 bytes long for IPv6

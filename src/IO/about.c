@@ -12,7 +12,7 @@
 
 #include <config.h>
 
-/*
+/**
  * HTML text for startup screen
  */
 const char *const AboutSplash=

@@ -31,7 +31,8 @@
 
  */
 /* $Id: md5.c,v 1.6 2002/04/13 19:20:28 lpd Exp $ */
-/*
+/**
+  @file
   Independent implementation of MD5 (RFC 1321).
 
   This code implements the MD5 Algorithm defined in RFC 1321, whose
@@ -46,18 +47,18 @@
   <ghost@aladdin.com>.  Other authors are noted in the change history
   that follows (in reverse chronological order):
 
-  2002-04-13 lpd Clarified derivation from RFC 1321; now handles byte order
+  - 2002-04-13 lpd Clarified derivation from RFC 1321; now handles byte order
 	either statically or dynamically; added missing #include <string.h>
 	in library.
-  2002-03-11 lpd Corrected argument list for main(), and added int return
+  - 2002-03-11 lpd Corrected argument list for main(), and added int return
 	type, in test program and T value program.
-  2002-02-21 lpd Added missing #include <stdio.h> in test program.
-  2000-07-03 lpd Patched to eliminate warnings about "constant is
+  - 2002-02-21 lpd Added missing #include <stdio.h> in test program.
+  - 2000-07-03 lpd Patched to eliminate warnings about "constant is
 	unsigned in ANSI C, signed in traditional"; made test program
 	self-checking.
-  1999-11-04 lpd Edited comments slightly for automatic TOC extraction.
-  1999-10-18 lpd Fixed typo in header comment (ansi2knr rather than md5).
-  1999-05-03 lpd Original version.
+  - 1999-11-04 lpd Edited comments slightly for automatic TOC extraction.
+  - 1999-10-18 lpd Fixed typo in header comment (ansi2knr rather than md5).
+  - 1999-05-03 lpd Original version.
  */
 
 #include "md5.h"
