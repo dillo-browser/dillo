@@ -59,6 +59,7 @@ dillo-3.1 [not released yet]
  - Fix OpenSSL handling of unexpected EOF without close notify alert.
  - Expand home tilde '~' in the file plugin.
  - Ignore width attribute with relative values for td and th elements.
+ - Enable Doxygen for C files and use Awesome Doxygen theme.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------
