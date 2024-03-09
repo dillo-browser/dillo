@@ -31,7 +31,7 @@ extern "C" {
 #define PREFS_UI_TAB_BG_COLOR 19
 #define PREFS_UI_TAB_FG_COLOR 20
 
-/* Panel sizes */
+/** Panel sizes. */
 enum { P_tiny = 0, P_small, P_medium };
 
 typedef struct {
@@ -118,7 +118,7 @@ typedef struct {
    int stretchability_factor;
 } DilloPrefs;
 
-/* Global Data */
+/** Global Data */
 extern DilloPrefs prefs;
 
 void a_Prefs_init(void);

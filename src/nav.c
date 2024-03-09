@@ -9,7 +9,8 @@
  * (at your option) any later version.
  */
 
-/* Support for a navigation stack */
+/** @file
+ * Support for a navigation stack */
 
 #include <stdio.h>
 #include <sys/stat.h>

@@ -31,7 +31,7 @@
  *---------------------------------------------------------------------------*/
 DilloPrefs prefs;
 
-/*
+/**
  * Sets the default settings.
  */
 
@@ -128,8 +128,8 @@ void a_Prefs_init(void)
    prefs.stretchability_factor = 100;
 }
 
-/*
- *  memory-deallocation
+/**
+ *  memory-deallocation.
  *  (Call this one at exit time)
  */
 void a_Prefs_freeall(void)

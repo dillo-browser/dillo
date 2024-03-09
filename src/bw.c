@@ -9,7 +9,9 @@
  * (at your option) any later version.
  */
 
-/* Data structures for each browser window */
+/** @file
+ * Data structures for each browser window
+ */
 
 
 #include "bw.h"
@@ -27,7 +29,7 @@ static BrowserWindow **bws;
 static int num_bws, num_bws_max;
 
 
-/*
+/**
  * Initialize global data
  */
 void a_Bw_init(void)
@@ -37,7 +39,7 @@ void a_Bw_init(void)
    bws = NULL;
 }
 
-/*
+/**
  * Create a new browser window and return it.
  * (the new window is stored in browser_window[])
  */
@@ -78,7 +80,7 @@ BrowserWindow *a_Bw_new()
    return bw;
 }
 
-/*
+/**
  * Free resources associated to a bw.
  */
 void a_Bw_free(BrowserWindow *bw)
@@ -112,7 +114,7 @@ void a_Bw_free(BrowserWindow *bw)
 }
 
 /*- Clients ----------------------------------------------------------------*/
-/*
+/**
  * Add a reference to a cache-client. It is kept int this bw's list.
  * This helps us keep track of which are active in the window so that it's
  * possible to abort/stop them.
@@ -136,7 +138,7 @@ void a_Bw_add_client(BrowserWindow *bw, int Key, int Root)
       a_UIcmd_set_buttons_sens(bw);
 }
 
-/*
+/**
  * Remove the cache-client from the bw's list
  * (client can be a image or a html page)
  * Return: 0 if found, 1 otherwise.
@@ -154,7 +156,7 @@ int a_Bw_remove_client(BrowserWindow *bw, int ClientKey)
    return data ? 0 : 1;
 }
 
-/*
+/**
  * Close a cache-client upon successful retrieval.
  * Remove the cache-client from the bw list and update the meters.
  * (client can be a image or a html page)
@@ -170,7 +172,7 @@ void a_Bw_close_client(BrowserWindow *bw, int ClientKey)
    }
 }
 
-/*
+/**
  * Stop the active clients of this bw's top page.
  * Note: rendering stops, but the cache continues to be fed.
  */
@@ -196,7 +198,7 @@ void a_Bw_stop_clients(BrowserWindow *bw, int flags)
 }
 
 /*- Page -------------------------------------------------------------------*/
-/*
+/**
  * Add an URL to the browser window's list.
  * This helps us keep track of page-requested URLs so that it's
  * possible to stop, abort and reload them.
@@ -210,7 +212,7 @@ void a_Bw_add_url(BrowserWindow *bw, const DilloUrl *Url)
    }
 }
 
-/*
+/**
  * Add a document to the browser window's list.
  */
 void a_Bw_add_doc(BrowserWindow *bw, void *vdoc)
@@ -220,7 +222,7 @@ void a_Bw_add_doc(BrowserWindow *bw, void *vdoc)
    dList_append(bw->Docs, vdoc);
 }
 
-/*
+/**
  * Get current document.
  */
 void *a_Bw_get_current_doc(BrowserWindow *bw)
@@ -236,7 +238,7 @@ void *a_Bw_get_current_doc(BrowserWindow *bw)
    return doc;
 }
 
-/*
+/**
  * Get document by URL.
  *
  * This is currently used by popup menus that need to ensure that the
@@ -252,7 +254,7 @@ void *a_Bw_get_url_doc(BrowserWindow *bw, const DilloUrl *url)
    return doc;
 }
 
-/*
+/**
  * Remove a document from the bw's list
  */
 void a_Bw_remove_doc(BrowserWindow *bw, void *vdoc)
@@ -265,7 +267,7 @@ void a_Bw_remove_doc(BrowserWindow *bw, void *vdoc)
 }
 
 /*- Cleanup ----------------------------------------------------------------*/
-/*
+/**
  * Empty RootClients, ImageClients and PageUrls lists and
  * reset progress bar data.
  */
@@ -302,7 +304,7 @@ int a_Bw_num()
    return num_bws;
 }
 
-/*
+/**
  * Return a bw by index
  */
 BrowserWindow *a_Bw_get(int i)

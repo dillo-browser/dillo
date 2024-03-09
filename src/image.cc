@@ -10,8 +10,8 @@
  * (at your option) any later version.
  */
 
-/*
- * This file implements image data transfer methods. It handles the transfer
+/* @file
+ * Implements image data transfer methods. It handles the transfer
  * of data from an Image to a DwImage widget.
  */
 
@@ -23,11 +23,11 @@
 
 using namespace dw::core;
 
-// Image to Object-ImgRenderer macro
+/** Image to Object-ImgRenderer macro */
 #define I2IR(Image)  ((dw::core::ImgRenderer*)(Image->img_rndr))
 
 
-/*
+/**
  * Create and initialize a new image structure.
  */
 DilloImage *a_Image_new(void *layout, void *img_rndr, int32_t bg_color)
@@ -49,7 +49,7 @@ DilloImage *a_Image_new(void *layout, void *img_rndr, int32_t bg_color)
    return Image;
 }
 
-/*
+/**
  * Create and initialize a new image structure with an image widget.
  */
 DilloImage *a_Image_new_with_dw(void *layout, const char *alt_text,
@@ -59,7 +59,7 @@ DilloImage *a_Image_new_with_dw(void *layout, const char *alt_text,
    return a_Image_new(layout, (void*)(dw::core::ImgRenderer*)dw, bg_color);
 }
 
-/*
+/**
  * Return the image renderer as a widget. This is somewhat tricky,
  * since simple casting leads to wrong (and hard to debug) results,
  * because of multiple inheritance. This function can be used from C
@@ -69,7 +69,7 @@ void *a_Image_get_dw(DilloImage *Image)
 {
    return (dw::Image*)(dw::core::ImgRenderer*)Image->img_rndr;
 }
-/*
+/**
  * Deallocate an Image structure
  */
 static void Image_free(DilloImage *Image)
@@ -78,7 +78,7 @@ static void Image_free(DilloImage *Image)
    dFree(Image);
 }
 
-/*
+/**
  * Unref and free if necessary
  * Do nothing if the argument is NULL
  */
@@ -89,7 +89,7 @@ void a_Image_unref(DilloImage *Image)
       Image_free(Image);
 }
 
-/*
+/**
  * Add a reference to an Image struct
  * Do nothing if the argument is NULL
  */
@@ -99,7 +99,7 @@ void a_Image_ref(DilloImage *Image)
       ++Image->RefCount;
 }
 
-/*
+/**
  * Set initial parameters of the image
  */
 void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
@@ -120,7 +120,7 @@ void a_Image_set_parms(DilloImage *Image, void *v_imgbuf, DilloUrl *url,
    Image->State = IMG_SetParms;
 }
 
-/*
+/**
  * Implement the write method
  */
 void a_Image_write(DilloImage *Image, uint_t y)
@@ -134,7 +134,7 @@ void a_Image_write(DilloImage *Image, uint_t y)
    Image->State = IMG_Write;
 }
 
-/*
+/**
  * Implement the close method
  */
 void a_Image_close(DilloImage *Image)
@@ -143,7 +143,7 @@ void a_Image_close(DilloImage *Image)
    I2IR(Image)->finish();
 }
 
-/*
+/**
  * Implement the abort method
  */
 void a_Image_abort(DilloImage *Image)

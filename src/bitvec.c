@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-/*
+/** @file
  * A simple ADT for bit arrays
  */
 
@@ -17,7 +17,7 @@
 #include "bitvec.h"
 
 
-/*
+/**
  * Create a new bitvec with 'num_bits' size
  */
 bitvec_t *a_Bitvec_new(int num_bits)
@@ -29,7 +29,7 @@ bitvec_t *a_Bitvec_new(int num_bits)
    return bvec;
 }
 
-/*
+/**
  * Clear a bitvec
  */
 void a_Bitvec_clear(bitvec_t *bvec)
@@ -37,7 +37,7 @@ void a_Bitvec_clear(bitvec_t *bvec)
    memset(bvec->vec, 0, sizeof(uchar_t) * bvec->len/BVEC_SIZE + 1);
 }
 
-/*
+/**
  * Free a bitvec
  */
 void a_Bitvec_free(bitvec_t *bvec)
@@ -48,7 +48,7 @@ void a_Bitvec_free(bitvec_t *bvec)
    }
 }
 
-/*
+/**
  * Get a bit
  */
 int a_Bitvec_get_bit(bitvec_t *bvec, int pos)
@@ -57,7 +57,7 @@ int a_Bitvec_get_bit(bitvec_t *bvec, int pos)
    return (bvec->vec[pos/BVEC_SIZE] & 1 << pos % BVEC_SIZE);
 }
 
-/*
+/**
  * Set a bit
  */
 void a_Bitvec_set_bit(bitvec_t *bvec, int pos)

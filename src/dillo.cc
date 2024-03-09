@@ -17,6 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file
+ * Dillo web browser.
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -61,7 +65,7 @@
 #include "dw/textblock.hh"
 #include "dw/table.hh"
 
-/*
+/**
  * Command line options structure
  */
 typedef enum {
@@ -108,7 +112,7 @@ static const CLI_options Options[] = {
  * SIGCHLD handling ----------------------------------------------------------
  */
 
-/*
+/**
  * Avoid our children (Dpid) to become zombies. :-)
  * Notes:
  *   . We let sigaction block SIGCHLD while in the handler.
@@ -140,7 +144,7 @@ static void raw_sigchld2(int signum)
    ++signum; /* compiler happiness */
 }
 
-/*
+/**
  * Establish SIGCHLD handler
  */
 static void est_sigchld(void)
@@ -160,7 +164,7 @@ static void est_sigchld(void)
 
 //----------------------------------------------------------------------------
 
-/*
+/**
  * Print help text generated from the options structure
  */
 static void printHelp(const char *cmdname, const CLI_options *options)
@@ -176,7 +180,7 @@ static void printHelp(const char *cmdname, const CLI_options *options)
           "\n");
 }
 
-/*
+/**
  * Return the maximum number of option arguments
  */
 static int numOptions(const CLI_options *options)
@@ -189,7 +193,7 @@ static int numOptions(const CLI_options *options)
    return max;
 }
 
-/*
+/**
  * Get next command line option.
  */
 static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
@@ -240,7 +244,7 @@ static OptID getCmdOption(const CLI_options *options, int argc, char **argv,
    return opt_id;
 }
 
-/*
+/**
  * Set FL_NORMAL_LABEL to interpret neither symbols (@) nor shortcuts (&),
  * and FL_FREE_LABELTYPE to interpret shortcuts.
  */
@@ -284,7 +288,7 @@ static void custMenuLabelMeasure(const Fl_Label* o, int& W, int& H)
    fl_measure(o->value, W, H, interpret_symbols);
 }
 
-/*
+/**
  * Tell the user if default/pref fonts can't be found.
  */
 static void checkFont(const char *name, const char *type)
@@ -302,7 +306,7 @@ static void checkPreferredFonts()
    checkFont(prefs.font_fantasy, "fantasy");
 }
 
-/*
+/**
  * Set UI color. 'color' is an 0xrrggbb value, whereas 'default_val' is a fltk
  * color (index 0-0xFF, or 0xrrggbb00).
  */
@@ -345,7 +349,7 @@ static void setColors()
                   Fl::get_color(FL_FOREGROUND_COLOR));
 }
 
-/*
+/**
  * Given a command line argument, build a DilloUrl for it.
  */
 static DilloUrl *makeStartUrl(char *str, bool local)

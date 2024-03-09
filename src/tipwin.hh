@@ -6,7 +6,7 @@
 #include <FL/Fl_Input.H>
 
 
-/*
+/**
  * Custom tooltip window
  */
 class TipWin : public Fl_Menu_Window {
@@ -29,7 +29,7 @@ public:
 extern TipWin *my_tipwin(void);
 
 
-/*
+/**
  * A Button sharing a custom tooltip window
  */
 class TipWinButton : public Fl_Button {
@@ -43,7 +43,7 @@ class TipWinButton : public Fl_Button {
    void set_tooltip(const char *s);
 };
 
-/*
+/**
  * A button that highlights on mouse over
  */
 class CustButton : public TipWinButton {
@@ -55,7 +55,7 @@ public:
 };
 
 
-/*
+/**
  * An Input with custom tooltip window
  */
 class TipWinInput : public Fl_Input {

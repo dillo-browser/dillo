@@ -94,7 +94,7 @@ char *dStrndup(const char *s, size_t sz)
    return NULL;
 }
 
-/*
+/**
  * Concatenate a NULL-terminated list of strings
  */
 char *dStrconcat(const char *s1, ...)
@@ -114,7 +114,7 @@ char *dStrconcat(const char *s1, ...)
    return ns;
 }
 
-/*
+/**
  * Remove leading and trailing whitespace
  */
 char *dStrstrip(char *s)
@@ -132,7 +132,7 @@ char *dStrstrip(char *s)
    return s;
 }
 
-/*
+/**
  * Clear the contents of the string
  */
 void dStrshred(char *s)
@@ -141,7 +141,7 @@ void dStrshred(char *s)
       memset(s, 0, strlen(s));
 }
 
-/*
+/**
  * Return a new string of length 'len' filled with 'c' characters
  */
 char *dStrnfill(size_t len, char c)
@@ -151,7 +151,7 @@ char *dStrnfill(size_t len, char c)
    return ret;
 }
 
-/*
+/**
  * strsep() implementation
  */
 char *dStrsep(char **orig, const char *delim)
@@ -176,7 +176,7 @@ char *dStrsep(char **orig, const char *delim)
  * Turkic locales.
  */
 
-/*
+/**
  * Case insensitive strstr
  */
 char *dStriAsciiStr(const char *haystack, const char *needle)
@@ -226,7 +226,7 @@ int dStrnAsciiCasecmp(const char *s1, const char *s2, size_t n)
  *- dStr ----------------------------------------------------------------------
  */
 
-/*
+/**
  * Private allocator
  */
 static void dStr_resize(Dstr *ds, int n_sz, int keep)
@@ -245,7 +245,7 @@ static void dStr_resize(Dstr *ds, int n_sz, int keep)
    }
 }
 
-/*
+/**
  * Create a new string with a given size.
  * Initialized to ""
  */
@@ -261,15 +261,15 @@ Dstr *dStr_sized_new (int sz)
    return ds;
 }
 
-/*
- * Return memory if there's too much allocated
+/**
+ * Return memory if there's too much allocated.
  */
 void dStr_fit (Dstr *ds)
 {
    dStr_resize(ds, ds->len + 1, 1);
 }
 
-/*
+/**
  * Insert a C string, at a given position, into a Dstr (providing length).
  * Note: It also works with embedded nil characters.
  */
@@ -290,8 +290,8 @@ void dStr_insert_l (Dstr *ds, int pos_0, const char *s, int l)
    }
 }
 
-/*
- * Insert a C string, at a given position, into a Dstr
+/**
+ * Insert a C string, at a given position, into a Dstr.
  */
 void dStr_insert (Dstr *ds, int pos_0, const char *s)
 {
@@ -299,7 +299,7 @@ void dStr_insert (Dstr *ds, int pos_0, const char *s)
       dStr_insert_l(ds, pos_0, s, strlen(s));
 }
 
-/*
+/**
  * Append a C string to a Dstr (providing length).
  * Note: It also works with embedded nil characters.
  */
@@ -308,7 +308,7 @@ void dStr_append_l (Dstr *ds, const char *s, int l)
    dStr_insert_l(ds, ds->len, s, l);
 }
 
-/*
+/**
  * Append a C string to a Dstr.
  */
 void dStr_append (Dstr *ds, const char *s)
@@ -316,7 +316,7 @@ void dStr_append (Dstr *ds, const char *s)
    dStr_append_l(ds, s, strlen(s));
 }
 
-/*
+/**
  * Create a new string.
  * Initialized to 's' or empty if 's == NULL'
  */
@@ -328,7 +328,7 @@ Dstr *dStr_new (const char *s)
    return ds;
 }
 
-/*
+/**
  * Free a dillo string.
  * if 'all' free everything, else free the structure only.
  */
@@ -341,7 +341,7 @@ void dStr_free (Dstr *ds, int all)
    }
 }
 
-/*
+/**
  * Append one character.
  */
 void dStr_append_c (Dstr *ds, int c)
@@ -360,7 +360,7 @@ void dStr_append_c (Dstr *ds, int c)
    }
 }
 
-/*
+/**
  * Truncate a Dstr to be 'len' bytes long.
  */
 void dStr_truncate (Dstr *ds, int len)
@@ -371,7 +371,7 @@ void dStr_truncate (Dstr *ds, int len)
    }
 }
 
-/*
+/**
  * Clear a Dstr.
  */
 void dStr_shred (Dstr *ds)
@@ -380,7 +380,7 @@ void dStr_shred (Dstr *ds)
       memset(ds->str, '\0', ds->sz);
 }
 
-/*
+/**
  * Erase a substring.
  */
 void dStr_erase (Dstr *ds, int pos_0, int len)
@@ -392,7 +392,7 @@ void dStr_erase (Dstr *ds, int pos_0, int len)
    }
 }
 
-/*
+/**
  * vsprintf-like function that appends.
  * Used by: dStr_vsprintf(), dStr_sprintf() and dStr_sprintfa().
  */
@@ -431,7 +431,7 @@ void dStr_vsprintfa (Dstr *ds, const char *format, va_list argp)
    }
 }
 
-/*
+/**
  * vsprintf-like function.
  */
 void dStr_vsprintf (Dstr *ds, const char *format, va_list argp)
@@ -442,7 +442,7 @@ void dStr_vsprintf (Dstr *ds, const char *format, va_list argp)
    }
 }
 
-/*
+/**
  * Printf-like function
  */
 void dStr_sprintf (Dstr *ds, const char *format, ...)
@@ -456,7 +456,7 @@ void dStr_sprintf (Dstr *ds, const char *format, ...)
    }
 }
 
-/*
+/**
  * Printf-like function that appends.
  */
 void dStr_sprintfa (Dstr *ds, const char *format, ...)
@@ -470,7 +470,7 @@ void dStr_sprintfa (Dstr *ds, const char *format, ...)
    }
 }
 
-/*
+/**
  * Compare two dStrs.
  */
 int dStr_cmp(Dstr *ds1, Dstr *ds2)
@@ -482,7 +482,7 @@ int dStr_cmp(Dstr *ds1, Dstr *ds2)
    return ret;
 }
 
-/*
+/**
  * Return a pointer to the first occurrence of needle in haystack.
  */
 char *dStr_memmem(Dstr *haystack, Dstr *needle)
@@ -502,7 +502,7 @@ char *dStr_memmem(Dstr *haystack, Dstr *needle)
    return NULL;
 }
 
-/*
+/**
  * Return a printable representation of the provided Dstr, limited to a length
  * of roughly maxlen.
  *
@@ -540,7 +540,7 @@ const char *dStr_printable(Dstr *in, int maxlen)
  *- dList ---------------------------------------------------------------------
  */
 
-/*
+/**
  * Create a new empty list
  */
 Dlist *dList_new(int size)
@@ -556,7 +556,7 @@ Dlist *dList_new(int size)
    return l;
 }
 
-/*
+/**
  * Free a list (not its elements)
  */
 void dList_free (Dlist *lp)
@@ -568,7 +568,7 @@ void dList_free (Dlist *lp)
    dFree(lp);
 }
 
-/*
+/**
  * Insert an element at a given position [0 based]
  */
 void dList_insert_pos (Dlist *lp, void *data, int pos0)
@@ -589,7 +589,7 @@ void dList_insert_pos (Dlist *lp, void *data, int pos0)
    lp->list[pos0] = data;
 }
 
-/*
+/**
  * Append a data item to the list
  */
 void dList_append (Dlist *lp, void *data)
@@ -597,7 +597,7 @@ void dList_append (Dlist *lp, void *data)
    dList_insert_pos(lp, data, lp->len);
 }
 
-/*
+/**
  * Prepend a data item to the list
  */
 void dList_prepend (Dlist *lp, void *data)
@@ -605,7 +605,7 @@ void dList_prepend (Dlist *lp, void *data)
    dList_insert_pos(lp, data, 0);
 }
 
-/*
+/**
  * For completing the ADT.
  */
 int dList_length (Dlist *lp)
@@ -615,7 +615,7 @@ int dList_length (Dlist *lp)
    return lp->len;
 }
 
-/*
+/**
  * Remove a data item without preserving order.
  */
 void dList_remove_fast (Dlist *lp, const void *data)
@@ -653,7 +653,7 @@ void dList_remove (Dlist *lp, const void *data)
    }
 }
 
-/*
+/**
  * Return the nth data item,
  * NULL when not found or 'n0' is out of range
  */
@@ -664,7 +664,7 @@ void *dList_nth_data (Dlist *lp, int n0)
    return lp->list[n0];
 }
 
-/*
+/**
  * Return the found data item, or NULL if not present.
  */
 void *dList_find (Dlist *lp, const void *data)
@@ -673,7 +673,7 @@ void *dList_find (Dlist *lp, const void *data)
    return (i >= 0) ? lp->list[i] : NULL;
 }
 
-/*
+/**
  * Search a data item.
  * Return value: its index if found, -1 if not present.
  * (this is useful for a list of integers, for finding number zero).
@@ -694,7 +694,7 @@ int dList_find_idx (Dlist *lp, const void *data)
    return ret;
 }
 
-/*
+/**
  * Search a data item using a custom function.
  * func() is given the list item and the user data as parameters.
  * Return: data item when found, NULL otherwise.
@@ -716,7 +716,7 @@ void *dList_find_custom (Dlist *lp, const void *data, dCompareFunc func)
    return ret;
 }
 
-/*
+/**
  * QuickSort implementation.
  * This allows for a simple compare function for all the ADT.
  */
@@ -750,7 +750,7 @@ static void QuickSort(void **left, void **right, dCompareFunc compare)
      QuickSort(p, right, compare);
 }
 
-/*
+/**
  * Sort the list using a custom function
  */
 void dList_sort (Dlist *lp, dCompareFunc func)
@@ -760,7 +760,7 @@ void dList_sort (Dlist *lp, dCompareFunc func)
    }
 }
 
-/*
+/**
  * Insert an element into a sorted list.
  * The comparison function receives two list elements.
  */
@@ -786,7 +786,7 @@ void dList_insert_sorted (Dlist *lp, void *data, dCompareFunc func)
    }
 }
 
-/*
+/**
  * Search a sorted list.
  * Return the found data item, or NULL if not present.
  * func() is given the list item and the user data as parameters.
@@ -820,7 +820,7 @@ void *dList_find_sorted (Dlist *lp, const void *data, dCompareFunc func)
  *- Parse function ------------------------------------------------------------
  */
 
-/*
+/**
  * Take a dillo rc line and return 'name' and 'value' pointers to it.
  * Notes:
  *    - line is modified!
@@ -880,7 +880,7 @@ void dLib_show_messages(bool_t show)
  *- Misc utility functions ----------------------------------------------------
  */
 
-/*
+/**
  * Return the current working directory in a new string
  */
 char *dGetcwd ()
@@ -898,7 +898,7 @@ char *dGetcwd ()
   }
 }
 
-/*
+/**
  * Return the home directory in a static string (don't free)
  */
 char *dGethomedir ()
@@ -919,7 +919,7 @@ char *dGethomedir ()
    return homedir;
 }
 
-/*
+/**
  * Get a line from a FILE stream.
  * Return value: read line on success, NULL on EOF.
  */
@@ -943,7 +943,7 @@ char *dGetline (FILE *stream)
    return line;
 }
 
-/*
+/**
  * Close a FD handling EINTR.
  */
 int dClose(int fd)

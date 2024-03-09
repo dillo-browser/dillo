@@ -33,7 +33,7 @@ typedef struct ChainLink ChainLink;
 typedef void (*ChainFunction_t)(int Op, int Branch, int Dir, ChainLink *Info,
                                 void *Data1, void *Data2);
 
-/* This is the main data structure for CCC nodes */
+/** Main data structure for CCC nodes */
 struct ChainLink {
    void *LocalKey;
 
@@ -48,7 +48,7 @@ struct ChainLink {
    int BcbBranch;
 };
 
-/* A convenience data structure for passing data chunks between nodes */
+/** A convenience data structure for passing data chunks between nodes */
 typedef struct {
    char *Buf;
    int Size;

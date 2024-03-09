@@ -268,7 +268,7 @@ void a_Html_form_display_hiddens2(void *vform, bool display)
  * Form parsing functions
  */
 
-/*
+/**
  * Add an HTML control
  */
 static void Html_add_input(DilloHtml *html, DilloHtmlInputType type,
@@ -291,7 +291,7 @@ static void Html_add_input(DilloHtml *html, DilloHtmlInputType type,
    }
 }
 
-/*
+/**
  * Find radio input by name
  */
 static DilloHtmlInput *Html_get_radio_input(DilloHtml *html, const char *name)
@@ -314,7 +314,7 @@ static DilloHtmlInput *Html_get_radio_input(DilloHtml *html, const char *name)
    return NULL;
 }
 
-/*
+/**
  * Get the current input if available.
  */
 static DilloHtmlInput *Html_get_current_input(DilloHtml *html)
@@ -330,7 +330,7 @@ static DilloHtmlInput *Html_get_current_input(DilloHtml *html)
             inputs->get (inputs->size() - 1) : NULL;
 }
 
-/*
+/**
  * Handle <FORM> tag
  */
 void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
@@ -405,7 +405,7 @@ void Html_tag_close_form(DilloHtml *html)
    html->InFlags &= ~IN_TEXTAREA;
 }
 
-/*
+/**
  * get size, restrict it to reasonable value
  */
 static int Html_input_get_size(DilloHtml *html, const char *attrbuf)
@@ -424,7 +424,7 @@ static int Html_input_get_size(DilloHtml *html, const char *attrbuf)
    return size;
 }
 
-/*
+/**
  * Add a new input to current form
  */
 void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
@@ -580,7 +580,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
    dFree(value);
 }
 
-/*
+/**
  * The ISINDEX tag is just a deprecated form of <INPUT type=text> with
  * implied FORM, afaics.
  */
@@ -628,8 +628,8 @@ void Html_tag_open_textarea(DilloHtml *html, const char *tag, int tagsize)
    html->InFlags |= IN_TEXTAREA;
 }
 
-/*
- * The textarea tag
+/**
+ * The textarea tag.
  */
 void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
 {
@@ -686,8 +686,8 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
    dFree(name);
 }
 
-/*
- * Close  textarea
+/**
+ * Close textarea.
  * (TEXTAREA is parsed in VERBATIM mode, and entities are handled here)
  */
 void Html_tag_close_textarea(DilloHtml *html)
@@ -966,7 +966,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
    dFree(type);
 }
 
-/*
+/**
  * Handle close <BUTTON>
  */
 void Html_tag_close_button(DilloHtml *html)
@@ -1065,7 +1065,7 @@ void DilloHtmlForm::submit(DilloHtmlInput *active_input, EventButton *event)
    }
 }
 
-/*
+/**
  * Build a new query URL.
  * (Called by submit())
  */
@@ -1123,7 +1123,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *active_input)
    return new_url;
 }
 
-/*
+/**
  * Construct the data for a query URL
  */
 Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
@@ -1245,7 +1245,7 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
    return DataStr;
 }
 
-/*
+/**
  * Generate a boundary string for use in separating the parts of a
  * multipart/form-data submission.
  */
@@ -1308,7 +1308,7 @@ char *DilloHtmlForm::makeMultipartBoundary(iconv_t char_encoder,
    return ret;
 }
 
-/*
+/**
  * Pass input text through character set encoder.
  * Return value: same input Dstr if no encoding is needed.
  *               new Dstr when encoding (input Dstr is freed).
@@ -1377,7 +1377,7 @@ Dstr *DilloHtmlForm::encodeText(iconv_t char_encoder, Dstr **input)
    return output;
 }
 
-/*
+/**
  * Urlencode 'str' and append it to 'dstr'
  */
 void DilloHtmlForm::strUrlencodeAppend(Dstr *dstr, const char *str)
@@ -1387,7 +1387,7 @@ void DilloHtmlForm::strUrlencodeAppend(Dstr *dstr, const char *str)
    dFree(encoded);
 }
 
-/*
+/**
  * Append a name-value pair to url data using url encoding.
  */
 void DilloHtmlForm::inputUrlencodeAppend(Dstr *data, const char *name,
@@ -1401,7 +1401,7 @@ void DilloHtmlForm::inputUrlencodeAppend(Dstr *data, const char *name,
    }
 }
 
-/*
+/**
  * Append files to URL data using multipart encoding.
  * Currently only accepts one file.
  */
@@ -1454,7 +1454,7 @@ void DilloHtmlForm::filesInputMultipartAppend(Dstr* data,
    }
 }
 
-/*
+/**
  * Append a name-value pair to url data using multipart encoding.
  */
 void DilloHtmlForm::inputMultipartAppend(Dstr *data,
@@ -1477,7 +1477,7 @@ void DilloHtmlForm::inputMultipartAppend(Dstr *data,
    }
 }
 
-/*
+/**
  * Append an image button click position to url data using url encoding.
  */
 void DilloHtmlForm::imageInputUrlencodeAppend(Dstr *data, Dstr *name, Dstr *x,
@@ -1492,7 +1492,7 @@ void DilloHtmlForm::imageInputUrlencodeAppend(Dstr *data, Dstr *name, Dstr *x,
       dStr_sprintfa(data, "x=%s&y=%s&", x->str, y->str);
 }
 
-/*
+/**
  * Append an image button click position to url data using multipart encoding.
  */
 void DilloHtmlForm::imageInputMultipartAppend(Dstr *data, const char *boundary,
@@ -1511,7 +1511,7 @@ void DilloHtmlForm::imageInputMultipartAppend(Dstr *data, const char *boundary,
    dStr_truncate(name, orig_len);
 }
 
-/*
+/**
  * Reset all inputs containing reset to their initial values.  In
  * general, reset is the reset button for the form.
  */
@@ -1522,7 +1522,7 @@ void DilloHtmlForm::reset ()
       inputs->get(i)->reset();
 }
 
-/*
+/**
  * Show/hide "hidden" form controls
  */
 void DilloHtmlForm::display_hiddens(bool display)
@@ -1543,7 +1543,7 @@ void DilloHtmlForm::setEnabled(bool enabled)
       inputs->get(i)->setEnabled(enabled);
 }
 
-/*
+/**
  * Add a new input.
  */
 void DilloHtmlForm::addInput(DilloHtmlInput *input, DilloHtmlInputType type)
@@ -1561,7 +1561,7 @@ void DilloHtmlForm::addInput(DilloHtmlInput *input, DilloHtmlInputType type)
    }
 }
 
-/*
+/**
  * Return the input with a given resource.
  */
 DilloHtmlInput *DilloHtmlForm::getInput (Resource *resource)
@@ -1575,7 +1575,7 @@ DilloHtmlInput *DilloHtmlForm::getInput (Resource *resource)
    return NULL;
 }
 
-/*
+/**
  * Return a Radio input for the given name.
  */
 DilloHtmlInput *DilloHtmlForm::getRadioInput (const char *name)
@@ -1601,7 +1601,7 @@ void DilloHtmlReceiver::activate (Resource *resource)
    form->eventHandler(resource, NULL);
 }
 
-/*
+/**
  * Enter a form control, as in "onmouseover".
  * For _pressing_ enter in a text control, see activate().
  */
@@ -1624,7 +1624,7 @@ void DilloHtmlReceiver::enter (Resource *resource)
    a_UIcmd_set_msg(html->bw, "%s", msg);
 }
 
-/*
+/**
  * Leave a form control, or "onmouseout".
  */
 void DilloHtmlReceiver::leave (Resource *resource)
@@ -1680,7 +1680,7 @@ DilloHtmlInput::~DilloHtmlInput ()
       delete select;
 }
 
-/*
+/**
  * Connect to a receiver.
  */
 void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
@@ -1702,7 +1702,7 @@ void DilloHtmlInput::connectTo(DilloHtmlReceiver *form_receiver)
    }
 }
 
-/*
+/**
  * Activate a form
  */
 void DilloHtmlInput::activate(DilloHtmlForm *form, int num_entry_fields,
@@ -1734,7 +1734,7 @@ void DilloHtmlInput::activate(DilloHtmlForm *form, int num_entry_fields,
    }
 }
 
-/*
+/**
  * Read a file into cache
  */
 void DilloHtmlInput::readFile (BrowserWindow *bw)
@@ -1754,7 +1754,7 @@ void DilloHtmlInput::readFile (BrowserWindow *bw)
    }
 }
 
-/*
+/**
  * Get the values for a "successful control".
  */
 void DilloHtmlInput::appendValuesTo(Dlist *values, bool is_active_submit)
@@ -1830,7 +1830,7 @@ void DilloHtmlInput::appendValuesTo(Dlist *values, bool is_active_submit)
    }
 }
 
-/*
+/**
  * Reset to the initial value.
  */
 void DilloHtmlInput::reset ()
@@ -1913,7 +1913,7 @@ void DilloHtmlSelect::addOpt (DilloHtmlOptbase *opt)
    opts->set (size, opt);
 }
 
-/*
+/**
  * Select the first option if nothing else is selected.
  */
 void DilloHtmlSelect::ensureSelection()
@@ -2007,7 +2007,7 @@ DilloHtmlOption::~DilloHtmlOption ()
  * Utilities
  */
 
-/*
+/**
  * Create input image for the form
  */
 static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)

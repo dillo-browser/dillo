@@ -9,7 +9,9 @@
  * (at your option) any later version.
  */
 
-/* Support for dpi/dpip from Dillo's side */
+/** @file
+ * Support for dpi/dpip from Dillo's side
+ */
 
 #include "msg.h"
 #include "bw.h"
@@ -27,7 +29,7 @@
 static char *dialog_server = NULL;
 
 
-/*
+/**
  * Generic callback function for dpip dialogs.
  */
 static void Dpiapi_dialog_answer_cb(BrowserWindow *bw, int answer)
@@ -44,7 +46,7 @@ static void Dpiapi_dialog_answer_cb(BrowserWindow *bw, int answer)
    dFree(cmd);
 }
 
-/*
+/**
  * Process a dpip "dialog" command from any dpi.
  */
 void a_Dpiapi_dialog(BrowserWindow *bw, char *server, char *dpip_tag)

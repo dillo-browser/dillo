@@ -16,7 +16,7 @@
 
 // C++ functions with C linkage ----------------------------------------------
 
-/*
+/**
  * Return index of the last byte of the UTF-8-encoded character that str + i
  * points to or into.
  */
@@ -36,7 +36,7 @@ uint_t a_Utf8_end_of_char(const char *str, uint_t i)
    return i;
 }
 
-/*
+/**
  * Decode a single UTF-8-encoded character starting at p.
  * The resulting Unicode value (in the range 0-0x10ffff) is returned,
  * and len is set to the number of bytes in the UTF-8 encoding.
@@ -48,7 +48,7 @@ uint_t a_Utf8_decode(const char* str, const char* end, int* len)
    return fl_utf8decode(str, end, len);
 }
 
-/*
+/**
  * Write UTF-8 encoding of ucs into buf and return number of bytes written.
  */
 int a_Utf8_encode(unsigned int ucs, char *buf)
@@ -56,7 +56,7 @@ int a_Utf8_encode(unsigned int ucs, char *buf)
    return fl_utf8encode(ucs, buf);
 }
 
-/*
+/**
  * Examine first srclen bytes of src.
  * Return 0 if not legal UTF-8, 1 if all ASCII, 2 if all below 0x800,
  * 3 if all below 0x10000, and 4 otherwise.
@@ -66,8 +66,8 @@ int a_Utf8_test(const char* src, unsigned int srclen)
    return fl_utf8test(src, srclen);
 }
 
-/*
- * Does s point to a UTF-8-encoded ideographic character?
+/**
+ * Does s point to a UTF-8-encoded ideographic character?.
  *
  * This is based on http://unicode.org/reports/tr14/#ID plus some guesses
  * for what might make the most sense for Dillo. Surprisingly, they include

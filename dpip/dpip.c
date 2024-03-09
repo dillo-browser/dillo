@@ -34,29 +34,34 @@
  */
 static const char Quote = '\'';
 
-/*
+/** @file
+ * Library for dealing with dpip tags (dillo plugin protocol tags).
+ *
  * Basically the syntax of a dpip tag is:
  *
- *  "<"[*alpha] *(<name>"="Quote<escaped_value>Quote) " "Quote">"
- *
- *   1.- No space is allowed around the "=" sign between a name and its value.
- *   2.- The Quote character is not allowed in <name>.
- *   3.- Attribute values stuff Quote as QuoteQuote.
+ * @code
+ * "<"[*alpha] *(<name>"="Quote<escaped_value>Quote) " "Quote">"
+ * @endcode
+ *   1. No space is allowed around the "=" sign between a name and its value.
+ *   2. The Quote character is not allowed in <name>.
+ *   3. Attribute values stuff Quote as QuoteQuote.
  *
  * e.g. (with ' as Quote):
  *
+ * @code
  *   <a='b' b='c' '>                 OK
  *   <dpi a='b i' b='12' '>          OK
  *   <a='>' '>                       OK
  *   <a='ain''t no doubt' '>         OK
  *   <a='ain''t b=''no'' b='' doubt' '>    OK
  *   <a = '>' '>                     Wrong
+ * @endcode
  *
  * Notes:
  *
- *   Restriction #1 is for easy finding of end of tag (EOT=Space+Quote+>).
- *   Restriction #2 can be removed, but what for? ;)
- *   The functions here provide for this functionality.
+ * - Restriction #1 is for easy finding of end of tag (EOT=Space+Quote+>).
+ * - Restriction #2 can be removed, but what for? ;)
+ * - The functions here provide for this functionality.
  */
 
 typedef enum {
@@ -69,7 +74,7 @@ typedef enum {
 
 /* ------------------------------------------------------------------------- */
 
-/*
+/**
  * Printf like function for building dpip commands.
  * It takes care of dpip escaping of its arguments.
  * NOTE : It ONLY accepts string parameters, and
@@ -120,7 +125,7 @@ char *a_Dpip_build_cmd(const char *format, ...)
    return p;
 }
 
-/*
+/**
  * Task: given a tag, its size and an attribute name, return the
  * attribute value (stuffing of ' is removed here).
  *
@@ -180,7 +185,7 @@ char *a_Dpip_get_attr_l(const char *tag, size_t tagsize, const char *attrname)
    return val;
 }
 
-/*
+/**
  * Task: given a tag and an attribute name, return its value.
  * Return value: the attribute value, or NULL if not present or malformed.
  */
@@ -189,7 +194,7 @@ char *a_Dpip_get_attr(const char *tag, const char *attrname)
    return (tag ? a_Dpip_get_attr_l(tag, strlen(tag), attrname) : NULL);
 }
 
-/*
+/**
  * Check whether the given 'auth' string equals what dpid saved.
  * Return value: 1 if equal, -1 otherwise
  */
@@ -236,8 +241,8 @@ int a_Dpip_check_auth(const char *auth_tag)
  * Dpip socket API ----------------------------------------------------------
  */
 
-/*
- * Create and initialize a dpip socket handler
+/**
+ * Create and initialize a dpip socket handler.
  */
 Dsh *a_Dpip_dsh_new(int fd_in, int fd_out, int flush_sz)
 {
@@ -305,8 +310,8 @@ static int Dpip_dsh_write(Dsh *dsh, int nb, const char *Data, int DataSize)
    return ret;
 }
 
-/*
- * Streamed write to socket
+/**
+ * Streamed write to socket.
  * Return: 0 on success, 1 on error.
  */
 int a_Dpip_dsh_write(Dsh *dsh, int flush, const char *Data, int DataSize)
@@ -363,7 +368,7 @@ int a_Dpip_dsh_trywrite(Dsh *dsh, const char *Data, int DataSize)
    return st;
 }
 
-/*
+/**
  * Convenience function.
  */
 int a_Dpip_dsh_write_str(Dsh *dsh, int flush, const char *str)
@@ -371,7 +376,7 @@ int a_Dpip_dsh_write_str(Dsh *dsh, int flush, const char *str)
    return a_Dpip_dsh_write(dsh, flush, str, (int)strlen(str));
 }
 
-/*
+/**
  * Read raw data from the socket into our buffer in
  * either BLOCKING or NONBLOCKING mode.
  */
@@ -425,7 +430,7 @@ static void Dpip_dsh_read(Dsh *dsh, int blocking)
       Dpip_dsh_read(dsh, 0);
 }
 
-/*
+/**
  * Return a newlly allocated string with the next dpip token in the socket.
  * Return value: token string and length on success, NULL otherwise.
  * (useful for handling null characters in the data stream)
@@ -481,7 +486,7 @@ char *a_Dpip_dsh_read_token2(Dsh *dsh, int blocking, int *DataSize)
    return ret;
 }
 
-/*
+/**
  * Return a newlly allocated string with the next dpip token in the socket.
  * Return value: token string on success, NULL otherwise
  */
@@ -492,7 +497,7 @@ char *a_Dpip_dsh_read_token(Dsh *dsh, int blocking)
    return a_Dpip_dsh_read_token2(dsh, blocking, &token_size);
 }
 
-/*
+/**
  * Close this socket for reading and writing.
  * (flush pending data)
  */
@@ -514,7 +519,7 @@ void a_Dpip_dsh_close(Dsh *dsh)
    }
 }
 
-/*
+/**
  * Free the SockHandler structure
  */
 void a_Dpip_dsh_free(Dsh *dsh)

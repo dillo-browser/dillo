@@ -14,10 +14,10 @@ extern "C" {
 /*
  * Communication mode flags
  */
-#define   DPIP_TAG        1   /* Dpip tags in the socket */
-#define   DPIP_LAST_TAG   2   /* Dpip mode-switching tag */
-#define   DPIP_RAW        4   /* Raw data in the socket  */
-#define   DPIP_NONBLOCK   8   /* Nonblocking IO          */
+#define   DPIP_TAG        1   /**< Dpip tags in the socket */
+#define   DPIP_LAST_TAG   2   /**< Dpip mode-switching tag */
+#define   DPIP_RAW        4   /**< Raw data in the socket  */
+#define   DPIP_NONBLOCK   8   /**< Nonblocking IO          */
 
 typedef enum {
    DPIP_EAGAIN,
@@ -25,7 +25,7 @@ typedef enum {
    DPIP_EOF
 } DpipDshStatus;
 
-/*
+/**
  * Dpip socket handler type.
  */
 typedef struct {
@@ -34,16 +34,16 @@ typedef struct {
    /* FILE *in;    --Unused. The stream functions block when reading. */
    FILE *out;
 
-   Dstr *wrbuf;    /* write buffer */
-   Dstr *rdbuf;    /* read buffer */
-   int flush_sz;   /* max size before flush */
+   Dstr *wrbuf;    /**< write buffer */
+   Dstr *rdbuf;    /**< read buffer */
+   int flush_sz;   /**< max size before flush */
 
-   int mode;       /* mode flags: DPIP_TAG | DPIP_LAST_TAG | DPIP_RAW */
-   int status;     /* status code: DPIP_EAGAIN | DPIP_ERROR | DPIP_EOF */
+   int mode;       /**< mode flags: DPIP_TAG | DPIP_LAST_TAG | DPIP_RAW */
+   int status;     /**< status code: DPIP_EAGAIN | DPIP_ERROR | DPIP_EOF */
 } Dsh;
 
 
-/*
+/**
  * Printf like function for building dpip commands.
  * It takes care of dpip escaping of its arguments.
  * NOTE : It ONLY accepts string parameters, and
@@ -51,7 +51,7 @@ typedef struct {
  */
 char *a_Dpip_build_cmd(const char *format, ...);
 
-/*
+/**
  * Task: given a tag and an attribute name, return its value.
  *       (dpip character escaping is removed here)
  * Return value: the attribute value, or NULL if not present or malformed.

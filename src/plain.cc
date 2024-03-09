@@ -9,7 +9,8 @@
  * (at your option) any later version.
  */
 
-/*
+/**
+ * @file
  * Module for decoding a text/plain object into a dw widget.
  */
 
@@ -80,7 +81,7 @@ static void Plain_callback(int Op, CacheClient_t *Client);
 void a_Plain_free(void *data);
 
 
-/*
+/**
  * Diplain constructor.
  */
 DilloPlain::DilloPlain(BrowserWindow *p_bw)
@@ -110,7 +111,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw)
    dw->setDeleteCallback(a_Plain_free, this);
 }
 
-/*
+/**
  * Free memory used by the DilloPlain class.
  */
 DilloPlain::~DilloPlain()
@@ -119,7 +120,7 @@ DilloPlain::~DilloPlain()
    widgetStyle->unref();
 }
 
-/*
+/**
  * Receive the mouse button press event
  */
 bool DilloPlain::PlainLinkReceiver::press (Widget *widget, int, int, int, int,
@@ -156,7 +157,7 @@ void DilloPlain::addLine(char *Buf, uint_t BufSize)
    DW2TB(dw)->addParbreak(0, widgetStyle);
 }
 
-/*
+/**
  * Here we parse plain text and put it into the page structure.
  * (This function is called by Plain_callback whenever there's new data)
  */
@@ -197,7 +198,7 @@ void DilloPlain::write(void *Buf, uint_t BufSize, int Eof)
    DW2TB(dw)->flush();
 }
 
-/*
+/**
  * Set callback function and callback data for "text/" MIME major-type.
  */
 void *a_Plain_text(const char *type, void *P, CA_Callback_t *Call, void **Data)
@@ -217,7 +218,7 @@ void a_Plain_free(void *data)
    delete ((DilloPlain *)data);
 }
 
-/*
+/**
  * This function is a cache client
  */
 static void Plain_callback(int Op, CacheClient_t *Client)

@@ -12,6 +12,10 @@
  *
  */
 
+/** @file
+ * HTTP Strict Transport Security
+ */
+
 /* To preload hosts, as of 2015, chromium is the list keeper:
  * https://src.chromium.org/viewvc/chrome/trunk/src/net/http/transport_security_state_static.json
  * although mozilla's is easier to work from (and they trim it based on
@@ -62,7 +66,7 @@ void a_Hsts_freeall()
    }
 }
 
-/*
+/**
  * Compare function for searching a domain node by domain string
  */
 static int Domain_node_domain_str_cmp(const void *v1, const void *v2)
@@ -87,7 +91,7 @@ static void Hsts_remove_policy(HstsData_t *policy)
    }
 }
 
-/*
+/**
  * Return the time_t for a future time.
  */
 static time_t Hsts_future_time(long seconds_from_now)
@@ -107,7 +111,7 @@ static time_t Hsts_future_time(long seconds_from_now)
    return ret;
 }
 
-/*
+/**
  * Compare function for searching domains.
  */
 static int Domain_node_cmp(const void *v1, const void *v2)
@@ -134,7 +138,7 @@ static void Hsts_set_policy(const char *host, long max_age, bool_t subdomains)
    policy->expires_at = exp;
 }
 
-/*
+/**
  * Read the next attribute.
  */
 static char *Hsts_parse_attr(const char **header_str)
@@ -155,7 +159,7 @@ static char *Hsts_parse_attr(const char **header_str)
    return dStrndup(str, len);
 }
 
-/*
+/**
  * Get the value in *header_str.
  */
 static char *Hsts_parse_value(const char **header_str)
@@ -182,7 +186,7 @@ static char *Hsts_parse_value(const char **header_str)
    return dStrndup(str, len);
 }
 
-/*
+/**
  * Advance past any value.
  */
 static void Hsts_eat_value(const char **str)
@@ -191,7 +195,7 @@ static void Hsts_eat_value(const char **str)
       *str += strcspn(*str, ";");
 }
 
-/*
+/**
  * The reponse for this url had an HSTS header, so let's take action.
  */
 void a_Hsts_set(const char *header, const DilloUrl *url)

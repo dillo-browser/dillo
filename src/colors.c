@@ -210,12 +210,12 @@ static const struct key {
 
 #define NCOLORS   (sizeof(color_keyword) / sizeof(color_keyword[0]))
 
-/*
- * Parse a color in hex (RRGGBB) or (RGB)
+/**
+ * Parse a color in hex (RRGGBB) or (RGB).
  *
- * Return Value:
- *   parsed color if successful (err = 0),
- *   default_color on error (err = 1).
+ * @return
+ *  - parsed color if successful (err = 0),
+ *  - default_color on error (err = 1).
  */
 static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
 {
@@ -237,7 +237,7 @@ static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
   return ret_color;
 }
 
-/*
+/**
  * Parse a color string.
  *
  * - If the string begins with # or with 0x, return the color number
@@ -245,15 +245,15 @@ static int32_t Color_parse_hex (const char *s, int32_t default_color, int *err)
  * - Else search the set of named colors.
  * - As a last resort, treat it as bare hex as in the first case.
  *
- * Return Value:
- *    Parsed color if successful,
- *    default_color on error.
+ * @return
+ *  -  Parsed color if successful,
+ *  -  default_color on error.
  *
  * "err" argument:
- *    0 if a color beginning with '#' is successfully parsed
+ *   - 0 if a color beginning with '#' is successfully parsed
  *      or the color is a recognized word.
- *    1 if the color is bare hex or can't be parsed at all.
- *    2 if a color beginning with 0[xX] is successfully parsed.
+ *   - 1 if the color is bare hex or can't be parsed at all.
+ *   - 2 if a color beginning with 0[xX] is successfully parsed.
  */
 int32_t a_Color_parse (const char *str, int32_t default_color, int *err)
 {
@@ -335,11 +335,11 @@ static int Color_distance3(long c1, long c2)
           (labs((c1 & 0xff0000) - (c2 & 0xff0000)) >= 0x400000);
 }
 
-/*
+/**
  * Return a suitable "visited link" color
- * Return value:
- *   if candidate has good contrast with C_txt, C_lnk and C_bg  -> candidate
- *   else another color (from the internal list)
+ * @return
+ *   - if candidate has good contrast with C_txt, C_lnk and C_bg  -> candidate
+ *   - else another color (from the internal list)
  */
 int32_t a_Color_vc(int32_t candidate,
                    int32_t C_txt, int32_t C_lnk, int32_t C_bg)

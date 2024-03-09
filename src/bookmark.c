@@ -19,7 +19,7 @@
 
 
 
-/*
+/**
  * Have a short chat with the bookmarks server,
  * and finally ask it to add a new bookmark.
  * (this is an example of dpi chat)
@@ -65,7 +65,7 @@ void a_Bookmarks_chat_add(BrowserWindow *Bw, char *Cmd, char *answer)
    }
 }
 
-/*
+/**
  * Add the new bookmark through the bookmarks server
  */
 void a_Bookmarks_add(BrowserWindow *bw, const DilloUrl *url)

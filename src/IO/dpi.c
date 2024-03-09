@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-/*
- * Dillo plugins (small programs that interact with dillo)
+/** @file
+ * Dillo plugins (small programs that interact with dillo).
  *
  * Dillo plugins are designed to handle:
  *   bookmarks, cookies, FTP, downloads, files, preferences, https,
@@ -85,7 +85,7 @@ void a_Dpi_init(void)
    /* empty */
 }
 
-/*
+/**
  * Create a new connection data structure
  */
 static dpi_conn_t *Dpi_conn_new(ChainLink *Info)
@@ -99,7 +99,7 @@ static dpi_conn_t *Dpi_conn_new(ChainLink *Info)
    return conn;
 }
 
-/*
+/**
  * Free a connection data structure
  */
 static void Dpi_conn_free(dpi_conn_t *conn)
@@ -109,7 +109,7 @@ static void Dpi_conn_free(dpi_conn_t *conn)
    dFree(conn);
 }
 
-/*
+/**
  * Check whether a conn is still valid.
  * Return: 1 if found, 0 otherwise
  */
@@ -118,7 +118,7 @@ static int Dpi_conn_valid(int key)
    return (a_Klist_get_data(ValidConns, key)) ? 1 : 0;
 }
 
-/*
+/**
  * Append the new buffer in 'dbuf' to Buf in 'conn'
  */
 static void Dpi_append_dbuf(dpi_conn_t *conn, DataBuf *dbuf)
@@ -128,7 +128,7 @@ static void Dpi_append_dbuf(dpi_conn_t *conn, DataBuf *dbuf)
    }
 }
 
-/*
+/**
  * Split the data stream into tokens.
  * Here, a token is either:
  *    a) a dpi tag
@@ -192,7 +192,7 @@ static int Dpi_get_token(dpi_conn_t *conn)
    return resp;
 }
 
-/*
+/**
  * Parse a dpi tag and take the appropriate actions
  */
 static void Dpi_parse_token(dpi_conn_t *conn)
@@ -247,7 +247,7 @@ static void Dpi_parse_token(dpi_conn_t *conn)
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/*
+/**
  * Write data into a file descriptor taking care of EINTR
  * and possible data splits.
  * Return value: 1 on success, -1 on error.
@@ -272,7 +272,7 @@ static int Dpi_blocking_write(int fd, const char *msg, int msg_len)
    return (sent == msg_len) ? 1 : -1;
 }
 
-/*
+/**
  * Read all the available data from a filedescriptor.
  * This is intended for short answers, i.e. when we know the server
  * will write it all before being preempted. For answers that may come
@@ -307,7 +307,7 @@ static char *Dpi_blocking_read(int fd)
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/*
+/**
  * Get a new data buffer (within a 'dbuf'), save it into local data,
  * split in tokens and parse the contents.
  */
@@ -331,7 +331,7 @@ static void Dpi_process_dbuf(int Op, void *Data1, dpi_conn_t *conn)
    }
 }
 
-/*
+/**
  * Start dpid.
  * Return: 0 starting now, 1 Error.
  */
@@ -386,7 +386,7 @@ static int Dpi_start_dpid(void)
    return ret;
 }
 
-/*
+/**
  * Read dpid's communication keys from its saved file.
  * Return value: 1 on success, -1 on error.
  */
@@ -416,7 +416,7 @@ static int Dpi_read_comm_keys(int *port)
    return ret;
 }
 
-/*
+/**
  * Return a socket file descriptor
  */
 static int Dpi_make_socket_fd()
@@ -431,7 +431,7 @@ static int Dpi_make_socket_fd()
    return ret;
 }
 
-/*
+/**
  * Make a connection test for a IDS.
  * Return: 1 OK, -1 Not working.
  */
@@ -460,7 +460,7 @@ static int Dpi_check_dpid_ids()
    return ret;
 }
 
-/*
+/**
  * Confirm that the dpid is running. If not, start it.
  * Return: 0 running OK, 1 starting (EAGAIN), 2 Error.
  */
@@ -497,7 +497,7 @@ static int Dpi_check_dpid(int num_tries)
    return ret;
 }
 
-/*
+/**
  * Confirm that the dpid is running. If not, start it.
  * Return: 0 running OK, 2 Error.
  */
@@ -514,7 +514,7 @@ static int Dpi_blocking_start_dpid(void)
    return cst;
 }
 
-/*
+/**
  * Return the dpi server's port number, or -1 on error.
  * (A query is sent to dpid and then its answer parsed)
  * note: as the available servers and/or the dpi socket directory can
@@ -595,7 +595,7 @@ static int Dpi_get_server_port(const char *server_name)
 }
 
 
-/*
+/**
  * Connect a socket to a dpi server and return the socket's FD.
  * We have to ask 'dpid' (dpi daemon) for the port of the target dpi server.
  * Once we have it, then the proper file descriptor is returned (-1 on error).
@@ -639,8 +639,8 @@ static int Dpi_connect_socket(const char *server_name)
    return ret;
 }
 
-/*
- * CCC function for the Dpi module
+/**
+ * CCC function for the Dpi module.
  */
 void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
                void *Data1, void *Data2)
@@ -753,7 +753,7 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
    }
 }
 
-/*! Let dpid know dillo is no longer running.
+/** Let dpid know dillo is no longer running.
  * Note: currently disabled. It may serve to let the cookies dpi know
  * when to expire session cookies.
  */
@@ -762,7 +762,7 @@ void a_Dpi_dillo_exit()
 
 }
 
-/*
+/**
  * Send a command to a dpi server, and block until the answer is got.
  * Return value: the dpip tag answer as an string, NULL on error.
  */

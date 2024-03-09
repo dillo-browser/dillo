@@ -10,6 +10,11 @@
  * (at your option) any later version.
  */
 
+/**
+ * @file
+ * Preferences parser
+ */
+
 #include <sys/types.h>
 #include <stdlib.h>
 #include <locale.h>            /* for setlocale */
@@ -43,7 +48,7 @@ typedef struct {
    int count;
 } SymNode_t;
 
-/*
+/**
  * Parse a name/value pair and set preferences accordingly.
  */
 static int parseOption(char *name, char *value,
@@ -137,7 +142,7 @@ static int parseOption(char *name, char *value,
    return 0;
 }
 
-/*
+/**
  * Parses the dillorc and sets the values in the prefs structure.
  */
 void PrefsParser::parse(FILE *fp)

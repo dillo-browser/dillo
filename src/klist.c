@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-/*
- * A simple ADT for Key-Data pairs
+/** @file
+ * A simple ADT for Key-Data pairs.
  *
  * NOTE: this ADT is not perfect. The possibility of holding a Key, after
  * its data has been removed, long enough for the key-counter to reset and
@@ -21,7 +21,7 @@
 #include "klist.h"
 
 
-/*
+/**
  * Compare function for searching data by its key
  */
 static int Klist_node_by_key_cmp(const void *Node, const void *key)
@@ -29,7 +29,7 @@ static int Klist_node_by_key_cmp(const void *Node, const void *key)
    return ((KlistNode_t *)Node)->Key - VOIDP2INT(key);
 }
 
-/*
+/**
  * Compare function for searching data by node
  */
 static int Klist_node_by_node_cmp(const void *Node1, const void *Node2)
@@ -37,7 +37,7 @@ static int Klist_node_by_node_cmp(const void *Node1, const void *Node2)
    return ((KlistNode_t *)Node1)->Key - ((KlistNode_t *)Node2)->Key;
 }
 
-/*
+/**
  * Return the data pointer for a given Key (or NULL if not found)
  */
 void *a_Klist_get_data(Klist_t *Klist, int Key)
@@ -50,7 +50,7 @@ void *a_Klist_get_data(Klist_t *Klist, int Key)
    return (aux) ? ((KlistNode_t*)aux)->Data : NULL;
 }
 
-/*
+/**
  * Insert a data pointer and return a key for it.
  */
 int a_Klist_insert(Klist_t **Klist, void *Data)
@@ -80,7 +80,7 @@ int a_Klist_insert(Klist_t **Klist, void *Data)
    return (*Klist)->Counter;
 }
 
-/*
+/**
  * Remove data by Key
  */
 void a_Klist_remove(Klist_t *Klist, int Key)
@@ -96,7 +96,7 @@ void a_Klist_remove(Klist_t *Klist, int Key)
       Klist->Clean = 1;
 }
 
-/*
+/**
  * Return the number of elements in the Klist
  */
 int a_Klist_length(Klist_t *Klist)
@@ -104,7 +104,7 @@ int a_Klist_length(Klist_t *Klist)
    return dList_length(Klist->List);
 }
 
-/*
+/**
  * Free a Klist
  */
 void a_Klist_free(Klist_t **KlistPtr)

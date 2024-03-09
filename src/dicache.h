@@ -10,42 +10,42 @@ extern "C" {
 #include "image.hh"
 #include "cache.h"
 
-/* Symbolic name to request the last version of an image */
+/** Symbolic name to request the last version of an image */
 #define DIC_Last  -1
-/* Flags: Last version, Valid entry */
+/** Flags: Last version, Valid entry */
 #define DIF_Last  1
 #define DIF_Valid 2
 
 
 /* These will reflect the entry's "state" */
 typedef enum {
-   DIC_Empty,      /* Just created the entry */
-   DIC_SetParms,   /* Parameters set */
-   DIC_SetCmap,    /* Color map set */
-   DIC_Write,      /* Feeding the entry */
-   DIC_Close,      /* Whole image got! */
-   DIC_Abort       /* Image transfer aborted */
+   DIC_Empty,      /**< Just created the entry */
+   DIC_SetParms,   /**< Parameters set */
+   DIC_SetCmap,    /**< Color map set */
+   DIC_Write,      /**< Feeding the entry */
+   DIC_Close,      /**< Whole image got! */
+   DIC_Abort       /**< Image transfer aborted */
 } DicEntryState;
 
 typedef struct DICacheEntry {
-   DilloUrl *url;          /* Image URL for this entry */
-   DilloImgType type;      /* Image type */
-   uint_t width, height;   /* As taken from image data */
-   short Flags;            /* See Flags */
-   short SurvCleanup;      /* Cleanup-pass survival for unused images */
-   uchar_t *cmap;          /* Color map */
-   void *v_imgbuf;         /* Void pointer to an Imgbuf object */
-   uint_t TotalSize;       /* Amount of memory the image takes up */
-   uint_t ScanNumber;      /* Current decoding scan */
-   bitvec_t *BitVec;       /* Bit vector for decoded rows */
-   DicEntryState State;    /* Current status for this entry */
-   int RefCount;           /* Reference Counter */
-   int version;            /* Version number, used for different
+   DilloUrl *url;          /**< Image URL for this entry */
+   DilloImgType type;      /**< Image type */
+   uint_t width, height;   /**< As taken from image data */
+   short Flags;            /**< See Flags */
+   short SurvCleanup;      /**< Cleanup-pass survival for unused images */
+   uchar_t *cmap;          /**< Color map */
+   void *v_imgbuf;         /**< Void pointer to an Imgbuf object */
+   uint_t TotalSize;       /**< Amount of memory the image takes up */
+   uint_t ScanNumber;      /**< Current decoding scan */
+   bitvec_t *BitVec;       /**< Bit vector for decoded rows */
+   DicEntryState State;    /**< Current status for this entry */
+   int RefCount;           /**< Reference Counter */
+   int version;            /**< Version number, used for different
                               versions of the same URL image */
 
-   uint_t DecodedSize;     /* Size of already decoded data */
-   CA_Callback_t Decoder;  /* Client function */
-   void *DecoderData;      /* Client function data */
+   uint_t DecodedSize;     /**< Size of already decoded data */
+   CA_Callback_t Decoder;  /**< Client function */
+   void *DecoderData;      /**< Client function data */
 } DICacheEntry;
 
 

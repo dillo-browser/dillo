@@ -8,14 +8,14 @@ extern "C" {
 
 #include "d_size.h"
 
-/*
- * Unicode replacement character U+FFFD
+/**
+ * Unicode replacement character U+FFFD.
  * "used to replace an incoming character whose value is unknown or otherwise
  * unrepresentable in Unicode"
  */
 static const char utf8_replacement_char[] = "\xEF\xBF\xBD";
 
-/* Unicode zero width space U+200B */
+/** Unicode zero width space U+200B */
 static const char utf8_zero_width_space[] = "\xE2\x80\x8B";
 
 uint_t a_Utf8_end_of_char(const char *str, uint_t i);

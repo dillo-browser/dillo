@@ -9,7 +9,8 @@
  * (at your option) any later version.
  */
 
-/*
+/**
+ * @file
  * The jpeg decoder for dillo. It is responsible for decoding JPEG data
  * and transferring it to the dicache. It uses libjpeg to do the actual
  * decoding.
@@ -51,13 +52,13 @@ typedef struct DilloJpeg DilloJpeg;
 /* An implementation of a suspending source manager */
 
 typedef struct {
-   struct jpeg_source_mgr pub;  /* public fields */
-   DilloJpeg *jpeg;             /* a pointer back to the jpeg object */
+   struct jpeg_source_mgr pub;  /**< public fields */
+   DilloJpeg *jpeg;             /**< a pointer back to the jpeg object */
 } my_source_mgr;
 
 struct my_error_mgr {
-   struct jpeg_error_mgr pub;    /* "public" fields */
-   jmp_buf setjmp_buffer;        /* for return to caller */
+   struct jpeg_error_mgr pub;    /**< "public" fields */
+   jmp_buf setjmp_buffer;        /**< for return to caller */
 };
 typedef struct my_error_mgr *my_error_ptr;
 
@@ -84,7 +85,7 @@ struct DilloJpeg {
 static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize);
 
 
-/* this is the routine called by libjpeg when it detects an error. */
+/** Routine called by libjpeg when it detects an error. */
 METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo)
 {
    /* display message and return to setjmp buffer */
@@ -98,7 +99,7 @@ METHODDEF(void) Jpeg_errorexit (j_common_ptr cinfo)
    longjmp(myerr->setjmp_buffer, 1);
 }
 
-/*
+/**
  * Free the jpeg-decoding data structure.
  */
 static void Jpeg_free(DilloJpeg *jpeg)
@@ -108,7 +109,7 @@ static void Jpeg_free(DilloJpeg *jpeg)
    dFree(jpeg);
 }
 
-/*
+/**
  * Finish the decoding process
  */
 static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client)
@@ -234,7 +235,7 @@ void a_Jpeg_callback(int Op, void *data)
    }
 }
 
-/*
+/**
  * Receive and process new chunks of JPEG image data
  */
 static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)

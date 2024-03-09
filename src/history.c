@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-/*
+/** @file
  * Linear history (it also provides indexes for the navigation stack)
  */
 
@@ -30,7 +30,7 @@ static int history_size = 0;        /* [1 based] */
 static int history_size_max = 16;
 
 
-/*
+/**
  * Debug procedure.
  */
 void History_show()
@@ -43,7 +43,7 @@ void History_show()
    MSG(" }\n");
 }
 
-/*
+/**
  * Add a new H_Item at the end of the history list
  * (taking care of not making a duplicate entry)
  */
@@ -74,7 +74,7 @@ int a_History_add_url(DilloUrl *url)
    return idx;
 }
 
-/*
+/**
  * Return the DilloUrl field (by index)
  */
 const DilloUrl *a_History_get_url(int idx)
@@ -87,7 +87,7 @@ const DilloUrl *a_History_get_url(int idx)
    return history[idx].url;
 }
 
-/*
+/**
  * Return the title field (by index)
  * ('force' returns URL_STR when there's no title)
  */
@@ -103,7 +103,7 @@ const char *a_History_get_title(int idx, int force)
       return NULL;
 }
 
-/*
+/**
  * Return the title field (by url)
  * ('force' returns URL_STR when there's no title)
  */
@@ -124,7 +124,7 @@ const char *a_History_get_title_by_url(const DilloUrl *url, int force)
    return NULL;
 }
 
-/*
+/**
  * Set the page-title for a given URL
  */
 void a_History_set_title_by_url(const DilloUrl *url, const char *title)
@@ -146,7 +146,7 @@ void a_History_set_title_by_url(const DilloUrl *url, const char *title)
 }
 
 
-/*
+/**
  * Free all the memory used by this module
  */
 void a_History_freeall()

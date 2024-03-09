@@ -10,7 +10,7 @@
 
 #include "tipwin.hh"
 
-/*
+/**
  * Searchbar to find text in page.
  */
 class Findbar : public Fl_Group {
