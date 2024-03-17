@@ -7,6 +7,7 @@ LOG_COMPILER = $(srcdir)/driver.sh
 
 TESTS = \
 	render/b-div.html \
+	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
 	render/img-aspect-ratio.html \
 	render/margin-auto.html \
@@ -26,6 +27,7 @@ TESTS = \
 
 # To be fixed
 XFAIL_TESTS = \
+	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
 	render/img-aspect-ratio.html \
 	render/margin-auto.html \
