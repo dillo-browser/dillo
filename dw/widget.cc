@@ -947,11 +947,12 @@ void Widget::calcFinalWidth (style::Style *style, int refWidth,
       *finalWidth = width;
 
    /* Set the width if the min or max value is set and finalWidth is
-    * still -1 or exceeds the limit */
-   if (minWidth != -1 && (*finalWidth == -1 || *finalWidth < minWidth))
-      *finalWidth = minWidth;
+    * still -1 or exceeds the limit. Start by maxWidth so it defaults to
+    * the maximum available size. */
    if (maxWidth != -1 && (*finalWidth == -1 || *finalWidth > maxWidth))
       *finalWidth = maxWidth;
+   if (minWidth != -1 && (*finalWidth == -1 || *finalWidth < minWidth))
+      *finalWidth = minWidth;
 
    DBG_OBJ_LEAVE_VAL ("%d", *finalWidth);
 }
