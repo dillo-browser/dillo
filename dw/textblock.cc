@@ -2,7 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007, 2012-2014 Sebastian Geerken <sgeerken@dillo.org>
- * Copyright 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -768,12 +768,28 @@ int Textblock::getAvailWidthOfChild (Widget *child, bool forceValue)
          // No width specified: similar to standard implementation (see
          // there), but "leftInnerPadding" has to be considered, too.
          DBG_OBJ_MSG ("resize", 1, "no specification");
-         if (forceValue)
+         if (forceValue) {
             width = misc::max (getAvailWidth (true) - boxDiffWidth ()
                                - leftInnerPadding,
                                0);
-         else
+
+            if (width != -1) {
+               /* Clamp to min-width and max-width if given, taking into
+                * account leftInnerPadding. */
+               int maxWidth = child->calcWidth (child->getStyle()->maxWidth,
+                     -1, this, -1, false);
+               if (maxWidth != -1 && width > maxWidth - leftInnerPadding)
+                  width = maxWidth - leftInnerPadding;
+
+               int minWidth = child->calcWidth (child->getStyle()->minWidth,
+                     -1, this, -1, false);
+               if (minWidth != -1 && width < minWidth - leftInnerPadding)
+                  width = minWidth - leftInnerPadding;
+            }
+
+         } else {
             width = -1;
+         }
       } else
          width = Widget::getAvailWidthOfChild (child, forceValue);
       

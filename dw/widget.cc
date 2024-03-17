@@ -2,7 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
- * Copyright 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1668,6 +1668,16 @@ int Widget::applyPerHeight (int containerHeight, style::Length perHeight)
       + boxDiffHeight ();
 }
 
+/**
+ * Computes the content width available of a child widget.
+ *
+ * @param child      The child widget of which the available width will be
+ *                   computed.
+ * @param forceValue If true, computes the width of the child with value
+ *                   "auto". Otherwise, it wont.
+ *
+ * @return The available width in pixels or -1.
+ */
 int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
 {
    // This is a halfway suitable implementation for all
@@ -1681,10 +1691,27 @@ int Widget::getAvailWidthOfChild (Widget *child, bool forceValue)
 
    if (child->getStyle()->width == style::LENGTH_AUTO) {
       DBG_OBJ_MSG ("resize", 1, "no specification");
-      if (forceValue)
+
+      /* We only compute when forceValue is true */
+      if (forceValue) {
          width = misc::max (getAvailWidth (true) - boxDiffWidth (), 0);
-      else
+
+         if (width != -1) {
+            /* Clamp to min-width and max-width if given */
+            int maxWidth = child->calcWidth (child->getStyle()->maxWidth,
+                  -1, this, -1, false);
+            if (maxWidth != -1 && width > maxWidth)
+               width = maxWidth;
+
+            int minWidth = child->calcWidth (child->getStyle()->minWidth,
+                  -1, this, -1, false);
+            if (minWidth != -1 && width < minWidth)
+               width = minWidth;
+         }
+
+      } else {
          width = -1;
+      }
    } else {
       // In most cases, the toplevel widget should be a container, so
       // the container is non-NULL when the parent is non-NULL. Just
