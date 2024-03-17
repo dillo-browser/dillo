@@ -9,6 +9,7 @@ TESTS = \
 	render/b-div.html \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
+	render/hackernews.html \
 	render/img-aspect-ratio.html \
 	render/margin-auto.html \
 	render/max-width-body.html \
@@ -29,6 +30,7 @@ TESTS = \
 XFAIL_TESTS = \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
+	render/hackernews.html \
 	render/img-aspect-ratio.html \
 	render/margin-auto.html \
 	render/max-width-html.html \
