@@ -14,6 +14,7 @@ TESTS = \
 	render/margin-auto.html \
 	render/max-width-body.html \
 	render/max-width-div.html \
+	render/max-width-div-clamp.html \
 	render/max-width-html.html \
 	render/max-width-nested-div.html \
 	render/min-width-body.html \
