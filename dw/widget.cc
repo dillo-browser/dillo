@@ -651,15 +651,22 @@ int Widget::getAvailWidth (bool forceValue)
    DBG_OBJ_ENTER ("resize", 0, "getAvailWidth", "%s",
                   forceValue ? "true" : "false");
 
-   int width = -1;
-   int scrollbarThickness =
-      layout->canvasHeightGreater ? layout->vScrollbarThickness : 0;
-   int viewportWidth = layout->viewportWidth - scrollbarThickness;
+   int width;
 
    if (parent == NULL && quasiParent == NULL) {
       DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
+
       // TODO Consider nested layouts (e. g. <button>).
+
+      int viewportWidth =
+         layout->viewportWidth - (layout->canvasHeightGreater ?
+                                  layout->vScrollbarThickness : 0);
+      width = -1;
+      calcFinalWidth (getStyle (), viewportWidth, NULL, 0, forceValue, &width);
+      if (width == -1)
+         width = viewportWidth;
+
       DBG_OBJ_MSG_END ();
    } else if (parent) {
       DBG_OBJ_MSG ("resize", 1, "delegated to parent");
@@ -672,15 +679,6 @@ int Widget::getAvailWidth (bool forceValue)
       width = quasiParent->getAvailWidthOfChild (this, forceValue);
       DBG_OBJ_MSG_END ();
    }
-
-   /* The refWidth will be used for relative sizes. If not set, use the
-    * viewport width */
-   int refWidth = width == -1 ? viewportWidth : width;
-
-   /* Constraint the width with min-width and max-width */
-   calcFinalWidth (getStyle (), refWidth, NULL, 0, forceValue, &width);
-   if (width == -1)
-      width = refWidth;
 
    DBG_OBJ_LEAVE_VAL ("%d", width);
    return width;
