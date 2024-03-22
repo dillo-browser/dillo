@@ -1840,7 +1840,7 @@ void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition,
    if (!allowDecreaseWidth && limitMinWidth < requisition->width)
       limitMinWidth = requisition->width;
 
-   child->calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, false,
+   child->calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, true,
                           &requisition->width);
 
    DBG_OBJ_LEAVE_VAL ("%d * (%d + %d)", requisition->width, requisition->ascent,
