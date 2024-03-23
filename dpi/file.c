@@ -791,7 +791,7 @@ static int File_parse_hex_octet(const char *s)
 
 /*
  * Make a file URL into a human (and machine) readable path.
- * The home tile '~' character is expanded from the value of $HOME.
+ * The tilde '~' character is expanded to the value of the user home.
  * The idea is to always have a path that starts with only one slash.
  * Embedded slashes are ignored.
  */
@@ -812,11 +812,7 @@ static char *File_normalize_path(const char *orig)
 
    if (str[0] == '~' && (str[1] == '/' || str[1] == '\0')) {
       /* Expand home tilde "~" into "/home/userxyz" */
-      const char *home = getenv("HOME");
-      if (home == NULL || home[0] == '\0') {
-         _MSG("cannot get home path from the environment variable HOME\n");
-         return NULL;
-      }
+      const char *home = dGethomedir();
       /* Add separator if needed */
       char *sep = home[strlen(home) - 1] == '/' ? "" : "/";
       char *next = str + 1;
