@@ -841,6 +841,7 @@ static char *File_normalize_path(const char *orig)
                    basename ? "/" : "",
                    str);
       dFree(basename);
+      dStr_free(tmp, 1);
 
       /* Parse possible hexadecimal octets in the URI path */
       for (i = 0; ds->str[i]; ++i) {
