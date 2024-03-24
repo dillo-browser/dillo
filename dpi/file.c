@@ -808,7 +808,7 @@ static char *File_normalize_path(const char *orig)
 
    str += 5; /* skip "file:" */
 
-   Dstr *tmp = dStr_sized_new(32);
+   char *tmp = NULL;
 
    if (str[0] == '~' && (str[1] == '/' || str[1] == '\0')) {
       /* Expand home tilde "~" into "/home/userxyz" */
@@ -818,8 +818,7 @@ static char *File_normalize_path(const char *orig)
       char *next = str + 1;
       while (*next == '/')
          next++;
-      dStr_sprintf(tmp, "%s%s%s", home, sep, next);
-      str = tmp->str;
+      str = tmp = dStrconcat(home, sep, next, NULL);
    } else if (dStrnAsciiCasecmp(str, "//localhost/", 12) == 0) {
       /* Skip "//localhost" */
       str += 11;
@@ -837,7 +836,8 @@ static char *File_normalize_path(const char *orig)
                    basename ? "/" : "",
                    str);
       dFree(basename);
-      dStr_free(tmp, 1);
+      if (tmp)
+         dFree(tmp);
 
       /* Parse possible hexadecimal octets in the URI path */
       for (i = 0; ds->str[i]; ++i) {
