@@ -178,3 +178,25 @@ jobs:
           make
           make check
           ldd src/dillo
+  windows-mbedtls:
+    needs: ubuntu-latest-html-tests
+    runs-on: windows-latest
+    steps:
+    - run: git config --global core.autocrlf input
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    - uses: cygwin/cygwin-install-action@master
+      with:
+        packages: gcc-core gcc-g++ autoconf automake make zlib-devel mbedtls-devel libfltk-devel libiconv-devel libpng-devel libjpeg-devel libgif-devel
+    - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+      run: |
+        set -x
+        cd ${GITHUB_WORKSPACE}
+        pwd
+        ls -l
+        ./autogen.sh
+        ./configure
+        make
+        make check
+        ls -l src/dillo
