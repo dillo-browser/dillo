@@ -36,6 +36,8 @@
 
 #include "../dpip/dpip.h"
 
+#define DPI_EXT (".dpi" EXEEXT)
+
 #define QUEUE 5
 
 volatile sig_atomic_t caught_sigchld = 0;
@@ -140,16 +142,26 @@ void est_dpi_terminator()
    }
 }
 
+static int ends_with(const char *str, const char *suffix)
+{
+   if (!str || !suffix)
+      return 0;
+   size_t lenstr = strlen(str);
+   size_t lensuffix = strlen(suffix);
+   if (lensuffix > lenstr)
+      return 0;
+   return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
 /*! Identify a given file
  * Currently there is only one file type associated with dpis.
  * More file types will be added as needed
  */
 enum file_type get_file_type(char *file_name)
 {
-   char *dot = strrchr(file_name, '.');
-
-   if (dot && !strcmp(dot, ".dpi"))
-      return DPI_FILE;             /* Any filename ending in ".dpi" */
+   if (ends_with(file_name, DPI_EXT))
+      /* Any filename ending in ".dpi" (or ".dpi.exe" on Windows) */
+      return DPI_FILE;
    else {
       MSG_ERR("get_file_type: Unknown file type for %s\n", file_name);
       return UNKNOWN_FILE;

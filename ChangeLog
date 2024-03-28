@@ -60,6 +60,7 @@ dillo-3.1 [not released yet]
  - Expand home tilde '~' in the file plugin.
  - Ignore width attribute with relative values for td and th elements.
  - Enable Doxygen for C files and use Awesome Doxygen theme.
+ - Fix DPIs extension (.dpi.exe) in Windows systems via Cygwin.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------

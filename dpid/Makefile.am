@@ -1,5 +1,6 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
+	-DEXEEXT='"$(EXEEXT)"' \
 	-DDPIDRC_SYS='"$(sysconfdir)/dpidrc"'
 
 bin_PROGRAMS = dpid dpidc
@@ -31,5 +32,5 @@ sysconf_DATA = dpidrc
 CLEANFILES = $(sysconf_DATA)
 
 dpidrc: $(srcdir)/dpidrc.in Makefile
-	sed -e 's|[@]libdir[@]|$(libdir)|' $(srcdir)/dpidrc.in > dpidrc
+	sed -e 's|[@]libdir[@]|$(libdir)|;s|[@]EXEEXT[@]|$(EXEEXT)|g' $(srcdir)/dpidrc.in > dpidrc
 
