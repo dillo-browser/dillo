@@ -43,7 +43,7 @@ $ sudo make install-strip
 ### From git
 
 ```sh
-$ git clone git@github.com:dillo-browser/dillo.git
+$ git clone https://github.com/dillo-browser/dillo.git
 $ cd dillo
 $ ./autogen.sh
 $ ./configure
@@ -127,4 +127,56 @@ For OpenSSL you can use either 1.1 or 3.X (recommended):
 ```
 $ brew install openssl@1.1
 $ brew install openssl@3
+```
+
+## Windows via Cygwin
+
+Dillo can be built for Windows (tested on Windows 11) by using the
+[Cygwin](https://www.cygwin.com/) POSIX portability layer and run with Xorg. You
+will need the following dependencies to build Dillo (with mbedTLS):
+
+```
+gcc-core gcc-g++ autoconf automake make zlib-devel mbedtls-devel libfltk-devel
+libiconv-devel libpng-devel libjpeg-devel libgif-devel
+```
+
+You will also need [Xorg](https://x.cygwin.com/docs/ug/cygwin-x-ug.html) to run
+Dillo graphically:
+
+```
+xorg-server xinit
+```
+
+You can also install all the dependencies from the command line with:
+```
+setup-x86_64.exe -q -P gcc-core,gcc-g++,autoconf,automake,make,zlib-devel,mbedtls-devel,libfltk-devel,libiconv-devel,libpng-devel,libjpeg-devel,libgif-devel,xorg-server,xinit
+```
+
+To build Dillo, follow the usual steps from a Cygwin shell:
+
+```sh
+$ git clone https://github.com/dillo-browser/dillo.git
+$ cd dillo
+$ ./autogen.sh
+$ mkdir build
+$ cd build
+$ ../configure --prefix=/usr/local
+$ make
+$ make install
+```
+
+You should be able to find Dillo in the `$PATH` as it should be installed in
+`/usr/local/bin/dillo`. To run it, you first need to have an [Xorg server
+running](https://x.cygwin.com/docs/ug/using.html#using-starting), which you can
+do from a shell:
+
+```sh
+$ startxwin
+```
+
+And then, from another shell:
+
+```sh
+$ export DISPLAY=:0
+$ dillo
 ```
