@@ -11,6 +11,7 @@ TESTS = \
 	render/float-img-justify.html \
 	render/hackernews.html \
 	render/img-aspect-ratio.html \
+	render/main-style.html \
 	render/margin-auto.html \
 	render/max-width-body.html \
 	render/max-width-div.html \

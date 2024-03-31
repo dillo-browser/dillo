@@ -2,6 +2,7 @@
  * File: html.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3503,6 +3504,7 @@ static const TagInfo Tags[] = {
  /* legend 01?? */
  {"li", B8(01110),'O', Html_tag_open_li, NULL, Html_tag_close_li},
  {"link", B8(10001),'F', Html_tag_open_link, NULL, NULL},
+ {"main", B8(01110),'R', Html_tag_open_sectioning, NULL, NULL},
  {"map", B8(01101),'R', Html_tag_open_default, Html_tag_content_map,
                         Html_tag_close_map},
  {"mark", B8(01011),'R', Html_tag_open_default, NULL, NULL},

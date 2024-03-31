@@ -2,6 +2,7 @@
  * File: styleengine.cc
  *
  * Copyright 2008-2009 Johannes Hofmann <Johannes.Hofmann@gmx.de>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -997,7 +998,7 @@ void StyleEngine::init () {
       ":visited {color: #800080; text-decoration: underline; cursor: pointer}"
       "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder}"
       "address, article, aside, center, div, figure, figcaption, footer,"
-      " h1, h2, h3, h4, h5, h6, header, nav, ol, p, pre, section, ul"
+      " h1, h2, h3, h4, h5, h6, header, main, nav, ol, p, pre, section, ul"
       " {display: block}"
       "i, em, cite, address, var {font-style: italic}"
       ":link img, :visited img {border: 1px solid}"
