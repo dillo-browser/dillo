@@ -2,6 +2,7 @@
  * File: menu.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -255,20 +256,27 @@ static void Menu_bugmeter_validate(const char *validator_url)
 }
 
 /**
- * Validate URL with the W3C
+ * Validate URL with the W3C Nu validator (for HTML 5)
  */
-static void Menu_bugmeter_validate_w3c_cb(Fl_Widget*, void*)
+static void Menu_bugmeter_validate_w3c_nu_cb(Fl_Widget*, void*)
 {
-   Menu_bugmeter_validate("http://validator.w3.org/check?uri=%s");
+   Menu_bugmeter_validate(
+         "https://validator.w3.org/nu/"
+         "?useragent=Validator.nu%%2FLV+https%%3A%%2F%%2Fvalidator.w3.org%%2Fservices"
+         "&acceptlanguage="
+         "&doc=%s");
 }
 
 /**
- * Validate URL with the WDG
+ * Validate URL with the W3C legacy validator (HTML 4.01 and older)
  */
-static void Menu_bugmeter_validate_wdg_cb(Fl_Widget*, void*)
+static void Menu_bugmeter_validate_w3c_cb(Fl_Widget*, void*)
 {
    Menu_bugmeter_validate(
-      "http://www.htmlhelp.org/cgi-bin/validate.cgi?url=%s&warnings=yes");
+         "https://validator.w3.org/check?uri=%s"
+         "&charset=%%28detect+automatically%%29"
+         "&doctype=Inline&group=0"
+         "&user-agent=W3C_Validator%%2F1.3+");
 }
 
 /**
@@ -584,10 +592,12 @@ void a_Menu_file_popup(BrowserWindow *bw, void *v_wid)
 void a_Menu_bugmeter_popup(BrowserWindow *bw, const DilloUrl *url)
 {
    static Fl_Menu_Item pm[] = {
-      {"Validate URL with W3C", 0, Menu_bugmeter_validate_w3c_cb,0,0,0,0,0,0},
-      {"Validate URL with WDG", 0, Menu_bugmeter_validate_wdg_cb, 0,
-       FL_MENU_DIVIDER,0,0,0,0},
-      {"About bug meter", 0, Menu_bugmeter_about_cb,0,0,0,0,0,0},
+      {"Validate URL with W3C Nu validator (HTML5 only)", 0,
+         Menu_bugmeter_validate_w3c_nu_cb,0,0,0,0,0,0},
+      {"Validate URL with W3C validator (HTML 4.01 and older)", 0,
+         Menu_bugmeter_validate_w3c_cb,0,FL_MENU_DIVIDER,0,0,0,0},
+      {"About bug meter", 0,
+         Menu_bugmeter_about_cb,0,0,0,0,0,0},
       {0,0,0,0,0,0,0,0,0}
    };
 

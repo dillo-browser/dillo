@@ -62,6 +62,7 @@ dillo-3.1 [not released yet]
  - Enable Doxygen for C files and use Awesome Doxygen theme.
  - Fix DPIs extension (.dpi.exe) in Windows systems via Cygwin.
  - Add support for the <main> HTML tag.
+ - Fix W3C validator and remove broken WDG validator.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------
