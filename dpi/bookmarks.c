@@ -51,7 +51,6 @@
 #define CSS_STYLE \
    "<style type='text/css'>\n"\
    "body { margin: 2em; background: white; font-size: 16px }\n" \
-   "table { border: 0 }\n" \
    "ul { font-size: inherit; margin-left: 1em; margin-top: 0.5em; list-style-type: none; }\n" \
    "ul.main { list-style-type: none; }\n" \
    "li { min-height: 1.6em; }\n" \
