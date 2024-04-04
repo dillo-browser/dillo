@@ -134,9 +134,9 @@ keywords.</p>
 
 <h2 id="introduction">Introduction</h2>
 <p>Dillo is a web browser designed to be fast, use few resources and support
-slow and unreliable Internet connections on resource-constrained machines. It
-can load local and remote files via HTTP, HTTPS and FTP. Other protocols like
-Gemini, Gopher, IPFS and others are available as 
+slow and unreliable networks on resource-constrained machines. It can load local
+and remote files via HTTP, HTTPS and FTP. Other protocols like Gemini, Gopher,
+IPFS and others are available as 
 <a href="#plugins">plugins</a>.</p>
 
 <p>Dillo supports a subset of HTML 4.01 and CSS 2.1 but it <b>doesn't support
@@ -149,7 +149,7 @@ or copying text.</p>
 <h3 id="basics">Basics</h3>
 <p>
 The graphical interface is designed to be used with a mouse or pointing
-device. In the top of the browser window you have the location bar and the main
+device. At the top of the browser window you have the location bar and the main
 buttons to control the browser. You can leave the mouse for a brief moment over
 any part of the menu to show a tooltip with more information.
 <p>
@@ -160,12 +160,12 @@ element. For example, to save a page you can right-click on the page and select
 "Save page as...". Or to copy a link URL you can right-click on a link and
 select "Copy link location".
 <p>
-Dillo can hide the pannels and use the whole window area to display the page. To
+Dillo can hide all panels and use the whole window area to display the page. To
 switch between modes use the ESC key. You can also choose the control panel size
 by going to the Tools button and selecting a different one under "Panel size".
 <p>
-If you need to access this manual again press the top right "?" button to open
-it. It doesn't require a network connection.
+You can open this manual from Dillo by clicking on the top right "?" button. It
+doesn't require a network connection.
 
 <h3 id="scrolling">Scrolling</h3>
 
@@ -212,9 +212,8 @@ configuration file. By default it will scroll 100 pixels per step.</p>
 <h3 id="find-text">Find text</h3>
 <p>
 To find text in a document right-click to open the <em>Page menu</em> and select
-<em>Find text</em>. It is also available by the default shortcut
-<code>Ctrl+F</code>. Then type the substring that you want to find and click
-Next (or the <code>Enter</code> key).
+<em>Find text</em> or press <code>Ctrl+F</code> on the keyboard. Then type the
+substring that you want to find and click Next (or the <code>Enter</code> key).
 </p>
 Dillo will scroll the page and highlight found text starting from the top. To
 find a word (not a substring) use spaces around it to limit the search to
@@ -229,7 +228,7 @@ To copy some text just hold down the left mouse button and move to select the
 area to copy. To paste, go to the target application and press the middle mouse
 button.
 <p>
-If you want to select more than one screen, hold the mouse button down and
+If you want to select more than one screen, hold the mouse left button down and
 scroll with PgUp, PgDn or the arrow keys.
 <P>
 If you want to paste an URL into Dillo, do it on the "clear-URL"
@@ -242,8 +241,9 @@ using bookmarks, typing or pasting a new URL or using the history.
 
 <h3 id="hyperlinks">Hyperlinks</h3>
 
-<p>Hyperlinks to other pages change the cursor to a hand to indicate that
-an element can be clicked with the left button:
+<p>Hyperlinks (or just links) allow you to navigate to other pages by clicking
+them. They change the cursor to a hand to indicate that an element can be
+clicked with the left button:
 <p style="text-align: center">
 <img
   style="border: solid 1px #ddd;"
@@ -258,7 +258,7 @@ best indicator of a
 <em><a style="color:black; text-decoration: none" href="#">link</a></em>. 
 <p>
 When you follow a link by clicking on it, the previous pages will be remembered
-in case you want to go back to them. Use the Back and Forw buttons on the top
+in case you want to go back to them. Use the Back and Forward buttons on the top
 bar to navigate among history pages.
 <p>
 
@@ -298,12 +298,12 @@ You can also select the location bar content from the keyboard by pressing
 <h3 id="web-search">Web search</h3>
 <p>
 Several search engines are available by pressing the magnifying glass icon next
-to the location bar or by pressing <code>Ctrl+s</code>. The search engines are
+to the location bar or by pressing <code>Ctrl+S</code>. The search engines are
 configured in <a href="#dillorc">Dillorc</a> with the option
 <code>search_url</code>. Use it multiple times to define multiple search
 engines.
 <p>
-The location bar can also be used to search the web by using an special prefix
+The location bar can also be used to search the web by using a special prefix
 for each search engine. For example, the following line:<br>
 <pre>
 search_url="dd DuckDuckGo http://duckduckgo.com/lite/?kp=-1&amp;kd=-1&amp;q=%s"
@@ -332,7 +332,7 @@ middle-clicking on a link.
 <p>
 To close a tab press the X button on the top right (only visible with multiple
 tabs). You can also close the tab by clicking with the right button on the tab
-label. The middle button can be used instead setting the option:
+label. The middle button can be used instead by setting the option:
 <pre>
 right_click_closes_tab=NO
 </pre>
@@ -340,13 +340,13 @@ right_click_closes_tab=NO
 <h3 id="bookmarks">Bookmarks</h3>
 <p>
 Dillo can save URLs of web pages as bookmarks so you can open them later. To
-bookmark the current page, open the page menu by left-clicking on the page
-and select "Bookmark this page" (it also works over a link).
+bookmark the current page, open the <em>Page menu</em> by right-clicking on the
+page and select "Bookmark this page" (it also works over a link).
 <p>
-To see or edit the bookmarks, click on the Bookmarks button on the pannel or
+To see or edit the bookmarks, click on the Bookmarks button on the panel or
 press <code>Ctrl+B</code>.
 <p>
-Bookmarks are handled by a builtin Dillo plugin named <code>bm</code> (read more
+Bookmarks are handled by a built-in Dillo plugin named <code>bm</code> (read more
 about plugins in the <a href="#plugins">Plugins section</a>) and are
 synchronized across all instances of the browser. The list of bookmarks can also
 be shown by opening the URL <a href="dpi:/bm/"><code>dpi:/bm/</code></a>.
@@ -363,19 +363,20 @@ this section you can add exceptions or relax the configuration at your own risk.
 
 <h3 id="https">HTTPS</h3>
 
-<p>Dillo has support for HTTPS, allowing it to connect securely to remote
-websites. Use the protocol "<code>https:</code>" to specify the use of HTTPS.
-When a problem is encountered with the remote certificate, a warning dialog
-explains the details and allows you to choose what to do: continue loading the
-website or cancel.
+<p>Dillo has support for
+<a href="https://en.wikipedia.org/wiki/HTTPS">HTTPS</a>,
+allowing secure connections to remote websites. Use the protocol
+"<code>https:</code>" to specify the use of HTTPS. When a problem is encountered
+with the remote certificate, a warning dialog explains the details and allows
+you to choose what to do: continue loading the website or cancel.
 <p>
 By default Dillo looks for a TLS library at build time, which can be OpenSSL or
-mbedTLS. You can see which library is being used by looking at the messages of
-Dillo when it starts:
+mbedTLS. You can see which library is being used by looking at the console when
+it starts:
 <pre>
 $ dillo
 dillo_dns_init: Here we go! (threaded)
-TLS library: <b>OpenSSL 3.2.1 30 Jan 2024</b>
+TLS library: <u>OpenSSL 3.2.1 30 Jan 2024</u>
 ...
 </pre>
 
@@ -384,7 +385,7 @@ TLS library: <b>OpenSSL 3.2.1 30 Jan 2024</b>
 Due to privacy concerns, <b>cookies are disabled by default</b> unless
 explicitly enabled in the configuration.
 <p>
-Support for cookies is implemented using a plugin that shares them
+Support for cookies is implemented using a built-in plugin that shares them
 between several instances of Dillo and follows the 
 <a href="http://tools.ietf.org/html/rfc6265">RFC 6265</a>
 specification. Current cookie limits are 20 per domain and
@@ -461,8 +462,7 @@ each option as well as other interesting values are also available as comments:
   <li>"<code>option=...</code>" overrides the built-in value.</li>
 </ul>
 
-<p>Some options can be specified multiple times, for example 
-<code>search_url</code>:
+<p>The <code>search_url</code> option can be specified multiple times:
 <pre>
 search_url="dd DuckDuckGo (https) https://duckduckgo.com/lite/?kp=-1&amp;q=%s"
 search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&amp;go=Go"
@@ -474,7 +474,7 @@ search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&amp;go=Go"
 <a href="file:~/.dillo/cookiesrc"><code>~/.dillo/cookiesrc</code></a>
 file by using rules, with one rule per line. The rule syntax is very simple,
 first specify the <em>host</em> and then the <em>action</em>, separated by
-whitespaces. Comment lines start with <code>#</code> as the first character and
+white spaces. Comment lines start with <code>#</code> as the first character and
 the whole line is ignored.
 <p>
 The host can be in the form <code>example.com</code> to match only that
@@ -585,8 +585,8 @@ When a request is made using the given protocol the associated plugin is used to
 process the request. The rest of the file assigns a plugin to a protocol, one
 per line. The syntax is
 <code>proto.<em>name</em>=<em>path-to-plugin.dpi</em></code>. The path of the
-plugin is relative to the <code>dpi</code> directory. Here are some
-examples of the builtin plugins:</p>
+plugin is relative to the <code>dpi</code> directory. Here are protocols
+used by the built-in plugins:</p>
 
 <pre>
 proto.file=file/file.dpi
@@ -679,14 +679,15 @@ l = right
 
 <h2 id="advanced-usage">Advanced usage</h2>
 
-These sections are regarded to experienced users of Dillo.
+These sections focus on advanced topics and are recommended for experienced
+users of Dillo.
 
 <h3 id="plugins">Plugins</h3>
 <p>The functionality of Dillo can be extended by using plugins, which can
 translate other formats to HTML, implement new protocols or provide a custom
 service.</p>
 
-<p>Plugins can be written in <em>any programing language</em> and they 
+<p>Plugins can be written in <em>any programming language</em> and they 
 interact with the browser using the 
 <a href="https://dillo-browser.github.io/old/dpi1.html">DPI protocol</a>. A
 <a href="https://dillo-browser.github.io/#plugins">list of plugins</a>
@@ -742,7 +743,7 @@ provide a hint of what was expected instead.
 <p>
 The primary purpose of the bug meter is to help webmasters and page authors to
 polish the contents of their sites with a view to making them
-compliant with HTML standars.
+compliant with HTML standards.
 <p>
 The bug meter is located at the lower right corner of Dillo. Use the left-click
 to see the messages, right-click for a menu to open other HTML validators.
