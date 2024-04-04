@@ -821,7 +821,12 @@ static int Tls_examine_certificate(SSL *ssl, Server_t *srv)
    int choice = -1, ret = -1;
    char *title = dStrconcat("Dillo TLS security warning: ",srv->hostname,NULL);
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
    remote_cert = SSL_get_peer_certificate(ssl);
+#else
+   /* SSL_get_peer_certificate() was deprecated in 3.0.0. */
+   remote_cert = SSL_get1_peer_certificate(ssl);
+#endif
    if (remote_cert == NULL){
       /* Inform user that remote system cannot be trusted */
       choice = a_Dialog_choice(title,
