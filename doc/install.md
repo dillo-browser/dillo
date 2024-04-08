@@ -28,7 +28,19 @@ If you don't want to use a TLS library, use the configure option
 and `--disable-mbedtls` to control the search. By default OpenSSL is
 search first, then mbedTLS.
 
-Then, to build and install Dillo:
+For Debian, you can use the following command to install the required
+packages to build Dillo:
+
+```sh
+$ sudo apt install gcc g++ autoconf automake make zlib1g-dev \
+    libfltk1.3-dev libssl-dev libc6-dev \
+    libpng-dev libjpeg-dev libgif-dev
+```
+
+If you prefer to use mbedTLS, replace `libssl-dev` with
+`libmbedtls-dev`.
+
+To build and install Dillo follow the steps below.
 
 ### From a release
 
