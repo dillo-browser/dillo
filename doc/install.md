@@ -47,9 +47,11 @@ To build and install Dillo follow the steps below.
 ```sh
 $ tar jxvf dillo-3.0.5.tar.bz2
 $ cd dillo-3.0.5
-$ ./configure
+$ mkdir build
+$ cd build
+$ ../configure --prefix=/usr/local
 $ make
-$ sudo make install-strip
+$ sudo make install
 ```
 
 ### From git
@@ -58,7 +60,9 @@ $ sudo make install-strip
 $ git clone https://github.com/dillo-browser/dillo.git
 $ cd dillo
 $ ./autogen.sh
-$ ./configure
+$ mkdir build
+$ cd build
+$ ../configure --prefix=/usr/local
 $ make
 $ sudo make install
 ```
