@@ -79,6 +79,7 @@ void a_Prefs_init(void)
    prefs.middle_click_opens_new_tab = TRUE;
    prefs.right_click_closes_tab = TRUE;
    prefs.scroll_switches_tabs = TRUE;
+   prefs.scroll_switches_tabs_reverse = FALSE;
    prefs.no_proxy = dStrdup(PREFS_NO_PROXY);
    prefs.panel_size = P_medium;
    prefs.parse_embedded_css=TRUE;

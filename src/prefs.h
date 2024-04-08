@@ -107,6 +107,7 @@ typedef struct {
    bool_t middle_click_opens_new_tab;
    bool_t right_click_closes_tab;
    bool_t scroll_switches_tabs;
+   bool_t scroll_switches_tabs_reverse;
    bool_t search_url_idx;
    Dlist *search_urls;
    char *save_dir;

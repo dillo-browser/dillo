@@ -192,6 +192,7 @@ void PrefsParser::parse(FILE *fp)
         PREFS_BOOL, 0 },
       { "right_click_closes_tab", &prefs.right_click_closes_tab, PREFS_BOOL, 0 },
       { "scroll_switches_tabs", &prefs.scroll_switches_tabs, PREFS_BOOL, 0 },
+      { "scroll_switches_tabs_reverse", &prefs.scroll_switches_tabs_reverse, PREFS_BOOL, 0 },
       { "no_proxy", &prefs.no_proxy, PREFS_STRING, 0 },
       { "panel_size", &prefs.panel_size, PREFS_PANEL_SIZE, 0 },
       { "parse_embedded_css", &prefs.parse_embedded_css, PREFS_BOOL, 0 },

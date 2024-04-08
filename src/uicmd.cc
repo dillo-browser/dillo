@@ -254,6 +254,9 @@ int CustTabs::handle(int e)
       int dy = Fl::event_dy();
       int dir = dy ? dy : dx;
 
+      if (prefs.scroll_switches_tabs_reverse)
+         dir = -dir;
+
       if (dir > 0)
          next_tab();
       else if (dir < 0)
