@@ -2,6 +2,7 @@
  * File: downloads.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +42,7 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 
+#include "config.h"
 #include "dpiutil.h"
 #include "../dpip/dpip.h"
 
@@ -320,11 +322,12 @@ DLItem::DLItem(const char *full_filename, const char *url)
       Filter_smtp_hack(esc_url);
    dl_argv = new char*[10];
    int i = 0;
+   const char *user_agent = "dillo/" VERSION;
    dl_argv[i++] = (char*)"wget";
    if (stat(fullname, &ss) == 0)
       init_bytesize = (int)ss.st_size;
    dl_argv[i++] = (char*)"-U";
-   dl_argv[i++] = (char*)"dillo/3.0.5";
+   dl_argv[i++] = (char*) user_agent;
    dl_argv[i++] = (char*)"-c";
    dl_argv[i++] = (char*)"--load-cookies";
    dl_argv[i++] = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
