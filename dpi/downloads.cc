@@ -322,7 +322,7 @@ DLItem::DLItem(const char *full_filename, const char *url)
       Filter_smtp_hack(esc_url);
    dl_argv = new char*[10];
    int i = 0;
-   const char *user_agent = "dillo/" VERSION;
+   const char *user_agent = "Dillo/" VERSION;
    dl_argv[i++] = (char*)"wget";
    if (stat(fullname, &ss) == 0)
       init_bytesize = (int)ss.st_size;
