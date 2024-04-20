@@ -58,7 +58,6 @@ dillo-3.1 [not released yet]
    scroll_switches_tabs to disable the behavior.
  - Fix OpenSSL handling of unexpected EOF without close notify alert.
  - Expand home tilde '~' in the file plugin.
- - Ignore width attribute with relative values for td and th elements.
  - Enable Doxygen for C files and use Awesome Doxygen theme.
  - Fix DPIs extension (.dpi.exe) in Windows systems via Cygwin.
  - Add support for the <main> HTML tag.

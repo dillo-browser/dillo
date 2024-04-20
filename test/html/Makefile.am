@@ -40,5 +40,4 @@ XFAIL_TESTS = \
 	render/max-width-html.html \
 	render/min-width-html.html \
 	render/span-padding.html \
-	render/table-missing-width-in-one-column.html \
 	render/table-td-width-percent.html

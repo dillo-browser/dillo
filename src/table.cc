@@ -420,17 +420,9 @@ static void Html_tag_open_table_cell(DilloHtml *html,
       a_Html_tag_set_align_attr (html, tag, tagsize);
 
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "width"))) {
-         CssLength l = a_Html_parse_length (html, attrbuf);
-         /* Only apply the width if the width is given in pixels,
-          * otherwise the percent value is applied to the size of the
-          * cell instead of to the table available width */
-         if (CSS_LENGTH_TYPE(l) == CSS_LENGTH_TYPE_PX) {
-            html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
-                  CSS_TYPE_LENGTH, l);
-         } else {
-            /* TODO: Support relative sizes for HTML 4.01 pages in
-             * transitional mode */
-         }
+         html->styleEngine->setNonCssHint (CSS_PROPERTY_WIDTH,
+                                           CSS_TYPE_LENGTH_PERCENTAGE,
+                                           a_Html_parse_length (html, attrbuf));
          if (html->DocType == DT_HTML && html->DocTypeVersion >= 5.0f)
             BUG_MSG("<t%c> width attribute is obsolete.",
                (tagsize >=3 && (D_ASCII_TOLOWER(tag[2]) == 'd')) ? 'd' : 'h');
