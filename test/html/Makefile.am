@@ -25,6 +25,7 @@ TESTS = \
 	render/min-width-nested-div.html \
 	render/span-padding.html \
 	render/table-max-width.html \
+	render/table-missing-width-in-one-column.html \
 	render/table-td-width-percent-img.html \
 	render/table-td-width-percent.html \
 	render/table-thead-tfoot.html \
@@ -39,4 +40,5 @@ XFAIL_TESTS = \
 	render/max-width-html.html \
 	render/min-width-html.html \
 	render/span-padding.html \
+	render/table-missing-width-in-one-column.html \
 	render/table-td-width-percent.html
