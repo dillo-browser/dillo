@@ -16,7 +16,7 @@
 #define PREFS_HOME            "https://dillo-browser.github.io/"
 #define PREFS_FONT_SERIF      "DejaVu Serif"
 #define PREFS_FONT_SANS_SERIF "DejaVu Sans"
-#define PREFS_FONT_CURSIVE    "URW Chancery L"
+#define PREFS_FONT_CURSIVE    "DejaVu Sans"
 #define PREFS_FONT_FANTASY    "DejaVu Sans" /* TODO: find good default */
 #define PREFS_FONT_MONOSPACE  "DejaVu Sans Mono"
 #define PREFS_SEARCH_URL      "dd http://duckduckgo.com/lite/?kp=-1&kd=-1&q=%s"
