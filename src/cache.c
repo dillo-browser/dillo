@@ -2,6 +2,7 @@
  * File: cache.c
  *
  * Copyright 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -521,7 +522,12 @@ const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
          } else if (*from == 'm' &&
                     !dStrnAsciiCasecmp(ctype, "text/xhtml", 10)) {
             /* WORKAROUND: doxygen uses "text/xhtml" in META */
-            entry->TypeNorm = dStrdup(entry->TypeDet);
+            if (charset) {
+               entry->TypeNorm = dStrconcat("application/xhtml+xml",
+                        "; charset=", charset, NULL);
+            } else {
+               entry->TypeNorm = dStrdup("application/xhtml+xml");
+            }
          }
          if (charset) {
             if (entry->CharsetDecoder)
