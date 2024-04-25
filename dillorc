@@ -40,7 +40,10 @@
 # Set your default directory for download/save operations
 #save_dir=/tmp
 
-# Mouse wheel scroll step in pixels
+# Set the increment in pixels that the page is moved up/down with each input
+# from the mouse wheel, keyboard arrow keys, or scrollbar arrow buttons.
+# Page movement with the Page Up/Down keys is one scroll_step less than the
+# height of the visible page area.
 #scroll_step=100
 
 #-------------------------------------------------------------------------
@@ -89,7 +92,7 @@
 # If this is set to YES, all CSS size specifications for tables are
 # adjusted so that all contents can be displayed. This is seperated
 # from "adjust_min_width" so that it is able to mimic Firefox, which
-# differenciates between tables and, say, textblocks (in some cases).
+# differentiates between tables and, say, textblocks (in some cases).
 #adjust_table_min_width=YES
 
 #-------------------------------------------------------------------------
