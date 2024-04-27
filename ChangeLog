@@ -65,8 +65,9 @@ dillo-3.1 [not released yet]
  - Fix W3C validator and remove broken WDG validator.
  - Simplify bookmark DPI page style and improve readability.
  - Improve the Dillo manual available from the help button.
- - Improve detection of XHTML documents
+ - Improve detection of XHTML documents.
  - Install desktop file with Dillo icon
+ - Add version in user manual and about:splash.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 -----------------------------------------------------------------------------
