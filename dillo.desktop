@@ -1,0 +1,10 @@
+[Desktop Entry]
+GenericName=Web Browser
+Name=Dillo
+Comment=Fast and small graphical web browser
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
+Exec=dillo %U
+Icon=dillo
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
