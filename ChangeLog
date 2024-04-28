@@ -67,6 +67,8 @@ dillo-3.1 [not released yet]
  - Improve the Dillo manual available from the help button.
  - Improve detection of XHTML documents
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
++- Add http_force_https mode.
+   Patches: Mark Walker
 
 -----------------------------------------------------------------------------
 

@@ -68,6 +68,7 @@ void a_Prefs_init(void)
    prefs.http_proxyuser = NULL;
    prefs.http_referer = dStrdup(PREFS_HTTP_REFERER);
    prefs.http_strict_transport_security = TRUE;
+   prefs.http_force_https = FALSE;
    prefs.http_user_agent = dStrdup(PREFS_HTTP_USER_AGENT);
    prefs.limit_text_width = FALSE;
    prefs.adjust_min_width = TRUE;

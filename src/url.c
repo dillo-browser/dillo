@@ -423,16 +423,26 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
    dFree(str1);
    dFree(str2);
 
-   /*
-    * A site's HTTP Strict Transport Security policy may direct us to transform
-    * URLs like "http://en.wikipedia.org:80" to "https://en.wikipedia.org:443".
-    */
-   if (prefs.http_strict_transport_security &&
-       url->scheme && !dStrAsciiCasecmp(url->scheme, "http") &&
-       a_Hsts_require_https(a_Url_hostname(url))) {
+   bool_t switch_to_https = FALSE;
+
+   if (url->scheme && !dStrAsciiCasecmp(url->scheme, "http")) {
+      /*
+       * A site's HTTP Strict Transport Security policy may direct us to transform
+       * URLs like "http://en.wikipedia.org:80" to "https://en.wikipedia.org:443".
+       */
+      if (prefs.http_strict_transport_security &&
+          a_Hsts_require_https(a_Url_hostname(url))) {
+         _MSG("url: HSTS transformation for %s.\n", url->url_string->str);
+         switch_to_https = TRUE;
+      } else if (prefs.http_force_https) {
+         _MSG("url: Force HTTPS transformation for %s.\n", url->url_string->str);
+         switch_to_https = TRUE;
+      }
+   }
+
+   if (switch_to_https) {
       const char *const scheme = "https";
 
-      _MSG("url: HSTS transformation for %s.\n", url->url_string->str);
       url->scheme = scheme;
       if (url->port == URL_HTTP_PORT)
          url->port = URL_HTTPS_PORT;

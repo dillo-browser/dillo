@@ -179,6 +179,7 @@ void PrefsParser::parse(FILE *fp)
       { "http_referer", &prefs.http_referer, PREFS_STRING, 0 },
       { "http_strict_transport_security",&prefs.http_strict_transport_security,
         PREFS_BOOL, 0 },
+      { "http_force_https", &prefs.http_force_https, PREFS_BOOL, 0 },
       { "http_user_agent", &prefs.http_user_agent, PREFS_STRING, 0 },
       { "limit_text_width", &prefs.limit_text_width, PREFS_BOOL, 0 },
       { "adjust_min_width", &prefs.adjust_min_width, PREFS_BOOL, 0 },
