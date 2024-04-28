@@ -195,6 +195,11 @@ search_url="Google http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=%s"
 # HSTS directives are not saved between browser sessions.
 #http_strict_transport_security=YES
 
+# If enabled, Dillo will force all HTTP connections to be upgraded to
+# a more secure HTTPS connection. This will prevent sites from loading
+# if they only support HTTP.
+#http_force_https=NO
+
 # Set the proxy information for http/https.
 # Note that the http_proxy environment variable overrides this setting.
 # WARNING: FTP and downloads plugins use wget. To use a proxy with them,
