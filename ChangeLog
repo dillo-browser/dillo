@@ -69,6 +69,7 @@ dillo-3.1 [not released yet]
  - Add version in user manual and about:splash.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 +- Add http_force_https mode.
+ - Add new_tab_page option to load a custom page when opening a new tab.
    Patches: Mark Walker
 
 -----------------------------------------------------------------------------

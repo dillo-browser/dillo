@@ -230,7 +230,12 @@ int CustTabs::handle(int e)
          // Do nothing
          _MSG("CustTabs::handle KEYS_NOP\n");
       } else if (cmd == KEYS_NEW_TAB) {
-         a_UIcmd_open_url_nt(bw, NULL, 1);
+         if (dStrAsciiCasecmp(URL_SCHEME(prefs.new_tab_page), "about") == 0 &&
+             strcmp(URL_PATH(prefs.new_tab_page), "blank") == 0) {
+            a_UIcmd_open_url_nt(bw, NULL, 1);
+         } else {
+            a_UIcmd_open_url_nt(bw, prefs.new_tab_page, 1);
+         }
          ret = 1;
       } else if (cmd == KEYS_CLOSE_TAB) {
          a_UIcmd_close_bw(bw);

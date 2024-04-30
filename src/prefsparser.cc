@@ -221,6 +221,7 @@ void PrefsParser::parse(FILE *fp)
       { "show_ui_tooltip", &prefs.show_ui_tooltip, PREFS_BOOL, 0 },
       { "small_icons", &prefs.small_icons, PREFS_BOOL, 0 },
       { "start_page", &prefs.start_page, PREFS_URL, 0 },
+      { "new_tab_page", &prefs.new_tab_page, PREFS_URL, 0 },
       { "theme", &prefs.theme, PREFS_STRING, 0 },
       { "ui_button_highlight_color", &prefs.ui_button_highlight_color,
         PREFS_COLOR, 0 },

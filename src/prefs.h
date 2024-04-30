@@ -47,6 +47,7 @@ typedef struct {
    char *http_user_agent;
    char *no_proxy;
    DilloUrl *start_page;
+   DilloUrl *new_tab_page;
    DilloUrl *home;
    bool_t allow_white_bg;
    int32_t white_bg_replacement;
