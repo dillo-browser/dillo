@@ -132,7 +132,7 @@ at link time.
 
 To build Dillo on MacOS you would need to get FLTK as well as
 autoconf and automake if you are building Dillo from the git repository.
-They are available in the brew package manager:
+They are available in the Homebrew package manager:
 
 ```
 $ brew install autoconf automake fltk
@@ -143,6 +143,14 @@ For OpenSSL you can use either 1.1 or 3.X (recommended):
 ```
 $ brew install openssl@1.1
 $ brew install openssl@3
+```
+
+Homebrew installs libraries and headers in different folders depending on the
+architecture (Intel vs ARM), so you will need to invoke the configure script
+with the following options so it knows where to search:
+
+```
+$ ./configure LDFLAGS="-L`brew --prefix openssl`/lib" CPPFLAGS="-I`brew --prefix openssl`/include"
 ```
 
 ## Windows via Cygwin
