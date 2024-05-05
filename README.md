@@ -12,11 +12,13 @@ This repository contains mostly the original code of Dillo with some
 minor patches. Additional patches or pull requests are welcome.
 
 See also other related forks: [dillo-plus][dillo-plus],
-[dilloNG][dilloNG] and [D+ browser][dplus-browser].
+[dilloNG][dilloNG], [D+ browser][dplus-browser] and [Mobilized
+Dillo][mobilized].
 
 [dillo-plus]: https://github.com/crossbowerbt/dillo-plus
 [dilloNG]: https://github.com/w00fpack/dilloNG
 [dplus-browser]: https://sourceforge.net/projects/dplus-browser/
+[mobilized]: https://www.toomanyatoms.com/software/mobilized_dillo.html
 
 > [!WARNING]
 > As of December 2023, the host `dillo.org` is no longer under control
