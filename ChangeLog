@@ -7,7 +7,7 @@ user. For a history of changes in full detail, see our Git repository
 at https://github.com/dillo-browser/dillo
 
 
-dillo-3.1 [not released yet]
+dillo-3.1.0 [May 4, 2024]
 
 +- Floating elements.
  - Redesign of widget sizes ("GROWS").
