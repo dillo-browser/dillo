@@ -21,12 +21,13 @@ library to browse HTTPS pages. Currently, Dillo supports any of the
 following libraries:
 
  - OpenSSL 1.1 or 3
- - mbedTLS 2 or 3
+ - LibreSSL
+ - mbedTLS 2 or 3 (TLSv1.3 is not supported yet)
 
 If you don't want to use a TLS library, use the configure option
 `--disable-tls` to disable TLS support. You can use `--disable-openssl`
-and `--disable-mbedtls` to control the search. By default OpenSSL is
-search first, then mbedTLS.
+and `--disable-mbedtls` to control the search. By default OpenSSL or
+LibreSSL is search first, then mbedTLS.
 
 For Debian, you can use the following command to install the required
 packages to build Dillo:

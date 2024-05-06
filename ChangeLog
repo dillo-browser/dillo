@@ -6,6 +6,10 @@ Here we list changes that are relatively significant and/or visible to the
 user. For a history of changes in full detail, see our Git repository
 at https://github.com/dillo-browser/dillo
 
+dillo-3.1.1 [not released yet]
+
++- Disable TLSv1.3 in Mbed TLS 3.6.0 until it is supported.
+   Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 dillo-3.1.0 [May 4, 2024]
 
