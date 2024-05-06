@@ -98,6 +98,12 @@ static Dlist *fd_map;
 
 static void Tls_handshake_cb(int fd, void *vconnkey);
 
+
+#if MBEDTLS_VERSION_NUMBER >= 0x03060000
+/* Moved to ssl_ciphersuites_internal.h in mbedtls 3.6.0 */
+int mbedtls_ssl_ciphersuite_uses_psk(const mbedtls_ssl_ciphersuite_t *info);
+#endif
+
 /*
  * Compare by FD.
  */
@@ -385,6 +391,15 @@ void a_Tls_mbedtls_init(void)
                                MBEDTLS_SSL_TRANSPORT_STREAM,
                                MBEDTLS_SSL_PRESET_DEFAULT);
    mbedtls_ssl_conf_cert_profile(&ssl_conf, &prof);
+
+   /*
+    * TLSv1.3 brings some changes, among them, having to call
+    * psa_crypto_init(), and a new way of resuming sessions,
+    * which is not currently supported by the code here.
+    */
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+   mbedtls_ssl_conf_max_tls_version(&ssl_conf, MBEDTLS_SSL_VERSION_TLS1_2);
+#endif
 
    /*
     * There are security concerns surrounding session tickets --
