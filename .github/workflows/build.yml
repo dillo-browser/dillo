@@ -114,6 +114,26 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
+  alpine-mbedtls-3_6_0:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: jirutka/setup-alpine@v1
+      with:
+        packages: >
+          build-base
+          autoconf
+          automake
+          fltk-dev
+          libpng-dev
+          libjpeg-turbo-dev
+          mbedtls-dev
+    - run: |
+        ./autogen.sh
+        ./configure
+        make
+        make check
+      shell: alpine.sh {0}
   macOS-13-openssl-1-1:
     needs: ubuntu-latest-html-tests
     runs-on: macos-13
