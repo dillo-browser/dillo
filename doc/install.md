@@ -130,6 +130,14 @@ at link time.
 
 ## MacOS
 
+Dillo is now packaged in [Homebrew](https://brew.sh/).
+
+```
+$ brew install dillo
+```
+
+### Building from source
+
 To build Dillo on MacOS you would need to get FLTK as well as
 autoconf and automake if you are building Dillo from the git repository.
 They are available in the Homebrew package manager:
