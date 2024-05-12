@@ -510,6 +510,8 @@ static const char *File_ext(const char *filename)
       return "image/jpeg";
    } else if (!dStrAsciiCasecmp(e, "png")) {
       return "image/png";
+   } else if (!dStrAsciiCasecmp(e, "svg")) {
+      return "image/svg+xml";
    } else if (!dStrAsciiCasecmp(e, "html") ||
               !dStrAsciiCasecmp(e, "xhtml") ||
               !dStrAsciiCasecmp(e, "htm") ||

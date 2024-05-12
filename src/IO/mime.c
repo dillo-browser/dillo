@@ -108,6 +108,9 @@ void a_Mime_init()
    Mime_add_minor_type("image/png", a_Dicache_png_image);
    Mime_add_minor_type("image/x-png", a_Dicache_png_image);    /* deprecated */
 #endif
+#ifdef ENABLE_SVG
+   Mime_add_minor_type("image/svg+xml", a_Dicache_svg_image);
+#endif
    Mime_add_minor_type("text/html", a_Html_text);
    Mime_add_minor_type("application/xhtml+xml", a_Html_text);
    Mime_add_minor_type("application/json", a_Plain_text);

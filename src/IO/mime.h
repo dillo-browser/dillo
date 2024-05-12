@@ -36,6 +36,8 @@ void *a_Dicache_gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
                           void **Data);
 void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
                            void **Data);
+void *a_Dicache_svg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                           void **Data);
 
 /**
  * Functions defined inside Mime module

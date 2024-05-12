@@ -116,6 +116,10 @@ dillo_SOURCES = \
 	djpeg.h \
 	png.c \
 	dpng.h \
+	svg.c \
+	nanosvg.h \
+	nanosvgrast.h \
+	dsvg.h \
 	imgbuf.cc \
 	imgbuf.hh \
 	image.cc \

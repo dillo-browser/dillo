@@ -61,6 +61,11 @@ AC_ARG_ENABLE([gif],
   [enable_gif=$enableval],
   [enable_gif=yes])
 
+AC_ARG_ENABLE([svg],
+  [AS_HELP_STRING([--disable-svg], [Disable support for SVG images])],
+  [enable_svg=$enableval],
+  [enable_svg=yes])
+
 AC_ARG_ENABLE([threaded-dns],
   [AS_HELP_STRING([--disable-threaded-dns], [Disable the advantage of a reentrant resolver library])],
   [enable_threaded_dns=$enableval],
@@ -358,6 +363,13 @@ fi
 dnl Check if support for GIF images should be compiled in
 if test "x$enable_gif" = "xyes"; then
   AC_DEFINE([ENABLE_GIF], [1], [Enable GIF images])
+fi
+
+dnl Check if support for SVG images should be compiled in
+if test "x$enable_svg" = "xyes"; then
+  AC_DEFINE([ENABLE_SVG], [1], [Enable SVG images])
+else
+  AC_MSG_NOTICE([Disabling SVG])
 fi
 
 dnl --------------------------
@@ -710,6 +722,7 @@ _AS_ECHO([  RTFL enabled   : ${enable_rtfl}])
 _AS_ECHO([  JPEG enabled   : ${jpeg_ok}])
 _AS_ECHO([  PNG enabled    : ${png_ok}])
 _AS_ECHO([  GIF enabled    : ${enable_gif}])
+_AS_ECHO([  SVG enabled    : ${enable_svg}])
 _AS_ECHO([])
 _AS_ECHO([  HTML tests     : ${html_tests_ok}])
 _AS_ECHO([])

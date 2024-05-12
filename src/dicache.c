@@ -20,12 +20,14 @@
 #include "dpng.h"
 #include "dgif.h"
 #include "djpeg.h"
+#include "dsvg.h"
 
 
 enum {
    DIC_Gif,
    DIC_Png,
-   DIC_Jpeg
+   DIC_Jpeg,
+   DIC_Svg
 };
 
 
@@ -391,6 +393,10 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
          DicEntry->Decoder = (CA_Callback_t)a_Png_callback;
          DicEntry->DecoderData =
             a_Png_new(web->Image, DicEntry->url, DicEntry->version);
+      } else if (ImgType == DIC_Svg) {
+         DicEntry->Decoder = (CA_Callback_t)a_Svg_callback;
+         DicEntry->DecoderData =
+            a_Svg_new(web->Image, DicEntry->url, DicEntry->version);
       }
    } else {
       /* Repeated image */
@@ -430,6 +436,15 @@ void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
                            void **Data)
 {
    return Dicache_image(DIC_Jpeg, Type, Ptr, Call, Data);
+}
+
+/**
+ * SVG wrapper for Dicache_image()
+ */
+void *a_Dicache_svg_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                          void **Data)
+{
+   return Dicache_image(DIC_Svg, Type, Ptr, Call, Data);
 }
 
 /**
