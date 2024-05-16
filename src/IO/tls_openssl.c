@@ -464,8 +464,9 @@ static bool_t Tls_check_cert_strength(SSL *ssl, Server_t *srv, int *choice)
           * then trim off the "With..." part.
           */
          b = BIO_new(BIO_s_mem());
-         const X509_ALGOR *sigalg = X509_get0_tbs_sigalg(cert);
-         rc = i2a_ASN1_OBJECT(b, sigalg->algorithm);
+         const ASN1_OBJECT *algorithm;
+         X509_ALGOR_get0(&algorithm, NULL, NULL, X509_get0_tbs_sigalg(cert));
+         rc = i2a_ASN1_OBJECT(b, algorithm);
 
          if (rc > 0) {
             rc = BIO_gets(b, buf, buflen);
