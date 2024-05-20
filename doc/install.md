@@ -166,12 +166,17 @@ $ ./configure LDFLAGS="-L`brew --prefix openssl`/lib" CPPFLAGS="-I`brew --prefix
 
 Dillo can be built for Windows (tested on Windows 11) by using the
 [Cygwin](https://www.cygwin.com/) POSIX portability layer and run with Xorg. You
-will need the following dependencies to build Dillo (with mbedTLS):
+will need the following dependencies to build Dillo with mbedTLS:
 
 ```
 gcc-core gcc-g++ autoconf automake make zlib-devel mbedtls-devel libfltk-devel
 libiconv-devel libpng-devel libjpeg-devel
 ```
+
+**Note**: Dillo can also be built with OpenSSL (libssl-devel) but there is a
+[known problem with detached threads](https://github.com/dillo-browser/dillo/issues/172)
+used by the DNS resolver and OpenSSL that causes a crash. If you use OpenSSL,
+disable the threaded resolver with `--disable-threaded-dns`.
 
 You will also need [Xorg](https://x.cygwin.com/docs/ug/cygwin-x-ug.html) to run
 Dillo graphically:

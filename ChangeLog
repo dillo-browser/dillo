@@ -9,6 +9,7 @@ at https://github.com/dillo-browser/dillo
 dillo-3.1.1 [not released yet]
 
 +- Disable TLSv1.3 in Mbed TLS 3.6.0 until it is supported.
+ - Add workaround for Cygwin and OpenSSL with --disable-threaded-dns.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 
 dillo-3.1.0 [May 4, 2024]
