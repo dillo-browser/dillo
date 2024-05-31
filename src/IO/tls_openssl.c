@@ -1277,6 +1277,9 @@ static int Tls_handle_error(Conn_t *conn, int ret, const char *where)
    if (err1_ret == SSL_ERROR_NONE) {
       errno = 0;
       return ret;
+   } else if (err1_ret == SSL_ERROR_ZERO_RETURN) {
+      errno = 0;
+      return 0;
    } else if (err1_ret == SSL_ERROR_WANT_READ || err1_ret == SSL_ERROR_WANT_WRITE) {
       errno = EAGAIN;
       return -1;
