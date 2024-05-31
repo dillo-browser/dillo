@@ -108,6 +108,12 @@ class StyleEngine {
          v.strVal = dStrdup(value);
          setNonCssHint (name, type, v);
       }
+      inline void setNonCssHint(CssPropertyName name, CssValueType type,
+                                CssLength value) {
+         CssPropertyValue v;
+         v.lenVal = value;
+         setNonCssHint (name, type, v);
+      }
       void inheritNonCssHints ();
       void clearNonCssHints ();
       void restyle (BrowserWindow *bw);

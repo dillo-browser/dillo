@@ -442,7 +442,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                      assert(false); // invalid font-size enum
                }
             } else {
-               computeValue (&fontAttrs.size, p->value.intVal, parentFont,
+               computeValue (&fontAttrs.size, p->value.lenVal, parentFont,
                   parentFont->size);
             }
 
@@ -494,7 +494,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                   fontAttrs.letterSpacing = 0;
                }
             } else {
-               computeValue (&fontAttrs.letterSpacing, p->value.intVal,
+               computeValue (&fontAttrs.letterSpacing, p->value.lenVal,
                   parentFont, parentFont->size);
             }
 
@@ -589,11 +589,11 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             computeBorderWidth (&attrs->borderWidth.top, p, attrs->font);
             break;
          case CSS_PROPERTY_BORDER_SPACING:
-            computeValue (&attrs->hBorderSpacing, p->value.intVal,attrs->font);
-            computeValue (&attrs->vBorderSpacing, p->value.intVal,attrs->font);
+            computeValue (&attrs->hBorderSpacing, p->value.lenVal,attrs->font);
+            computeValue (&attrs->vBorderSpacing, p->value.lenVal,attrs->font);
             break;
          case CSS_PROPERTY_BOTTOM:
-            computeLength (&attrs->bottom, p->value.intVal, attrs->font);
+            computeLength (&attrs->bottom, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_CLEAR:
             attrs->clear = (ClearType) p->value.intVal;
@@ -613,16 +613,16 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             attrs->vloat = (FloatType) p->value.intVal;
             break;
          case CSS_PROPERTY_LEFT:
-            computeLength (&attrs->left, p->value.intVal, attrs->font);
+            computeLength (&attrs->left, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_LINE_HEIGHT:
             if (p->type == CSS_TYPE_ENUM) { //only valid enum value is "normal"
                attrs->lineHeight = dw::core::style::LENGTH_AUTO;
             } else if (p->type == CSS_TYPE_LENGTH_PERCENTAGE_NUMBER) {
-               if (CSS_LENGTH_TYPE (p->value.intVal) == CSS_LENGTH_TYPE_NONE) {
+               if (CSS_LENGTH_TYPE (p->value.lenVal) == CSS_LENGTH_TYPE_NONE) {
                   attrs->lineHeight =
-                     createPerLength(CSS_LENGTH_VALUE(p->value.intVal));
-               } else if (computeValue (&lineHeight, p->value.intVal,
+                     createPerLength(CSS_LENGTH_VALUE(p->value.lenVal));
+               } else if (computeValue (&lineHeight, p->value.lenVal,
                                         attrs->font, attrs->font->size)) {
                   attrs->lineHeight = createAbsLength(lineHeight);
                }
@@ -635,22 +635,22 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
          case CSS_PROPERTY_MARGIN_BOTTOM:
-            computeValue (&attrs->margin.bottom, p->value.intVal, attrs->font);
+            computeValue (&attrs->margin.bottom, p->value.lenVal, attrs->font);
             if (attrs->margin.bottom < 0) // \todo fix negative margins in dw/*
                attrs->margin.bottom = 0;
             break;
          case CSS_PROPERTY_MARGIN_LEFT:
-            computeValue (&attrs->margin.left, p->value.intVal, attrs->font);
+            computeValue (&attrs->margin.left, p->value.lenVal, attrs->font);
             if (attrs->margin.left < 0) // \todo fix negative margins in dw/*
                attrs->margin.left = 0;
             break;
          case CSS_PROPERTY_MARGIN_RIGHT:
-            computeValue (&attrs->margin.right, p->value.intVal, attrs->font);
+            computeValue (&attrs->margin.right, p->value.lenVal, attrs->font);
             if (attrs->margin.right < 0) // \todo fix negative margins in dw/*
                attrs->margin.right = 0;
             break;
          case CSS_PROPERTY_MARGIN_TOP:
-            computeValue (&attrs->margin.top, p->value.intVal, attrs->font);
+            computeValue (&attrs->margin.top, p->value.lenVal, attrs->font);
             if (attrs->margin.top < 0) // \todo fix negative margins in dw/*
                attrs->margin.top = 0;
             break;
@@ -658,22 +658,22 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             attrs->overflow = (Overflow) p->value.intVal;
             break;
          case CSS_PROPERTY_PADDING_TOP:
-            computeValue (&attrs->padding.top, p->value.intVal, attrs->font);
+            computeValue (&attrs->padding.top, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_PADDING_BOTTOM:
-            computeValue (&attrs->padding.bottom, p->value.intVal,attrs->font);
+            computeValue (&attrs->padding.bottom, p->value.lenVal,attrs->font);
             break;
          case CSS_PROPERTY_PADDING_LEFT:
-            computeValue (&attrs->padding.left, p->value.intVal, attrs->font);
+            computeValue (&attrs->padding.left, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_PADDING_RIGHT:
-            computeValue (&attrs->padding.right, p->value.intVal, attrs->font);
+            computeValue (&attrs->padding.right, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_POSITION:
             attrs->position = (Position) p->value.intVal;
             break;
          case CSS_PROPERTY_RIGHT:
-            computeLength (&attrs->right, p->value.intVal, attrs->font);
+            computeLength (&attrs->right, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_TEXT_ALIGN:
             attrs->textAlign = (TextAlignType) p->value.intVal;
@@ -682,13 +682,13 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             attrs->textDecoration |= p->value.intVal;
             break;
          case CSS_PROPERTY_TEXT_INDENT:
-            computeLength (&attrs->textIndent, p->value.intVal, attrs->font);
+            computeLength (&attrs->textIndent, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_TEXT_TRANSFORM:
             attrs->textTransform = (TextTransform) p->value.intVal;
             break;
          case CSS_PROPERTY_TOP:
-            computeLength (&attrs->top, p->value.intVal, attrs->font);
+            computeLength (&attrs->top, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_VERTICAL_ALIGN:
             attrs->valign = (VAlignType) p->value.intVal;
@@ -697,10 +697,10 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             attrs->whiteSpace = (WhiteSpace) p->value.intVal;
             break;
          case CSS_PROPERTY_WIDTH:
-            computeLength (&attrs->width, p->value.intVal, attrs->font);
+            computeLength (&attrs->width, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_HEIGHT:
-            computeLength (&attrs->height, p->value.intVal, attrs->font);
+            computeLength (&attrs->height, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_WORD_SPACING:
             if (p->type == CSS_TYPE_ENUM) {
@@ -708,7 +708,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                   attrs->wordSpacing = 0;
                }
             } else {
-               computeValue(&attrs->wordSpacing, p->value.intVal, attrs->font);
+               computeValue(&attrs->wordSpacing, p->value.lenVal, attrs->font);
             }
 
             /* Limit to reasonable values to avoid overflows */
@@ -718,16 +718,16 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
                attrs->wordSpacing = -1000;
             break;
          case CSS_PROPERTY_MIN_WIDTH:
-            computeLength (&attrs->minWidth, p->value.intVal, attrs->font);
+            computeLength (&attrs->minWidth, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_MAX_WIDTH:
-            computeLength (&attrs->maxWidth, p->value.intVal, attrs->font);
+            computeLength (&attrs->maxWidth, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_MIN_HEIGHT:
-            computeLength (&attrs->minHeight, p->value.intVal, attrs->font);
+            computeLength (&attrs->minHeight, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_MAX_HEIGHT:
-            computeLength (&attrs->maxHeight, p->value.intVal, attrs->font);
+            computeLength (&attrs->maxHeight, p->value.lenVal, attrs->font);
             break;
          case CSS_PROPERTY_Z_INDEX:
             if (p->type == CSS_LENGTH_TYPE_AUTO)
@@ -862,7 +862,7 @@ void StyleEngine::computeBorderWidth (int *dest, CssProperty *p,
             assert(false);
       }
    } else {
-      computeValue (dest, p->value.intVal, font);
+      computeValue (dest, p->value.lenVal, font);
    }
 }
 

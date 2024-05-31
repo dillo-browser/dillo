@@ -1,3 +1,16 @@
+/*
+ * File: html_common.hh
+ *
+ * Copyright (C) 2008-2016 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2008-2014 Johannes Hofmann <Johannes.Hofmann@gmx.de>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #ifndef __HTML_COMMON_HH__
 #define __HTML_COMMON_HH__
 
@@ -268,7 +281,7 @@ void a_Html_pop_tag(DilloHtml *html, int TagIdx);
 void a_Html_stash_init(DilloHtml *html);
 int32_t a_Html_color_parse(DilloHtml *html, const char *str,
                            int32_t default_color);
-dw::core::style::Length a_Html_parse_length (DilloHtml *html,
+CssLength a_Html_parse_length (DilloHtml *html,
                                              const char *attr);
 void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize);
 bool a_Html_tag_set_valign_attr(DilloHtml *html,

@@ -3,6 +3,7 @@
  *
  * Copyright 2004 Sebastian Geerken <sgeerken@dillo.org>
  * Copyright 2008-2009 Johannes Hofmann <Johannes.Hofmann@gmx.de>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -988,7 +989,7 @@ bool CssParser::parseValue(CssPropertyName prop,
             (type == CSS_TYPE_LENGTH_PERCENTAGE_NUMBER || fval == 0.0))
             ret = true;
 
-         val->intVal = CSS_CREATE_LENGTH(fval, lentype);
+         val->lenVal = CSS_CREATE_LENGTH(fval, lentype);
       }
       break;
 
@@ -1091,7 +1092,7 @@ bool CssParser::parseValue(CssPropertyName prop,
       // possibilities are tested in parallel.
 
       bool h[2], v[2];
-      int pos[2];
+      CssLength pos[2];
       h[0] = v[0] = h[1] = v[1] = false;
 
       // First: collect values in pos[0] and pos[1], and determine whether
@@ -1134,10 +1135,10 @@ bool CssParser::parseValue(CssPropertyName prop,
                // We can assume <length> or <percentage> here ...
                CssPropertyValue valTmp;
                if (parseValue(prop, CSS_TYPE_LENGTH_PERCENTAGE, &valTmp)) {
-                  pos[i] = valTmp.intVal;
+                  pos[i] = valTmp.lenVal;
                   ret = true;
                } else if (parseValue(prop, CSS_TYPE_SIGNED_LENGTH, &valTmp)) {
-                  pos[i] = valTmp.intVal;
+                  pos[i] = valTmp.lenVal;
                   ret = true;
                } else
                   // ... but something may still fail.

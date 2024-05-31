@@ -67,28 +67,9 @@ typedef enum {
 } CssValueType;
 
 /**
- * Lengths are represented as int in the following way:
- *
- * @verbatim
- *
- *    | <------   integer value   ------> |
- *
- *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
- *    |          integer part             |   type    |
- *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
- *    | integer part  | decimal fraction  |   type    |
- *    +---+ - - - +---+---+- - - - - -+---+---+---+---+
- *     n-1          15  14              3   2  1   0
- *
- *    | <------ fixed point value ------> |
- *
- * @endverbatim
- *
- * where type is one of the CSS_LENGTH_TYPE_* values.
- * CSS_LENGTH_TYPE_PX values are stored as
- * 29 bit signed integer, all other types as fixed point values.
+ * CSS lengths are represented by the CssLength struct, which can hold
+ * different types of values.
  */
-typedef int CssLength;
 
 typedef enum {
    CSS_LENGTH_TYPE_NONE,
@@ -103,53 +84,56 @@ typedef enum {
    CSS_LENGTH_TYPE_AUTO        /**< This can be used as a simple value. */
 } CssLengthType;
 
-inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {
-   static const int CSS_LENGTH_FRAC_MAX = (1 << (32 - 15 - 1)) - 1;
-   static const int CSS_LENGTH_INT_MAX = (1 << (32 - 4)) - 1;
-   int iv;
+/* Aligned to 64 bits */
+typedef struct {
+   CssLengthType type;
+   union {
+      int i;
+      float f;
+   };
+} CssLength;
 
+inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {
+   CssLength l;
+   l.type = t;
    switch (t) {
    case CSS_LENGTH_TYPE_PX:
-      iv = lout::misc::roundInt(v);
-      if (iv > CSS_LENGTH_INT_MAX)
-         iv = CSS_LENGTH_INT_MAX;
-      else if (iv < -CSS_LENGTH_INT_MAX)
-         iv = -CSS_LENGTH_INT_MAX;
-      return iv << 3 | t;
+      l.i = lout::misc::roundInt(v);
+      break;
    case CSS_LENGTH_TYPE_NONE:
    case CSS_LENGTH_TYPE_MM:
    case CSS_LENGTH_TYPE_EM:
    case CSS_LENGTH_TYPE_EX:
    case CSS_LENGTH_TYPE_PERCENTAGE:
    case CSS_LENGTH_TYPE_RELATIVE:
-      if (v > CSS_LENGTH_FRAC_MAX)
-         v = CSS_LENGTH_FRAC_MAX;
-      else if (v < -CSS_LENGTH_FRAC_MAX)
-         v = -CSS_LENGTH_FRAC_MAX;
-      return ((int) (v * (1 << 15)) & ~7 ) | t;
+      l.f = v;
+      break;
    case CSS_LENGTH_TYPE_AUTO:
-      return t;
+      l.i = 0;
+      break;
    default:
       assert(false);
-      return CSS_LENGTH_TYPE_AUTO;
+      break;
    }
+
+   return l;
 }
 
 inline CssLengthType CSS_LENGTH_TYPE (CssLength l) {
-   return (CssLengthType) (l & 7);
+   return l.type;
 }
 
 inline float CSS_LENGTH_VALUE (CssLength l) {
    switch (CSS_LENGTH_TYPE(l)) {
    case CSS_LENGTH_TYPE_PX:
-      return (float) (l >> 3);
+      return (float) l.i;
    case CSS_LENGTH_TYPE_NONE:
    case CSS_LENGTH_TYPE_MM:
    case CSS_LENGTH_TYPE_EM:
    case CSS_LENGTH_TYPE_EX:
    case CSS_LENGTH_TYPE_PERCENTAGE:
    case CSS_LENGTH_TYPE_RELATIVE:
-      return ((float)(l & ~7)) / (1 << 15);
+      return l.f;
    case CSS_LENGTH_TYPE_AUTO:
       return 0.0;
    default:
@@ -251,12 +235,13 @@ typedef enum {
 } CssPropertyName;
 
 typedef struct {
-   int32_t posX;
-   int32_t posY;
+   CssLength posX;
+   CssLength posY;
 } CssBackgroundPosition;
 
 typedef union {
    int32_t intVal;
+   CssLength lenVal;
    char *strVal;
    CssBackgroundPosition *posVal;
 } CssPropertyValue;
