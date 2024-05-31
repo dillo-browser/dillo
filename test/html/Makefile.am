@@ -5,6 +5,11 @@ AM_TESTS_ENVIRONMENT = env \
 
 LOG_COMPILER = $(srcdir)/driver.sh
 
+EXTRA_DIST = \
+	driver.sh \
+	manual \
+	render
+
 TESTS = \
 	render/b-div.html \
 	render/div-100-percent-with-padding.html \
