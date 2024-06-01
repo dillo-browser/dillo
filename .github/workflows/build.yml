@@ -30,6 +30,11 @@ jobs:
       run: |
         export DILLOBIN=$(readlink -f install/bin/dillo)
         make check || (cat test/html/test-suite.log; false)
+    - name: make distcheck (with HTML tests)
+      run: |
+        export DILLOBIN=
+        export DISTCHECK_CONFIGURE_FLAGS=--enable-html-tests
+        make distcheck
 #   - name: Remove pipes
 #     run: find test/html -type p -delete || true
 #   - name: Archive production artifacts
