@@ -2,7 +2,7 @@
 #
 # File: driver.sh
 #
-# Copyright (C) 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
+# Copyright (C) 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,26 +55,29 @@ function test_file() {
   fi
 
   test_name=$(basename "$html_file")
+  wdir="${test_name}_wdir"
 
-  wdir=$(mktemp -d "${test_name}_XXX")
+  # Clean any previous files
+  rm -rf "$wdir"
+  mkdir -p "$wdir"
 
   # Use a FIFO to read the display number
-  mkfifo $wdir/display.fifo
-  exec 6<> $wdir/display.fifo
+  mkfifo "$wdir/display.fifo"
+  exec 6<> "$wdir/display.fifo"
   Xvfb -screen 5 1024x768x24 -displayfd 6 &
   xorgpid=$!
 
   # Always kill Xvfb on exit
   trap "kill $xorgpid" EXIT
 
-  read dispnum < $wdir/display.fifo
+  read dispnum < "$wdir/display.fifo"
   export DISPLAY=":$dispnum"
 
   render_page "$html_file" "$wdir/html.png"
   render_page "$ref_file" "$wdir/ref.png"
 
   # AE = Absolute Error count of the number of different pixels
-  diffcount=$(compare -metric AE $wdir/html.png $wdir/ref.png $wdir/diff.png 2>&1)
+  diffcount=$(compare -metric AE "$wdir/html.png" "$wdir/ref.png" "$wdir/diff.png" 2>&1)
 
   # The test passes only if both images are identical
   if [ "$diffcount" = "0" ]; then
@@ -86,7 +89,11 @@ function test_file() {
   fi
 
   exec 6>&-
-  rm $wdir/display.fifo
+  rm "$wdir/display.fifo"
+
+  if [ -z "$DILLO_TEST_LEAVE_FILES" ]; then
+    rm -rf "$wdir"
+  fi
 
   return $ret
 }
