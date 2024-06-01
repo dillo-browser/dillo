@@ -15,13 +15,13 @@ jobs:
     - name: autogen
       run: ./autogen.sh
     - name: Make install dir
-      run: mkdir install
+      run: mkdir install build
     - name: configure
-      run: ./configure --prefix=$(readlink -f install) --enable-html-tests
+      run: cd build && ../configure --prefix=$(readlink -f ../install) --enable-html-tests
     - name: make
-      run: make
+      run: cd build && make
     - name: make install
-      run: make install
+      run: cd build && make install
     - name: Copy config to .dillo
       run: |
         mkdir -p ~/.dillo/
@@ -29,12 +29,13 @@ jobs:
     - name: make check
       run: |
         export DILLOBIN=$(readlink -f install/bin/dillo)
-        make check || (cat test/html/test-suite.log; false)
+        cd build && make check || (cat test/html/test-suite.log; false)
     - name: make distcheck (with HTML tests)
       run: |
         export DILLOBIN=
-        export DISTCHECK_CONFIGURE_FLAGS=--enable-html-tests
-        make distcheck
+        mkdir build-distcheck install-distcheck
+        cd build-distcheck && ../configure --prefix=$(readlink -f ../install-distcheck) --enable-html-tests
+        make distcheck DISTCHECK_CONFIGURE_FLAGS=--enable-html-tests
 #   - name: Remove pipes
 #     run: find test/html -type p -delete || true
 #   - name: Archive production artifacts
