@@ -77,7 +77,7 @@ function test_file() {
   render_page "$ref_file" "$wdir/ref.png"
 
   # AE = Absolute Error count of the number of different pixels
-  diffcount=$(compare -metric AE "$wdir/html.png" "$wdir/ref.png" "$wdir/diff.png" 2>&1)
+  diffcount=$(compare -metric AE "$wdir/html.png" "$wdir/ref.png" "$wdir/diff.png" 2>&1 || true)
 
   # The test passes only if both images are identical
   if [ "$diffcount" = "0" ]; then
