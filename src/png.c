@@ -114,6 +114,15 @@ void Png_error_handling(png_structp png_ptr, png_const_charp msg)
    longjmp(png->jmpbuf, 1);
 }
 
+static
+void Png_warning_handler(png_structp png_ptr, png_const_charp msg)
+{
+   DilloPng *png;
+
+   png = png_get_error_ptr(png_ptr);
+   MSG_WARN("Png warning: %s in %s\n", msg, URL_STR(png->url));
+}
+
 static void
 Png_datainfo_callback(png_structp png_ptr, png_infop info_ptr)
 {
@@ -354,7 +363,7 @@ static void Png_write(DilloPng *png, void *Buf, uint_t BufSize)
                            PNG_LIBPNG_VER_STRING,
                            png,
                            (png_error_ptr)Png_error_handling,
-                           (png_error_ptr)Png_error_handling);
+                           (png_error_ptr)Png_warning_handler);
          dReturn_if_fail (png->png_ptr != NULL);
          png->info_ptr = png_create_info_struct(png->png_ptr);
          dReturn_if_fail (png->info_ptr != NULL);

@@ -16,6 +16,8 @@ dillo-3.1.1 [not released yet]
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
 +- Add HTML tests to the distributed tarball.
    Patches: Matt Jolly
++- Gracefully handle warnings from PNG images.
+   Patches: dogma
 
 dillo-3.1.0 [May 4, 2024]
 
