@@ -1272,6 +1272,12 @@ void a_Tls_openssl_connect(int fd, const DilloUrl *url)
  */
 static int Tls_handle_error(Conn_t *conn, int ret, const char *where)
 {
+   /* Success */
+   if (ret > 0) {
+      errno = 0;
+      return ret;
+   }
+
    SSL *ssl = conn->ssl;
    int err1_ret = SSL_get_error(ssl, ret);
    if (err1_ret == SSL_ERROR_NONE) {
