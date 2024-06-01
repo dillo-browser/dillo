@@ -10,7 +10,10 @@ dillo-3.1.1 [not released yet]
 
 +- Disable TLSv1.3 in Mbed TLS 3.6.0 until it is supported.
  - Add workaround for Cygwin and OpenSSL with --disable-threaded-dns.
+ - Fix distcheck when HTML tests are enabled.
    Patches: Rodrigo Arias Mallo <rodarima@gmail.com>
++- Add HTML tests to the distributed tarball.
+   Patches: Matt Jolly
 
 dillo-3.1.0 [May 4, 2024]
 
