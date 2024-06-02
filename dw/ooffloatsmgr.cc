@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2013-2014 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -963,7 +964,6 @@ void OOFFloatsMgr::getSize (Requisition *cbReq, int *oofWidth, int *oofHeight)
       max (oofHeightLeft, oofHeightRight) + container->boxRestHeight ();
 
    SizeChanged = true;
-   DBG_OBJ_SET_NUM ("floatRef", floatRef);
 
    DBG_OBJ_MSGF ("resize.oofm", 1,
                  "=> (l: %d, r: %d => %d) * (l: %d, r: %d => %d)",
