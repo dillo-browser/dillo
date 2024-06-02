@@ -67,7 +67,7 @@ AC_ARG_ENABLE([threaded-dns],
   [enable_threaded_dns=yes])
 
 AC_ARG_ENABLE([rtfl],
-  [AS_HELP_STRING([--enable-rtfl], [Build with RTFL messages (for debugging rendering)])],
+  [AS_HELP_STRING([--enable-rtfl], [Print low-level RTFL messages for debugging the renderer (very large slowdown)])],
   [enable_rtfl=$enableval],
   [enable_rtfl=no])
 
