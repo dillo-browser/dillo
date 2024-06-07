@@ -1,8 +1,21 @@
+/*
+ * File: css.hh
+ *
+ * Copyright (C) 2008-2014 Johannes Hofmann <Johannes.Hofmann@gmx.de>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #ifndef __CSS_HH__
 #define __CSS_HH__
 
 #include "dw/core.hh"
 #include "doctree.hh"
+#include "html.hh"
 
 /* Origin and weight. Used only internally.*/
 typedef enum {
@@ -482,12 +495,7 @@ class CssStyleSheet {
                <lout::object::ConstString, RuleList > (true, true, 256) {};
       };
 
-      static const int ntags = 90 + 14; // \todo don't hardcode
-      /* 90 is the full number of html4 elements, including those which we have
-       * implemented. From html5, let's add: article, header, footer, mark,
-       * nav, section, aside, figure, figcaption, wbr, audio, video, source,
-       * embed.
-       */
+      static const int ntags = HTML_NTAGS;
 
       RuleList elementTable[ntags], anyTable;
       RuleMap idTable, classTable;

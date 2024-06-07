@@ -3555,6 +3555,8 @@ static const TagInfo Tags[] = {
 };
 #define NTAGS (sizeof(Tags)/sizeof(Tags[0]))
 
+static_assert(NTAGS == HTML_NTAGS,
+   "Mismatch between number of tags in Tags and HTML_NTAGS");
 
 /*
  * Compares tag from buffer ('/' or '>' or space-ended string) [p1]
