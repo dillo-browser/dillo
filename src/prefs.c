@@ -14,6 +14,7 @@
 
 #define PREFS_START_PAGE      "about:splash"
 #define PREFS_HOME            "https://dillo-browser.github.io/"
+#define PREFS_NEW_TAB_PAGE    "about:blank"
 #define PREFS_FONT_SERIF      "DejaVu Serif"
 #define PREFS_FONT_SANS_SERIF "DejaVu Sans"
 #define PREFS_FONT_CURSIVE    "DejaVu Sans"
@@ -110,6 +111,7 @@ void a_Prefs_init(void)
    prefs.show_ui_tooltip = TRUE;
    prefs.small_icons = FALSE;
    prefs.start_page = a_Url_new(PREFS_START_PAGE, NULL);
+   prefs.new_tab_page = a_Url_new(PREFS_NEW_TAB_PAGE, NULL);
    prefs.theme = dStrdup(PREFS_THEME);
    prefs.ui_button_highlight_color = -1;
    prefs.ui_fg_color = -1;
@@ -155,5 +157,6 @@ void a_Prefs_freeall(void)
       dFree(dList_nth_data(prefs.search_urls, i));
    dList_free(prefs.search_urls);
    a_Url_free(prefs.start_page);
+   a_Url_free(prefs.new_tab_page);
    dFree(prefs.theme);
 }

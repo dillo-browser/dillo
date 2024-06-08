@@ -2,6 +2,7 @@
  * File: url.c
  *
  * Copyright (C) 2001-2009 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -374,7 +375,9 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
    Dstr *SolvedUrl;
    int i, n_ic, n_ic_spc;
 
-   dReturn_val_if_fail (url_str != NULL, NULL);
+   /* NULL or empty URL is not valid */
+   if (!url_str || url_str[0] == '\0')
+      return NULL;
 
    /* Count illegal characters (0x00-0x1F, 0x7F-0xFF and space) */
    n_ic = n_ic_spc = 0;

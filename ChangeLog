@@ -6,6 +6,11 @@ Here we list changes that are relatively significant and/or visible to the
 user. For a history of changes in full detail, see our Git repository
 at https://github.com/dillo-browser/dillo
 
+dillo-3.2.0 [Not released yet]
+
++- Add new_tab_page option to open a custom new tab page.
+   Patches: Alex, Rodrigo Arias Mallo
+
 dillo-3.1.1 [Jun 8, 2024]
 
 +- Disable TLSv1.3 in Mbed TLS 3.6.0 until it is supported.

@@ -157,6 +157,11 @@
 # home="file:/home/jcid/HomePage/Home.html"
 #home="https://dillo-browser.github.io/"
 
+# Set the new tab page.
+# new_tab_page="dpi:/bm/"
+# new_tab_page="https://example.com/"
+#new_tab_page="about:blank"
+
 # Set the URLs used by the web search dialog.
 # "%s" is replaced with the search keywords separated by '+'.
 # Format: search_url="[prefix ][<label> ]<url>"

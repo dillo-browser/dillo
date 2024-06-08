@@ -171,6 +171,7 @@ void PrefsParser::parse(FILE *fp)
       { "fullwindow_start", &prefs.fullwindow_start, PREFS_BOOL, 0 },
       { "geometry", NULL, PREFS_GEOMETRY, 0 },
       { "home", &prefs.home, PREFS_URL, 0 },
+      { "new_tab_page", &prefs.new_tab_page, PREFS_URL, 0 },
       { "http_language", &prefs.http_language, PREFS_STRING, 0 },
       { "http_max_conns", &prefs.http_max_conns, PREFS_INT32, 0 },
       { "http_persistent_conns", &prefs.http_persistent_conns, PREFS_BOOL, 0 },

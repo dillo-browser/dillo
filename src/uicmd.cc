@@ -770,6 +770,11 @@ void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url)
 
 static void UIcmd_open_url_nbw(BrowserWindow *new_bw, const DilloUrl *url)
 {
+   if (!url && prefs.new_tab_page) {
+      if (strcmp(URL_STR(prefs.new_tab_page), "about:blank") != 0)
+         url = prefs.new_tab_page;
+   }
+
    /* When opening a new BrowserWindow (tab or real window) we focus
     * Location if we don't yet have an URL, main otherwise.
     */

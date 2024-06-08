@@ -48,6 +48,7 @@ typedef struct {
    char *no_proxy;
    DilloUrl *start_page;
    DilloUrl *home;
+   DilloUrl *new_tab_page;
    bool_t allow_white_bg;
    int32_t white_bg_replacement;
    int32_t bg_color;

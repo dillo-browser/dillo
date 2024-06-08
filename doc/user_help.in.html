@@ -318,7 +318,8 @@ DuckDuckGo for the keywords "dillo browser".
 <p>
 Dillo can open different web pages into tabs. To open a link in a new tab click
 the middle button instead of the left button. The same applies to buttons to
-submit a form.
+submit a form. A new tab can also be opened from the <code>File</code> menu or
+using the shortcut <code>Ctrl+T</code>.
 <p>
 By default the new tab will be automatically focused. If you want to change
 this behaviour, adjust the following options in the 
@@ -336,6 +337,13 @@ tabs). You can also close the tab by clicking with the right button on the tab
 label. The middle button can be used instead by setting the option:
 <pre>
 right_click_closes_tab=NO
+</pre>
+<p>
+Use the <code>new_tab_page</code> option to control which page is loaded in a
+newly opened tab, by default is an empty page. To open the
+bookmarks page set the following line in <a href="#dillorc">dillorc</a>:
+<pre>
+new_tab_page="dpi:/bm/"
 </pre>
 
 <h3 id="bookmarks">Bookmarks</h3>
