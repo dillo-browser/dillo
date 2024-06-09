@@ -375,8 +375,12 @@ DilloUrl* a_Url_new(const char *url_str, const char *base_url)
    Dstr *SolvedUrl;
    int i, n_ic, n_ic_spc;
 
-   /* NULL or empty URL is not valid */
-   if (!url_str || url_str[0] == '\0')
+   if (!url_str)
+      return NULL;
+
+   /* Empty URL without base_url is not valid.
+    * They are used for action="" in forms with base_url set. */
+   if (url_str[0] == '\0' && base_url == NULL)
       return NULL;
 
    /* Count illegal characters (0x00-0x1F, 0x7F-0xFF and space) */

@@ -172,11 +172,20 @@ DilloUrl *a_Html_url_new(DilloHtml *html,
                          const char *url_str, const char *base_url,
                          int use_base_url)
 {
-   DilloUrl *url;
-   int n_ic, n_ic_spc;
+   if (!url_str) {
+      MSG("a_Html_url_new: URL is NULL\n");
+      return NULL;
+   }
 
-   url = a_Url_new(url_str,
+   DilloUrl *url = a_Url_new(url_str,
                    (use_base_url) ? base_url : URL_STR_(html->base_url));
+
+   if (!url) {
+      BUG_MSG("URL is not valid '%s'.", url_str);
+      return NULL;
+   }
+
+   int n_ic, n_ic_spc;
    if ((n_ic = URL_ILLEGAL_CHARS(url)) != 0) {
       const char *suffix = (n_ic) > 1 ? "s" : "";
       n_ic_spc = URL_ILLEGAL_CHARS_SPC(url);
