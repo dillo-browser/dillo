@@ -2,6 +2,7 @@
  * File: plain.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,7 +98,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw)
 
    Layout *layout = (Layout*) bw->render_layout;
    // TODO (1x) No URL?
-   StyleEngine styleEngine (layout, NULL, NULL);
+   StyleEngine styleEngine (layout, NULL, NULL, bw->zoom);
 
    styleEngine.startElement ("body", bw);
    styleEngine.startElement ("pre", bw);

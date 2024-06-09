@@ -84,6 +84,14 @@
 # "save" the current page.
 #(save has no default binding)
 
+# "zoom-in" increases the zoom by 10% (make elements bigger).
+#<ctrl>+ = zoom-in
+#<ctrl>= = zoom-in
+# "zoom-out" decreases the zoom by 10% (make elements smaller).
+#<ctrl>- = zoom-out
+# "zoom-reset" resets the zoom to 100%.
+#<ctrl>0 = zoom-reset
+
 #--------------------------------------------------------------------
 #                     MOTION COMMANDS
 #--------------------------------------------------------------------

@@ -2,6 +2,7 @@
  * File: bw.c
  *
  * Copyright (C) 2006-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,6 +74,8 @@ BrowserWindow *a_Bw_new()
 
    bw->num_page_bugs = 0;
    bw->page_bugs = dStr_new("");
+
+   bw->zoom = 1.0;
 
    /* now that the bw is made, let's customize it.. */
    //Interface_browser_window_customize(bw);

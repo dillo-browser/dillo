@@ -73,6 +73,7 @@ typedef struct {
    bool_t adjust_table_min_width;
    bool_t focus_new_tab;
    double font_factor;
+   double zoom_factor;
    int32_t font_max_size;
    int32_t font_min_size;
    int32_t scroll_step;

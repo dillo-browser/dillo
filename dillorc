@@ -95,6 +95,10 @@
 # differentiates between tables and, say, textblocks (in some cases).
 #adjust_table_min_width=YES
 
+# Sets the initial zoom factor, which scales the size of all HTML elements.
+# zoom_factor=1.5
+#zoom_factor=1.0
+
 #-------------------------------------------------------------------------
 #                               PENALTIES
 #-------------------------------------------------------------------------

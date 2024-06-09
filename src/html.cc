@@ -461,7 +461,7 @@ DilloHtml::DilloHtml(BrowserWindow *p_bw, const DilloUrl *url,
    DocType = DT_NONE;    /* assume Tag Soup 0.0!   :-) */
    DocTypeVersion = 0.0f;
 
-   styleEngine = new StyleEngine (HT2LT (this), page_url, base_url);
+   styleEngine = new StyleEngine (HT2LT (this), page_url, base_url, bw->zoom);
 
    cssUrls = new misc::SimpleVector <DilloUrl*> (1);
 

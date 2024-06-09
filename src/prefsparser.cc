@@ -243,7 +243,8 @@ void PrefsParser::parse(FILE *fp)
       { "penalty_em_dash_right_2", &prefs.penalty_em_dash_right_2,
         PREFS_FRACTION_100, 0 },
       { "stretchability_factor", &prefs.stretchability_factor,
-        PREFS_FRACTION_100, 0 }
+        PREFS_FRACTION_100, 0 },
+      { "zoom_factor", &prefs.zoom_factor, PREFS_DOUBLE, 0 }
    };
    // changing the LC_NUMERIC locale (temporarily) to C
    // avoids parsing problems with float numbers

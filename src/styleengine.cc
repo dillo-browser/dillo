@@ -60,7 +60,8 @@ void StyleImageDeletionReceiver::deleted (lout::signal::ObservedObject *object)
 // ----------------------------------------------------------------------
 
 StyleEngine::StyleEngine (dw::core::Layout *layout,
-                          const DilloUrl *pageUrl, const DilloUrl *baseUrl) {
+                          const DilloUrl *pageUrl, const DilloUrl *baseUrl,
+                          float zoom) {
    StyleAttrs style_attrs;
    FontAttrs font_attrs;
 
@@ -73,13 +74,14 @@ StyleEngine::StyleEngine (dw::core::Layout *layout,
    this->baseUrl = baseUrl ? a_Url_dup(baseUrl) : NULL;
    importDepth = 0;
    dpmm = layout->dpiX () / 25.4; /* assume dpiX == dpiY */
+   this->zoom = zoom;
 
    stackPush ();
    Node *n = stack->getLastRef ();
 
    /* Create a dummy font, attribute, and tag for the bottom of the stack. */
    font_attrs.name = prefs.font_sans_serif;
-   font_attrs.size = roundInt(14 * prefs.font_factor);
+   font_attrs.size = roundInt(14 * prefs.font_factor * zoom);
    if (font_attrs.size < prefs.font_min_size)
       font_attrs.size = prefs.font_min_size;
    if (font_attrs.size > prefs.font_max_size)
@@ -410,31 +412,31 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             if (p->type == CSS_TYPE_ENUM) {
                switch (p->value.intVal) {
                   case CSS_FONT_SIZE_XX_SMALL:
-                     fontAttrs.size = roundInt(8.1 * prefs.font_factor);
+                     fontAttrs.size = roundInt(8.1 * prefs.font_factor * zoom);
                      break;
                   case CSS_FONT_SIZE_X_SMALL:
-                     fontAttrs.size = roundInt(9.7 * prefs.font_factor);
+                     fontAttrs.size = roundInt(9.7 * prefs.font_factor * zoom);
                      break;
                   case CSS_FONT_SIZE_SMALL:
-                     fontAttrs.size = roundInt(11.7 * prefs.font_factor);
+                     fontAttrs.size = roundInt(11.7 * prefs.font_factor * zoom);
                      break;
                   case CSS_FONT_SIZE_MEDIUM:
-                     fontAttrs.size = roundInt(14.0 * prefs.font_factor);
+                     fontAttrs.size = roundInt(14.0 * prefs.font_factor * zoom);
                      break;
                   case CSS_FONT_SIZE_LARGE:
-                     fontAttrs.size = roundInt(16.8 * prefs.font_factor);
+                     fontAttrs.size = roundInt(16.8 * prefs.font_factor * zoom);
                      break;
                   case CSS_FONT_SIZE_X_LARGE:
-                     fontAttrs.size = roundInt(20.2 * prefs.font_factor);
+                     fontAttrs.size = roundInt(20.2 * prefs.font_factor * zoom);
                      break;
                   case CSS_FONT_SIZE_XX_LARGE:
-                     fontAttrs.size = roundInt(24.2 * prefs.font_factor);
+                     fontAttrs.size = roundInt(24.2 * prefs.font_factor * zoom);
                      break;
                   case CSS_FONT_SIZE_SMALLER:
-                     fontAttrs.size = roundInt(fontAttrs.size * 0.83);
+                     fontAttrs.size = roundInt(fontAttrs.size * 0.83 * zoom);
                      break;
                   case CSS_FONT_SIZE_LARGER:
-                     fontAttrs.size = roundInt(fontAttrs.size * 1.2);
+                     fontAttrs.size = roundInt(fontAttrs.size * 1.2 * zoom);
                      break;
                   default:
                      assert(false); // invalid font-size enum
@@ -789,15 +791,17 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
 bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
    switch (CSS_LENGTH_TYPE (value)) {
       case CSS_LENGTH_TYPE_PX:
-         *dest = (int) CSS_LENGTH_VALUE (value);
+         *dest = (int) (CSS_LENGTH_VALUE (value) * zoom);
          return true;
       case CSS_LENGTH_TYPE_MM:
-         *dest = roundInt (CSS_LENGTH_VALUE (value) * dpmm);
+         *dest = roundInt (CSS_LENGTH_VALUE (value) * dpmm * zoom);
          return true;
       case CSS_LENGTH_TYPE_EM:
+         /* Doesn't need zoom as it is already applied to font->size */
          *dest = roundInt (CSS_LENGTH_VALUE (value) * font->size);
          return true;
       case CSS_LENGTH_TYPE_EX:
+         /* Doesn't need zoom as it is already applied to font->xHeight */
          *dest = roundInt (CSS_LENGTH_VALUE(value) * font->xHeight);
          return true;
       case CSS_LENGTH_TYPE_NONE:

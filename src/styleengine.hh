@@ -1,3 +1,15 @@
+/*
+ * File: styleengine.hh
+ *
+ * Copyright 2008-2009 Johannes Hofmann <Johannes.Hofmann@gmx.de>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #ifndef __STYLEENGINE_HH__
 #define __STYLEENGINE_HH__
 
@@ -37,6 +49,7 @@ class StyleEngine {
       Doctree *doctree;
       int importDepth;
       float dpmm;
+      float zoom;
       DilloUrl *pageUrl, *baseUrl;
 
       void stackPush ();
@@ -69,7 +82,7 @@ class StyleEngine {
       static void init ();
 
       StyleEngine (dw::core::Layout *layout,
-                   const DilloUrl *pageUrl, const DilloUrl *baseUrl);
+                   const DilloUrl *pageUrl, const DilloUrl *baseUrl, float zoom);
       ~StyleEngine ();
 
       void parse (DilloHtml *html, DilloUrl *url, const char *buf, int buflen,

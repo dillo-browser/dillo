@@ -738,6 +738,15 @@ int UI::handle(int event)
       } else if (cmd == KEYS_FORWARD) {
          a_UIcmd_forw(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
+      } else if (cmd == KEYS_ZOOM_IN) {
+         a_UIcmd_zoom_in(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_ZOOM_OUT) {
+         a_UIcmd_zoom_out(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
+      } else if (cmd == KEYS_ZOOM_RESET) {
+         a_UIcmd_zoom_reset(a_UIcmd_get_bw_by_widget(this));
+         ret = 1;
       } else if (cmd == KEYS_BOOKMARKS) {
          a_UIcmd_book(a_UIcmd_get_bw_by_widget(this));
          ret = 1;

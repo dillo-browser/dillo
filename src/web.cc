@@ -2,6 +2,7 @@
  * File: web.cc
  *
  * Copyright 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,9 +54,10 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
 
    _MSG("a_Web_dispatch_by_type\n");
 
-   dReturn_val_if_fail(Web->bw != NULL, -1);
+   BrowserWindow *bw = Web->bw;
+   dReturn_val_if_fail(bw != NULL, -1);
 
-   Layout *layout = (Layout*)Web->bw->render_layout;
+   Layout *layout = (Layout*)bw->render_layout;
 
    Viewer_t viewer = a_Mime_get_viewer(Type);
    if (viewer == NULL)
@@ -73,7 +75,7 @@ int a_Web_dispatch_by_type (const char *Type, DilloWeb *Web,
                           style::createPerLength (0));
 
       /* Set a style for the widget */
-      StyleEngine styleEngine (layout, Web->url, Web->url);
+      StyleEngine styleEngine (layout, Web->url, Web->url, bw->zoom);
       styleEngine.startElement ("body", Web->bw);
 
       dw = (Widget*) viewer(Type, Web, Call, Data);
