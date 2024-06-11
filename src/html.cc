@@ -1706,10 +1706,14 @@ static void Html_tag_open_title(DilloHtml *html, const char *tag, int tagsize)
  */
 static void Html_tag_close_title(DilloHtml *html)
 {
+   /* title is only valid inside HEAD */
    if (html->InFlags & IN_HEAD && html->Num_TITLE == 1) {
-      /* title is only valid inside HEAD */
-      a_UIcmd_set_page_title(html->bw, html->Stash->str);
-      a_History_set_title_by_url(html->page_url, html->Stash->str);
+      /* Ignore empty titles: <title></title> */
+      char *title = html->Stash->str;
+      if (!title || title[0] == '\0')
+         return;
+      a_UIcmd_set_page_title(html->bw, title);
+      a_History_set_title_by_url(html->page_url, title);
    }
 }
 
