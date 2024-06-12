@@ -99,6 +99,8 @@ class DLItem {
    pid_t mPid;
    int LogPipe[2];
    char *shortname, *fullname;
+   char *esc_url;
+   char *cookies_path;
    char *target_dir;
    size_t log_len, log_max;
    int log_state;
@@ -286,7 +288,6 @@ DLItem::DLItem(const char *full_filename, const char *url)
 {
    struct stat ss;
    const char *p;
-   char *esc_url;
 
    if (pipe(LogPipe) < 0) {
       MSG("pipe, %s\n", dStrerror(errno));
@@ -320,6 +321,7 @@ DLItem::DLItem(const char *full_filename, const char *url)
    /* avoid malicious SMTP relaying with FTP urls */
    if (dStrnAsciiCasecmp(esc_url, "ftp:/", 5) == 0)
       Filter_smtp_hack(esc_url);
+   cookies_path = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
    dl_argv = new char*[10];
    int i = 0;
    const char *user_agent = "Dillo/" VERSION;
@@ -330,7 +332,7 @@ DLItem::DLItem(const char *full_filename, const char *url)
    dl_argv[i++] = (char*) user_agent;
    dl_argv[i++] = (char*)"-c";
    dl_argv[i++] = (char*)"--load-cookies";
-   dl_argv[i++] = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
+   dl_argv[i++] = cookies_path;
    dl_argv[i++] = (char*)"-O";
    dl_argv[i++] = fullname;
    dl_argv[i++] = esc_url;
@@ -432,9 +434,8 @@ DLItem::~DLItem()
    dFree(fullname);
    dFree(target_dir);
    free(log_text);
-   int idx = (strcmp(dl_argv[1], "-c")) ? 2 : 3;
-   dFree(dl_argv[idx]);
-   dFree(dl_argv[idx+3]);
+   dFree(esc_url);
+   dFree(cookies_path);
    delete [] dl_argv;
 
    delete(group);

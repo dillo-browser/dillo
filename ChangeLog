@@ -11,6 +11,7 @@ dillo-3.2.0 [Not released yet]
 +- Add new_tab_page option to open a custom new tab page.
    Patches: Alex, Rodrigo Arias Mallo
 +- Ignore empty page title for tab labels.
+   Fix segfault when clicking the "Done" button in downloads dialog.
    Patches: Rodrigo Arias Mallo
 
 dillo-3.1.1 [Jun 8, 2024]
