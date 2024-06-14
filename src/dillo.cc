@@ -57,6 +57,7 @@
 #include "capi.h"
 #include "dicache.h"
 #include "cookies.h"
+#include "actions.h"
 #include "hsts.h"
 #include "domain.h"
 #include "auth.h"
@@ -489,6 +490,7 @@ int main(int argc, char **argv)
    a_Dicache_init();
    a_Bw_init();
    a_Cookies_init();
+   a_Actions_init();
    a_Hsts_init(Paths::getPrefsFP(PATHS_HSTS_PRELOAD));
    a_Auth_init();
    a_UIcmd_init();

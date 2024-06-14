@@ -124,6 +124,7 @@ typedef struct {
    int penalty_hyphen, penalty_hyphen_2;
    int penalty_em_dash_left, penalty_em_dash_right, penalty_em_dash_right_2;
    int stretchability_factor;
+   Dlist *link_actions;
 } DilloPrefs;
 
 /** Global Data */

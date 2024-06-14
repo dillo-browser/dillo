@@ -64,6 +64,17 @@
 # jump to a given position.
 #scrollbar_page_mode=NO
 
+# Define custom actions for the link menu. The format is <label>:<cmd>. The
+# command will be executed in the system shell using the system() call. You can
+# implement your own handling logic in a script or program. The following
+# environment variables are set:
+#   $url:    URL being opened
+#   $origin: URL of the current document
+# Examples:
+# link_action="Debug variables:echo url=$url origin=$origin"
+# link_action="Open in MPV:mpv $url"
+# link_action="Open in Firefox:firefox $url"
+
 #-------------------------------------------------------------------------
 #                           RENDERING SECTION
 #-------------------------------------------------------------------------

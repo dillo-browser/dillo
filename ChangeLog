@@ -29,6 +29,8 @@ dillo-3.2.0 [Not released yet]
  - Reload current page on SIGUSR1 signal
  - Print library versions and enabled features with dillo -v.
  - Allow image formats to be ignored with the "ignore_image_formats" option.
+ - Add the "link_action" option to define custom menu entries to open links
+   with external programs or scripts.
    Patches: Rodrigo Arias Mallo
 +- Add primitive support for SVG using the nanosvg.h library.
  - Add support for ch, rem, vw, vh, vmin and vmax CSS units.

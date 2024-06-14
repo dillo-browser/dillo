@@ -9,7 +9,8 @@ extern "C" {
 
 void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
                        bool_t has_bugs, void *v_cssUrls);
-void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url);
+void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url,
+                       const DilloUrl *page_url);
 void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
                         bool_t loaded_img, DilloUrl *page_url,
                         DilloUrl *link_url);
