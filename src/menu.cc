@@ -18,9 +18,11 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Menu_Item.H>
 
+#include <unistd.h>
 #include "lout/misc.hh"    /* SimpleVector */
 #include "msg.h"
 #include "menu.hh"
+#include "rules.h"
 #include "uicmd.hh"
 #include "history.h"
 #include "html.hh"
@@ -430,22 +432,96 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    a_Timeout_add(0.0, Menu_popup_cb, (void*)&page_data);
 }
 
-static Fl_Menu_Item link_menu[] = {
+static Fl_Menu_Item link_menu_[] = {
    {"Open link in new tab", 0, Menu_open_url_nt_cb,0,0,0,0,0,0},
    {"Open link in new window", 0, Menu_open_url_nw_cb,0,FL_MENU_DIVIDER,0,0,
     0,0},
    {"Bookmark this link", 0, Menu_add_bookmark_cb,0,0,0,0,0,0},
    {"Copy link location", 0, Menu_copy_urlstr_cb,0,FL_MENU_DIVIDER,0,0,0,0},
-   {"Save link as...", 0, Menu_save_link_cb,0,0,0,0,0,0},
+   {"Save link as...", 0, Menu_save_link_cb,0,FL_MENU_DIVIDER,0,0,0,0},
    {0,0,0,0,0,0,0,0,0}
 };
 
-static void Menu_set_link_menu_user_data(void *user_data)
-{
-   int i;
+/* As we can only provide a pointer to the link meny items, we need to
+ * create an auxiliary structure to hold the current URL and the program
+ * that should run on each item. */
+struct link_menu_item {
+	DilloUrl *url;
+	struct rule *rule;
+};
 
-   for (i = 0; link_menu[i].label(); i++)
-      link_menu[i].user_data(user_data);
+/**
+ * Open URL following a custom action rule
+ */
+static void Menu_open_url_action_cb(Fl_Widget*, void *user_data)
+{
+   struct link_menu_item *mitem = (struct link_menu_item *) user_data;
+   DilloUrl *url = mitem->url;
+   struct rule *rule = mitem->rule;
+
+   /* Set the url */
+   setenv("url", URL_STR(url), 1);
+   MSG("Running: %s\n", rule->command);
+
+   if (fork() == 0) {
+      /* Child */
+      system(rule->command);
+	  exit(0);
+   }
+}
+
+static Fl_Menu_Item *get_link_menu(void)
+{
+   static Fl_Menu_Item *link_menu = NULL;
+   static struct link_menu_item *link_menu_item = NULL;
+
+   /* Already initialized */
+   if (link_menu != NULL)
+	   return link_menu;
+
+   struct rules *rules = a_Rules_get();
+
+   /* Count static menu entries */
+   int nstatic = 0;
+   while (link_menu_[nstatic].text)
+      nstatic++;
+
+   int ntotal = nstatic + rules->n;
+   link_menu = (Fl_Menu_Item *) calloc(ntotal + 1, sizeof(Fl_Menu_Item));
+   link_menu_item = (struct link_menu_item *) calloc(rules->n, sizeof(struct link_menu_item));
+
+   /* Just copy the static entries */
+   for (int i = 0; i < nstatic; i++) {
+      memcpy(&link_menu[i], &link_menu_[i], sizeof(Fl_Menu_Item));
+   }
+
+   /* And append the dynamic ones */
+   for (int i = 0; i < rules->n; i++) {
+      struct rule *rule = rules->rule[i];
+      struct link_menu_item *mitem = &link_menu_item[i];
+      mitem->url = NULL; /* Not known yet */
+      mitem->rule = rule;
+
+      Fl_Menu_Item *item = &link_menu[nstatic + i];
+      item->text = rule->action;
+      item->callback_ = Menu_open_url_action_cb;
+      item->user_data_ = mitem;
+   }
+
+   return link_menu;
+}
+
+static void Menu_set_link_menu_user_data(DilloUrl *url)
+{
+   Fl_Menu_Item *link_menu = get_link_menu();
+   for (int i = 0; link_menu[i].label(); i++) {
+      if (link_menu[i].callback_ == Menu_open_url_action_cb) {
+         struct link_menu_item *mitem = (struct link_menu_item *) link_menu[i].user_data_;
+         mitem->url = url;
+      } else {
+         link_menu[i].user_data_ = url;
+      }
+   }
 }
 
 /**
@@ -453,13 +529,16 @@ static void Menu_set_link_menu_user_data(void *user_data)
  */
 void a_Menu_link_popup(BrowserWindow *bw, const DilloUrl *url)
 {
-   static Menu_popup_data_t link_data = {"Link menu", NULL, link_menu};
+   static Menu_popup_data_t link_data = {"Link menu", NULL, NULL};
 
    popup_x = Fl::event_x();
    popup_y = Fl::event_y();
    popup_bw = bw;
    a_Url_free(popup_url);
    popup_url = a_Url_dup(url);
+
+   Fl_Menu_Item *link_menu = get_link_menu();
+   link_data.menu = link_menu;
 
    Menu_set_link_menu_user_data(popup_url);
 
@@ -484,7 +563,7 @@ void a_Menu_image_popup(BrowserWindow *bw, const DilloUrl *url,
       {"Bookmark this image", 0, Menu_add_bookmark_cb,0,0,0,0,0,0},
       {"Copy image location", 0,Menu_copy_urlstr_cb,0,FL_MENU_DIVIDER,0,0,0,0},
       {"Save image as...", 0, Menu_save_link_cb, 0, FL_MENU_DIVIDER,0,0,0,0},
-      {"Link menu", 0, Menu_nop_cb, link_menu, FL_SUBMENU_POINTER,0,0,0,0},
+      {"Link menu", 0, Menu_nop_cb, get_link_menu(), FL_SUBMENU_POINTER,0,0,0,0},
       {0,0,0,0,0,0,0,0,0}
    };
    static Menu_popup_data_t image_data = {"Image menu", NULL, pm};
