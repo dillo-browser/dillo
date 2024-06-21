@@ -101,6 +101,23 @@ jobs:
       run: make check
     - name: make distcheck
       run: make distcheck
+  ubuntu-latest-with-old-std:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libssl-dev
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --disable-mbedtls CFLAGS="-std=gnu99" CXXFLAGS="-std=c++98"
+    - name: make
+      run: make
+    - name: make check
+      run: make check
   ubuntu-20-04-openssl-1-1:
     needs: ubuntu-latest-html-tests
     runs-on: ubuntu-20.04
