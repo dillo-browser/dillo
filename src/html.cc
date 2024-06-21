@@ -3568,8 +3568,11 @@ static const TagInfo Tags[] = {
 };
 #define NTAGS (sizeof(Tags)/sizeof(Tags[0]))
 
+/* Only available in C++11 and up */
+#if __cpp_static_assert
 static_assert(NTAGS == HTML_NTAGS,
    "Mismatch between number of tags in Tags and HTML_NTAGS");
+#endif
 
 /*
  * Compares tag from buffer ('/' or '>' or space-ended string) [p1]
