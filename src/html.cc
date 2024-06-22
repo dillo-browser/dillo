@@ -137,6 +137,7 @@ static int
    i_TEXTAREA = a_Html_tag_index("textarea"),
    i_TD = a_Html_tag_index("td"),
    i_TR = a_Html_tag_index("tr"),
+   i_TBODY = a_Html_tag_index("tbody"),
    i_TH = a_Html_tag_index("th");
 
 
@@ -3646,10 +3647,10 @@ static int Html_triggers_optional_close(int old_idx, int cur_idx)
    } else if (old_idx == i_TD || old_idx == i_TH) {
       /* TD and TH are closed by: TD, TH and TR.
        * Note: non-flow should also close it, but FF does not. */
-      return (cur_idx == i_TD || cur_idx == i_TH || cur_idx == i_TR);
+      return (cur_idx == i_TD || cur_idx == i_TH || cur_idx == i_TR || cur_idx == i_TBODY);
    } else if (old_idx == i_TR) {
       /* TR closes TR */
-      return (cur_idx == i_TR);
+      return (cur_idx == i_TR || cur_idx == i_TBODY);
    } else if (old_idx == i_DD) {
       /* DD is closed by DD and DT */
       return (cur_idx == i_DD || cur_idx == i_DT);
