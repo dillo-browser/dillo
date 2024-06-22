@@ -37,6 +37,7 @@ TESTS = \
 	render/table-td-width-percent-img.html \
 	render/table-td-width-percent.html \
 	render/table-thead-tfoot.html \
+	render/table-thead-tfoot-open-tag.html \
 	render/white-space.html
 
 # To be fixed
