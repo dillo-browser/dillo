@@ -13,6 +13,7 @@ dillo-3.2.0 [Not released yet]
 +- Ignore empty page title for tab labels.
    Fix segfault when clicking the "Done" button in downloads dialog.
    Add zoom support using Ctrl +/-/0 and the "zoom_factor" option.
+   Fix wrong redirect by meta refresh without URL.
    Patches: Rodrigo Arias Mallo
 
 dillo-3.1.1 [Jun 8, 2024]

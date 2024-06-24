@@ -3152,19 +3152,28 @@ static void Html_tag_open_meta(DilloHtml *html, const char *tag, int tagsize)
             sprintf(delay_str, ".");
          }
          /* Skip to anything after "URL=" or ";" if "URL=" is not found */
+         int has_url = 1;
          if ((p = dStriAsciiStr(content, "url=")))
             content = p + strlen("url=");
          else if ((p = strstr(content, ";")))
             content = p + strlen(";");
-         /* Handle the case of a quoted URL */
-         if (*content == '"' || *content == '\'') {
-            if ((p = strchr(content + 1, *content)))
-               mr_url = dStrndup(content + 1, p - content - 1);
-            else
-               mr_url = dStrdup(content + 1);
+         else
+            has_url = 0;
+
+         if (has_url) {
+            /* Handle the case of a quoted URL */
+            if (*content == '"' || *content == '\'') {
+               if ((p = strchr(content + 1, *content)))
+                  mr_url = dStrndup(content + 1, p - content - 1);
+               else
+                  mr_url = dStrdup(content + 1);
+            } else {
+               mr_url = dStrdup(content);
+            }
          } else {
-            mr_url = dStrdup(content);
+            mr_url = dStrdup("");
          }
+
          new_url = a_Html_url_new(html, mr_url, NULL, 0);
 
          if (a_Url_cmp(html->base_url, new_url) == 0) {

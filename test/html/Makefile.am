@@ -23,6 +23,7 @@ TESTS = \
 	render/max-width-div-clamp.html \
 	render/max-width-html.html \
 	render/max-width-nested-div.html \
+	render/meta-refresh-0-no-url.html \
 	render/min-width-body.html \
 	render/min-width-div-extend.html \
 	render/min-width-div.html \
