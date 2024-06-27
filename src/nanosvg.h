@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-14 Mikko Mononen memon@inside.org
+ * Copyright (c) 2013-14 Mikko Mononen <memon@inside.org>
+ * Copyright (c) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -148,6 +149,7 @@ typedef struct NSVGshape
 	char strokeDashCount;		// Number of dash values in dash array.
 	char strokeLineJoin;		// Stroke join type.
 	char strokeLineCap;			// Stroke cap type.
+	char virtual;				// A shape from <defs> not to be drawn
 	float miterLimit;			// Miter limit
 	char fillRule;				// Fill rule, see NSVGfillRule.
 	unsigned char flags;		// Logical or of NSVG_FLAGS_* flags
@@ -641,6 +643,8 @@ static NSVGparser* nsvg__createParser(void)
 	p->attr[0].fillRule = NSVG_FILLRULE_NONZERO;
 	p->attr[0].hasFill = 1;
 	p->attr[0].visible = 1;
+	/* TODO: Let the user change the initial value */
+	p->attr[0].fontSize = 40.0f;
 
 	return p;
 
@@ -972,6 +976,7 @@ static void nsvg__addShape(NSVGparser* p)
 	shape->miterLimit = attr->miterLimit;
 	shape->fillRule = attr->fillRule;
 	shape->opacity = attr->opacity;
+	shape->virtual = p->defsFlag;
 
 	shape->paths = p->plist;
 	p->plist = NULL;
@@ -1803,6 +1808,9 @@ static int nsvg__parseAttr(NSVGparser* p, const char* name, const char* value)
 		} else if (strncmp(value, "url(", 4) == 0) {
 			attr->hasFill = 2;
 			nsvg__parseUrl(attr->fillGradient, value);
+		} else if (strncmp(value, "currentColor", 12) == 0) {
+			attr->hasFill = 1;
+			attr->fillColor = 0; /* TODO: Black by default */
 		} else {
 			attr->hasFill = 1;
 			attr->fillColor = nsvg__parseColor(value);
@@ -1817,6 +1825,9 @@ static int nsvg__parseAttr(NSVGparser* p, const char* name, const char* value)
 		} else if (strncmp(value, "url(", 4) == 0) {
 			attr->hasStroke = 2;
 			nsvg__parseUrl(attr->strokeGradient, value);
+		} else if (strncmp(value, "currentColor", 12) == 0) {
+			attr->hasStroke = 1;
+			attr->strokeColor = 0; /* TODO: Black by default */
 		} else {
 			attr->hasStroke = 1;
 			attr->strokeColor = nsvg__parseColor(value);
@@ -2463,6 +2474,56 @@ static void nsvg__parseRect(NSVGparser* p, const char** attr)
 	}
 }
 
+static void nsvg__parseUse(NSVGparser* p, const char** attr)
+{
+	const char *href = NULL;
+	float x0 = 0.0f;
+	float y0 = 0.0f;
+	int i;
+
+	for (i = 0; attr[i]; i += 2) {
+		if (!nsvg__parseAttr(p, attr[i], attr[i + 1])) {
+			if (strcmp(attr[i], "xlink:href") == 0)
+				href = attr[i+1];
+			else if (strcmp(attr[i], "x") == 0)
+				x0 = nsvg__parseCoordinate(p, attr[i+1], nsvg__actualOrigX(p), nsvg__actualWidth(p));
+			else if (strcmp(attr[i], "y") == 0)
+				y0 = nsvg__parseCoordinate(p, attr[i+1], nsvg__actualOrigY(p), nsvg__actualHeight(p));
+		}
+	}
+
+	/* Only hrefs starting with # */
+	if (!href || href[0] != '#')
+		return;
+
+	/* Skip initial # */
+	href++;
+
+	/* Maybe use a hash table indexed with the id to speed up the search */
+	NSVGshape* shape = NULL;
+	for (shape = p->image->shapes; shape != NULL; shape = shape->next) {
+		if (strcmp(shape->id, href) == 0)
+			break;
+	}
+
+	/* Not found */
+	if (!shape)
+		return;
+
+	/* Read all points from the defined shape and create a new shape */
+	for (NSVGpath *path = shape->paths; path; path = path->next) {
+		nsvg__resetPath(p);
+		for (int i = 0; i < path->npts; i++) {
+			float x = path->pts[i*2+0];
+			float y = path->pts[i*2+1];
+			nsvg__addPoint(p, x + x0, y + y0);
+		}
+		nsvg__addPath(p, path->closed);
+	}
+
+	nsvg__addShape(p);
+}
+
 static void nsvg__parseCircle(NSVGparser* p, const char** attr)
 {
 	float cx = 0.0f;
@@ -2768,6 +2829,10 @@ static void nsvg__startElement(void* ud, const char* el, const char** attr)
 			nsvg__parseGradient(p, attr, NSVG_PAINT_RADIAL_GRADIENT);
 		} else if (strcmp(el, "stop") == 0) {
 			nsvg__parseGradientStop(p, attr);
+		} else if (strcmp(el, "path") == 0) {
+			nsvg__pushAttr(p);
+			nsvg__parsePath(p, attr);
+			nsvg__popAttr(p);
 		}
 		return;
 	}
@@ -2775,6 +2840,10 @@ static void nsvg__startElement(void* ud, const char* el, const char** attr)
 	if (strcmp(el, "g") == 0) {
 		nsvg__pushAttr(p);
 		nsvg__parseAttribs(p, attr);
+	} else if (strcmp(el, "use") == 0)  {
+		nsvg__pushAttr(p);
+		nsvg__parseUse(p, attr);
+		nsvg__popAttr(p);
 	} else if (strcmp(el, "path") == 0) {
 		if (p->pathFlag)	// Do not allow nested paths.
 			return;
@@ -2935,6 +3004,9 @@ static void nsvg__scaleToViewbox(NSVGparser* p, const char* units)
 	sy *= us;
 	avgs = (sx+sy) / 2.0f;
 	for (shape = p->image->shapes; shape != NULL; shape = shape->next) {
+		if (shape->virtual)
+			continue;
+
 		shape->bounds[0] = (shape->bounds[0] + tx) * sx;
 		shape->bounds[1] = (shape->bounds[1] + ty) * sy;
 		shape->bounds[2] = (shape->bounds[2] + tx) * sx;
@@ -2974,6 +3046,9 @@ static void nsvg__createGradients(NSVGparser* p)
 	NSVGshape* shape;
 
 	for (shape = p->image->shapes; shape != NULL; shape = shape->next) {
+		if (shape->virtual)
+			continue;
+
 		if (shape->fill.type == NSVG_PAINT_UNDEF) {
 			if (shape->fillGradient[0] != '\0') {
 				float inv[6], localBounds[4];

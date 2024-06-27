@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013-14 Mikko Mononen memon@inside.org
+ * Copyright (c) 2013-14 Mikko Mononen <memon@inside.org>
+ * Copyright (c) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -1406,7 +1407,7 @@ void nsvgRasterizeXY(NSVGrasterizer* r,
 		memset(&dst[i*stride], 0, w*4);
 
 	for (shape = image->shapes; shape != NULL; shape = shape->next) {
-		if (!(shape->flags & NSVG_FLAGS_VISIBLE))
+		if (!(shape->flags & NSVG_FLAGS_VISIBLE) || shape->virtual)
 			continue;
 
 		if (shape->fill.type != NSVG_PAINT_NONE) {
