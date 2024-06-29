@@ -36,7 +36,7 @@ jobs:
         cd build
         make dist-gzip
         size=$(stat -c %s dillo-*.tar.gz)
-        floppy=1474560
+        floppy=$((1474560 - 32*1024)) # Leave room for FAT table
         echo "Floppy occupation: $(($size * 100 / $floppy)) %"
         if [ $size -lt $floppy ]; then
           echo 'OK: Fits in floopy disk'
