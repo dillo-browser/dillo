@@ -2833,6 +2833,14 @@ static void nsvg__startElement(void* ud, const char* el, const char** attr)
 			nsvg__pushAttr(p);
 			nsvg__parsePath(p, attr);
 			nsvg__popAttr(p);
+		} else if (strcmp(el, "g") == 0) {
+			nsvg__pushAttr(p);
+			nsvg__parseAttribs(p, attr);
+			/* left open */
+		} else if (strcmp(el, "symbol") == 0) {
+			nsvg__pushAttr(p);
+			nsvg__parseAttribs(p, attr);
+			/* left open */
 		} else {
 			fprintf(stderr, "nanosvg: skipping unknown element \"%s\" in <defs>\n", el);
 		}
@@ -2842,6 +2850,7 @@ static void nsvg__startElement(void* ud, const char* el, const char** attr)
 	if (strcmp(el, "g") == 0) {
 		nsvg__pushAttr(p);
 		nsvg__parseAttribs(p, attr);
+		/* left open */
 	} else if (strcmp(el, "use") == 0)  {
 		nsvg__pushAttr(p);
 		nsvg__parseUse(p, attr);
@@ -2895,12 +2904,20 @@ static void nsvg__endElement(void* ud, const char* el)
 {
 	NSVGparser* p = (NSVGparser*)ud;
 
+	if (p->defsFlag) {
+		if (strcmp(el, "g") == 0)
+			nsvg__popAttr(p);
+		else if (strcmp(el, "symbol") == 0)
+			nsvg__popAttr(p);
+		else if (strcmp(el, "defs") == 0)
+			p->defsFlag = 0;
+		return;
+	}
+
 	if (strcmp(el, "g") == 0) {
 		nsvg__popAttr(p);
 	} else if (strcmp(el, "path") == 0) {
 		p->pathFlag = 0;
-	} else if (strcmp(el, "defs") == 0) {
-		p->defsFlag = 0;
 	}
 }
 
