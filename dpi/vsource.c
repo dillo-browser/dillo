@@ -4,6 +4,7 @@
  * This server is an example. Play with it and modify to your taste.
  *
  * Copyright 2010-2015 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -134,8 +135,8 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
       while (*p) {
          if (line > old_line) {
             snprintf(line_str, 128,
-                     "<tr><td class='%s'>%d%s<td>",
-                     (line & 1) ? "r1" : "r2", line,
+                     "<tr><td class='%s' id='L%d'><a href='#L%d'>%d%s</a><td>",
+                     (line & 1) ? "r1" : "r2", line, line, line,
                      (line == 1 || (line % 10) == 0) ? "&nbsp;" : "");
             a_Dpip_dsh_write_str(sh, 0, line_str);
             old_line = line;
