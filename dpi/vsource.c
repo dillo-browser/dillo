@@ -120,12 +120,27 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
                      "<html><head>\n"
                      "<title>Source for %s</title>\n"
                      "<style type=\"text/css\">\n"
-                     " body {white-space: pre-wrap; font-family: monospace}\n"
-                     " td.r1 {background-color:#B87333}\n"
-                     " td.r2 {background-color:#DD7F32}\n"
+                     "  body {\n"
+                     "    white-space: pre-wrap;\n"
+                     "    font-family: monospace;\n"
+                     "    margin: 0;\n"
+                     "    width: 100%;\n"
+                     "  }\n"
+                     "  table { border:0 }\n"
+                     "  td.num {\n"
+                     "    padding-top: 1px;\n"
+                     "    padding-bottom: 1px;\n"
+                     "    padding-left: 0.5em;\n"
+                     "    padding-right: 0.5em;\n"
+                     "    text-align: right;\n"
+                     "    border-right: 1px solid #999999;\n"
+                     "    background-color: #c6c6c6;\n"
+                     "  }"
+                     "  td.src { padding-left:0.25em; }\n"
+                     "  a { color: black; text-decoration:none; }\n"
                      "</style>\n"
                      "</head>\n"
-                     "<body id=\"dillo_vs\">\n<table cellpadding='0'>\n", url);
+                     "<body id=\"dillo_vs\">\n<table cellspacing='0' cellpadding='0'>\n", url);
 
    while (bytes_read < data_size &&
           (token = a_Dpip_dsh_read_token2(sh, 1, &token_size))) {
@@ -135,9 +150,8 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
       while (*p) {
          if (line > old_line) {
             snprintf(line_str, 128,
-                     "<tr><td class='%s' id='L%d'><a href='#L%d'>%d%s</a><td>",
-                     (line & 1) ? "r1" : "r2", line, line, line,
-                     (line == 1 || (line % 10) == 0) ? "&nbsp;" : "");
+                     "<tr><td class='num' id='L%d'><a href='#L%d'>%d</a><td class='src'>",
+                     line, line, line);
             a_Dpip_dsh_write_str(sh, 0, line_str);
             old_line = line;
          }
