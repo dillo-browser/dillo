@@ -2842,7 +2842,8 @@ static void nsvg__startElement(void* ud, const char* el, const char** attr)
 			nsvg__parseAttribs(p, attr);
 			/* left open */
 		} else {
-			fprintf(stderr, "nanosvg: skipping unknown element \"%s\" in <defs>\n", el);
+			// TODO: Report skipped elements
+			//fprintf(stderr, "nanosvg: skipping unknown element \"%s\" in <defs>\n", el);
 		}
 		return;
 	}
@@ -2896,7 +2897,8 @@ static void nsvg__startElement(void* ud, const char* el, const char** attr)
 	} else if (strcmp(el, "svg") == 0) {
 		nsvg__parseSVG(p, attr);
 	} else {
-		fprintf(stderr, "nanosvg: skipping unknown element \"%s\"\n", el);
+		// TODO: Report skipped elements
+		//fprintf(stderr, "nanosvg: skipping unknown element \"%s\"\n", el);
 	}
 }
 
