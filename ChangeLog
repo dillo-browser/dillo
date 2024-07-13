@@ -17,6 +17,8 @@ dillo-3.2.0 [Not released yet]
    Display JSON as plain text.
    Add line number anchors in HTML source view.
    Patches: Rodrigo Arias Mallo
++- Add primitive support for SVG using the nanosvg.h library.
+   Patches: dogma, Rodrigo Arias Mallo
 
 dillo-3.1.1 [Jun 8, 2024]
 
