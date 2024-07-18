@@ -2,6 +2,7 @@
  * Dillo web browser
  *
  * Copyright 1999-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,6 +56,7 @@
 #include "capi.h"
 #include "dicache.h"
 #include "cookies.h"
+#include "rules.h"
 #include "hsts.h"
 #include "domain.h"
 #include "auth.h"
@@ -474,6 +476,7 @@ int main(int argc, char **argv)
    a_Dicache_init();
    a_Bw_init();
    a_Cookies_init();
+   a_Rules_init();
    a_Hsts_init(Paths::getPrefsFP(PATHS_HSTS_PRELOAD));
    a_Auth_init();
    a_UIcmd_init();
