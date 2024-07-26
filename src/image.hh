@@ -1,3 +1,16 @@
+/*
+ * File: image.hh
+ *
+ * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>,
+ *                         Sebastian Geerken  <sgeerken@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #ifndef __IMAGE_HH__
 #define __IMAGE_HH__
 
@@ -51,6 +64,7 @@ struct _DilloImage {
    uint_t width;
    uint_t height;
 
+   float dpi;               /**< Dots per inch */
    int32_t bg_color;        /**< Background color */
    bitvec_t *BitVec;        /**< Bit vector for decoded rows */
    uint_t ScanNumber;       /**< Current decoding scan */

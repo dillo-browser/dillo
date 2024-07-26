@@ -1,3 +1,14 @@
+/*
+ * File: svg.c
+ *
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #include <config.h>
 
 #ifdef ENABLE_SVG
@@ -48,24 +59,31 @@ static void Svg_close(DilloSvg *svg, CacheClient_t *Client)
  */
 static void Svg_write(DilloSvg *svg, void *Buf, uint_t BufSize)
 {
-   uint_t i, j, width, height;
    static NSVGrasterizer *rasterizer = NULL;
 
    if (!rasterizer)
       rasterizer = nsvgCreateRasterizer();
 
-   dReturn_if_fail ( Buf != NULL && BufSize > 0 );
-   dReturn_if_fail (strstr(Buf, "</svg>"));
+   if (Buf == NULL || BufSize <= 0)
+      return;
 
-   char *str = dStrndup(Buf, BufSize); /* 1. nsvg is said to modify the string. 2. it needs it null-terminated, and I don't remember right now whether Buf happens to be */
+   /* SVG image not finished yet */
+   if (strstr(Buf, "</svg>") == NULL)
+      return;
 
-   /* TODO: Use FLTK reported DPI value */
-   NSVGimage *nimg = nsvgParse(str, "px", 96);
+   /* NULL-terminate Buf */
+   char *str = dStrndup(Buf, BufSize);
+   NSVGimage *nimg = nsvgParse(str, "px", svg->Image->dpi);
    dFree(str);
 
-   /* guess what? The height and width values that come back can be nonintegral */
-   width = ceil(nimg->width);
-   height = ceil(nimg->height);
+   if (nimg == NULL) {
+      MSG_ERR("Svg_write: cannot parse SVG image\n");
+      return;
+   }
+
+   /* The height and width values can be nonintegral */
+   unsigned width = nimg->width;
+   unsigned height = nimg->height;
 
    if (width == 0 || height == 0 || width > IMAGE_MAX_AREA / height) {
       MSG_WARN("Svg_write: suspicious image size request %u x %u\n", width, height);
@@ -73,37 +91,31 @@ static void Svg_write(DilloSvg *svg, void *Buf, uint_t BufSize)
       return;
    }
 
-   const DilloImgType type = DILLO_IMG_TYPE_RGB;
-   const uint_t stride = width * 4;
+   DilloImgType type = DILLO_IMG_TYPE_RGB;
+   unsigned stride = width * 4;
 
-   a_Dicache_set_parms(svg->url, svg->version, svg->Image, width, height,
-                       type, 1 / 2.2);
-
-   /* is there any sort of gamma to deal with at all? Not aware of any. */
+   a_Dicache_set_parms(svg->url, svg->version, svg->Image,
+         width, height, type, 1 / 2.2);
 
    unsigned char *dest = dNew(unsigned char, height * stride);
 
    nsvgRasterizeXY(rasterizer, nimg, 0, 0, 1, 1, dest, width, height, stride);
 
-       uint_t bg_blue  = (svg->bgcolor) & 0xFF;
-       uint_t bg_green = (svg->bgcolor>>8) & 0xFF;
-       uint_t bg_red   = (svg->bgcolor>>16) & 0xFF;
+   unsigned bg_blue  = (svg->bgcolor) & 0xFF;
+   unsigned bg_green = (svg->bgcolor >> 8) & 0xFF;
+   unsigned bg_red   = (svg->bgcolor >> 16) & 0xFF;
 
    unsigned char *line = dNew(unsigned char, width * 3);
-   for (i = 0; i < height; i++) {
-      for (j = 0; j < width; j++) {
-         uchar_t r = dest[i * stride + 4 * j];
-         uchar_t g = dest[i * stride + 4 * j + 1];
-         uchar_t b = dest[i * stride + 4 * j + 2];
-         uchar_t alpha = dest[i * stride + 4 * j + 3];
+   for (unsigned i = 0; i < height; i++) {
+      for (unsigned j = 0; j < width; j++) {
+         unsigned r = dest[i * stride + 4 * j];
+         unsigned g = dest[i * stride + 4 * j + 1];
+         unsigned b = dest[i * stride + 4 * j + 2];
+         unsigned alpha = dest[i * stride + 4 * j + 3];
 
-         if (i * stride + 4 * j + 3 >= height * stride) {
-            MSG_ERR("height %f i %d width %f j %d stride %d size %d here %d\n", nimg->height, i, nimg->width, j, stride, height * stride, i * stride + 4 * j + 3);
-         }
-
-         line[3 * j] = (r * alpha + (bg_red * (0xFF - alpha))) / 0xFF;
+         line[3 * j + 0] = (r * alpha + (bg_red   * (0xFF - alpha))) / 0xFF;
          line[3 * j + 1] = (g * alpha + (bg_green * (0xFF - alpha))) / 0xFF;
-         line[3 * j + 2] = (b * alpha + (bg_blue * (0xFF - alpha))) / 0xFF;
+         line[3 * j + 2] = (b * alpha + (bg_blue  * (0xFF - alpha))) / 0xFF;
       }
       a_Dicache_write(svg->url, svg->version, line, i);
    }

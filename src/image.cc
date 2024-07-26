@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>,
  *                         Sebastian Geerken  <sgeerken@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +40,7 @@ DilloImage *a_Image_new(void *layout, void *img_rndr, int32_t bg_color)
    Image->img_rndr = img_rndr;
    Image->width = 0;
    Image->height = 0;
+   Image->dpi = ((Layout *) layout)->dpiX();
    Image->bg_color = bg_color;
    Image->ScanNumber = 0;
    Image->BitVec = NULL;
