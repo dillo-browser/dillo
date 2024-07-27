@@ -30,6 +30,7 @@ TESTS = \
 	render/min-width-html.html \
 	render/min-width-nested-div.html \
 	render/span-padding.html \
+	render/svg-current-color.html \
 	render/table-max-width.html \
 	render/table-missing-width-in-one-column.html \
 	render/table-td-width-percent-img.html \

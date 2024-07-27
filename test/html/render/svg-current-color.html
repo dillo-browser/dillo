@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test SVG image with currentColor property</title>
+    <style>
+      body {
+        margin: 1em;
+      }
+      .container {
+        border: 1px solid black;
+        padding: 1em;
+        background: lightcyan;
+        color: darkred;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p>The following SVG image contains two elements with the
+      <code>currentColor</code> specification in fill and stroke, respectively.
+      This special color maps to the same value for the color of the image
+      element. These values are controlled by the CSS style of the page.</p>
+      <p>You should see a darkred background around the image (like this text
+      color) <b>not a black background</b>. You should also see a inner circle
+      in darkred not black.</p>
+      <img src="svg-current-color.svg">
+    </div>
+  </body>
+</html>
