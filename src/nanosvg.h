@@ -165,15 +165,16 @@ typedef struct NSVGimage
 {
 	float width;				// Width of the image.
 	float height;				// Height of the image.
+	unsigned current_color;			// For "currentColor"
 	NSVGshape* shapes;			// Linked list of shapes in the image.
 } NSVGimage;
 
 // Parses SVG file from a file, returns SVG image as paths.
-NSVGimage* nsvgParseFromFile(const char* filename, const char* units, float dpi);
+NSVGimage* nsvgParseFromFile(const char* filename, const char* units, float dpi, unsigned current_color);
 
 // Parses SVG file from a null terminated string, returns SVG image as paths.
 // Important note: changes the string.
-NSVGimage* nsvgParse(char* input, const char* units, float dpi);
+NSVGimage* nsvgParse(char* input, const char* units, float dpi, unsigned current_color);
 
 // Duplicates a path.
 NSVGpath* nsvgDuplicatePath(NSVGpath* p);
@@ -616,7 +617,7 @@ static void nsvg__curveBounds(float* bounds, float* curve)
 	}
 }
 
-static NSVGparser* nsvg__createParser(void)
+static NSVGparser* nsvg__createParser(unsigned current_color)
 {
 	NSVGparser* p;
 	p = (NSVGparser*)malloc(sizeof(NSVGparser));
@@ -645,6 +646,8 @@ static NSVGparser* nsvg__createParser(void)
 	p->attr[0].visible = 1;
 	/* TODO: Let the user change the initial value */
 	p->attr[0].fontSize = 40.0f;
+
+	p->image->current_color = current_color;
 
 	return p;
 
@@ -1810,7 +1813,7 @@ static int nsvg__parseAttr(NSVGparser* p, const char* name, const char* value)
 			nsvg__parseUrl(attr->fillGradient, value);
 		} else if (strncmp(value, "currentColor", 12) == 0) {
 			attr->hasFill = 1;
-			attr->fillColor = 0; /* TODO: Black by default */
+			attr->fillColor = p->image->current_color;
 		} else {
 			attr->hasFill = 1;
 			attr->fillColor = nsvg__parseColor(value);
@@ -1827,7 +1830,7 @@ static int nsvg__parseAttr(NSVGparser* p, const char* name, const char* value)
 			nsvg__parseUrl(attr->strokeGradient, value);
 		} else if (strncmp(value, "currentColor", 12) == 0) {
 			attr->hasStroke = 1;
-			attr->strokeColor = 0; /* TODO: Black by default */
+			attr->strokeColor = p->image->current_color;
 		} else {
 			attr->hasStroke = 1;
 			attr->strokeColor = nsvg__parseColor(value);
@@ -3097,12 +3100,12 @@ static void nsvg__createGradients(NSVGparser* p)
 	}
 }
 
-NSVGimage* nsvgParse(char* input, const char* units, float dpi)
+NSVGimage* nsvgParse(char* input, const char* units, float dpi, unsigned current_color)
 {
 	NSVGparser* p;
 	NSVGimage* ret = 0;
 
-	p = nsvg__createParser();
+	p = nsvg__createParser(current_color);
 	if (p == NULL) {
 		return NULL;
 	}
@@ -3124,7 +3127,7 @@ NSVGimage* nsvgParse(char* input, const char* units, float dpi)
 	return ret;
 }
 
-NSVGimage* nsvgParseFromFile(const char* filename, const char* units, float dpi)
+NSVGimage* nsvgParseFromFile(const char* filename, const char* units, float dpi, unsigned current_color)
 {
 	FILE* fp = NULL;
 	size_t size;
@@ -3141,7 +3144,7 @@ NSVGimage* nsvgParseFromFile(const char* filename, const char* units, float dpi)
 	if (fread(data, 1, size, fp) != size) goto error;
 	data[size] = '\0';	// Must be null terminated.
 	fclose(fp);
-	image = nsvgParse(data, units, dpi);
+	image = nsvgParse(data, units, dpi, current_color);
 	free(data);
 
 	return image;

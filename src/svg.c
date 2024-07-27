@@ -31,6 +31,7 @@ typedef struct {
    DilloUrl *url;               /* Primary Key for the dicache */
    int version;                 /* Secondary Key for the dicache */
    int bgcolor;                 /* Parent widget background color */
+   int fgcolor;                 /* Parent widget foreground color */
 } DilloSvg;
 
 /*
@@ -71,9 +72,16 @@ static void Svg_write(DilloSvg *svg, void *Buf, uint_t BufSize)
    if (strstr(Buf, "</svg>") == NULL)
       return;
 
+   /* Use foreground as the current color, but transform to
+    * nanosvg color format (BGR). */
+   unsigned fg_r = (svg->fgcolor >> 16) & 0xff;
+   unsigned fg_g = (svg->fgcolor >>  8) & 0xff;
+   unsigned fg_b = (svg->fgcolor >>  0) & 0xff;
+   unsigned curcolor = NSVG_RGB(fg_r, fg_g, fg_b);
+
    /* NULL-terminate Buf */
    char *str = dStrndup(Buf, BufSize);
-   NSVGimage *nimg = nsvgParse(str, "px", svg->Image->dpi);
+   NSVGimage *nimg = nsvgParse(str, "px", svg->Image->dpi, curcolor);
    dFree(str);
 
    if (nimg == NULL) {
@@ -149,6 +157,7 @@ void *a_Svg_new(DilloImage *Image, DilloUrl *url, int version)
    svg->url = url;
    svg->version = version;
    svg->bgcolor = Image->bg_color;
+   svg->fgcolor = Image->fg_color;
 
    return svg;
 }

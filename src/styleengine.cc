@@ -765,7 +765,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
          a_Image_new(layout,
             (void*)attrs->backgroundImage
             ->getMainImgRenderer(),
-            0xffffff);
+            0xffffff, 0x000000);
 
       // we use the pageUrl as requester to prevent cross
       // domain requests as specified in domainrc

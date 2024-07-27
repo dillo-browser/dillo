@@ -31,7 +31,8 @@ using namespace dw::core;
 /**
  * Create and initialize a new image structure.
  */
-DilloImage *a_Image_new(void *layout, void *img_rndr, int32_t bg_color)
+DilloImage *a_Image_new(void *layout, void *img_rndr,
+                        int32_t bg_color, int32_t fg_color)
 {
    DilloImage *Image;
 
@@ -42,6 +43,7 @@ DilloImage *a_Image_new(void *layout, void *img_rndr, int32_t bg_color)
    Image->height = 0;
    Image->dpi = ((Layout *) layout)->dpiX();
    Image->bg_color = bg_color;
+   Image->fg_color = fg_color;
    Image->ScanNumber = 0;
    Image->BitVec = NULL;
    Image->State = IMG_Empty;
@@ -55,10 +57,10 @@ DilloImage *a_Image_new(void *layout, void *img_rndr, int32_t bg_color)
  * Create and initialize a new image structure with an image widget.
  */
 DilloImage *a_Image_new_with_dw(void *layout, const char *alt_text,
-                                int32_t bg_color)
+                                int32_t bg_color, int32_t fg_color)
 {
    dw::Image *dw = new dw::Image(alt_text);
-   return a_Image_new(layout, (void*)(dw::core::ImgRenderer*)dw, bg_color);
+   return a_Image_new(layout, (void*)(dw::core::ImgRenderer*)dw, bg_color, fg_color);
 }
 
 /**

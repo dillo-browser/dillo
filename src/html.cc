@@ -2149,12 +2149,15 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
 
    dw::Image *dw = new dw::Image(alt_ptr);
    image =
-      a_Image_new(html->dw->getLayout(), (void*)(dw::core::ImgRenderer*)dw, 0);
+      a_Image_new(html->dw->getLayout(), (void*)(dw::core::ImgRenderer*)dw, 0, 0);
    
    a_Image_ref(image);
 
    if (HT2TB(html)->getBgColor())
       image->bg_color = HT2TB(html)->getBgColor()->getColor();
+
+   if (HT2TB(html)->getFgColor())
+      image->fg_color = HT2TB(html)->getFgColor()->getColor();
 
    DilloHtmlImage *hi = dNew(DilloHtmlImage, 1);
    hi->url = url;

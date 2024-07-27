@@ -2,6 +2,7 @@
  * File: dicache.c
  *
  * Copyright 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -353,7 +354,7 @@ void a_Dicache_close(DilloUrl *url, int version, CacheClient_t *Client)
 /* ------------------------------------------------------------------------- */
 
 /**
- * Generic MIME handler for GIF, JPEG and PNG.
+ * Generic MIME handler for GIF, JPEG, PNG and SVG.
  * Sets a_Dicache_callback as the cache-client,
  * and also sets the image decoder.
  *
@@ -372,7 +373,7 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
 
    if (!web->Image) {
       web->Image =
-         a_Image_new_with_dw(web->bw->render_layout, NULL, web->bgColor);
+         a_Image_new_with_dw(web->bw->render_layout, NULL, web->bgColor, 0);
       a_Image_ref(web->Image);
    }
 

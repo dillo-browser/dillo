@@ -66,6 +66,7 @@ struct _DilloImage {
 
    float dpi;               /**< Dots per inch */
    int32_t bg_color;        /**< Background color */
+   int32_t fg_color;        /**< Foreground color */
    bitvec_t *BitVec;        /**< Bit vector for decoded rows */
    uint_t ScanNumber;       /**< Current decoding scan */
    ImageState State;        /**< Processing status */
@@ -77,9 +78,10 @@ struct _DilloImage {
 /*
  * Function prototypes
  */
-DilloImage *a_Image_new(void *layout, void *img_rndr, int32_t bg_color);
+DilloImage *a_Image_new(void *layout, void *img_rndr,
+                        int32_t bg_color, int32_t fg_color);
 DilloImage *a_Image_new_with_dw(void *layout, const char *alt_text,
-                                int32_t bg_color);
+                                int32_t bg_color, int32_t fg_color);
 void *a_Image_get_dw(DilloImage *Image);
 void a_Image_ref(DilloImage *Image);
 void a_Image_unref(DilloImage *Image);

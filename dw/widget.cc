@@ -1361,6 +1361,23 @@ style::Color *Widget::getBgColor ()
    return layout->getBgColor ();
 }
 
+/**
+ * \brief Get the actual foreground color of a widget.
+ */
+style::Color *Widget::getFgColor ()
+{
+   Widget *widget = this;
+
+   while (widget != NULL) {
+      if (widget->style->color)
+         return widget->style->color;
+
+      widget = widget->parent;
+   }
+
+   return NULL;
+}
+
 
 /**
  * \brief Draw borders and background of a widget part, which allocation is
