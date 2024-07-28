@@ -706,6 +706,8 @@ AC_OUTPUT
 _AS_ECHO([])
 _AS_ECHO([Configuration summary:])
 _AS_ECHO([])
+_AS_ECHO([  CC      : ${CC}])
+_AS_ECHO([  CFLAGS  : ${CFLAGS}])
 _AS_ECHO([  CXX     : ${CXX}])
 _AS_ECHO([  CXXFLAGS: ${CXXFLAGS}])
 _AS_ECHO([])
