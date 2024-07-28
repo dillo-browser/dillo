@@ -655,9 +655,6 @@ if eval "test x$GCC = xyes"; then
   if test "`echo $CFLAGS | grep '\-Wno-unused-parameter' 2> /dev/null`" = ""; then
     CFLAGS="$CFLAGS -Wno-unused-parameter"
   fi
-  if test "`echo $CFLAGS | grep '\-Waggregate-return' 2> /dev/null`" = ""; then
-    CFLAGS="$CFLAGS -Waggregate-return"
-  fi
 fi
 dnl -----------
 dnl CXX options
