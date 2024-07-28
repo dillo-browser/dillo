@@ -325,6 +325,14 @@ namespace dw {
 class Table: public oof::OOFAwareWidget
 {
 private:
+   struct Cell {
+      core::Widget *widget;
+      int colspanOrig, colspanEff, rowspan;
+   };
+   struct SpanSpace {
+      int startCol, startRow;  // where the cell starts
+   };
+
    struct Child
    {
       enum {
@@ -332,13 +340,8 @@ private:
          SPAN_SPACE  // part of a spanning cell
       } type;
       union {
-         struct {
-            core::Widget *widget;
-            int colspanOrig, colspanEff, rowspan;
-         } cell;
-         struct {
-            int startCol, startRow;  // where the cell starts
-         } spanSpace;
+         struct Cell cell;
+         struct SpanSpace spanSpace;
       };
    };
 

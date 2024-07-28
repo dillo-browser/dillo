@@ -94,7 +94,7 @@ static Viewer_t Mime_major_type_fetch(const char *Key, uint_t Size)
 /**
  * Initializes Mime module and, sets the supported Mime types.
  */
-void a_Mime_init()
+void a_Mime_init(void)
 {
 #ifdef ENABLE_GIF
    Mime_add_minor_type("image/gif", a_Dicache_gif_image);

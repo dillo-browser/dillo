@@ -8,6 +8,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define d_isascii(c)  (((c) & ~0x7f) == 0) 
 
 char *a_Misc_escape_chars(const char *str, const char *esc_set);
 int a_Misc_expand_tabs(char **start, char *end, char *buf, int buflen);

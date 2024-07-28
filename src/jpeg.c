@@ -119,13 +119,9 @@ static void Jpeg_close(DilloJpeg *jpeg, CacheClient_t *Client)
    Jpeg_free(jpeg);
 }
 
-/*
- * The proper signature is:
- *    static void init_source(j_decompress_ptr cinfo)
- * (declaring it with no parameter avoids a compiler warning)
- */
-static void init_source()
+static void init_source(struct jpeg_decompress_struct *p)
 {
+   (void) p; /* unused */
 }
 
 static boolean fill_input_buffer(j_decompress_ptr cinfo)
@@ -181,8 +177,9 @@ static void skip_input_data(j_decompress_ptr cinfo, long num_bytes)
  *    static void term_source(j_decompress_ptr cinfo)
  * (declaring it with no parameter avoids a compiler warning)
  */
-static void term_source()
+static void term_source(struct jpeg_decompress_struct *p)
 {
+   (void) p; /* unused */
 }
 
 void *a_Jpeg_new(DilloImage *Image, DilloUrl *url, int version)

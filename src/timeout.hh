@@ -9,7 +9,7 @@ typedef void (*TimeoutCb_t)(void *data);
 
 void a_Timeout_add(float t, TimeoutCb_t cb, void *cbdata);
 void a_Timeout_repeat(float t, TimeoutCb_t cb, void *cbdata);
-void a_Timeout_remove();
+void a_Timeout_remove(void);
 
 
 #ifdef __cplusplus

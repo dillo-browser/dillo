@@ -199,7 +199,7 @@ static void Tls_info_cb(const SSL *ssl, int where, int ret)
  * abysmal openssl documentation, this was worked out from reading discussion
  * on the web and then reading openssl source to see what it normally does.
  */
-static void Tls_load_certificates()
+static void Tls_load_certificates(void)
 {
    /* curl-7.37.1 says that the following bundle locations are used on "Debian
     * systems", "Redhat and Mandriva", "old(er) Redhat", "FreeBSD", and
@@ -1338,7 +1338,7 @@ void a_Tls_openssl_close_by_fd(int fd)
    }
 }
 
-static void Tls_servers_freeall()
+static void Tls_servers_freeall(void)
 {
    if (servers) {
       Server_t *s;
@@ -1353,7 +1353,7 @@ static void Tls_servers_freeall()
    }
 }
 
-static void Tls_fd_map_remove_all()
+static void Tls_fd_map_remove_all(void)
 {
    if (fd_map) {
       FdMapEntry_t *fme;

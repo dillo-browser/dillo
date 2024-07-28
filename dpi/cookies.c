@@ -3,7 +3,7 @@
  * Cookies server.
  *
  * Copyright 2001 Lars Clausen   <lrclause@cs.uiuc.edu>
- *                Jörgen Viksell <jorgen.viksell@telia.com>
+ *                JÃ¶rgen Viksell <jorgen.viksell@telia.com>
  * Copyright 2002-2007 Jorge Arellano Cid <jcid@dillo.org>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -332,7 +332,7 @@ static void Cookies_load_cookies(FILE *stream)
  * Initialize the cookies module
  * (The 'disabled' variable is writeable only within Cookies_init)
  */
-static void Cookies_init()
+static void Cookies_init(void)
 {
    char *filename;
 #ifndef HAVE_LOCKF
@@ -387,7 +387,7 @@ static void Cookies_init()
 /*
  * Flush cookies to disk and free all the memory allocated.
  */
-static void Cookies_save_and_free()
+static void Cookies_save_and_free(void)
 {
    int i, fd, saved = 0;
    DomainNode *node;

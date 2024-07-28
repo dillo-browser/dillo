@@ -548,7 +548,7 @@ int OOFFloatsMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generatingBlock,
    DBG_OBJ_ENTER ("construct.oofm", 0, "addWidgetOOF", "%p, %p, %d",
                   widget, generatingBlock, externalIndex);
 
-   int subRef;
+   int subRef = 0;
 
    TBInfo *tbInfo = getOOFAwareWidget (generatingBlock);
    Float *vloat = new Float (this, widget, generatingBlock, externalIndex);

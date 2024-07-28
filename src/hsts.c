@@ -52,7 +52,7 @@ static void Hsts_free_policy(HstsData_t *p)
    dFree(p);
 }
 
-void a_Hsts_freeall()
+void a_Hsts_freeall(void)
 {
    if (prefs.http_strict_transport_security) {
       HstsData_t *policy;

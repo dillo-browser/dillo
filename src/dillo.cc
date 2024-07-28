@@ -125,6 +125,8 @@ static void raw_sigchld2(int signum)
    pid_t pid;
    int status;
 
+   (void) signum; /* Unused */
+
    while (1) {
       pid = waitpid(-1, &status, WNOHANG);
       if (pid > 0) {
@@ -141,7 +143,6 @@ static void raw_sigchld2(int signum)
          break;
       }
    }
-   ++signum; /* compiler happiness */
 }
 
 /**

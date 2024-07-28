@@ -304,7 +304,7 @@ DecodeTransfer *a_Decode_transfer_init(const char *format)
    return dc;
 }
 
-static Decode *Decode_content_init_common()
+static Decode *Decode_content_init_common(void)
 {
    z_stream *zs = dNew(z_stream, 1);
    Decode *dc = dNew(Decode, 1);

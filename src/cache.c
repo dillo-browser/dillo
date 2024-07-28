@@ -1359,9 +1359,10 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
 /**
  * Callback function for Cache_delayed_process_queue.
  */
-static void Cache_delayed_process_queue_callback()
+static void Cache_delayed_process_queue_callback(void *ptr)
 {
    CacheEntry_t *entry;
+   (void) ptr; /* Unused */
 
    while ((entry = (CacheEntry_t *)dList_nth_data(DelayedQueue, 0))) {
       Cache_ref_data(entry);

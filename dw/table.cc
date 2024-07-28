@@ -1196,10 +1196,13 @@ void Table::actuallyCalcCellSizes (bool calcHeights)
          for (int col = 0; col < numCols; col++) {
             int n = row * numCols + col;
             if (childDefined (n)) {
+               /* FIXME: Variable width is not used */
+#if 0
                int width = (children->get(n)->cell.colspanEff - 1)
                   * getStyle()->hBorderSpacing;
                for (int i = 0; i < children->get(n)->cell.colspanEff; i++)
                   width += colWidths->get (col + i);
+#endif
 
                core::Requisition childRequisition;
                //children->get(n)->cell.widget->setWidth (width);

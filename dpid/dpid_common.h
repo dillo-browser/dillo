@@ -10,6 +10,8 @@
  */
 
 #include <dirent.h>
+#include <stddef.h> /* size_t */
+#include <sys/types.h> /* ssize_t */
 
 #include "../dlib/dlib.h"
 

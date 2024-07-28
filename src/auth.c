@@ -17,7 +17,7 @@
  */
 
 
-#include <ctype.h> /* iscntrl */
+#include <ctype.h> /* iscntrl, isascii */
 #include "auth.h"
 #include "msg.h"
 #include "misc.h"
@@ -61,7 +61,7 @@ void a_Auth_init(void)
    auth_hosts = dList_new(1);
 }
 
-static AuthParse_t *Auth_parse_new()
+static AuthParse_t *Auth_parse_new(void)
 {
    AuthParse_t *auth_parse = dNew(AuthParse_t, 1);
    auth_parse->ok = 0;
@@ -105,7 +105,7 @@ static int Auth_path_is_inside(const char *path1, const char *path2, int len)
 static int Auth_is_token_char(char c)
 {
    const char *invalid = "\"()<>@,;:\\[]?=/{} \t";
-   return (!isascii(c) || strchr(invalid, c) || iscntrl((uchar_t)c)) ? 0 : 1;
+   return (!d_isascii(c) || strchr(invalid, c) || iscntrl((uchar_t)c)) ? 0 : 1;
 }
 
 /**
@@ -231,7 +231,7 @@ static int Auth_parse_basic_challenge_cb(AuthParse_t *auth_parse, char *token,
 {
    if (dStrAsciiCasecmp("realm", token) == 0) {
       if (!auth_parse->realm)
-         auth_parse->realm = strdup(value);
+         auth_parse->realm = dStrdup(value);
       return 0; /* end parsing */
    } else
       MSG("Auth_parse_basic_challenge_cb: Ignoring unknown parameter: %s = "
@@ -245,13 +245,13 @@ static int Auth_parse_digest_challenge_cb(AuthParse_t *auth_parse, char *token,
    const char *const fn = "Auth_parse_digest_challenge_cb";
 
    if (!dStrAsciiCasecmp("realm", token) && !auth_parse->realm)
-      auth_parse->realm = strdup(value);
+      auth_parse->realm = dStrdup(value);
    else if (!strcmp("domain", token) && !auth_parse->domain)
-      auth_parse->domain = strdup(value);
+      auth_parse->domain = dStrdup(value);
    else if (!strcmp("nonce", token)  && !auth_parse->nonce)
-      auth_parse->nonce = strdup(value);
+      auth_parse->nonce = dStrdup(value);
    else if (!strcmp("opaque", token) && !auth_parse->opaque)
-      auth_parse->opaque = strdup(value);
+      auth_parse->opaque = dStrdup(value);
    else if (strcmp("stale", token) == 0) {
       if (dStrAsciiCasecmp("true", value) == 0)
          auth_parse->stale = 1;

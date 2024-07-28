@@ -234,7 +234,7 @@ void a_Http_connect_done(int fd, bool_t success)
          dFree(info);
       }
    } else {
-      MSG("**** but no luck with fme %p or sd\n", fme);
+      MSG("**** but no luck with fme %p or sd\n", (void *) fme);
    }
 }
 
@@ -1091,7 +1091,7 @@ static void Http_server_remove(Server_t *srv)
    dFree(srv);
 }
 
-static void Http_servers_remove_all()
+static void Http_servers_remove_all(void)
 {
    Server_t *srv;
    SocketData_t *sd;
@@ -1107,7 +1107,7 @@ static void Http_servers_remove_all()
    dList_free(servers);
 }
 
-static void Http_fd_map_remove_all()
+static void Http_fd_map_remove_all(void)
 {
    FdMapEntry_t *fme;
    int i, n = dList_length(fd_map);

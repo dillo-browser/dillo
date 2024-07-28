@@ -33,7 +33,7 @@ static int history_size_max = 16;
 /**
  * Debug procedure.
  */
-void History_show()
+void History_show(void)
 {
    int i;
 
@@ -149,7 +149,7 @@ void a_History_set_title_by_url(const DilloUrl *url, const char *title)
 /**
  * Free all the memory used by this module
  */
-void a_History_freeall()
+void a_History_freeall(void)
 {
    int i;
 

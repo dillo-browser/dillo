@@ -555,7 +555,7 @@ static void Nav_save_cb(int Op, CacheClient_t *Client)
       a_UIcmd_set_msg(Web->bw, "File saved (%d Bytes)", st.st_size);
    } else {
       if ((Bytes = Client->BufSize - Web->SavedBytes) > 0) {
-         Bytes = fwrite(Client->Buf + Web->SavedBytes, 1, Bytes, Web->stream);
+         Bytes = fwrite((char *) Client->Buf + Web->SavedBytes, 1, Bytes, Web->stream);
          Web->SavedBytes += Bytes;
       }
    }

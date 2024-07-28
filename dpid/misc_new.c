@@ -59,7 +59,7 @@ char *a_Misc_readtag(int sock)
 {
    char *tag, c;
    size_t i;
-   size_t taglen = 0, tagmem = 10;
+   size_t tagmem = 10;
    ssize_t rdln = 1;
 
    tag = NULL;
@@ -71,7 +71,6 @@ char *a_Misc_readtag(int sock)
          tag = (char *) dRealloc(tag, tagmem + 1);
       }
       tag[i] = c;
-      taglen += rdln;
       if (c == '>') {
          tag[i + 1] = '\0';
          break;

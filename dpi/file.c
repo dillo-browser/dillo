@@ -1000,7 +1000,7 @@ static void File_serve_client(void *data, int f_write)
 /*
  * Serve the client queue.
  */
-static void File_serve_clients()
+static void File_serve_clients(void)
 {
    int i, f_read, f_write;
    ClientInfo *client;

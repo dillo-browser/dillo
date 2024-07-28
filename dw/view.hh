@@ -48,7 +48,7 @@ public:
     *    Scrolling and Related. Only usesViewport must be
     *    implemented, if it returns false, the other methods
     *    are never called.
-    * ---------------­-----------­-----------------------------
+    * ---------------------------------------------------------
     */
 
    /**

@@ -1288,11 +1288,11 @@ static void nsvg__initPaint(NSVGcachedPaint* cache, NSVGpaint* paint, float opac
 	cache->type = paint->type;
 
 	if (paint->type == NSVG_PAINT_COLOR) {
-		cache->colors[0] = nsvg__applyOpacity(paint->color, opacity);
+		cache->colors[0] = nsvg__applyOpacity(paint->v.color, opacity);
 		return;
 	}
 
-	grad = paint->gradient;
+	grad = paint->v.gradient;
 
 	cache->spread = grad->spread;
 	memcpy(cache->xform, grad->xform, sizeof(float)*6);

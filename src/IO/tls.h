@@ -31,13 +31,13 @@ extern "C" {
 #define TLS_CONNECT_NOT_YET 0
 #define TLS_CONNECT_READY 1
 
-void a_Tls_init();
+void a_Tls_init(void);
 int a_Tls_certificate_is_clean(const DilloUrl *url);
 int a_Tls_connect_ready(const DilloUrl *url);
 void a_Tls_reset_server_state(const DilloUrl *url);
 void a_Tls_connect(int fd, const DilloUrl *url);
 void *a_Tls_connection(int fd);
-void a_Tls_freeall();
+void a_Tls_freeall(void);
 void a_Tls_close_by_fd(int fd);
 int a_Tls_read(void *conn, void *buf, size_t len);
 int a_Tls_write(void *conn, void *buf, size_t len);

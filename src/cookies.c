@@ -2,7 +2,7 @@
  * File: cookies.c
  *
  * Copyright 2001 Lars Clausen   <lrclause@cs.uiuc.edu>
- *                Jörgen Viksell <jorgen.viksell@telia.com>
+ *                JÃ¶rgen Viksell <jorgen.viksell@telia.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ void a_Cookies_init(void)
 /**
  * Flush cookies to disk and free all the memory allocated.
  */
-void a_Cookies_freeall()
+void a_Cookies_freeall(void)
 {
 }
 

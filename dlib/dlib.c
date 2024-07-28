@@ -883,7 +883,7 @@ void dLib_show_messages(bool_t show)
 /**
  * Return the current working directory in a new string
  */
-char *dGetcwd ()
+char *dGetcwd (void)
 {
   size_t size = 128;
 
@@ -901,7 +901,7 @@ char *dGetcwd ()
 /**
  * Return the home directory in a static string (don't free)
  */
-char *dGethomedir ()
+char *dGethomedir (void)
 {
    static char *homedir = NULL;
 

@@ -68,7 +68,7 @@ extern volatile sig_atomic_t caught_sigchld;
 
 void rm_dpi_sockets(struct dp *dpi_attr_list, int numdpis);
 
-void cleanup();
+void cleanup(void);
 
 void free_dpi_attr(struct dp *dpi_attr);
 
@@ -86,7 +86,7 @@ int register_all(struct dp **attlist);
 
 int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list);
 
-int init_ids_srs_socket();
+int init_ids_srs_socket(void);
 
 int init_dpi_socket(struct dp *dpi_attr);
 
@@ -104,7 +104,7 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis);
 
 void ignore_dpi_sockets(struct dp *dpi_attr_list, int numdpis);
 
-int register_all_cmd();
+int register_all_cmd(void);
 
 char *get_message(int sock, char *dpi_tag);
 

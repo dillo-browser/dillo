@@ -397,7 +397,7 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
 
    if (cssUrls && cssUrls->size () > 0) {
       stylesheets = new Fl_Menu_Item[cssUrls->size() + 1];
-      memset(stylesheets, '\0', sizeof(*stylesheets));
+      memset(stylesheets, '\0', (cssUrls->size() + 1) * sizeof(Fl_Menu_Item));
 
       for (j = 0; j < cssUrls->size(); j++) {
          DilloUrl *url = cssUrls->get(j);
@@ -638,7 +638,7 @@ void a_Menu_history_popup(BrowserWindow *bw, int x, int y, int direction)
       ;
 
    pm = new Fl_Menu_Item[n + 1];
-   memset(pm, '\0', sizeof(*pm));
+   memset(pm, '\0', (n + 1) * sizeof(Fl_Menu_Item));
 
    for (i = 0; i < n; i++) {
       pm[i].label(FL_NORMAL_LABEL, a_History_get_title(history_list[i], 1));

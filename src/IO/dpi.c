@@ -419,7 +419,7 @@ static int Dpi_read_comm_keys(int *port)
 /**
  * Return a socket file descriptor
  */
-static int Dpi_make_socket_fd()
+static int Dpi_make_socket_fd(void)
 {
    int fd, one = 1, ret = -1;
 
@@ -435,7 +435,7 @@ static int Dpi_make_socket_fd()
  * Make a connection test for a IDS.
  * Return: 1 OK, -1 Not working.
  */
-static int Dpi_check_dpid_ids()
+static int Dpi_check_dpid_ids(void)
 {
    struct sockaddr_in sin;
    const socklen_t sin_sz = sizeof(sin);
@@ -504,12 +504,12 @@ static int Dpi_check_dpid(int num_tries)
 static int Dpi_blocking_start_dpid(void)
 {
    int cst, try = 0,
-       n_tries = 12; /* 3 seconds */
+       n_tries = 3; /* 3 seconds */
 
    /* test the dpid, and wait a bit for it to start if necessary */
    while ((cst = Dpi_check_dpid(n_tries)) == 1) {
       MSG("Dpi_blocking_start_dpid: try %d\n", ++try);
-      usleep(250000); /* 1/4 sec */
+      sleep(1);
    }
    return cst;
 }
@@ -757,7 +757,7 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
  * Note: currently disabled. It may serve to let the cookies dpi know
  * when to expire session cookies.
  */
-void a_Dpi_dillo_exit()
+void a_Dpi_dillo_exit(void)
 {
 
 }

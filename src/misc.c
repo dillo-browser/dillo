@@ -222,13 +222,13 @@ void a_Misc_parse_content_type(const char *type, char **major, char **minor,
    if (!(str = type))
       return;
 
-   for (s = str; *s && isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
+   for (s = str; *s && d_isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
         !strchr(tspecials_space, *s); s++) ;
    if (major)
       *major = dStrndup(str, s - str);
 
    if (*s == '/') {
-      for (str = ++s; *s && isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
+      for (str = ++s; *s && d_isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
            !strchr(tspecials_space, *s); s++) ;
       if (minor)
          *minor = dStrndup(str, s - str);

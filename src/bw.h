@@ -81,10 +81,10 @@ extern "C" {
 
 
 void a_Bw_init(void);
-BrowserWindow *a_Bw_new();
+BrowserWindow *a_Bw_new(void);
 void a_Bw_free(BrowserWindow *bw);
 BrowserWindow *a_Bw_get(int i);
-int a_Bw_num();
+int a_Bw_num(void);
 
 void a_Bw_add_client(BrowserWindow *bw, int Key, int Root);
 int a_Bw_remove_client(BrowserWindow *bw, int ClientKey);

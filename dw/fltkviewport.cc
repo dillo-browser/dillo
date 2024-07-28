@@ -121,13 +121,15 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
    vscrollbar->resize(x () + w () - SCROLLBAR_THICKNESS, y (),
                       SCROLLBAR_THICKNESS, h () - vdiff);
 
-   int X = x () + w () - SCROLLBAR_THICKNESS;
-   int Y = y () + h () - SCROLLBAR_THICKNESS;
+   //int X = x () + w () - SCROLLBAR_THICKNESS;
+   //int Y = y () + h () - SCROLLBAR_THICKNESS;
    for (Iterator <TypedPointer < Fl_Widget> > it = gadgets->iterator ();
         it.hasNext (); ) {
       Fl_Widget *widget = it.getNext()->getTypedValue ();
       widget->resize(x (), y (), SCROLLBAR_THICKNESS, SCROLLBAR_THICKNESS);
 
+      /* FIXME: This has no effect */
+#if 0
       switch (gadgetOrientation [visibility]) {
       case GADGET_VERTICAL:
          Y -= SCROLLBAR_THICKNESS;
@@ -137,6 +139,7 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
          X -= SCROLLBAR_THICKNESS;
          break;
       }
+#endif
    }
 }
 

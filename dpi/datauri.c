@@ -20,6 +20,7 @@
 
 #include "../dpip/dpip.h"
 #include "dpiutil.h"
+#include "../src/misc.h"
 
 /*
  * Debugging macros
@@ -44,7 +45,7 @@ static void b64strip_illegal_chars(unsigned char* str)
    MSG("len=%d{%s}\n", strlen((char*)str), str);
 
    for (p = s; (*p = *s); ++s) {
-      if (isascii(*p) && (isalnum(*p) || strchr("+/=", *p)))
+      if (d_isascii(*p) && (isalnum(*p) || strchr("+/=", *p)))
          ++p;
    }
 

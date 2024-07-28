@@ -47,7 +47,7 @@ char *SharedKey = NULL;
  * This avoids that dillo instances connect to a stale port after dpid
  * has exited (e.g. after a reboot).
  */
-void cleanup()
+void cleanup(void)
 {
    char *fname;
    fname = dStrconcat(dGethomedir(), "/", dotDILLO_DPID_COMM_KEYS, NULL);
@@ -112,7 +112,7 @@ static void terminator(int sig)
 
 /*! Establish handler for termination signals
  * and register cleanup with atexit */
-void est_dpi_terminator()
+void est_dpi_terminator(void)
 {
    struct sigaction act;
    sigset_t block;
@@ -526,7 +526,7 @@ int fill_services_list(struct dp *attlist, int numdpis, Dlist **services_list)
  * Return a socket file descriptor
  * (useful to set socket options in a uniform way)
  */
-static int make_socket_fd()
+static int make_socket_fd(void)
 {
    int ret, one = 1;
 
@@ -618,7 +618,7 @@ int save_comm_keys(int srs_port)
  * \li Number of sockets (1 == success)
  * \li -1 on failure
  */
-int init_ids_srs_socket()
+int init_ids_srs_socket(void)
 {
    int srs_port, ret = -1;
 
@@ -806,7 +806,7 @@ void ignore_dpi_sockets(struct dp *dpi_attr_list, int numdpis)
  * \Return
  * Number of available dpis
  */
-int register_all_cmd()
+int register_all_cmd(void)
 {
    stop_active_dpis(dpi_attr_list, numdpis);
    free_plugin_list(&dpi_attr_list, numdpis);

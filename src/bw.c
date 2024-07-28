@@ -44,7 +44,7 @@ void a_Bw_init(void)
  * Create a new browser window and return it.
  * (the new window is stored in browser_window[])
  */
-BrowserWindow *a_Bw_new()
+BrowserWindow *a_Bw_new(void)
 {
    BrowserWindow *bw;
 
@@ -302,7 +302,7 @@ void a_Bw_cleanup(BrowserWindow *bw)
 
 /*--------------------------------------------------------------------------*/
 
-int a_Bw_num()
+int a_Bw_num(void)
 {
    return num_bws;
 }

@@ -288,17 +288,7 @@ static void *Dns_server(void *data)
 
    if (error != 0) {
       dns_server[channel].status = error;
-      if (error == EAI_NONAME)
-         MSG("DNS error: HOST_NOT_FOUND\n");
-      else if (error == EAI_AGAIN)
-         MSG("DNS error: TRY_AGAIN\n");
-#ifdef EAI_NODATA
-      /* Some FreeBSD don't have this anymore */
-      else if (error == EAI_NODATA)
-         MSG("DNS error: NO_ADDRESS\n");
-#endif
-      else if (h_errno == EAI_FAIL)
-         MSG("DNS error: NO_RECOVERY\n");
+      MSG("DNS error: %s\n", gai_strerror(error));
    } else {
       Dns_note_hosts(hosts, res0);
       dns_server[channel].status = 0;

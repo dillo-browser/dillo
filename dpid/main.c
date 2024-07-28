@@ -48,7 +48,6 @@ struct dp *dpi_attr_list;
 Dlist *services_list;
 int numsocks;
 int srs_fd;
-;
 
 // end of fix
 

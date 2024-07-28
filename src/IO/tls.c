@@ -28,7 +28,7 @@
 /**
  * Initialize TLS library.
  */
-void a_Tls_init()
+void a_Tls_init(void)
 {
 #if ! defined(ENABLE_TLS)
    MSG("TLS: Disabled at compilation time.\n");
