@@ -714,6 +714,7 @@ void Table::setColExtreme (int col, ExtrMod mod, void *data, int value)
    switch (mod) {
    case DATA:
       ((misc::SimpleVector<int>*)data)->set (col, value);
+      /* fallthrough */
 
    default:
       setExtreme (colExtremes->getRef(col), mod, value);

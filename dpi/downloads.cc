@@ -679,11 +679,11 @@ static void secs2timestr(int et, char *str)
    eh = et / 3600; em = (et % 3600) / 60; es = et % 60;
    if (eh == 0) {
       if (em == 0)
-         snprintf(str, 8, "%ds", es);
+         snprintf(str, 16, "%ds", es);
       else
-         snprintf(str, 8, "%dm%ds", em, es);
+         snprintf(str, 16, "%dm%ds", em, es);
    } else {
-      snprintf(str, 8, "%dh%dm", eh, em);
+      snprintf(str, 16, "%dh%dm", eh, em);
    }
 }
 

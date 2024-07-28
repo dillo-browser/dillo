@@ -504,8 +504,10 @@ void Layout::attachView (View *view)
 
 void Layout::detachView (View *view)
 {
-   if (this->view != view)
-      MSG_ERR("detachView: this->view: %p view %p\n", this->view, view);
+   if (this->view != view) {
+      MSG_ERR("detachView: this->view: %p view %p\n",
+            (void *) this->view, (void *) view);
+   }
 
    view->setLayout (NULL);
    platform->detachView (view);
@@ -865,7 +867,7 @@ void Layout::resizeIdle ()
 
    enterResizeIdle ();
 
-   static int calls = 0;
+   //static int calls = 0;
 
    // There are two commits, 2863:b749629fbfc9 and 4645:ab70f9ce4353, the second
    // reverting the former. Interrestingly, the second fixes a bug. However, it

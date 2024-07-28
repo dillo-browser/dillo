@@ -1421,7 +1421,7 @@ int Textblock::hyphenateWord (int wordIndex, int *addIndex1)
    if (numBreaks > 0) {
       Word origWord = *hyphenatedWord;
 
-      core::Requisition wordSize[numBreaks + 1];
+      core::Requisition *wordSize = new core::Requisition[numBreaks + 1];
       calcTextSizes (origWord.content.text, strlen (origWord.content.text),
                      origWord.style, numBreaks, breakPos, wordSize);
 
@@ -1506,8 +1506,10 @@ int Textblock::hyphenateWord (int wordIndex, int *addIndex1)
       origWord.spaceStyle->unref ();
 
       free (breakPos);
-   } else
+      delete[] wordSize;
+   } else {
       words->getRef(wordIndex)->flags &= ~Word::CAN_BE_HYPHENATED;
+   }
 
    return numBreaks;
 }

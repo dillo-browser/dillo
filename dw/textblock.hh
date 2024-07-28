@@ -8,7 +8,7 @@
 
 // These were used when improved line breaking and hyphenation were implemented.
 // Should be, bit by bit, replaced by RTFL (see ../lout/debug.hh).
-#define PRINTF(fmt, ...)
+#define PRINTF(...)
 #define PUTCHAR(ch)
 
 #ifdef DBG_RTFL

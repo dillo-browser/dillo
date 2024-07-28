@@ -1309,7 +1309,7 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
          totalWidth += w->size.width;
       }
 
-      char text[l + (drawHyphen ? strlen (hyphenDrawChar) : 0) + 1];
+      char *text = new char[l + (drawHyphen ? strlen (hyphenDrawChar) : 0) + 1];
       int p = 0;
       for (int i = wordIndex1; i <= wordIndex2; i++) {
          const char * t = words->getRef(i)->content.text;
@@ -1325,6 +1325,8 @@ void Textblock::drawWord (Line *line, int wordIndex1, int wordIndex2,
 
       drawWord0 (wordIndex1, wordIndex2, text, totalWidth, drawHyphen,
                  style, view, area, xWidget, yWidgetBase);
+
+      delete[] text;
    }
 }
 
@@ -2066,10 +2068,13 @@ void Textblock::addText (const char *text, size_t len,
 
       // Store hyphen positions.
       int n = 0, totalLenCharRemoved = 0;
-      int partPenaltyIndex[numParts - 1];
-      int partStart[numParts], partEnd[numParts];
-      bool charRemoved[numParts - 1], canBeHyphenated[numParts + 1];
-      bool permDivChar[numParts - 1], unbreakableForMinWidth[numParts - 1];
+      int *partPenaltyIndex = new int[numParts - 1];
+      int *partStart = new int[numParts];
+      int *partEnd = new int[numParts];
+      bool *charRemoved = new bool[numParts - 1];
+      bool *canBeHyphenated = new bool[numParts + 1];
+      bool *permDivChar = new bool[numParts - 1];
+      bool *unbreakableForMinWidth = new bool[numParts - 1];
       canBeHyphenated[0] = canBeHyphenated[numParts] = true;
       partStart[0] = 0;
       partEnd[numParts - 1] = len;
@@ -2134,8 +2139,9 @@ void Textblock::addText (const char *text, size_t len,
 
       // Get text without removed characters, e. g. hyphens.
       const char *textWithoutHyphens;
-      char textWithoutHyphensBuf[len - totalLenCharRemoved];
-      int *breakPosWithoutHyphens, breakPosWithoutHyphensBuf[numParts - 1];
+      char *textWithoutHyphensBuf = new char[len - totalLenCharRemoved];
+      int *breakPosWithoutHyphens;
+      int *breakPosWithoutHyphensBuf = new int[numParts - 1];
 
       if (totalLenCharRemoved == 0) {
          // No removed characters: take original arrays.
@@ -2164,7 +2170,7 @@ void Textblock::addText (const char *text, size_t len,
          PUTCHAR(textWithoutHyphens[i]);
       PRINTF("'\n");
 
-      core::Requisition wordSize[numParts];
+      core::Requisition *wordSize = new core::Requisition[numParts];
       calcTextSizes (textWithoutHyphens, len - totalLenCharRemoved, style,
                      numParts - 1, breakPosWithoutHyphens, wordSize);
 
@@ -2228,6 +2234,17 @@ void Textblock::addText (const char *text, size_t len,
             correctLastWordExtremes ();
          }
       }
+
+      delete[] partPenaltyIndex;
+      delete[] partStart;
+      delete[] partEnd;
+      delete[] charRemoved;
+      delete[] canBeHyphenated;
+      delete[] permDivChar;
+      delete[] unbreakableForMinWidth;
+      delete[] textWithoutHyphensBuf;
+      delete[] breakPosWithoutHyphensBuf;
+      delete[] wordSize;
    }
 
    DBG_OBJ_LEAVE ();

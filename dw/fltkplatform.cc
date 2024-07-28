@@ -497,7 +497,7 @@ void FltkPlatform::detachView (core::View *view)
 {
    if (this->view != view)
       MSG_ERR("FltkPlatform::detachView: this->view: %p view: %p\n",
-              this->view, view);
+              (void *) this->view, (void *) view);
 
    for (container::typed::Iterator <ui::FltkResource> it =
            resources->iterator (); it.hasNext (); ) {

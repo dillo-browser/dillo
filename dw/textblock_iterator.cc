@@ -113,10 +113,11 @@ void Textblock::TextblockIterator::highlight (int start, int end,
           oldEndIndex != textblock->hlEnd[layer].index ||
           oldEndChar != textblock->hlEnd[layer].nChar)
          textblock->queueDrawRange (index1, index2);
-   } else
+   } else {
       highlightOOF (start, end, layer);
+   }
 
-      DBG_OBJ_LEAVE_O (getWidget ());
+   DBG_OBJ_LEAVE_O (getWidget ());
 }
 
 void Textblock::TextblockIterator::unhighlight (int direction,

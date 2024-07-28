@@ -460,7 +460,7 @@ void FltkResource::detachView (FltkView *view)
 {
    if (this->view != view)
       MSG_ERR("FltkResource::detachView: this->view: %p view: %p\n",
-              this->view, view);
+              (void *) this->view, (void *) view);
    this->view = NULL;
 }
 

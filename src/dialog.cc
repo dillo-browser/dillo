@@ -184,7 +184,7 @@ const char *a_Dialog_input(const char *title, const char *msg)
     if (!pm) {
        int n_it = dList_length(prefs.search_urls);
        pm = new Fl_Menu_Item[n_it+1];
-       memset(pm, '\0', sizeof(Fl_Menu_Item[n_it+1]));
+       memset(pm, '\0', sizeof(*pm));
        for (int i = 0, j = 0; i < n_it; i++) {
           char *label, *url, *source;
           source = (char *)dList_nth_data(prefs.search_urls, i);

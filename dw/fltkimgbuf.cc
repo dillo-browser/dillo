@@ -324,7 +324,8 @@ inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
       gammaMap2 = findGammaCorrectionTable (1 / gamma);
    }
 
-   for(int x = 0; x < destWidth; x++)
+   int *v = new int[bpp];
+   for(int x = 0; x < destWidth; x++) {
       for(int y = 0; y < destHeight; y++) {
          int xo1 = x * srcWidth / destWidth;
          int xo2 = lout::misc::max ((x + 1) * srcWidth / destWidth, xo1 + 1);
@@ -332,7 +333,6 @@ inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
          int yo2 = lout::misc::max ((y + 1) * srcHeight / destHeight, yo1 + 1);
          int n = (xo2 - xo1) * (yo2 - yo1);
 
-         int v[bpp];
          for(int i = 0; i < bpp; i++)
             v[i] = 0;
 
@@ -349,6 +349,8 @@ inline void FltkImgbuf::scaleBuffer (const core::byte *src, int srcWidth,
             pd[i] =
                scaleMode == BEAUTIFUL_GAMMA ? gammaMap1[v[i] / n] : v[i] / n;
       }
+   }
+   delete[] v;
 }
 
 void FltkImgbuf::copyRow (int row, const core::byte *data)

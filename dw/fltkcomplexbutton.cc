@@ -63,6 +63,7 @@ int ComplexButton::handle(int event) {
     return 1;
   case FL_PUSH:
     if (Fl::visible_focus() && handle(FL_FOCUS)) Fl::focus(this);
+    /* fallthrough */
   case FL_DRAG:
     if (Fl::event_inside(this)) {
       newval = !oldval;
@@ -107,6 +108,7 @@ int ComplexButton::handle(int event) {
       value(0);
       return 1;
     }
+    /* fallthrough */
   default:
     return 0;
   }

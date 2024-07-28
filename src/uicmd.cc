@@ -1268,7 +1268,7 @@ void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
    Dstr *dstr_url;
    DilloUrl *vs_url;
    static int post_id = 0;
-   char tag[8];
+   char tag[16];
    const char *content_type = a_Nav_get_content_type(url);
 
    a_Misc_parse_content_type(content_type, &major, NULL, NULL);
@@ -1281,7 +1281,7 @@ void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url)
       if (URL_FLAGS(url) & URL_Post) {
          /* append a custom string to differentiate POST URLs */
          post_id = (post_id < 9999) ? post_id + 1 : 0;
-         snprintf(tag, 8, "_%.4d", post_id);
+         snprintf(tag, 16, "_%.4d", post_id);
          dStr_append(dstr_url, tag);
       }
       vs_url = a_Url_new(dstr_url->str, NULL);

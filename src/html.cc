@@ -4130,6 +4130,7 @@ static void Html_process_tag(DilloHtml *html, char *tag, int tagsize)
          html->ReqTagClose = true;
 
       /* Don't break! Open tags may also close themselves */
+      /* fallthrough */
 
    default:
       /* Close function */

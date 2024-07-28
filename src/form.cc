@@ -1720,9 +1720,8 @@ void DilloHtmlInput::activate(DilloHtmlForm *form, int num_entry_fields,
    case DILLO_HTML_INPUT_PASSWORD:
       if (!(prefs.enterpress_forces_submit || num_entry_fields == 1)) {
          break;
-      } else {
-         /* fall through */
       }
+      /* fallthrough */
    case DILLO_HTML_INPUT_SUBMIT:
    case DILLO_HTML_INPUT_BUTTON_SUBMIT:
    case DILLO_HTML_INPUT_IMAGE:

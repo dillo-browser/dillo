@@ -975,7 +975,7 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *ibuf,
       ibuf += mysize;
       if (gif->state != 1)
          break;
-
+      /* fallthrough */
    case 1:
       mysize = Gif_get_descriptor(gif, Buf, ibuf, tmp_bufsize);
       if (!mysize)
@@ -983,7 +983,7 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *ibuf,
       tmp_bufsize -= mysize;
       ibuf += mysize;
       gif->state = 2;
-
+      /* fallthrough */
    case 2:
       /* Ok, this loop construction looks weird.  It implements the <Data>* of
        * the GIF grammar.  All sorts of stuff is allocated to set up for the
@@ -996,7 +996,7 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *ibuf,
       ibuf += mysize;
       if (gif->state != 3)
          break;
-
+      /* fallthrough */
    case 3:
       /* get an image byte */
       /* The users sees all of this stuff */
@@ -1005,7 +1005,7 @@ static size_t Gif_process_bytes(DilloGif *gif, const uchar_t *ibuf,
          break;
       ibuf += mysize;
       tmp_bufsize -= mysize;
-
+      /* fallthrough */
    default:
       /* error - just consume all input */
       tmp_bufsize = 0;

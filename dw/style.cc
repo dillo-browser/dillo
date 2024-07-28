@@ -773,6 +773,7 @@ static void drawBorderTop(View *view, Style *style,
       break;
    case BORDER_DOTTED:
       dotted = true;
+      /* fallthrough */
    case BORDER_DASHED:
       w = style->borderWidth.top;
       view->drawTypedLine(style->borderColor.top, shading,
@@ -782,6 +783,7 @@ static void drawBorderTop(View *view, Style *style,
    case BORDER_SOLID:
    case BORDER_INSET:
       inset = true;
+      /* fallthrough */
    case BORDER_OUTSET:
       if (style->borderStyle.top != BORDER_SOLID)
          shading = (inset) ? Color::SHADING_DARK : Color::SHADING_LIGHT;
@@ -801,6 +803,7 @@ static void drawBorderTop(View *view, Style *style,
       break;
    case BORDER_RIDGE:
       ridge = true;
+      /* fallthrough */
    case BORDER_GROOVE:
       d = style->borderWidth.top & 1;
       points[0].x = x1;
@@ -870,6 +873,7 @@ static void drawBorderBottom(View *view, Style *style,
       break;
    case BORDER_DOTTED:
       dotted = true;
+      /* fallthrough */
    case BORDER_DASHED:
       w = style->borderWidth.bottom;
       view->drawTypedLine(style->borderColor.bottom, shading,
@@ -879,6 +883,7 @@ static void drawBorderBottom(View *view, Style *style,
    case BORDER_SOLID:
    case BORDER_INSET:
       inset = true;
+      /* fallthrough */
    case BORDER_OUTSET:
       if (style->borderStyle.bottom != BORDER_SOLID)
          shading = (inset) ? Color::SHADING_LIGHT : Color::SHADING_DARK;
@@ -898,6 +903,7 @@ static void drawBorderBottom(View *view, Style *style,
       break;
    case BORDER_RIDGE:
       ridge = true;
+      /* fallthrough */
    case BORDER_GROOVE:
       w = style->borderWidth.bottom;
       d = w & 1;
@@ -969,6 +975,7 @@ static void drawBorderLeft(View *view, Style *style,
       break;
    case BORDER_DOTTED:
       dotted = true;
+      /* fallthrough */
    case BORDER_DASHED:
       w = style->borderWidth.left;
       view->drawTypedLine(style->borderColor.left, shading,
@@ -978,6 +985,7 @@ static void drawBorderLeft(View *view, Style *style,
    case BORDER_SOLID:
    case BORDER_INSET:
       inset = true;
+      /* fallthrough */
    case BORDER_OUTSET:
       if (style->borderStyle.left != BORDER_SOLID)
          shading = (inset) ? Color::SHADING_DARK : Color::SHADING_LIGHT;
@@ -996,6 +1004,7 @@ static void drawBorderLeft(View *view, Style *style,
       break;
    case BORDER_RIDGE:
       ridge = true;
+      /* fallthrough */
    case BORDER_GROOVE:
       w = style->borderWidth.left;
       d = w & 1;
@@ -1066,6 +1075,7 @@ static void drawBorderRight(View *view, Style *style,
       break;
    case BORDER_DOTTED:
       dotted = true;
+      /* fallthrough */
    case BORDER_DASHED:
       w = style->borderWidth.right;
       view->drawTypedLine(style->borderColor.right, shading,
@@ -1075,6 +1085,7 @@ static void drawBorderRight(View *view, Style *style,
    case BORDER_SOLID:
    case BORDER_INSET:
       inset = true;
+      /* fallthrough */
    case BORDER_OUTSET:
       if (style->borderStyle.right != BORDER_SOLID)
          shading = (inset) ? Color::SHADING_LIGHT : Color::SHADING_DARK;
@@ -1093,6 +1104,7 @@ static void drawBorderRight(View *view, Style *style,
       break;
    case BORDER_RIDGE:
       ridge = true;
+      /* fallthrough */
    case BORDER_GROOVE:
       w = style->borderWidth.right;
       d = w & 1;
@@ -1419,6 +1431,7 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
    case LIST_STYLE_TYPE_LOWER_ALPHA:
    case LIST_STYLE_TYPE_LOWER_LATIN:
       start_ch = 'a';
+      /* fallthrough */
    case LIST_STYLE_TYPE_UPPER_ALPHA:
    case LIST_STYLE_TYPE_UPPER_LATIN:
       i0 = num - 1;
@@ -1433,6 +1446,7 @@ void numtostr (int num, char *buf, int buflen, ListStyleType listStyleType)
       break;
    case LIST_STYLE_TYPE_LOWER_ROMAN:
       low = true;
+      /* fallthrough */
    case LIST_STYLE_TYPE_UPPER_ROMAN:
       i0 = num;
       i1 = i0/10; i2 = i1/10; i3 = i2/10;
