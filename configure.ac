@@ -665,7 +665,7 @@ dnl -----------
 dnl
 
 if eval "test x$GCC = xyes"; then
-  CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter -fno-rtti -fno-exceptions"
+  CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter -fno-rtti -fno-exceptions -pedantic -std=c++11"
 fi
 
 AC_SUBST(BASE_CUR_WORKING_DIR)
