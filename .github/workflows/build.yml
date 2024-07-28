@@ -127,7 +127,7 @@ jobs:
     - name: autogen
       run: ./autogen.sh
     - name: configure
-      run: ./configure --disable-mbedtls CFLAGS="-std=gnu99" CXXFLAGS="-std=c++98"
+      run: ./configure --disable-mbedtls CFLAGS="-Werror" CXXFLAGS="-Werror"
     - name: make
       run: make
     - name: make check
