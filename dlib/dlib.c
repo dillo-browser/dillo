@@ -2,6 +2,7 @@
  * File: dlib.c
  *
  * Copyright (C) 2006-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +25,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "dlib.h"
 
@@ -954,4 +956,25 @@ int dClose(int fd)
       st = close(fd);
    while (st == -1 && errno == EINTR);
    return st;
+}
+
+/**
+ * Portable usleep() function.
+ *
+ * The usleep() function is deprecated in POSIX.1-2001 and removed in
+ * POSIX.1-2008, see usleep(3).
+ */
+int dUsleep(unsigned long usec)
+{
+	struct timespec ts;
+	int res;
+
+	ts.tv_sec = usec / 1000000UL;
+	ts.tv_nsec = (usec % 1000000UL) * 1000UL;
+
+	do {
+		res = nanosleep(&ts, &ts);
+	} while (res && errno == EINTR);
+
+	return res;
 }

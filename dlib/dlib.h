@@ -177,6 +177,7 @@ char *dGetcwd(void);
 char *dGethomedir(void);
 char *dGetline(FILE *stream);
 int dClose(int fd);
+int dUsleep(unsigned long us);
 
 #ifdef __cplusplus
 }
