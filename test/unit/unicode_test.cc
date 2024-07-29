@@ -32,7 +32,7 @@ int main (int argc, char *argv[])
 
    // not 0-terminated; copy from 0-terminated
    int t2len = strlen (t1);
-   char t2[t2len];
+   char *t2 = new char[t2len];
    for (int i = 0; i < t2len; i++)
       t2[i] = t1[i];
 
@@ -53,6 +53,8 @@ int main (int argc, char *argv[])
    for (const char *s = t2; s - t2 < t2len; s = fl_utf8fwd (s + 1, t2, t2 + t2len))
       printf ("%3d -> U+%04x\n", (int)(s - t2),
               decodeUtf8(s, t2len - (s - t2)));
+
+   delete[] t2;
 
    return 0;
 }

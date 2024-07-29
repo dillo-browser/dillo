@@ -277,12 +277,12 @@ static int Dpi_check_dpid(int num_tries)
 static int Dpi_blocking_start_dpid(void)
 {
    int cst, try = 0,
-       n_tries = 12; /* 3 seconds */
+       n_tries = 3; /* 3 seconds */
 
    /* test the dpid, and wait a bit for it to start if necessary */
    while ((cst = Dpi_check_dpid(n_tries)) == 1) {
       MSG("Dpi_blocking_start_dpid: try %d\n", ++try);
-      usleep(250000); /* 1/4 sec */
+      sleep(1); /* 1/4 sec */
    }
    return cst;
 }
