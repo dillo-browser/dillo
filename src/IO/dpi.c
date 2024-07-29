@@ -39,6 +39,7 @@
 #include "IO.h"
 #include "Url.h"
 #include "../../dpip/dpip.h"
+#include "dlib/dlib.h"
 
 /* This one is tricky, some sources state it should include the byte
  * for the terminating NULL, and others say it shouldn't. */
@@ -504,12 +505,12 @@ static int Dpi_check_dpid(int num_tries)
 static int Dpi_blocking_start_dpid(void)
 {
    int cst, try = 0,
-       n_tries = 3; /* 3 seconds */
+       n_tries = 12; /* 3 seconds */
 
    /* test the dpid, and wait a bit for it to start if necessary */
    while ((cst = Dpi_check_dpid(n_tries)) == 1) {
       MSG("Dpi_blocking_start_dpid: try %d\n", ++try);
-      sleep(1);
+      dUsleep(250000UL);
    }
    return cst;
 }
