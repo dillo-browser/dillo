@@ -25,7 +25,9 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 
 #include <unistd.h>
 #include "dpid_common.h"
@@ -564,7 +566,7 @@ int bind_socket_fd(int base_port, int *p_port)
 
    memset(&sin, 0, sizeof(sin));
    sin.sin_family = AF_INET;
-   sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+   sin.sin_addr.s_addr = inet_addr("127.0.0.1");
 
    /* Try to bind a port on localhost */
    for (port = base_port; port <= last_port; ++port) {
@@ -754,7 +756,7 @@ void stop_active_dpis(struct dp *dpi_attr_list, int numdpis)
 
    memset(&sin, 0, sizeof(sin));
    sin.sin_family = AF_INET;
-   sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+   sin.sin_addr.s_addr = inet_addr("127.0.0.1");
 
    for (i = 0; i < numdpis; i++) {
       /* Skip inactive dpis and filters */

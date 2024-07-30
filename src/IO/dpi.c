@@ -26,6 +26,7 @@
 #include <errno.h>           /* for errno */
 #include <fcntl.h>
 #include <ctype.h>           /* isxdigit */
+#include <stdint.h>
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -50,7 +51,6 @@
 #ifndef AF_LOCAL
 #define AF_LOCAL AF_UNIX
 #endif
-
 
 typedef struct {
    int InTag;
@@ -445,7 +445,7 @@ static int Dpi_check_dpid_ids(void)
    /* socket connection test */
    memset(&sin, 0, sizeof(sin));
    sin.sin_family = AF_INET;
-   sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+   sin.sin_addr.s_addr = inet_addr("127.0.0.1");
 
    if (Dpi_read_comm_keys(&dpid_port) != -1) {
       sin.sin_port = htons(dpid_port);
@@ -544,7 +544,7 @@ static int Dpi_get_server_port(const char *server_name)
       sin_sz = sizeof(sin);
       memset(&sin, 0, sizeof(sin));
       sin.sin_family = AF_INET;
-      sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+      sin.sin_addr.s_addr = inet_addr("127.0.0.1");
       sin.sin_port = htons(dpid_port);
       if ((sock_fd = Dpi_make_socket_fd()) == -1 ||
           connect(sock_fd, (struct sockaddr *)&sin, sin_sz) == -1) {
@@ -617,7 +617,7 @@ static int Dpi_connect_socket(const char *server_name)
    /* connect with this server's socket */
    memset(&sin, 0, sizeof(sin));
    sin.sin_family = AF_INET;
-   sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+   sin.sin_addr.s_addr = inet_addr("127.0.0.1");
    sin.sin_port = htons(dpi_port);
 
    if ((sock_fd = Dpi_make_socket_fd()) == -1) {
