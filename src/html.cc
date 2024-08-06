@@ -1486,10 +1486,10 @@ static int
       int i;
 
       for (i = 0; val[i]; ++i)
-         if (!isascii(val[i]) || !(isalnum(val[i]) || strchr(":_.-", val[i])))
+         if (!d_isascii(val[i]) || !(isalnum(val[i]) || strchr(":_.-", val[i])))
             break;
 
-      if (val[i] || !(isascii(val[0]) && isalpha(val[0])))
+      if (val[i] || !(d_isascii(val[0]) && isalpha(val[0])))
          BUG_MSG("%s attribute value \"%s\" is not of the form "
                  "'[A-Za-z][A-Za-z0-9:_.-]*'.", attrname, val);
 
