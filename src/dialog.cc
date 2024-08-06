@@ -32,6 +32,7 @@
 #include "dialog.hh"
 #include "misc.h"
 #include "prefs.h"
+#include "dlib/dlib.h"
 
 /*
  * Local Data
@@ -190,7 +191,7 @@ const char *a_Dialog_input(const char *title, const char *msg)
           source = (char *)dList_nth_data(prefs.search_urls, i);
           if (!source || a_Misc_parse_search_url(source, &label, &url) < 0)
              continue;
-          pm[j++].label(FL_NORMAL_LABEL, strdup(label));
+          pm[j++].label(FL_NORMAL_LABEL, dStrdup(label));
        }
     }
     ch->tooltip("Select search engine");

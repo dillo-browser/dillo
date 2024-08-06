@@ -32,10 +32,10 @@ namespace misc {
 
 const char *prgName = PRGNAME;
 
-void init (int argc, char *argv[])
-{
-   prgName = strdup (argv[0]);
-}
+//void init (int argc, char *argv[])
+//{
+//   prgName = dStrdup (argv[0]);
+//}
 
 
 // ------------------

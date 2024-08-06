@@ -27,8 +27,14 @@ EXTRA_DIST = \
 	hyph-de.pat
 
 containers_SOURCES = containers.cc
+containers_LDADD = \
+	$(top_builddir)/lout/liblout.a \
+	$(top_builddir)/dlib/libDlib.a
 notsosimplevector_SOURCES = notsosimplevector.cc
 identity_SOURCES = identity.cc
+identity_LDADD = \
+	$(top_builddir)/lout/liblout.a \
+	$(top_builddir)/dlib/libDlib.a
 cookies_SOURCES = cookies.c
 cookies_LDADD = \
 	$(top_builddir)/dpip/libDpip.a \
@@ -36,6 +42,7 @@ cookies_LDADD = \
 shapes_SOURCES = shapes.cc
 shapes_LDADD = \
 	$(top_builddir)/dw/libDw-core.a \
+	$(top_builddir)/dlib/libDlib.a \
 	$(top_builddir)/lout/liblout.a
 unicode_test_SOURCES = unicode_test.cc
 unicode_test_LDADD = \
@@ -47,6 +54,7 @@ liang_LDADD = \
 	$(top_builddir)/dw/libDw-fltk.a \
 	$(top_builddir)/dw/libDw-core.a \
 	$(top_builddir)/lout/liblout.a \
+	$(top_builddir)/dlib/libDlib.a \
 	@LIBFLTK_LIBS@ @LIBX11_LIBS@
 trie_SOURCES = trie.cc
 trie_LDADD = \
@@ -54,4 +62,5 @@ trie_LDADD = \
 	$(top_builddir)/dw/libDw-fltk.a \
 	$(top_builddir)/dw/libDw-core.a \
 	$(top_builddir)/lout/liblout.a \
+	$(top_builddir)/dlib/libDlib.a \
 	@LIBFLTK_LIBS@ @LIBX11_LIBS@

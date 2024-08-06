@@ -22,6 +22,7 @@
 
 #include "core.hh"
 
+#include "dlib/dlib.h"
 #include "../lout/msg.h"
 #include "../lout/debug.hh"
 #include "../lout/misc.hh"
@@ -735,7 +736,7 @@ void Layout::setAnchor (const char *anchor)
 
    if (requestedAnchor)
       free (requestedAnchor);
-   requestedAnchor = anchor ? strdup (anchor) : NULL;
+   requestedAnchor = anchor ? dStrdup (anchor) : NULL;
    updateAnchor ();
 }
 
@@ -754,7 +755,7 @@ char *Layout::addAnchor (Widget *widget, const char* name, int y)
       return NULL;
    else {
       Anchor *anchor = new Anchor ();
-      anchor->name = strdup (name);
+      anchor->name = dStrdup (name);
       anchor->widget = widget;
       anchor->y = y;
 

@@ -2553,7 +2553,7 @@ void Textblock::addWidget (core::Widget *widget, core::style::Style *style)
 }
 
 /**
- * Add an anchor to the page. "name" is copied, so no strdup is necessary for
+ * Add an anchor to the page. "name" is copied, so no dStrdup is necessary for
  * the caller.
  *
  * Return true on success, and false, when this anchor had already been

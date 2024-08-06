@@ -20,6 +20,7 @@
 
 
 #include "form.hh"
+#include "dlib/dlib.h"
 
 namespace form {
 
@@ -27,7 +28,7 @@ using namespace dw::core::ui;
 
 Form::ResourceDecorator::ResourceDecorator (const char *name)
 {
-   this->name = strdup (name);
+   this->name = dStrdup (name);
 }
 
 Form::ResourceDecorator::~ResourceDecorator ()
@@ -58,7 +59,7 @@ Form::RadioButtonResourceDecorator::RadioButtonResourceDecorator
       n++;
    this->values = new const char*[n + 1];
    for (int i = 0; i < n; i++)
-      this->values[i] = strdup (values[i]);
+      this->values[i] = dStrdup (values[i]);
    this->values[n] = 0;
 }
 
@@ -108,7 +109,7 @@ Form::SelectionResourceDecorator::SelectionResourceDecorator
       n++;
    this->values = new const char*[n + 1];
    for(int i = 0; i < n; i++)
-      this->values[i] = strdup (values[i]);
+      this->values[i] = dStrdup (values[i]);
    this->values[n] = 0;
 }
 
@@ -153,8 +154,8 @@ Form::FormClickedReceiver::FormClickedReceiver (Form *form, const char *name,
                                           const char *value)
 {
    this->form = form;
-   this->name = strdup (name);
-   this->value = strdup (value);
+   this->name = dStrdup (name);
+   this->value = dStrdup (value);
 }
 
 Form::FormClickedReceiver::~FormClickedReceiver ()

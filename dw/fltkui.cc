@@ -22,6 +22,7 @@
 #include "fltkcore.hh"
 #include "fltkflatview.hh"
 #include "fltkcomplexbutton.hh"
+#include "dlib/dlib.h"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 
@@ -112,7 +113,7 @@ void CustInput2::set_placeholder(const char *str)
 {
    if (placeholder)
       free(placeholder);
-   placeholder = strdup(str);
+   placeholder = dStrdup(str);
 
    if ((Fl::focus() != this) && !*value()) {
       show_placeholder();
@@ -276,7 +277,7 @@ void CustTextEditor::set_placeholder(const char *str)
 {
    if (placeholder)
       free(placeholder);
-   placeholder = strdup(str);
+   placeholder = dStrdup(str);
 
    if ((Fl::focus() != this) && buffer()->length() == 0) {
       show_placeholder();
@@ -315,7 +316,7 @@ char* CustTextEditor::value()
     */
    if (text_copy)
       free(text_copy);
-   text_copy = showing_placeholder ? strdup("") : buffer()->text();
+   text_copy = showing_placeholder ? dStrdup("") : buffer()->text();
    return text_copy;
 }
 
@@ -625,7 +626,7 @@ FltkLabelButtonResource::FltkLabelButtonResource (FltkPlatform *platform,
                                                   const char *label):
    FltkSpecificResource <dw::core::ui::LabelButtonResource> (platform)
 {
-   this->label = strdup (label);
+   this->label = dStrdup (label);
    init (platform);
 }
 
@@ -717,7 +718,7 @@ const char *FltkLabelButtonResource::getLabel ()
 void FltkLabelButtonResource::setLabel (const char *label)
 {
    free((char *)this->label);
-   this->label = strdup (label);
+   this->label = dStrdup (label);
 
    widget->label (this->label);
    queueResize (true);
@@ -866,9 +867,9 @@ FltkEntryResource::FltkEntryResource (FltkPlatform *platform, int size,
 {
    this->size = size;
    this->password = password;
-   this->label = label ? strdup(label) : NULL;
+   this->label = label ? dStrdup(label) : NULL;
    this->label_w = 0;
-   this->placeholder = placeholder ? strdup(placeholder) : NULL;
+   this->placeholder = placeholder ? dStrdup(placeholder) : NULL;
 
    initText = NULL;
    editable = false;
@@ -994,7 +995,7 @@ void FltkEntryResource::setText (const char *text)
 {
    if (initText)
       free((char *)initText);
-   initText = strdup (text);
+   initText = dStrdup (text);
 
    ((CustInput2*)widget)->value (initText);
 }
@@ -1052,7 +1053,7 @@ FltkMultiLineTextResource::FltkMultiLineTextResource (FltkPlatform *platform,
       MSG_WARN("numRows = %d is set to 1.\n", numRows);
       numRows = 1;
    }
-   this->placeholder = placeholder ? strdup(placeholder) : NULL;
+   this->placeholder = placeholder ? dStrdup(placeholder) : NULL;
 
    init (platform);
 }
@@ -1492,7 +1493,7 @@ void FltkOptionMenuResource::addItem (const char *str,
 {
    Fl_Menu_Item *item = newItem();
 
-   item->text = strdup(str);
+   item->text = dStrdup(str);
 
    if (enabled == false)
       item->flags = FL_MENU_INACTIVE;
@@ -1513,7 +1514,7 @@ void FltkOptionMenuResource::pushGroup (const char *name, bool enabled)
 {
    Fl_Menu_Item *item = newItem();
 
-   item->text = strdup(name);
+   item->text = dStrdup(name);
 
    if (enabled == false)
       item->flags = FL_MENU_INACTIVE;

@@ -20,6 +20,7 @@
 
 
 #include "core.hh"
+#include "dlib/dlib.h"
 #include "../lout/debug.hh"
 #include "../lout/msg.h"
 
@@ -87,7 +88,7 @@ FindtextState::Result FindtextState::search (const char *key, bool caseSens,
       newKey = true;
       if (this->key)
          free(this->key);
-      this->key = strdup (key);
+      this->key = dStrdup (key);
       this->caseSens = caseSens;
 
       if (nexttab)

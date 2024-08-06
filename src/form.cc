@@ -19,6 +19,7 @@
 #include "dw/core.hh"
 #include "dw/textblock.hh"
 
+#include "dlib/dlib.h"
 #include "misc.h"
 #include "msg.h"
 #include "prefs.h"
@@ -829,7 +830,7 @@ void Html_tag_open_optgroup(DilloHtml *html, const char *tag, int tagsize)
 
       if (!label) {
          BUG_MSG("<optgroup> requires label attribute.");
-         label = strdup("");
+         label = dStrdup("");
       }
 
       DilloHtmlOptgroup *opt =

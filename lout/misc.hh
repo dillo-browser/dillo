@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "dlib/dlib.h"
 
 namespace lout {
 
@@ -586,7 +587,7 @@ public:
     * A copy is kept in the buffer, so the caller does not have to care
     * about memory management.
     */
-   inline void append(const char *str) { appendNoCopy(strdup(str)); }
+   inline void append(const char *str) { appendNoCopy(dStrdup(str)); }
    inline void appendInt(int n)
    { char buf[32]; sprintf (buf, "%d", n); append (buf); }
    inline void appendPointer(void *p)

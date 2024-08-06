@@ -24,6 +24,7 @@
 #include <FL/Fl_Window.H>
 #include <FL/Fl.H>
 
+#include "dlib/dlib.h"
 #include "dw/core.hh"
 #include "dw/fltkcore.hh"
 #include "dw/fltkviewport.hh"
@@ -111,7 +112,7 @@ int main(int argc, char **argv)
       char buf[16];
       strcpy (buf, numbers[i]);
       buf[0] = lout::misc::AsciiToupper (buf[0]);
-      buttonLabel[i] = strdup(buf);
+      buttonLabel[i] = dStrdup(buf);
       Fl_Button *button = new Fl_Button(0, 20 * i, 50, 20, buttonLabel[i]);
       button->callback (anchorCallback, (void*)(long)i);
       button->when (FL_WHEN_RELEASE);

@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <math.h>
 
+#include "dlib/dlib.h"
 #include "core.hh"
 #include "../lout/msg.h"
 
@@ -426,7 +427,7 @@ Font::~Font ()
 
 void Font::copyAttrs (FontAttrs *attrs)
 {
-   name = strdup (attrs->name);
+   name = dStrdup (attrs->name);
    size = attrs->size;
    weight = attrs->weight;
    style = attrs->style;

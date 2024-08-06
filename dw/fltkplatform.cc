@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 
+#include "dlib/dlib.h"
 #include "../lout/msg.h"
 #include "../lout/debug.hh"
 #include "fltkcore.hh"
@@ -145,7 +146,7 @@ void FltkFont::initSystemFonts ()
    int k = Fl::set_fonts ("-*-iso10646-1");
    for (int i = 0; i < k; i++) {
       int t;
-      char *name = strdup (Fl::get_font_name ((Fl_Font) i, &t));
+      char *name = dStrdup (Fl::get_font_name ((Fl_Font) i, &t));
 
       // normalize font family names (strip off "bold", "italic")
       if (t & FL_ITALIC)

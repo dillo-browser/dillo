@@ -91,7 +91,7 @@ void CssPropertyList::apply (CssPropertyList *props) {
       if (props->ownerOfStrings &&
           (getRef (i)->type == CSS_TYPE_STRING ||
            getRef (i)->type == CSS_TYPE_SYMBOL))
-         value.strVal = strdup(value.strVal);
+         value.strVal = dStrdup(value.strVal);
 
       props->set ((CssPropertyName) getRef (i)->name,
                   (CssValueType) getRef (i)->type,

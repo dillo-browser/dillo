@@ -21,6 +21,7 @@
 
 #include "hyphenator.hh"
 
+#include "dlib/dlib.h"
 #include "../lout/misc.hh"
 #include "../lout/unicode.hh"
 #include <limits.h>
@@ -395,7 +396,7 @@ TrieBuilder::~TrieBuilder ()
 void TrieBuilder::insert (const char *key, const char *value)
 {
    dataList->increase ();
-   dataList->getLastRef ()->key = (unsigned char *) strdup(key);
+   dataList->getLastRef ()->key = (unsigned char *) dStrdup(key);
    dataList->getLastRef ()->value = dataZone->strdup (value);
 }
 

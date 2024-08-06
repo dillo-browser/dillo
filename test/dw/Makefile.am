@@ -10,6 +10,7 @@ LDADD = \
 	$(top_builddir)/dw/libDw-fltk.a \
 	$(top_builddir)/dw/libDw-core.a \
 	$(top_builddir)/lout/liblout.a \
+	$(top_builddir)/dlib/libDlib.a \
 	@LIBFLTK_LIBS@ @LIBX11_LIBS@
 
 check_PROGRAMS = \

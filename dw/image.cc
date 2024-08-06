@@ -20,6 +20,7 @@
 
 
 #include "image.hh"
+#include "dlib/dlib.h"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 #include "../lout/debug.hh"
@@ -146,7 +147,7 @@ Image::Image(const char *altText)
 {
    DBG_OBJ_CREATE ("dw::Image");
    registerName ("dw::Image", &CLASS_ID);
-   this->altText = altText ? strdup (altText) : NULL;
+   this->altText = altText ? dStrdup (altText) : NULL;
    altTextWidth = -1; // not yet calculated
    buffer = NULL;
    bufWidth = bufHeight = -1;
