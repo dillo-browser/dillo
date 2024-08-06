@@ -46,6 +46,7 @@
 #include "msg.h"
 #include "prefs.h"
 #include "misc.h"
+#include "dlib/dlib.h"
 
 #include "dw/fltkviewport.hh"
 
@@ -704,7 +705,7 @@ static char *UIcmd_find_search_str(const char *str)
       for (p = 0; p < dList_length(prefs.search_urls); p++) {
          const char *search =
             (const char *)dList_nth_data(prefs.search_urls, p);
-         if (search && strncasecmp(str, search, len) == 0) {
+         if (search && dStrnAsciiCasecmp(str, search, len) == 0) {
             prefs.search_url_idx = p;
             url = UIcmd_make_search_str(str + len + 1);
             break;
