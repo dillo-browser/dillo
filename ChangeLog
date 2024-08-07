@@ -11,11 +11,13 @@ dillo-3.2.0 [Not released yet]
 +- Add new_tab_page option to open a custom new tab page.
    Patches: Alex, Rodrigo Arias Mallo
 +- Ignore empty page title for tab labels.
-   Fix segfault when clicking the "Done" button in downloads dialog.
-   Add zoom support using Ctrl +/-/0 and the "zoom_factor" option.
-   Fix wrong redirect by meta refresh without URL.
-   Display JSON as plain text.
-   Add line number anchors in HTML source view.
+ - Fix segfault when clicking the "Done" button in downloads dialog.
+ - Add zoom support using Ctrl +/-/0 and the "zoom_factor" option.
+ - Fix wrong redirect by meta refresh without URL.
+ - Display JSON as plain text.
+ - Add line number anchors in HTML source view.
+ - Make Dillo strictly C99, C++11 and POSIX-2001 compliant, without depending on
+   GNU extensions.
    Patches: Rodrigo Arias Mallo
 +- Add primitive support for SVG using the nanosvg.h library.
    Patches: dogma, Rodrigo Arias Mallo
