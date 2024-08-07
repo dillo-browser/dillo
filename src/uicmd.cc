@@ -712,6 +712,19 @@ static char *UIcmd_find_search_str(const char *str)
          }
       }
    }
+
+   if (url != NULL)
+      return url;
+
+   /* If there is no search prefix, try to guess if there are spaces and it
+    * doesn't look like a search */
+   if (str && str[0] == ' ') {
+      while (str[0] == ' ')
+         str++;
+      prefs.search_url_idx = 0;
+      url = UIcmd_make_search_str(str);
+   }
+
    return url;
 }
 
