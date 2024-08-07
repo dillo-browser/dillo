@@ -27,7 +27,8 @@
 
 using namespace dw::core::style;
 
-#define MSG_CSS(A, ...) MSG(A, __VA_ARGS__)
+//#define MSG_CSS(A, ...) _MSG(A, __VA_ARGS__)
+#define MSG_CSS(A, ...) do {} while(0)
 #define DEBUG_TOKEN_LEVEL   0
 #define DEBUG_PARSE_LEVEL   0
 #define DEBUG_CREATE_LEVEL  0
