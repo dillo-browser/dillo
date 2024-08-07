@@ -14,6 +14,7 @@ TESTS = \
 	render/b-div.html \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
+	render/github-infinite-loop.html \
 	render/hackernews.html \
 	render/img-aspect-ratio.html \
 	render/main-style.html \
@@ -42,6 +43,7 @@ TESTS = \
 XFAIL_TESTS = \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
+	render/github-infinite-loop.html \
 	render/img-aspect-ratio.html \
 	render/margin-auto.html \
 	render/max-width-html.html \
