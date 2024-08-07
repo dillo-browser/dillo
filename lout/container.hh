@@ -251,7 +251,7 @@ protected:
    {
       object::Object *object;
       Node *next;
-      virtual ~Node() = default;
+      virtual ~Node() {};
    };
 
    Node **table;
