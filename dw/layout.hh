@@ -246,7 +246,7 @@ private:
       ...Entered) defined here and in Widget. */
 
    int resizeIdleCounter, queueResizeCounter, sizeAllocateCounter,
-      sizeRequestCounter, getExtremesCounter;
+      sizeRequestCounter, getExtremesCounter, resizeCounter;
 
    void enterResizeIdle () { resizeIdleCounter++; }
    void leaveResizeIdle () { resizeIdleCounter--; }

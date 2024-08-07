@@ -18,6 +18,8 @@ dillo-3.2.0 [Not released yet]
  - Add line number anchors in HTML source view.
  - Make Dillo strictly C99, C++11 and POSIX-2001 compliant, without depending on
    GNU extensions.
+ - Perform an emergency stop of the layout engine loop after 1000 iterations to
+   prevent a hang.
    Patches: Rodrigo Arias Mallo
 +- Add primitive support for SVG using the nanosvg.h library.
    Patches: dogma, Rodrigo Arias Mallo

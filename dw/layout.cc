@@ -307,7 +307,7 @@ Layout::Layout (Platform *platform)
    layoutImgRenderer = NULL;
 
    resizeIdleCounter = queueResizeCounter = sizeAllocateCounter
-      = sizeRequestCounter = getExtremesCounter = 0;
+      = sizeRequestCounter = getExtremesCounter = resizeCounter = 0;
 }
 
 Layout::~Layout ()
@@ -443,6 +443,10 @@ void Layout::setWidget (Widget *widget)
    addWidget (widget);
 
    updateCursor ();
+
+   /* Reset the resizeCounter when we change the top level widget, as we are
+    * changing to another page */
+   resizeCounter = 0;
 }
 
 /**
@@ -868,16 +872,30 @@ void Layout::resizeIdle ()
 
    enterResizeIdle ();
 
-   //static int calls = 0;
-
    // There are two commits, 2863:b749629fbfc9 and 4645:ab70f9ce4353, the second
    // reverting the former. Interrestingly, the second fixes a bug. However, it
    // should still examined what happens here, and what happens the other calls
    // to Layout::resizeIdle() which should be still in the queue. (See
    // Layout::queueResize(), where resizeIdleId is indeed checked.)
 
-   while (resizeIdleId != -1) {
-      _MSG("Layout::resizeIdle calls = %d\n", ++calls);
+   for (int i = 0; resizeIdleId != -1; i++) {
+
+      /* Prevent infinite resize loop, if we reach this point it is very likely
+       * there is a bug in the layouting process */
+      if (resizeCounter >= 1000) {
+         MSG_ERR("Emergency layout stop after %d iterations\n", resizeCounter);
+         MSG_ERR("Please file a bug report with the complete console output\n");
+         resizeIdleId = -1;
+         break;
+      }
+
+      /* Only allow 100 iterations before returning to redraw the screen. */
+      if (i >= 100) {
+         MSG_WARN("Stopping layout loop after %d iterations\n", resizeCounter);
+         break;
+      }
+
+      resizeCounter++;
 
       for (typed::Iterator <Widget> it = queueResizeList->iterator();
            it.hasNext (); ) {
