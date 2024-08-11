@@ -791,7 +791,7 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
 bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
    switch (CSS_LENGTH_TYPE (value)) {
       case CSS_LENGTH_TYPE_PX:
-         *dest = (int) (CSS_LENGTH_VALUE (value) * zoom);
+         *dest = roundInt (CSS_LENGTH_VALUE (value) * zoom);
          return true;
       case CSS_LENGTH_TYPE_MM:
          *dest = roundInt (CSS_LENGTH_VALUE (value) * dpmm * zoom);
