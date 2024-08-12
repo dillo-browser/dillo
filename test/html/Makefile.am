@@ -45,8 +45,6 @@ TESTS = \
 XFAIL_TESTS = \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
-	render/img-aspect-ratio.html \
-	render/img-max-bounds.html \
 	render/margin-auto.html \
 	render/max-width-html.html \
 	render/min-width-html.html \

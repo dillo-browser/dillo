@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@
 #include "dlib/dlib.h"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
+//#define DEBUG_LEVEL 1
 #include "../lout/debug.hh"
 
 namespace dw {
@@ -177,6 +179,8 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
+   /* First set the a naive size based on the image properties if given */
+
    if (buffer) {
       requisition->width = buffer->getRootWidth ();
       requisition->ascent = buffer->getRootHeight ();
@@ -201,8 +205,14 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
    requisition->ascent += boxOffsetY ();
    requisition->descent += boxRestHeight ();
 
+   /* Then correct the size, so it fits within the {min,max}-{width,height}
+    * contraints */
+
    correctRequisition (requisition, core::splitHeightPreserveDescent, true,
                        true);
+
+   /* Finally, ensure that we don't distort the image unless the height and
+    * width are fixed. */
 
    if (buffer) {
       // If one dimension is set, preserve the aspect ratio (without
@@ -214,24 +224,164 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
       // TODO Check again possible overflows. (Aren't buffer
       // dimensions limited to 2^15?)
 
-      bool widthSpecified = getStyle()->width != core::style::LENGTH_AUTO ||
-         getStyle()->minWidth != core::style::LENGTH_AUTO ||
-         getStyle()->maxWidth != core::style::LENGTH_AUTO;
-      bool heightSpecified = getStyle()->height != core::style::LENGTH_AUTO ||
-         getStyle()->minHeight != core::style::LENGTH_AUTO ||
-         getStyle()->maxHeight != core::style::LENGTH_AUTO;
+      bool wFixed = getStyle()->width != core::style::LENGTH_AUTO;
+      bool hFixed = getStyle()->height != core::style::LENGTH_AUTO;
 
-      if (!widthSpecified && heightSpecified)
-         requisition->width =
-            (requisition->ascent + requisition->descent - boxDiffHeight ())
-            * buffer->getRootWidth () / buffer->getRootHeight ()
-            + boxDiffWidth ();
-      else if (widthSpecified && !heightSpecified) {
-         requisition->ascent = (requisition->width + boxDiffWidth ())
-            * buffer->getRootHeight () / buffer->getRootWidth ()
-            + boxOffsetY ();
-         requisition->descent = boxRestHeight ();
+      /* Image dimensions */
+      int w = buffer->getRootWidth ();
+      int h = buffer->getRootHeight ();
+
+      /* Reference size in case we are the root */
+      int w_ref = -1, h_ref = -1;
+
+      /* TODO: What if we have a quasiParent? */
+      if (getParent() == NULL) {
+         w_ref = layout->getWidthViewport();
+         h_ref = layout->getHeightViewport();
       }
+
+      /* FIXME: Cannot get private information from Layout to avoid the 
+       * scrollbar width. */
+      //int w_ref = layout->getWidthViewport() - (layout->canvasHeightGreater ?
+      //                            layout->vScrollbarThickness : 0);
+
+      DEBUG_MSG(1, "initial size: w=%d, h=%d\n", w, h);
+
+      float ratio = (float) h / (float) w;
+
+      DEBUG_MSG(1, "wFixed=%d, hFixed=%d\n", wFixed, hFixed);
+
+      /* When the size is fixed, set w and h accordingly */
+      if (hFixed) {
+         int hh = calcHeight(getStyle()->height, true, h_ref, getParent(), true);
+         if (hh == -1)
+            hFixed = false;
+         else
+            h = hh;
+      }
+
+      if (wFixed) {
+         int ww = calcWidth(getStyle()->width, w_ref, getParent(), 0, true);
+         if (ww == -1)
+            wFixed = false;
+         else
+            w = ww;
+      }
+
+      DEBUG_MSG(1, "size after fixed correction: w=%d, h=%d\n", w, h);
+
+      /* Correct the image size to keep the aspect ratio, but only change the
+       * dimensions that are not fixed, if any. */
+
+      if (!wFixed && !hFixed) {
+         DEBUG_MSG(1, "case: both can change\n");
+         /* Both width and height are not set, so we can play with both dimensions. */
+         int minWidth  = calcWidth(getStyle()->minWidth,  w_ref, getParent(), 0, true);
+         int maxWidth  = calcWidth(getStyle()->maxWidth,  w_ref, getParent(), 0, true);
+         int minHeight = calcHeight(getStyle()->minHeight, true, h_ref, getParent(), true);
+         int maxHeight = calcHeight(getStyle()->maxHeight, true, h_ref, getParent(), true);
+
+         DEBUG_MSG(1, "minWidth = %d, maxWidth = %d\n", minWidth, maxWidth);
+         DEBUG_MSG(1, "minHeight= %d, maxHeight= %d\n", minHeight, maxHeight);
+
+         /* Fix broken width by expanding the maximum */
+         if (minWidth != -1 && maxWidth != -1 && minWidth > maxWidth)
+            maxWidth = minWidth;
+
+         /* Fix broken height by expanding the maximum */
+         if (minHeight != -1 && maxHeight != -1 && minHeight > maxHeight)
+            maxHeight = minHeight;
+
+         DEBUG_MSG(1, "corrected minWidth = %d, maxWidth = %d\n", minWidth, maxWidth);
+         DEBUG_MSG(1, "corrected minHeight= %d, maxHeight= %d\n", minHeight, maxHeight);
+
+         /* Repeat 2 times fixing the aspect ratio, two more without */
+         for (int i = 0; i < 4; i++) {
+            DEBUG_MSG(1, "iteration %d, w=%d, h=%d\n", i, w, h);
+            int old_w = w;
+
+            /* Constraint the width first */
+            if (maxWidth != -1 && w > maxWidth)
+               w = maxWidth;
+            else if (minWidth != -1 && w < minWidth)
+               w = minWidth;
+
+            /* Now we may have distorted the image, so try to fix the aspect ratio */
+            if (w != old_w && i < 2)
+               h = w * ratio;
+
+            int old_h = h;
+
+            /* Now constraint the height */
+            if (maxHeight != -1 && h > maxHeight)
+               h = maxHeight;
+            else if (minHeight != -1 && h < minHeight)
+               h = minHeight;
+
+            /* Now we may have distorted the image again, so fix w */
+            if (h != old_h && i < 2)
+               w = h / ratio;
+
+            DEBUG_MSG(1, "w=%d, h=%d\n", w, h);
+
+            /* All contraints meet */
+            if (old_h == h && old_w == w)
+               break;
+         }
+      } else if (wFixed && !hFixed) {
+         /* Only height can change */
+         DEBUG_MSG(1, "case: only heigh can change\n");
+         int minHeight = calcHeight(getStyle()->minHeight, true, h_ref, getParent(), true);
+         int maxHeight = calcHeight(getStyle()->maxHeight, true, h_ref, getParent(), true);
+
+         DEBUG_MSG(1, "minHeight= %d, maxHeight= %d\n", minHeight, maxHeight);
+
+         /* Fix broken height by expanding the maximum */
+         if (minHeight != -1 && maxHeight != -1 && minHeight > maxHeight)
+            maxHeight = minHeight;
+
+         DEBUG_MSG(1, "corrected minHeight= %d, maxHeight= %d\n", minHeight, maxHeight);
+
+         /* Try preserving the ratio */
+         h = w * ratio;
+
+         /* Now constraint the height */
+         if (maxHeight != -1 && h > maxHeight)
+            h = maxHeight;
+         else if (minHeight != -1 && h < minHeight)
+            h = minHeight;
+      } else if (!wFixed && hFixed) {
+         /* Only width can change */
+         DEBUG_MSG(1, "case: only width can change\n");
+         int minWidth = calcWidth(getStyle()->minWidth, w_ref, getParent(), 0, true);
+         int maxWidth = calcWidth(getStyle()->maxWidth, w_ref, getParent(), 0, true);
+
+         DEBUG_MSG(1, "minWidth = %d, maxWidth = %d\n", minWidth, maxWidth);
+
+         /* Fix broken width by expanding the maximum */
+         if (minWidth != -1 && maxWidth != -1 && minWidth > maxWidth)
+            maxWidth = minWidth;
+
+         DEBUG_MSG(1, "corrected minWidth = %d, maxWidth = %d\n", minWidth, maxWidth);
+
+         /* Try preserving the ratio */
+         w = h / ratio;
+         DEBUG_MSG(1, "by ratio, w=%d\n", w);
+
+         /* Now constraint the width */
+         if (maxWidth != -1 && w > maxWidth)
+            w = maxWidth;
+         else if (minWidth != -1 && w < minWidth)
+            w = minWidth;
+      } else {
+         /* Both dimensions are fixed, so nothing to do. */
+      }
+
+      DEBUG_MSG(1, "final: w=%d, h=%d\n", w, h);
+
+      requisition->width = w + boxDiffWidth ();
+      requisition->ascent = h + boxOffsetY ();
+      requisition->descent = boxRestHeight ();
    }
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
