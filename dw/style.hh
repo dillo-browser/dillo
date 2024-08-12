@@ -2,6 +2,7 @@
 #define __DW_STYLE_HH__
 
 #include <stdint.h>
+#include <math.h>
 
 #ifndef __INCLUDED_FROM_DW_CORE_HH__
 #   error Do not include this file directly, use "core.hh" instead.
@@ -471,7 +472,7 @@ inline double relLengthVal(Length l) { return (double)(l & ~3) / (1 << 18); }
  * Use this instead of perLengthVal, when possible.
  */
 inline int multiplyWithPerLength(int x, Length l) {
-   return x * perLengthVal_useThisOnlyForDebugging (l);
+   return (int) round((double) x * perLengthVal_useThisOnlyForDebugging (l));
 }
 
 /**
