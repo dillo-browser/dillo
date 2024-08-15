@@ -919,11 +919,26 @@ int Widget::calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
    return width;
 }
 
-// *finalWidth may be -1.
-/*
- * If style has minWidth or maxWidth set, the returned value in
- * *finalWidth is constrained to not exceed any of the set limits.
- * */
+/**
+ * Computes the final width if posible and constraints it by min-width and
+ * max-width.
+ *
+ * This function performs a very particular computation. It will try to find the
+ * fixed width of the style provided by taking the refWidth or refWidget as the
+ * reference to expand relative values.
+ *
+ * The value of *finalWidth is used to initialized the first value of width, so
+ * it can be used to initialize a width when the style sets the width property
+ * to auto.
+ *
+ * If both the initial *finalWidth and the style with are -1, the value will be
+ * left as is, even if min-width and max-width could contraint the size. For the
+ * width to be constrained, either the initial *finalWidth or the computed width
+ * should return an absolute value.
+ *
+ * \post If *finalWidth != -1 the computed *finalWidth value is guarantee not to
+ * be -1.
+ */
 void Widget::calcFinalWidth (style::Style *style, int refWidth,
                              Widget *refWidget, int limitMinWidth,
                              bool forceValue, int *finalWidth)
@@ -931,26 +946,35 @@ void Widget::calcFinalWidth (style::Style *style, int refWidth,
    DBG_OBJ_ENTER ("resize", 0, "calcFinalWidth", "..., %d, %p, %d, [%d]",
                   refWidth, refWidget, limitMinWidth, *finalWidth);
 
+   int w = *finalWidth;
    int width = calcWidth (style->width, refWidth, refWidget, limitMinWidth,
                           forceValue);
-   int minWidth = calcWidth (style->minWidth, refWidth, refWidget,
-                             limitMinWidth, forceValue);
-   int maxWidth = calcWidth (style->maxWidth, refWidth, refWidget,
-                             limitMinWidth, forceValue);
+   DBG_OBJ_MSGF ("resize", 1, "w = %d, width = %d", w, width);
 
-   DBG_OBJ_MSGF ("resize", 1, "width = %d, minWidth = %d, maxWidth = %d",
-                 width, minWidth, maxWidth);
-   
    if (width != -1)
-      *finalWidth = width;
+      w = width;
 
-   /* Set the width if the min or max value is set and finalWidth is
-    * still -1 or exceeds the limit. Start by maxWidth so it defaults to
-    * the maximum available size. */
-   if (maxWidth != -1 && (*finalWidth == -1 || *finalWidth > maxWidth))
-      *finalWidth = maxWidth;
-   if (minWidth != -1 && (*finalWidth == -1 || *finalWidth < minWidth))
-      *finalWidth = minWidth;
+   /* Only correct w if not set to auto (-1) */
+   if (w != -1) {
+      int minWidth = calcWidth (style->minWidth, refWidth, refWidget,
+                                limitMinWidth, forceValue);
+      int maxWidth = calcWidth (style->maxWidth, refWidth, refWidget,
+                                limitMinWidth, forceValue);
+
+      DBG_OBJ_MSGF ("resize", 1, "minWidth = %d, maxWidth = %d",
+                    minWidth, maxWidth);
+
+      if (minWidth != -1 && w < minWidth)
+         w = minWidth;
+
+      if (maxWidth != -1 && w > maxWidth)
+         w = maxWidth;
+   }
+
+   /* Check postcondition: *finalWidth != -1 (implies) w != -1  */
+   assert(!(*finalWidth != -1 && w == -1));
+
+   *finalWidth = w;
 
    DBG_OBJ_LEAVE_VAL ("%d", *finalWidth);
 }
