@@ -1899,17 +1899,17 @@ void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
                   requisition->ascent, requisition->descent,
                   misc::boolToStr (allowDecreaseHeight));
 
-   int height = child->calcHeight (child->getStyle()->height, false, -1, this,
+   int height = child->calcHeight (child->getStyle()->height, true, -1, this,
                                    false);
    adjustHeight (&height, allowDecreaseHeight, requisition->ascent,
                  requisition->descent);
 
-   int minHeight = child->calcHeight (child->getStyle()->minHeight, false, -1,
+   int minHeight = child->calcHeight (child->getStyle()->minHeight, true, -1,
                                       this, false);
    adjustHeight (&minHeight, allowDecreaseHeight, requisition->ascent,
                  requisition->descent);
 
-   int maxHeight = child->calcHeight (child->getStyle()->maxHeight, false, -1,
+   int maxHeight = child->calcHeight (child->getStyle()->maxHeight, true, -1,
                                       this, false);
    adjustHeight (&maxHeight, allowDecreaseHeight, requisition->ascent,
                  requisition->descent);
