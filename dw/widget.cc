@@ -662,11 +662,9 @@ int Widget::getAvailWidth (bool forceValue)
       int viewportWidth =
          layout->viewportWidth - (layout->canvasHeightGreater ?
                                   layout->vScrollbarThickness : 0);
-      width = -1;
+      width = viewportWidth;
       calcFinalWidth (getStyle (), viewportWidth, NULL, 0, forceValue, &width);
-      if (width == -1)
-         width = viewportWidth;
-
+      assert(width != -1);
       DBG_OBJ_MSG_END ();
    } else if (parent) {
       DBG_OBJ_MSG ("resize", 1, "delegated to parent");
