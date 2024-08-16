@@ -18,9 +18,11 @@ TESTS = \
 	render/hackernews.html \
 	render/img-aspect-ratio-absolute.html \
 	render/img-aspect-ratio-div.html \
+	render/img-aspect-ratio-mix-border.html \
+	render/img-aspect-ratio-mix-margin.html \
+	render/img-aspect-ratio-mix.html \
 	render/img-aspect-ratio-relative-inside-fixed.html \
 	render/img-aspect-ratio.html \
-	render/img-max-bounds.html \
 	render/main-style.html \
 	render/margin-auto.html \
 	render/max-width-body.html \
