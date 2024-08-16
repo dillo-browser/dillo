@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test image aspect ratio when both dimensions are relative and container is fixed</title>
+    <style>
+      div {
+        border: 1px solid black;
+        width: 64px;
+        height: 256px;
+      }
+      img {
+        width:64px;
+        height:256px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>The image must fill the complete div even if that means distorting it.
+    The image specifies the size as 100% of the container in both dimensions and
+    the container has a fixed size.</p>
+    <div>
+      <img src="pic.png">
+    </div>
+  </body>
+</html>
