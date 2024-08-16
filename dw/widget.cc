@@ -528,8 +528,12 @@ bool Widget::usesAvailHeight ()
 }
 
 /**
- *  \brief This method is a wrapper for Widget::sizeRequestImpl(); it calls
- *     the latter only when needed.
+ * \brief This method is a wrapper for Widget::sizeRequestImpl(); it calls
+ * the latter only when needed.
+ *
+ * Computes the size (Requisition) that the current widget wants. The output
+ * \param requisition has the final values which will be used to compute the
+ * widget allocation.
  */
 void Widget::sizeRequest (Requisition *requisition, int numPos,
                           Widget **references, int *x, int *y)
@@ -1143,7 +1147,11 @@ Widget *Widget::getExtremesReference (int index)
 
 /**
  * \brief Wrapper for Widget::sizeAllocateImpl, calls the latter only when
- *    needed.
+ * needed.
+ *
+ * Sets the allocation of the widget to \param allocation, which is the final
+ * size and position it will have on the canvas. This is usually called after
+ * the requisition size is determined in Widget::sizeRequest().
  */
 void Widget::sizeAllocate (Allocation *allocation)
 {

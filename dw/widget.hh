@@ -198,7 +198,8 @@ protected:
 
    /**
     * \brief The current allocation: size and position, always relative to the
-    *    canvas.
+    * canvas. The allocation is the outermost box for the widget, as in the CSS
+    * box model. It also includes the extraSpace.
     */
    Allocation allocation;
 
