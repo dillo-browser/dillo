@@ -17,6 +17,8 @@ TESTS = \
 	render/github-infinite-loop.html \
 	render/hackernews.html \
 	render/img-aspect-ratio.html \
+	render/img-aspect-ratio-div.html \
+	render/img-aspect-ratio-absolute.html \
 	render/img-max-bounds.html \
 	render/main-style.html \
 	render/margin-auto.html \

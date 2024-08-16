@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test image aspect ratio inside an unconstrained div</title>
+    <style>
+      div {
+        /*border: 1px solid black*/;
+      }
+      div.out {
+        width: 300px;
+        height: 600px;
+        background: lightgreen;
+      }
+      div.big {
+        min-width: 16px;
+      }
+      div.small {
+        max-width: 64px;
+      }
+      /* Even if we are specifiying the image to have 100% height, the image
+       * must not extend to all the available height of the div.out container.
+       * It should continue to keep the aspect ratio as the width is constrained
+       * to 64 px, so it should be 64 px tall. */
+      img {
+        width:100%;
+        height:100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="out">
+      <div class="big">
+        <img src="pic.png">
+      </div>
+      <div class="small">
+        <img src="pic.png">
+      </div>
+    </div>
+  </body>
+</html>
