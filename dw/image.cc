@@ -402,6 +402,22 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
    DBG_OBJ_LEAVE ();
 }
 
+void Image::setReqWidth(core::Requisition *requisition, int width)
+{
+   /* If we have the image buffer, try to set the height to preserve the image
+    * ratio */
+   if (buffer) {
+      int w = buffer->getRootWidth();
+      int h = buffer->getRootHeight();
+      float ratio = (float) h / (float) w;
+      int height = (float) width * ratio;
+      /* Preserve descent */
+      requisition->ascent = height - requisition->descent;
+   }
+
+   requisition->width = width;
+}
+
 void Image::getExtremesSimpl (core::Extremes *extremes)
 {
    int contentWidth;
