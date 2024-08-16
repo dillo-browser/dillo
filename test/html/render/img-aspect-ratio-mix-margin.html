@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test image aspect ratio while constrained</title>
+    <style>
+      body {margin: 20px}
+      div {width: 640px; height: 640px; background: lightblue;}
+      img {margin: 10px}
+    </style>
+  </head>
+  <body>
+    <div>
+      <p>All images should be 32px by 32px like this one:</p>
+      <img src="pic.png" style="width:32px;height:32px;">
+      <p>Only one max-* contraint</p>
+      <img src="pic.png" style="max-width :32px;">
+      <img src="pic.png" style="max-height:32px;">
+      <img src="pic.png" style="max-width :5%;">
+      <img src="pic.png" style="max-height:5%;">
+      <p>One max-* and fixed size contraint</p>
+      <img src="pic.png" style="height:32px;  max-width:256px">
+      <img src="pic.png" style="height:5%;    max-width:256px">
+      <img src="pic.png" style="max-height:256px; width:32px">
+      <img src="pic.png" style="max-height:256px; width:5%">
+      <p>Two max-* contraints</p>
+      <img src="pic.png" style="max-height:32px;  max-width:256px">
+      <img src="pic.png" style="max-height:5%;    max-width:256px">
+      <img src="pic.png" style="max-height:256px; max-width:32px">
+      <img src="pic.png" style="max-height:256px; max-width:5%">
+      <p>Both min-* and max-* constrained</p>
+      <img src="pic.png" style="min-width:32px;  min-height:16px; max-width:32px; max-height:64px">
+      <img src="pic.png" style="min-width:5%;    min-height:16px; max-width:5%;   max-height:64px">
+      <img src="pic.png" style="min-width:16px;  min-height:32px; max-width:64px; max-height:32px">
+      <img src="pic.png" style="min-width:16px;  min-height:5%;   max-width:64px; max-height:5%">
+      <p>Bad constraints</p>
+      <img src="pic.png" style="max-width: 16px; min-width: 32px;">
+      <img src="pic.png" style="max-height:16px; min-height:32px;">
+      <img src="pic.png" style="max-width: 16px; min-width: 5%;">
+      <img src="pic.png" style="max-height:16px; min-height:5%;">
+    </div>
+  </body>
+</html>
