@@ -130,7 +130,6 @@ private:
    bool isMap;
 
 protected:
-   void setReqWidth(core::Requisition *requisition, int width);
    void sizeRequestSimpl (core::Requisition *requisition);
    void getExtremesSimpl (core::Extremes *extremes);
    void sizeAllocateImpl (core::Allocation *allocation);
