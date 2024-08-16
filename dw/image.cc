@@ -20,11 +20,11 @@
 
 
 
+//#define DEBUG_LEVEL 1
 #include "image.hh"
 #include "dlib/dlib.h"
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
-//#define DEBUG_LEVEL 1
 #include "../lout/debug.hh"
 
 namespace dw {
@@ -179,6 +179,8 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
+   DEBUG_MSG(1, "-- Image::sizeRequestSimpl() begins\n");
+
    /* First set the a naive size based on the image properties if given */
 
    if (buffer) {
@@ -205,14 +207,27 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
    requisition->ascent += boxOffsetY ();
    requisition->descent += boxRestHeight ();
 
-   /* Then correct the size, so it fits within the {min,max}-{width,height}
-    * contraints */
+   DEBUG_MSG(1, "initial requisition: w=%d, h=%d\n",
+         requisition->width, requisition->ascent + requisition->descent);
 
+   /* Then correct the size if needed, so it fits within the available space in
+    * the container widget. */
+
+   /* FIXME: The standard Widget::correctRequisition() doesn't take into account
+    * any extra contraint like we want for the aspect ratio. It will only modify
+    * the width and height until the image fits the available space. We probably
+    * need a custom implementation of it to handle the aspect ratio constraint.
+    */
    correctRequisition (requisition, core::splitHeightPreserveDescent, true,
                        true);
 
+   DEBUG_MSG(1, "corrected requisition: w=%d, h=%d\n",
+         requisition->width, requisition->ascent + requisition->descent);
+
    /* Finally, ensure that we don't distort the image unless the height and
-    * width are fixed. */
+    * width are fixed. For each dimension (width, height) of the image size,
+    * there are two situations: the image has the size imposed by the containing
+    * widget or the image sets its own size. */
 
    if (buffer) {
       // If one dimension is set, preserve the aspect ratio (without
@@ -252,21 +267,11 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
       DEBUG_MSG(1, "wFixed=%d, hFixed=%d\n", wFixed, hFixed);
 
       /* When the size is fixed, set w and h accordingly */
-      if (hFixed) {
-         int hh = calcHeight(getStyle()->height, true, h_ref, getParent(), true);
-         if (hh == -1)
-            hFixed = false;
-         else
-            h = hh;
-      }
+      if (hFixed)
+         h = requisition->ascent + requisition->descent;
 
-      if (wFixed) {
-         int ww = calcWidth(getStyle()->width, w_ref, getParent(), 0, true);
-         if (ww == -1)
-            wFixed = false;
-         else
-            w = ww;
-      }
+      if (wFixed)
+         w = requisition->width;
 
       DEBUG_MSG(1, "size after fixed correction: w=%d, h=%d\n", w, h);
 
@@ -374,7 +379,15 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
          else if (minWidth != -1 && w < minWidth)
             w = minWidth;
       } else {
-         /* Both dimensions are fixed, so nothing to do. */
+         /* TODO: Both dimensions are fixed, however we may still be able to
+          * adjust some if they use percent positions and the container widget
+          * gives us some flexibility.
+          *
+          * The only situation in which we can still correct the aspect ratio is
+          * that the image dimensions are specified as a percentage of the
+          * container widget *and* the container widget doesn't force a size.
+          */
+         DEBUG_MSG(1, "case: both width and height are fixed\n");
       }
 
       DEBUG_MSG(1, "final: w=%d, h=%d\n", w, h);
