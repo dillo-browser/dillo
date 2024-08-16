@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//#define DEBUG_LEVEL 1
 #include "core.hh"
 
 #include "../lout/msg.h"
@@ -29,6 +30,15 @@ using namespace lout::misc;
 
 namespace dw {
 namespace core {
+
+/* Used to determine which action to take when correcting the aspect ratio of a
+ * requisition in Widget::correctReqAspectRatio(). */
+enum {
+   PASS_INCREASE = 0,
+   PASS_DECREASE = 1,
+   PASS_KEEP = 2
+};
+
 
 // ----------------------------------------------------------------------
 
@@ -99,6 +109,8 @@ Widget::Widget ()
    widgetImgRenderer = NULL;
 
    stackingContextMgr = NULL;
+
+   ratio = 0.0;
 }
 
 Widget::~Widget ()
@@ -746,6 +758,57 @@ int Widget::getAvailHeight (bool forceValue)
    return height;
 }
 
+/**
+ * Corrects a requisition to fit in the viewport.
+ *
+ * Instead of asking the parent widget, it uses the viewport dimensions to
+ * correct the requisition if needed. This is used for the top level widget (the
+ * body) which doesn't have any parent.
+ */
+void Widget::correctRequisitionViewport (Requisition *requisition,
+                                 void (*splitHeightFun) (int, int *, int *),
+                                 bool allowDecreaseWidth,
+                                 bool allowDecreaseHeight)
+{
+   int limitMinWidth = getMinWidth (NULL, true);
+   if (!allowDecreaseWidth && limitMinWidth < requisition->width)
+      limitMinWidth = requisition->width;
+
+   int viewportWidth =
+      layout->viewportWidth - (layout->canvasHeightGreater ?
+                               layout->vScrollbarThickness : 0);
+   calcFinalWidth (getStyle (), viewportWidth, NULL, limitMinWidth, false,
+                   &requisition->width);
+
+   // For layout->viewportHeight, see comment in getAvailHeight().
+   int height = calcHeight (getStyle()->height, false,
+                            layout->viewportHeight, NULL, false);
+   adjustHeight (&height, allowDecreaseHeight, requisition->ascent,
+                 requisition->descent);
+
+   int minHeight = calcHeight (getStyle()->minHeight, false,
+                               layout->viewportHeight, NULL, false);
+   adjustHeight (&minHeight, allowDecreaseHeight, requisition->ascent,
+                 requisition->descent);
+
+   int maxHeight = calcHeight (getStyle()->maxHeight, false,
+                               layout->viewportHeight, NULL, false);
+   adjustHeight (&maxHeight, allowDecreaseHeight, requisition->ascent,
+                 requisition->descent);
+
+   // TODO Perhaps split first, then add box ascent and descent.
+   if (height != -1)
+      splitHeightFun (height, &requisition->ascent, &requisition->descent);
+   if (minHeight != -1 &&
+       requisition->ascent + requisition->descent < minHeight)
+      splitHeightFun (minHeight, &requisition->ascent,
+                      &requisition->descent);
+   if (maxHeight != -1 &&
+       requisition->ascent + requisition->descent > maxHeight)
+      splitHeightFun (maxHeight, &requisition->ascent,
+                      &requisition->descent);
+}
+
 void Widget::correctRequisition (Requisition *requisition,
                                  void (*splitHeightFun) (int, int *, int *),
                                  bool allowDecreaseWidth,
@@ -763,43 +826,16 @@ void Widget::correctRequisition (Requisition *requisition,
       DBG_OBJ_MSG ("resize", 1, "no parent, regarding viewport");
       DBG_OBJ_MSG_START ();
 
-      int limitMinWidth = getMinWidth (NULL, true);
-      if (!allowDecreaseWidth && limitMinWidth < requisition->width)
-         limitMinWidth = requisition->width;
-      
-      int viewportWidth =
-         layout->viewportWidth - (layout->canvasHeightGreater ?
-                                  layout->vScrollbarThickness : 0);
-      calcFinalWidth (getStyle (), viewportWidth, NULL, limitMinWidth, false,
-                      &requisition->width);
+      for (int pass = 0; pass < 3; pass++) {
+         correctRequisitionViewport (requisition, splitHeightFun,
+               allowDecreaseWidth, allowDecreaseHeight);
+         bool changed = correctReqAspectRatio (pass, this, requisition,
+               allowDecreaseWidth, allowDecreaseHeight, splitHeightFun);
 
-      // For layout->viewportHeight, see comment in getAvailHeight().
-      int height = calcHeight (getStyle()->height, false,
-                               layout->viewportHeight, NULL, false);
-      adjustHeight (&height, allowDecreaseHeight, requisition->ascent,
-                    requisition->descent);
-
-      int minHeight = calcHeight (getStyle()->minHeight, false,
-                                  layout->viewportHeight, NULL, false);
-      adjustHeight (&minHeight, allowDecreaseHeight, requisition->ascent,
-                    requisition->descent);
-         
-      int maxHeight = calcHeight (getStyle()->maxHeight, false,
-                                  layout->viewportHeight, NULL, false);
-      adjustHeight (&maxHeight, allowDecreaseHeight, requisition->ascent,
-                    requisition->descent);
-
-      // TODO Perhaps split first, then add box ascent and descent.
-      if (height != -1)
-         splitHeightFun (height, &requisition->ascent, &requisition->descent);
-      if (minHeight != -1 &&
-          requisition->ascent + requisition->descent < minHeight)
-         splitHeightFun (minHeight, &requisition->ascent,
-                         &requisition->descent);
-      if (maxHeight != -1 &&
-          requisition->ascent + requisition->descent > maxHeight)
-         splitHeightFun (maxHeight, &requisition->ascent,
-                         &requisition->descent);
+         /* No need to repeat more passes */
+         if (!changed)
+            break;
+      }
 
       DBG_OBJ_MSG_END ();
    } else if (parent) {
@@ -1859,9 +1895,18 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
       (child->container ? child->container : child->parent);
 
    if (effContainer == this) {
-      correctReqWidthOfChild (child, requisition, allowDecreaseWidth);
-      correctReqHeightOfChild (child, requisition, splitHeightFun,
-                               allowDecreaseHeight);
+      /* Try several passes before giving up */
+      for (int pass = 0; pass < 3; pass++) {
+         correctReqWidthOfChild (child, requisition, allowDecreaseWidth);
+         correctReqHeightOfChild (child, requisition, splitHeightFun,
+                                  allowDecreaseHeight);
+         bool changed = correctReqAspectRatio (pass, child, requisition,
+               allowDecreaseWidth, allowDecreaseHeight, splitHeightFun);
+
+         /* No need to repeat more passes */
+         if (!changed)
+            break;
+      }
    } else {
       DBG_OBJ_MSG ("resize", 1, "delegated to (effective) container");
       DBG_OBJ_MSG_START ();
@@ -1876,10 +1921,101 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
                       requisition->descent);
 }
 
-void Widget::setReqWidth (Requisition *requisition, int width)
+/**
+ * Correct a child requisition aspect ratio if needed.
+ *
+ * After the parent widget corrects the requisition provided by the \param
+ * child, the preferred aspect ratio may no longer be the current ratio. This
+ * method tries to adjust the size of the requisition so the aspect ratio is the
+ * preferred aspect ratio of the child.
+ *
+ * It implements three passes: increase (0), decrease (1) or keep (2). In the
+ * increase pass, the size is increased to fill the aspect ratio. If after
+ * correcting the size, it is still not the preferred aspect ratio (maybe it
+ * breaks some other constraint), reducing the size will be attempted. If at the
+ * end, reducing the size doesn't fix the preferred aspect ratio, the size is
+ * kept as it is.
+ *
+ * It can be called from the parent or the child itself, as it doesn't read any
+ * information from the current widget.
+ *
+ * \return true if the requisition has been modified, false otherwise.
+ */
+bool Widget::correctReqAspectRatio (int pass, Widget *child, Requisition *requisition,
+                                     bool allowDecreaseWidth, bool allowDecreaseHeight,
+                                     void (*splitHeightFun) (int, int*, int*))
 {
-   /* Naive implementation */
-   requisition->width = width;
+   /* Only correct the requisition if both dimensions are set, otherwise is left
+    * to the child how to proceed. */
+   int wReq = requisition->width;
+   int hReq = requisition->ascent + requisition->descent;
+
+   /* Prevent division by 0 */
+   bool sizeSet = wReq > 0 && hReq > 0;
+
+   float ratio = child->ratio;
+   bool changed = false;
+
+   DEBUG_MSG(1, "Widget::correctReqAspectRatio() -- wReq=%d, hReq=%d, pass=%d\n",
+         wReq, hReq, pass);
+   DEBUG_MSG(1, "child=%s, preferred ratio=%f\n", child->getClassName(), ratio);
+
+   if (pass != PASS_KEEP && ratio > 0.0 && sizeSet) {
+      /* TODO: Ensure we are dealing with the content box rather than the
+       * margin box (as in the CSS box model). */
+
+      /* Compute the current ratio from the content box. */
+      float curRatio = (float) wReq / (float) hReq;
+      DEBUG_MSG(1, "curRatio=%f, preferred ratio=%f\n", curRatio, ratio);
+
+      if (curRatio < ratio) {
+         /* W is too small compared to H. Try to increase W or decrease H. */
+         if (pass == PASS_INCREASE) {
+            /* Increase w */
+            int w = (float) hReq * ratio;
+            requisition->width = w;
+            changed = true;
+            DEBUG_MSG(1, "increase w: %d -> %d\n", wReq, w);
+         } else if (pass == PASS_DECREASE) {
+            /* Decrease h */
+            if (allowDecreaseHeight) {
+               /* FIXME: This may lose cases where allowDecreaseHeight is false, and
+                * the requisition has increased the height first, but we could still
+                * reduce the corrected hight above the original height, without
+                * making the requisition height smaller. */
+               int h = (float) wReq / ratio;
+               splitHeightFun (h, &requisition->ascent, &requisition->descent);
+               changed = true;
+               DEBUG_MSG(1, "decrease h: %d -> %d\n", hReq, h);
+            }
+         }
+      } else if (curRatio > ratio) {
+         /* W is too big compared to H. Try to decrease W or increase H. */
+         if (pass == PASS_INCREASE) {
+            /* Increase h */
+            int h = (float) wReq / ratio;
+            splitHeightFun (h, &requisition->ascent, &requisition->descent);
+            changed = true;
+            DEBUG_MSG(1, "increase h: %d -> %d\n", hReq, h);
+         } else if (pass == PASS_DECREASE) {
+            /* Decrease w */
+            if (allowDecreaseWidth) {
+               /* FIXME: This may lose cases where allowDecreaseWidth is false, and
+                * the requisition has increased the width first, but we could still
+                * reduce the corrected width above the original width, without
+                * making the requisition width smaller. */
+               int w = (float) hReq * ratio;
+               requisition->width = w;
+               changed = true;
+               DEBUG_MSG(1, "decrease w: %d -> %d\n", wReq, w);
+            }
+         }
+      } else {
+         /* Current ratio is the preferred one. */
+      }
+   }
+
+   return changed;
 }
 
 /** Correct a child requisition to fit the parent.
@@ -1901,14 +2037,8 @@ void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition,
    if (!allowDecreaseWidth && limitMinWidth < requisition->width)
       limitMinWidth = requisition->width;
 
-   int width = requisition->width;
    child->calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, true,
-                          &width);
-
-
-   /* Ask the child widget to adjust its own requisition in case it has to
-    * modify the height too (like images to try to preserve the aspect ratio) */
-   child->setReqWidth(requisition, width);
+                          &requisition->width);
 
    DBG_OBJ_LEAVE_VAL ("%d * (%d + %d)", requisition->width, requisition->ascent,
                       requisition->descent);

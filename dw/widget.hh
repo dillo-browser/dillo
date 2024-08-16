@@ -207,6 +207,12 @@ protected:
    inline int getContentWidth() { return allocation.width - boxDiffWidth (); }
    inline int getContentHeight() { return getHeight () - boxDiffHeight (); }
 
+   /**
+    * Preferred aspect ratio of the widget. Set to 0 when there is none. It is
+    * computed as width / height.
+    */
+   float ratio;
+
    Layout *layout;
 
    /**
@@ -351,18 +357,24 @@ protected:
 
    virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
    virtual int getAvailHeightOfChild (Widget *child, bool forceValue);
-   virtual void setReqWidth (Requisition *requisition, int width);
+
    virtual void correctRequisitionOfChild (Widget *child,
                                            Requisition *requisition,
                                            void (*splitHeightFun) (int, int*,
                                                                    int*),
                                            bool allowDecreaseWidth,
                                            bool allowDecreaseHeight);
+   void correctRequisitionViewport (Requisition *requisition,
+                            void (*splitHeightFun) (int, int*, int*),
+                            bool allowDecreaseWidth, bool allowDecreaseHeight);
    void correctReqWidthOfChild (Widget *child, Requisition *requisition,
                                 bool allowDecreaseWidth);
    void correctReqHeightOfChild (Widget *child, Requisition *requisition,
                                  void (*splitHeightFun) (int, int*, int*),
                                  bool allowDecreaseHeight);
+   bool correctReqAspectRatio (int pass, Widget *child, Requisition *requisition,
+                                      bool allowDecreaseWidth, bool allowDecreaseHeight,
+                                      void (*splitHeightFun) (int, int*, int*));
    virtual void correctExtremesOfChild (Widget *child, Extremes *extremes,
                                         bool useAdjustmentWidth);
 
