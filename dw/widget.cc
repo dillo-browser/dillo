@@ -723,7 +723,10 @@ int Widget::getAvailHeight (bool forceValue)
          height = applyPerHeight (layout->viewportHeight, getStyle()->height);
       } else {
          DBG_OBJ_MSG ("resize", 1, "no specification");
-         height = layout->viewportHeight;
+         if (forceValue)
+            height = layout->viewportHeight;
+         else
+            height = -1;
       }
 
       DBG_OBJ_MSG_END ();
