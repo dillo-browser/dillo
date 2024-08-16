@@ -788,11 +788,19 @@ void Widget::correctRequisitionViewport (Requisition *requisition,
 
    int minHeight = calcHeight (getStyle()->minHeight, false,
                                layout->viewportHeight, NULL, false);
-   adjustHeight (&minHeight, allowDecreaseHeight, requisition->ascent,
-                 requisition->descent);
 
    int maxHeight = calcHeight (getStyle()->maxHeight, false,
                                layout->viewportHeight, NULL, false);
+
+   if (minHeight != -1 && maxHeight != -1) {
+      /* Prefer the maximum size for pathological cases (min > max) */
+      if (maxHeight < minHeight)
+         maxHeight = minHeight;
+   }
+
+   adjustHeight (&minHeight, allowDecreaseHeight, requisition->ascent,
+                 requisition->descent);
+
    adjustHeight (&maxHeight, allowDecreaseHeight, requisition->ascent,
                  requisition->descent);
 
@@ -1004,6 +1012,12 @@ void Widget::calcFinalWidth (style::Style *style, int refWidth,
 
       DBG_OBJ_MSGF ("resize", 1, "minWidth = %d, maxWidth = %d",
                     minWidth, maxWidth);
+
+      if (minWidth != -1 && maxWidth != -1) {
+         /* Prefer the maximum size for pathological cases (min > max) */
+         if (maxWidth < minWidth)
+            maxWidth = minWidth;
+      }
 
       if (minWidth != -1 && w < minWidth)
          w = minWidth;
@@ -2064,11 +2078,18 @@ void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
 
    int minHeight = child->calcHeight (child->getStyle()->minHeight, true, -1,
                                       this, false);
+   int maxHeight = child->calcHeight (child->getStyle()->maxHeight, true, -1,
+                                      this, false);
+
+   if (minHeight != -1 && maxHeight != -1) {
+      /* Prefer the maximum size for pathological cases (min > max) */
+      if (maxHeight < minHeight)
+         maxHeight = minHeight;
+   }
+
    adjustHeight (&minHeight, allowDecreaseHeight, requisition->ascent,
                  requisition->descent);
 
-   int maxHeight = child->calcHeight (child->getStyle()->maxHeight, true, -1,
-                                      this, false);
    adjustHeight (&maxHeight, allowDecreaseHeight, requisition->ascent,
                  requisition->descent);
 
