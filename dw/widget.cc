@@ -1873,6 +1873,17 @@ void Widget::correctRequisitionOfChild (Widget *child, Requisition *requisition,
                       requisition->descent);
 }
 
+void Widget::setReqWidth (Requisition *requisition, int width)
+{
+   /* Naive implementation */
+   requisition->width = width;
+}
+
+/** Correct a child requisition to fit the parent.
+ *
+ * The \param requisition is adjusted in width so it fits in the current widget
+ * (parent).
+ */
 void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition,
                                      bool allowDecreaseWidth)
 {
@@ -1887,8 +1898,14 @@ void Widget::correctReqWidthOfChild (Widget *child, Requisition *requisition,
    if (!allowDecreaseWidth && limitMinWidth < requisition->width)
       limitMinWidth = requisition->width;
 
+   int width = requisition->width;
    child->calcFinalWidth (child->getStyle(), -1, this, limitMinWidth, true,
-                          &requisition->width);
+                          &width);
+
+
+   /* Ask the child widget to adjust its own requisition in case it has to
+    * modify the height too (like images to try to preserve the aspect ratio) */
+   child->setReqWidth(requisition, width);
 
    DBG_OBJ_LEAVE_VAL ("%d * (%d + %d)", requisition->width, requisition->ascent,
                       requisition->descent);

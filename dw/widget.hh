@@ -351,6 +351,7 @@ protected:
 
    virtual int getAvailWidthOfChild (Widget *child, bool forceValue);
    virtual int getAvailHeightOfChild (Widget *child, bool forceValue);
+   virtual void setReqWidth (Requisition *requisition, int width);
    virtual void correctRequisitionOfChild (Widget *child,
                                            Requisition *requisition,
                                            void (*splitHeightFun) (int, int*,
