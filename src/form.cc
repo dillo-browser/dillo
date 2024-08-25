@@ -1246,6 +1246,24 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
    return DataStr;
 }
 
+static void generate_boundary(Dstr *boundary)
+{
+   for (int i = 0; i < 70; i++) {
+      /* Extracted from RFC 2046, section 5.1.1. */
+      static const char set[] = "abcdefghijklmnopqrstuvwxyz"
+         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+         "0123456789"
+         "'()+_,-./:=? ";
+      char s[sizeof " "] = {0};
+
+      do {
+         *s = rand();
+      } while (!strspn(s, set));
+
+      dStr_append(boundary, s);
+   }
+}
+
 /**
  * Generate a boundary string for use in separating the parts of a
  * multipart/form-data submission.
@@ -1253,7 +1271,6 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
 char *DilloHtmlForm::makeMultipartBoundary(iconv_t char_encoder,
                                            DilloHtmlInput *active_submit)
 {
-   const int max_tries = 10;
    Dlist *values = dList_new(5);
    Dstr *DataStr = dStr_new("");
    Dstr *boundary = dStr_new("");
@@ -1294,15 +1311,8 @@ char *DilloHtmlForm::makeMultipartBoundary(iconv_t char_encoder,
       }
    }
 
-   /* generate a boundary that is not contained within the data */
-   for (int i = 0; i < max_tries && !ret; i++) {
-      // Firefox-style boundary
-      dStr_sprintf(boundary, "---------------------------%d%d%d",
-                   rand(), rand(), rand());
-      dStr_truncate(boundary, 70);
-      if (dStr_memmem(DataStr, boundary) == NULL)
-         ret = boundary->str;
-   }
+   generate_boundary(boundary);
+   ret = boundary->str;
    dList_free(values);
    dStr_free(DataStr, 1);
    dStr_free(boundary, (ret == NULL));

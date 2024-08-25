@@ -14,6 +14,7 @@
  */
 
 #include <math.h> // for rint()
+#include <string.h>
 
 #include <FL/fl_ask.H>
 #include <FL/Fl_Window.H>
