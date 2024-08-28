@@ -1186,7 +1186,10 @@ static void Tls_connect(int fd, int connkey)
       if (a_Klist_get_data(conn_list, connkey)) {
          conn->connecting = FALSE;
          if (failed) {
+            conn->in_connect = FALSE;
             Tls_close_by_key(connkey);
+            /* conn is freed now */
+            conn = NULL;
          }
          a_IOwatch_remove_fd(fd, DIO_READ|DIO_WRITE);
          a_Http_connect_done(fd, failed ? FALSE : TRUE);
@@ -1195,7 +1198,8 @@ static void Tls_connect(int fd, int connkey)
       }
    }
 
-   conn->in_connect = FALSE;
+   if (conn)
+      conn->in_connect = FALSE;
 }
 
 static void Tls_connect_cb(int fd, void *vconnkey)

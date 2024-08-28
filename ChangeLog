@@ -20,6 +20,7 @@ dillo-3.2.0 [Not released yet]
    GNU extensions.
  - Perform an emergency stop of the layout engine loop after 1000 iterations to
    prevent a hang.
+ - Fix use-after-free on errors in TLS connection.
    Patches: Rodrigo Arias Mallo
 +- Add primitive support for SVG using the nanosvg.h library.
    Patches: dogma, Rodrigo Arias Mallo
