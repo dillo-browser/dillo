@@ -1252,8 +1252,7 @@ static void generate_boundary(Dstr *boundary)
       /* Extracted from RFC 2046, section 5.1.1. */
       static const char set[] = "abcdefghijklmnopqrstuvwxyz"
          "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-         "0123456789"
-         "'()+_,-./:=? ";
+         "0123456789";
       char s[sizeof " "] = {0};
 
       do {
