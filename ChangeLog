@@ -23,6 +23,8 @@ dillo-3.2.0 [Not released yet]
    Patches: Rodrigo Arias Mallo
 +- Add primitive support for SVG using the nanosvg.h library.
    Patches: dogma, Rodrigo Arias Mallo
++- Avoid expensive search for multipart/form-data boundaries.
+   Patches: Xavier Del Campo Romero, Rodrigo Arias Mallo
 
 dillo-3.1.1 [Jun 8, 2024]
 

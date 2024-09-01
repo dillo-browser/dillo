@@ -2,6 +2,7 @@
  * File: form.cc
  *
  * Copyright 2008 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1246,20 +1247,23 @@ Dstr *DilloHtmlForm::buildQueryData(DilloHtmlInput *active_submit)
    return DataStr;
 }
 
+/**
+ * Generate a random boundary.
+ *
+ * Using 70 random characters makes the probability that it collides
+ * with a 1 TiB random file less than 1e-117, so there is no need for
+ * checking for collisions. */
 static void generate_boundary(Dstr *boundary)
 {
+   /* Extracted from RFC 2046, section 5.1.1. */
+   static const char set[] = "abcdefghijklmnopqrstuvwxyz"
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "0123456789";
+   static const size_t n = strlen(set);
+
    for (int i = 0; i < 70; i++) {
-      /* Extracted from RFC 2046, section 5.1.1. */
-      static const char set[] = "abcdefghijklmnopqrstuvwxyz"
-         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-         "0123456789";
-      char s[sizeof " "] = {0};
-
-      do {
-         *s = rand();
-      } while (!strspn(s, set));
-
-      dStr_append(boundary, s);
+      int c = (unsigned char) set[rand() % n];
+      dStr_append_c(boundary, c);
    }
 }
 
