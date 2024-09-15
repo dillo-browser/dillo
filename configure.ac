@@ -140,6 +140,11 @@ AC_ARG_ENABLE([rtfl],
   [enable_rtfl=$enableval],
   [enable_rtfl=no])
 
+AC_ARG_ENABLE([experimental-fltk],
+  [AS_HELP_STRING([--enable-experimental-fltk], [Enable experimental FLTK >= 1.4 support (expect graphical glitches)])],
+  [enable_experimental_fltk=$enableval],
+  [enable_experimental_fltk=no])
+
 if test "x$enable_ssl" = "xno"; then
   AC_MSG_ERROR([The flag --disable-ssl is deprecated, use --disable-tls])
 fi
@@ -229,25 +234,44 @@ if test "$ac_cv_socklen_t" != "socklen_t"; then
 fi
 
 
-dnl -------------------------
-dnl Test for FLTK 1.3 library
-dnl -------------------------
+dnl ---------------------------
+dnl Test for FLTK >=1.3 library
+dnl ---------------------------
 dnl
 dnl For debugging and to be user friendly
 AC_PATH_PROGS(FLTK_CONFIG,[fltk-config1.3 fltk-config])
-AC_MSG_CHECKING([FLTK 1.3])
+AC_MSG_CHECKING([FLTK version])
 fltk_version="`$FLTK_CONFIG --version 2>/dev/null`"
+
 case $fltk_version in
-  1.3.*) AC_MSG_RESULT(yes)
-         LIBFLTK_CXXFLAGS=`$FLTK_CONFIG --cxxflags`
-         LIBFLTK_CFLAGS=`$FLTK_CONFIG --cflags`
-         LIBFLTK_LIBS=`$FLTK_CONFIG --ldflags`;;
-  1.4.*) AC_MSG_RESULT(no)
-         AC_MSG_ERROR([FLTK $fltk_version not supported yet; use FLTK 1.3]);;
-  ?*)    AC_MSG_RESULT(no)
-         AC_MSG_ERROR(FLTK 1.3 required; version found: $fltk_version);;
-  *)     AC_MSG_RESULT(no)
-         AC_MSG_ERROR(FLTK 1.3 required; fltk-config not found)
+  1.3.*)
+    AC_MSG_RESULT([yes ($fltk_version)])
+    LIBFLTK_CXXFLAGS=`$FLTK_CONFIG --cxxflags`
+    LIBFLTK_CFLAGS=`$FLTK_CONFIG --cflags`
+    LIBFLTK_LIBS="`$FLTK_CONFIG --ldflags`"
+    ;;
+  1.4.*|1.5.*)
+    if test "x$enable_experimental_fltk" = "xyes"; then
+      AC_MSG_RESULT([yes ($fltk_version)])
+      AC_MSG_WARN([*** Using experimental FLTK support, expect graphical glitches. ***])
+      LIBFLTK_CXXFLAGS=`$FLTK_CONFIG --cxxflags`
+      LIBFLTK_CFLAGS=`$FLTK_CONFIG --cflags`
+      LIBFLTK_LIBS="`$FLTK_CONFIG --ldflags`"
+    else
+      AC_MSG_RESULT([too new ($fltk_version)])
+      AC_MSG_NOTICE([Support for FLTK >= 1.4 is experimental and has known graphical issues])
+      AC_MSG_NOTICE([See: https://bug.dillo-browser.org/246/])
+      AC_MSG_NOTICE([Enable it with --enable-experimental-fltk if you are sure])
+      AC_MSG_ERROR([FLTK version $fltk_version not supported yet])
+    fi
+    ;;
+  ?*)
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR(FLTK 1.3 required; version found: $fltk_version)
+    ;;
+  *)
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR(FLTK 1.3 required; fltk-config not found)
 esac
 
 dnl -----------------------------------
