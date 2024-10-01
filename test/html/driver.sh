@@ -24,6 +24,12 @@ if command -v magick 2>&1 >/dev/null; then
   magick_bin="magick"
 fi
 
+function cleanup_pid() {
+  if kill -0 $1 2>/dev/null; then
+    kill $1
+  fi
+}
+
 function render_page() {
   htmlfile="$1"
   outpic="$2"
@@ -72,9 +78,6 @@ function test_file() {
   Xvfb -screen 5 1024x768x24 -displayfd 6 &
   xorgpid=$!
 
-  # Always kill Xvfb on exit
-  trap "kill $xorgpid" EXIT
-
   read dispnum < "$wdir/display.fifo"
   export DISPLAY=":$dispnum"
 
@@ -92,6 +95,8 @@ function test_file() {
     echo "FAIL"
     ret=1
   fi
+
+  cleanup_pid $xorgpid
 
   exec 6>&-
   rm "$wdir/display.fifo"
