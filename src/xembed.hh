@@ -3,6 +3,8 @@
 
 #include <FL/Fl_Window.H>
 
+#include <cstdint>
+
 #include "d_size.h"
 
 class Xembed : public Fl_Window {

@@ -13,6 +13,8 @@
 #ifndef __PREFS_H__
 #define __PREFS_H__
 
+#include <stdint.h>
+
 #include "url.h"
 
 #ifdef __cplusplus
