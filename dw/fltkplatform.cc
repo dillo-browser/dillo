@@ -122,6 +122,7 @@ FltkFont::FltkFont (core::style::FontAttrs *attrs)
    int xx, xy, xw, xh;
    fl_text_extents("x", xx, xy, xw, xh);
    xHeight = xh;
+   zeroWidth = (int) fl_width("0");
    descent = fl_descent();
    ascent = fl_height() - descent;
 }

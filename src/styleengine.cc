@@ -804,6 +804,32 @@ bool StyleEngine::computeValue (int *dest, CssLength value, Font *font) {
          /* Doesn't need zoom as it is already applied to font->xHeight */
          *dest = roundInt (CSS_LENGTH_VALUE(value) * font->xHeight);
          return true;
+      case CSS_LENGTH_TYPE_CH:
+         *dest = roundInt (CSS_LENGTH_VALUE(value) * font->zeroWidth);
+         return true;
+      case CSS_LENGTH_TYPE_REM:
+         if (stack->size() < 2) {
+            *dest = 0;
+         } else {
+            dw::core::style::Style *root_style = stack->getRef (1)->style;
+            if (root_style)
+               *dest = roundInt (CSS_LENGTH_VALUE(value) * root_style->font->size);
+            else
+               *dest = 0;
+         }
+         return true;
+      case CSS_LENGTH_TYPE_VW:
+         *dest = roundInt (CSS_LENGTH_VALUE(value) * layout->getWidthViewport() / 100);
+         return true;
+      case CSS_LENGTH_TYPE_VH:
+         *dest = roundInt (CSS_LENGTH_VALUE(value) * layout->getHeightViewport() / 100);
+         return true;
+      case CSS_LENGTH_TYPE_VMIN:
+         *dest = roundInt (CSS_LENGTH_VALUE(value) * MIN(layout->getWidthViewport(), layout->getHeightViewport()) / 100);
+         return true;
+      case CSS_LENGTH_TYPE_VMAX:
+         *dest = roundInt (CSS_LENGTH_VALUE(value) * MAX(layout->getWidthViewport(), layout->getHeightViewport()) / 100);
+         return true;
       case CSS_LENGTH_TYPE_NONE:
          // length values other than 0 without unit are only allowed
          // in special cases (line-height) and have to be handled

@@ -121,10 +121,11 @@ public:
     * is defined, which holds more platform dependent data.
     *
     * Also, this method must fill the attributes "font" (when needed),
-    * "ascent", "descent", "spaceSidth" and "xHeight". If "tryEverything"
-    * is true, several methods should be used to use another font, when
-    * the requested font is not available. Passing false is typically done,
-    * if the caller wants to test different variations.
+    * "ascent", "descent", "spaceSidth", "zeroWidth" and "xHeight". If
+    * "tryEverything" is true, several methods should be used to use
+    * another font, when the requested font is not available. Passing
+    * false is typically done, if the caller wants to test different
+    * variations.
     */
    virtual style::Font *createFont (style::FontAttrs *attrs,
                                     bool tryEverything) = 0;

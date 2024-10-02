@@ -78,6 +78,12 @@ typedef enum {
                                   millimeters. */
    CSS_LENGTH_TYPE_EM,
    CSS_LENGTH_TYPE_EX,
+   CSS_LENGTH_TYPE_CH,
+   CSS_LENGTH_TYPE_REM,
+   CSS_LENGTH_TYPE_VW,
+   CSS_LENGTH_TYPE_VH,
+   CSS_LENGTH_TYPE_VMIN,
+   CSS_LENGTH_TYPE_VMAX,
    CSS_LENGTH_TYPE_PERCENTAGE,
    CSS_LENGTH_TYPE_RELATIVE,   /**< This does not exist in CSS but
                                   is used in HTML */
@@ -104,6 +110,12 @@ inline CssLength CSS_CREATE_LENGTH (float v, CssLengthType t) {
    case CSS_LENGTH_TYPE_MM:
    case CSS_LENGTH_TYPE_EM:
    case CSS_LENGTH_TYPE_EX:
+   case CSS_LENGTH_TYPE_CH:
+   case CSS_LENGTH_TYPE_REM:
+   case CSS_LENGTH_TYPE_VW:
+   case CSS_LENGTH_TYPE_VH:
+   case CSS_LENGTH_TYPE_VMIN:
+   case CSS_LENGTH_TYPE_VMAX:
    case CSS_LENGTH_TYPE_PERCENTAGE:
    case CSS_LENGTH_TYPE_RELATIVE:
       l.f = v;
@@ -131,6 +143,12 @@ inline float CSS_LENGTH_VALUE (CssLength l) {
    case CSS_LENGTH_TYPE_MM:
    case CSS_LENGTH_TYPE_EM:
    case CSS_LENGTH_TYPE_EX:
+   case CSS_LENGTH_TYPE_CH:
+   case CSS_LENGTH_TYPE_REM:
+   case CSS_LENGTH_TYPE_VW:
+   case CSS_LENGTH_TYPE_VH:
+   case CSS_LENGTH_TYPE_VMIN:
+   case CSS_LENGTH_TYPE_VMAX:
    case CSS_LENGTH_TYPE_PERCENTAGE:
    case CSS_LENGTH_TYPE_RELATIVE:
       return l.f;

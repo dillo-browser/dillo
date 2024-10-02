@@ -715,6 +715,7 @@ public:
    int ascent, descent;
    int spaceWidth;
    int xHeight;
+   int zeroWidth;
 
    static Font *create (Layout *layout, FontAttrs *attrs);
    static bool exists (Layout *layout, const char *name);
