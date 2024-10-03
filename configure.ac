@@ -297,18 +297,18 @@ if test "x$enable_png" = "xyes"; then
 
 dnl Check if the user hasn't set the variable $PNG_CONFIG
   if test -z "$PNG_CONFIG"; then
-    PNG_CONFIG=`which libpng16-config`
+    PNG_CONFIG=`command -v libpng16-config`
     if test -z "$PNG_CONFIG"; then
-      PNG_CONFIG=`which libpng14-config`
+      PNG_CONFIG=`command -v libpng14-config`
     fi
     if test -z "$PNG_CONFIG"; then
-      PNG_CONFIG=`which libpng12-config`
+      PNG_CONFIG=`command -v libpng12-config`
     fi
     if test -z "$PNG_CONFIG"; then
-      PNG_CONFIG=`which libpng-config`
+      PNG_CONFIG=`command -v libpng-config`
     fi
     if test -z "$PNG_CONFIG"; then
-      PNG_CONFIG=`which libpng10-config`
+      PNG_CONFIG=`command -v libpng10-config`
     fi
   fi
 
