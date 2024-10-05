@@ -129,6 +129,19 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PROG_CPP
 
+AC_MSG_CHECKING(if C++ compiler '$CXX' works)
+AC_LANG_PUSH([C++])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+  #ifndef __cplusplus
+  #error "No C++ support, AC_PROG_CXX failed"
+  #endif
+  ]])],
+  [AC_MSG_RESULT([yes])],
+  [AC_MSG_RESULT(no)
+  AC_MSG_FAILURE([C++ compiler doesn't work])]
+)
+AC_LANG_POP([C++])
+
 dnl ----------------------------
 dnl Check our char and int types
 dnl ----------------------------
