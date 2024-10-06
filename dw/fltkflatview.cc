@@ -70,6 +70,11 @@ int FltkFlatView::getVScrollbarThickness ()
    return 0;
 }
 
+int FltkFlatView::getScrollbarOnLeft ()
+{
+   return 0;
+}
+
 void FltkFlatView::scrollTo (int x, int y)
 {
 }

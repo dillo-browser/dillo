@@ -91,6 +91,7 @@ void a_Prefs_init(void)
    prefs.search_urls = dList_new(16);
    dList_append(prefs.search_urls, dStrdup(PREFS_SEARCH_URL));
    prefs.search_url_idx = 0;
+   prefs.scrollbar_on_left = FALSE;
    prefs.show_back = TRUE;
    prefs.show_bookmarks = TRUE;
    prefs.show_clear_url = TRUE;

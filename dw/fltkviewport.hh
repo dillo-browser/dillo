@@ -21,6 +21,7 @@ private:
 
    int scrollX, scrollY;
    int scrollDX, scrollDY;
+   int scrollbarOnLeft;
    int hasDragScroll, dragScrolling, dragX, dragY;
    int horScrolling, verScrolling;
 
@@ -64,6 +65,7 @@ public:
    bool usesViewport ();
    int getHScrollbarThickness ();
    int getVScrollbarThickness ();
+   int getScrollbarOnLeft () {return scrollbarOnLeft; };
    void scroll(int dx, int dy);
    void scroll(dw::core::ScrollCommand cmd);
    void scrollTo (int x, int y);
@@ -75,6 +77,7 @@ public:
                               GadgetOrientation gadgetOrientation);
    void setDragScroll (bool enable) { hasDragScroll = enable ? 1 : 0; }
    void addGadget (Fl_Widget *gadget);
+   void setScrollbarOnLeft (bool enable);
 };
 
 } // namespace fltk

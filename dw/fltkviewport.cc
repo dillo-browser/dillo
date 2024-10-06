@@ -116,10 +116,17 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
       vdiff = hscrollbar->visible () ? SCROLLBAR_THICKNESS : 0;
    }
 
-   hscrollbar->resize(x (), y () + h () - SCROLLBAR_THICKNESS,
-                      w () - hdiff, SCROLLBAR_THICKNESS);
-   vscrollbar->resize(x () + w () - SCROLLBAR_THICKNESS, y (),
-                      SCROLLBAR_THICKNESS, h () - vdiff);
+   if (scrollbarOnLeft) {
+      hscrollbar->resize(x () + hdiff, y () + h () - SCROLLBAR_THICKNESS,
+                         w () - hdiff, SCROLLBAR_THICKNESS);
+      vscrollbar->resize(x (), y (),
+                         SCROLLBAR_THICKNESS, h () - vdiff);
+   } else {
+      hscrollbar->resize(x (), y () + h () - SCROLLBAR_THICKNESS,
+                         w () - hdiff, SCROLLBAR_THICKNESS);
+      vscrollbar->resize(x () + w () - SCROLLBAR_THICKNESS, y (),
+                         SCROLLBAR_THICKNESS, h () - vdiff);
+   }
 
    //int X = x () + w () - SCROLLBAR_THICKNESS;
    //int Y = y () + h () - SCROLLBAR_THICKNESS;
@@ -141,6 +148,8 @@ void FltkViewport::adjustScrollbarsAndGadgetsAllocation ()
       }
 #endif
    }
+
+   adjustScrollbarValues();
 }
 
 void FltkViewport::adjustScrollbarValues ()
@@ -222,17 +231,29 @@ void FltkViewport::draw ()
       draw_child (*hscrollbar);
    if (draw && vis_vs && vis_hs) {
       fl_color(FL_BACKGROUND_COLOR);
-      fl_rectf(x()+w()-vis_vs, y()+h()-vis_hs, vis_vs, vis_hs);
+      if (scrollbarOnLeft) {
+         fl_rectf(x(), y()+h()-vis_hs, vis_vs, vis_hs);
+      } else {
+         fl_rectf(x()+w()-vis_vs, y()+h()-vis_hs, vis_vs, vis_hs);
+      }
    }
    // main area
    if (d == FL_DAMAGE_CHILD && (draw_vs || draw_hs)) {
       _MSG("none\n");
    } else if (d == (FL_DAMAGE_SCROLL | FL_DAMAGE_CHILD)) {
-      fl_scroll(x(), y(), w() - vis_vs, h() - vis_hs,
+      int x = this->x();
+
+      if (scrollbarOnLeft)
+         x += vis_vs;
+      fl_scroll(x, y(), w() - vis_vs, h() - vis_hs,
                 -scrollDX, -scrollDY, draw_area, this);
       _MSG("fl_scroll()\n");
    } else {
-      draw_area(this, x(), y(), w() - vis_vs, h() - vis_hs);
+      int x = this->x();
+
+      if (scrollbarOnLeft)
+         x += vis_vs;
+      draw_area(this, x, y(), w() - vis_vs, h() - vis_hs);
       _MSG("draw_area()\n");
    }
 
@@ -331,12 +352,27 @@ int FltkViewport::handle (int event)
       break;
 
    case FL_ENTER:
+      if (vscrollbar->visible() && Fl::event_inside(vscrollbar))
+         return vscrollbar->handle(event);
+      if (hscrollbar->visible() && Fl::event_inside(hscrollbar))
+         return hscrollbar->handle(event);
       /* could be the result of, e.g., closing another window. */
       mouse_x = Fl::event_x();
       mouse_y = Fl::event_y();
       positionChanged();
       break;
 
+   case FL_MOVE:
+      /* Use LEAVE in order not to be over a link, etc., anymore. */
+      if (vscrollbar->visible() && Fl::event_inside(vscrollbar)) {
+         (void)FltkWidgetView::handle(FL_LEAVE);
+         return vscrollbar->handle(event);
+      }
+      if (hscrollbar->visible() && Fl::event_inside(hscrollbar)) {
+         (void)FltkWidgetView::handle(FL_LEAVE);
+         return hscrollbar->handle(event);
+      }
+      break;
    case FL_LEAVE:
       mouse_x = mouse_y = -1;
       break;
@@ -438,13 +474,13 @@ void FltkViewport::scroll (core::ScrollCommand cmd)
    } else if (cmd == core::SCREEN_RIGHT_CMD) {
       scroll (w() - hscrollbar->linesize (), 0);
    } else if (cmd == core::LINE_UP_CMD) {
-      scroll (0, (int) -vscrollbar->linesize ());
+      scroll (0, -vscrollbar->linesize ());
    } else if (cmd == core::LINE_DOWN_CMD) {
-      scroll (0, (int) vscrollbar->linesize ());
+      scroll (0, vscrollbar->linesize ());
    } else if (cmd == core::LEFT_CMD) {
-      scroll ((int) -hscrollbar->linesize (), 0);
+      scroll (-hscrollbar->linesize (), 0);
    } else if (cmd == core::RIGHT_CMD) {
-      scroll ((int) hscrollbar->linesize (), 0);
+      scroll (hscrollbar->linesize (), 0);
    } else if (cmd == core::TOP_CMD) {
       scrollTo (scrollX, 0);
    } else if (cmd == core::BOTTOM_CMD) {
@@ -476,6 +512,13 @@ void FltkViewport::selectionScroll (void *data)
 {
    ((FltkViewport *)data)->selectionScroll ();
    Fl::repeat_timeout(0.025, selectionScroll, data);
+}
+
+void FltkViewport::setScrollbarOnLeft (bool enable)
+{
+   scrollbarOnLeft = enable ? 1 : 0;
+   adjustScrollbarsAndGadgetsAllocation();
+   damage(FL_DAMAGE_ALL);
 }
 
 void FltkViewport::setViewportSize (int width, int height,

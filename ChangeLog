@@ -24,6 +24,7 @@ dillo-3.2.0 [Not released yet]
    Patches: Rodrigo Arias Mallo
 +- Add primitive support for SVG using the nanosvg.h library.
  - Add support for ch, rem, vw, vh, vmin and vmax CSS units.
+ - Allow placing the scrollbar on the left side.
    Patches: dogma, Rodrigo Arias Mallo
 +- Avoid expensive search for multipart/form-data boundaries.
    Patches: Xavier Del Campo Romero, Rodrigo Arias Mallo

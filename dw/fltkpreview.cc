@@ -95,6 +95,11 @@ int FltkPreview::getVScrollbarThickness ()
    return 0;
 }
 
+int FltkPreview::getScrollbarOnLeft ()
+{
+   return 0;
+}
+
 void FltkPreview::scrollTo (int x, int y)
 {
    scrollX = x;

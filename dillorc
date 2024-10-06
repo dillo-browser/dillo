@@ -46,6 +46,9 @@
 # height of the visible page area.
 #scroll_step=100
 
+# Place the vertical scrollbar on the left side (default right).
+#scrollbar_on_left=NO
+
 #-------------------------------------------------------------------------
 #                           RENDERING SECTION
 #-------------------------------------------------------------------------

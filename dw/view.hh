@@ -72,6 +72,8 @@ public:
     */
    virtual int getVScrollbarThickness () = 0;
 
+   virtual int getScrollbarOnLeft () = 0;
+
    /**
     * \brief Scroll the vieport to the given position.
     *

@@ -943,6 +943,8 @@ void Layout::resizeIdle ()
          assert (topLevel->needsAllocate ());
 
          allocation.x = allocation.y = 0;
+         if (usesViewport && view->getScrollbarOnLeft())
+            allocation.x += currVScrollbarThickness();
          allocation.width = requisition.width;
          allocation.ascent = requisition.ascent;
          allocation.descent = requisition.descent;
