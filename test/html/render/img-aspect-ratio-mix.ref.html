@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test image aspect ratio while constrained</title>
+    <style>
+      body {margin: 20px}
+      div {width: 640px; height: 640px; background: lightblue;}
+    </style>
+  </head>
+  <body>
+    <div>
+      <p>All images should be 32px by 32px like this one:</p>
+      <img src="pic.png" style="width:32px;height:32px;">
+      <p>Only one max-* contraint</p>
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <p>One max-* and fixed size contraint</p>
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <p>Two max-* contraints</p>
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <p>Both min-* and max-* constrained</p>
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <p>Bad constraints</p>
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+      <img src="pic.png" style="width:32px;height:32px;">
+    </div>
+  </body>
+</html>

@@ -432,6 +432,7 @@ void ComplexButtonResource::correctRequisitionOfChild (Widget *child,
    // the relief has to be considered.
 
    if (style::isPerLength (child->getStyle()->width)) {
+      /* FIXME: Typo for getAvailWidth()? */
       int availWidth = getEmbed()->getAvailHeight (false);
       if (availWidth != -1) {
          int baseWidth = misc::max (availWidth

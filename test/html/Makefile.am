@@ -16,12 +16,18 @@ TESTS = \
 	render/float-img-justify.html \
 	render/github-infinite-loop.html \
 	render/hackernews.html \
+	render/img-aspect-ratio-absolute.html \
+	render/img-aspect-ratio-div.html \
+	render/img-aspect-ratio-mix-border.html \
+	render/img-aspect-ratio-mix-margin.html \
+	render/img-aspect-ratio-mix.html \
+	render/img-aspect-ratio-relative-inside-fixed.html \
 	render/img-aspect-ratio.html \
 	render/main-style.html \
 	render/margin-auto.html \
 	render/max-width-body.html \
-	render/max-width-div.html \
 	render/max-width-div-clamp.html \
+	render/max-width-div.html \
 	render/max-width-html.html \
 	render/max-width-nested-div.html \
 	render/meta-refresh-0-no-url.html \
@@ -44,7 +50,6 @@ TESTS = \
 XFAIL_TESTS = \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
-	render/img-aspect-ratio.html \
 	render/margin-auto.html \
 	render/max-width-html.html \
 	render/min-width-html.html \

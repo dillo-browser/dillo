@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@
 
 
 
+//#define DEBUG_LEVEL 1
 #include "image.hh"
 #include "dlib/dlib.h"
 #include "../lout/msg.h"
@@ -177,6 +179,13 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
 {
    DBG_OBJ_ENTER0 ("resize", 0, "sizeRequestImpl");
 
+   DEBUG_MSG(1, "-- Image::sizeRequestSimpl() begins\n");
+
+   DEBUG_MSG(1, "Image::sizeRequestImpl border: w=%d h=%d\n",
+         boxDiffWidth(), boxDiffHeight());
+
+   /* First set a naive size based on the image properties if given */
+
    if (buffer) {
       requisition->width = buffer->getRootWidth ();
       requisition->ascent = buffer->getRootHeight ();
@@ -201,38 +210,18 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
    requisition->ascent += boxOffsetY ();
    requisition->descent += boxRestHeight ();
 
+   DEBUG_MSG(1, "Image: initial requisition (with border): w=%d, h=%d\n",
+         requisition->width, requisition->ascent + requisition->descent);
+
+   /* Then correct the size if needed, so it fits within the available space in
+    * the container widget. The correctRequisition() method will take into the
+    * account the preferred aspect ratio. */
+
    correctRequisition (requisition, core::splitHeightPreserveDescent, true,
                        true);
 
-   if (buffer) {
-      // If one dimension is set, preserve the aspect ratio (without
-      // extraSpace/margin/border/padding). Notice that
-      // requisition->descent could have been changed in
-      // core::splitHeightPreserveDescent, so we do not make any
-      // assumtions here about it (and requisition->ascent).
-
-      // TODO Check again possible overflows. (Aren't buffer
-      // dimensions limited to 2^15?)
-
-      bool widthSpecified = getStyle()->width != core::style::LENGTH_AUTO ||
-         getStyle()->minWidth != core::style::LENGTH_AUTO ||
-         getStyle()->maxWidth != core::style::LENGTH_AUTO;
-      bool heightSpecified = getStyle()->height != core::style::LENGTH_AUTO ||
-         getStyle()->minHeight != core::style::LENGTH_AUTO ||
-         getStyle()->maxHeight != core::style::LENGTH_AUTO;
-
-      if (!widthSpecified && heightSpecified)
-         requisition->width =
-            (requisition->ascent + requisition->descent - boxDiffHeight ())
-            * buffer->getRootWidth () / buffer->getRootHeight ()
-            + boxDiffWidth ();
-      else if (widthSpecified && !heightSpecified) {
-         requisition->ascent = (requisition->width + boxDiffWidth ())
-            * buffer->getRootHeight () / buffer->getRootWidth ()
-            + boxOffsetY ();
-         requisition->descent = boxRestHeight ();
-      }
-   }
+   DEBUG_MSG(1, "Image: corrected requisition: w=%d, h=%d\n",
+         requisition->width, requisition->ascent + requisition->descent);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
                  requisition->width, requisition->ascent, requisition->descent);
@@ -278,6 +267,13 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
                   allocation->x, allocation->y, allocation->width,
                   allocation->ascent, allocation->descent);
 
+   DEBUG_MSG(1, "Image::sizeAllocateImpl x=%d y=%d w=%d h=(%d + %d)\n",
+                  allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
+
+   DEBUG_MSG(1, "Image::sizeAllocateImpl border: w=%d h=%d\n",
+         boxDiffWidth(), boxDiffHeight());
+
 
    int newBufWidth = allocation->width - boxDiffWidth ();
    int newBufHeight =
@@ -287,6 +283,9 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
        // Save some time when size did not change:
        (newBufWidth != bufWidth || newBufHeight != bufHeight)) {
       DBG_OBJ_MSG ("resize", 1, "replacing buffer");
+
+      DEBUG_MSG(1, "Image::sizeAllocateImpl new buffer size: w=%d h=%d\n",
+            newBufWidth, newBufHeight);
 
       core::Imgbuf *oldBuffer = buffer;
       buffer = oldBuffer->getScaledBuf (newBufWidth, newBufHeight);
@@ -299,6 +298,10 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
       DBG_OBJ_SET_NUM ("bufWidth", bufWidth);
       DBG_OBJ_SET_NUM ("bufHeight", bufHeight);
    }
+
+   DEBUG_MSG(1, "Image::sizeAllocateImpl x=%d y=%d w=%d h=(%d + %d)\n",
+                  allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
 
    DBG_OBJ_LEAVE ();
 }
@@ -502,6 +505,9 @@ void Image::setBuffer (core::Imgbuf *buffer, bool resize)
       buffer->ref ();
    }
    queueResize (0, true);
+
+   if (bufWidth)
+      this->ratio = (float) bufWidth / (float) bufHeight;
 
    DBG_OBJ_ASSOC_CHILD (this->buffer);
    DBG_OBJ_SET_NUM ("bufWidth", bufWidth);
