@@ -1972,12 +1972,17 @@ bool Widget::correctReqAspectRatio (int pass, Widget *child, Requisition *requis
 
    DEBUG_MSG(1, "Widget::correctReqAspectRatio() -- wReq=%d, hReq=%d, pass=%d\n",
          wReq, hReq, pass);
+
+   DEBUG_MSG(1, "Widget::correctReqAspectRatio() -- border: w=%d, h=%d\n",
+         child->boxDiffWidth(), child->boxDiffHeight());
+
+   wReq -= child->boxDiffWidth();
+   hReq -= child->boxDiffHeight();
+   DEBUG_MSG(1, "Widget::correctReqAspectRatio() -- with border: wReq=%d, hReq=%d\n",
+         wReq, hReq);
    DEBUG_MSG(1, "child=%s, preferred ratio=%f\n", child->getClassName(), ratio);
 
    if (pass != PASS_KEEP && ratio > 0.0 && sizeSet) {
-      /* TODO: Ensure we are dealing with the content box rather than the
-       * margin box (as in the CSS box model). */
-
       /* Compute the current ratio from the content box. */
       float curRatio = (float) wReq / (float) hReq;
       DEBUG_MSG(1, "curRatio=%f, preferred ratio=%f\n", curRatio, ratio);
@@ -1987,9 +1992,11 @@ bool Widget::correctReqAspectRatio (int pass, Widget *child, Requisition *requis
          if (pass == PASS_INCREASE) {
             /* Increase w */
             int w = (float) hReq * ratio;
+            DEBUG_MSG(1, "increase w: %d -> %d\n", wReq, w);
+            w += child->boxDiffWidth();
+            DEBUG_MSG(1, "increase w (with border): %d -> %d\n", wReq, w);
             requisition->width = w;
             changed = true;
-            DEBUG_MSG(1, "increase w: %d -> %d\n", wReq, w);
          } else if (pass == PASS_DECREASE) {
             /* Decrease h */
             if (allowDecreaseHeight) {
@@ -1998,9 +2005,11 @@ bool Widget::correctReqAspectRatio (int pass, Widget *child, Requisition *requis
                 * reduce the corrected hight above the original height, without
                 * making the requisition height smaller. */
                int h = (float) wReq / ratio;
+               DEBUG_MSG(1, "decrease h: %d -> %d\n", hReq, h);
+               h += child->boxDiffHeight();
+               DEBUG_MSG(1, "decrease h (with border): %d -> %d\n", hReq, h);
                splitHeightFun (h, &requisition->ascent, &requisition->descent);
                changed = true;
-               DEBUG_MSG(1, "decrease h: %d -> %d\n", hReq, h);
             }
          }
       } else if (curRatio > ratio) {
@@ -2008,9 +2017,11 @@ bool Widget::correctReqAspectRatio (int pass, Widget *child, Requisition *requis
          if (pass == PASS_INCREASE) {
             /* Increase h */
             int h = (float) wReq / ratio;
+            DEBUG_MSG(1, "increase h: %d -> %d\n", hReq, h);
+            h += child->boxDiffHeight();
+            DEBUG_MSG(1, "increase h (width border): %d -> %d\n", hReq, h);
             splitHeightFun (h, &requisition->ascent, &requisition->descent);
             changed = true;
-            DEBUG_MSG(1, "increase h: %d -> %d\n", hReq, h);
          } else if (pass == PASS_DECREASE) {
             /* Decrease w */
             if (allowDecreaseWidth) {
@@ -2019,15 +2030,20 @@ bool Widget::correctReqAspectRatio (int pass, Widget *child, Requisition *requis
                 * reduce the corrected width above the original width, without
                 * making the requisition width smaller. */
                int w = (float) hReq * ratio;
+               DEBUG_MSG(1, "decrease w: %d -> %d\n", wReq, w);
+               w += child->boxDiffWidth();
+               DEBUG_MSG(1, "decrease w (width border): %d -> %d\n", wReq, w);
                requisition->width = w;
                changed = true;
-               DEBUG_MSG(1, "decrease w: %d -> %d\n", wReq, w);
             }
          }
       } else {
          /* Current ratio is the preferred one. */
       }
    }
+
+   DEBUG_MSG(1, "Widget::correctReqAspectRatio() -- output: wReq=%d, hReq=%d, changed=%d\n",
+         requisition->width, requisition->ascent + requisition->descent, changed);
 
    return changed;
 }
