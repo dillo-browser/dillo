@@ -181,6 +181,9 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
 
    DEBUG_MSG(1, "-- Image::sizeRequestSimpl() begins\n");
 
+   DEBUG_MSG(1, "Image::sizeRequestImpl border: w=%d h=%d\n",
+         boxDiffWidth(), boxDiffHeight());
+
    /* First set a naive size based on the image properties if given */
 
    if (buffer) {
@@ -207,7 +210,7 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
    requisition->ascent += boxOffsetY ();
    requisition->descent += boxRestHeight ();
 
-   DEBUG_MSG(1, "initial requisition: w=%d, h=%d\n",
+   DEBUG_MSG(1, "Image: initial requisition (with border): w=%d, h=%d\n",
          requisition->width, requisition->ascent + requisition->descent);
 
    /* Then correct the size if needed, so it fits within the available space in
@@ -217,7 +220,7 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
    correctRequisition (requisition, core::splitHeightPreserveDescent, true,
                        true);
 
-   DEBUG_MSG(1, "corrected requisition: w=%d, h=%d\n",
+   DEBUG_MSG(1, "Image: corrected requisition: w=%d, h=%d\n",
          requisition->width, requisition->ascent + requisition->descent);
 
    DBG_OBJ_MSGF ("resize", 1, "=> %d * (%d + %d)",
@@ -264,6 +267,13 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
                   allocation->x, allocation->y, allocation->width,
                   allocation->ascent, allocation->descent);
 
+   DEBUG_MSG(1, "Image::sizeAllocateImpl x=%d y=%d w=%d h=(%d + %d)\n",
+                  allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
+
+   DEBUG_MSG(1, "Image::sizeAllocateImpl border: w=%d h=%d\n",
+         boxDiffWidth(), boxDiffHeight());
+
 
    int newBufWidth = allocation->width - boxDiffWidth ();
    int newBufHeight =
@@ -273,6 +283,9 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
        // Save some time when size did not change:
        (newBufWidth != bufWidth || newBufHeight != bufHeight)) {
       DBG_OBJ_MSG ("resize", 1, "replacing buffer");
+
+      DEBUG_MSG(1, "Image::sizeAllocateImpl new buffer size: w=%d h=%d\n",
+            newBufWidth, newBufHeight);
 
       core::Imgbuf *oldBuffer = buffer;
       buffer = oldBuffer->getScaledBuf (newBufWidth, newBufHeight);
@@ -285,6 +298,10 @@ void Image::sizeAllocateImpl (core::Allocation *allocation)
       DBG_OBJ_SET_NUM ("bufWidth", bufWidth);
       DBG_OBJ_SET_NUM ("bufHeight", bufHeight);
    }
+
+   DEBUG_MSG(1, "Image::sizeAllocateImpl x=%d y=%d w=%d h=(%d + %d)\n",
+                  allocation->x, allocation->y, allocation->width,
+                  allocation->ascent, allocation->descent);
 
    DBG_OBJ_LEAVE ();
 }
