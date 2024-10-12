@@ -348,6 +348,16 @@ int FltkViewport::handle (int event)
       break;
 
    case FL_MOUSEWHEEL:
+      if ((vscrollbar->visible() && Fl::event_inside(vscrollbar)) ||
+            Fl::event_shift()) {
+         if (Fl::event_dy() > 0) {
+            scroll(core::SCREEN_DOWN_CMD);
+            return 1;
+         } else if (Fl::event_dy() < 0) {
+            scroll(core::SCREEN_UP_CMD);
+            return 1;
+         }
+      }
       return (Fl::event_dx() ? hscrollbar : vscrollbar)->handle(event);
       break;
 
