@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,6 +72,7 @@ FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
    hasDragScroll = 1;
    scrollX = scrollY = scrollDX = scrollDY = 0;
    horScrolling = verScrolling = dragScrolling = 0;
+   scrollbarPageMode = false;
 
    gadgetOrientation[0] = GADGET_HORIZONTAL;
    gadgetOrientation[1] = GADGET_HORIZONTAL;
@@ -292,8 +294,18 @@ int FltkViewport::handle (int event)
 
    case FL_PUSH:
       if (vscrollbar->visible() && Fl::event_inside(vscrollbar)) {
-         if (vscrollbar->handle(event))
+         if (scrollbarPageMode ^ (bool) Fl::event_shift()) {
+            if (Fl::event_button() == FL_LEFT_MOUSE) {
+               scroll(core::SCREEN_DOWN_CMD);
+               return 1;
+            } else if (Fl::event_button() == FL_RIGHT_MOUSE) {
+               scroll(core::SCREEN_UP_CMD);
+               return 1;
+            }
+         }
+         if (vscrollbar->handle(event)) {
             verScrolling = 1;
+         }
       } else if (hscrollbar->visible() && Fl::event_inside(hscrollbar)) {
          if (hscrollbar->handle(event))
             horScrolling = 1;
@@ -410,6 +422,11 @@ void FltkViewport::setScrollStep(int step)
 {
    vscrollbar->linesize(step);
    hscrollbar->linesize(step);
+}
+
+void FltkViewport::setScrollbarPageMode(bool enable)
+{
+   scrollbarPageMode = enable;
 }
 
 bool FltkViewport::usesViewport ()

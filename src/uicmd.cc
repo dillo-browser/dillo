@@ -629,6 +629,7 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
    viewport->setBufferedDrawing (prefs.buffered_drawing ? true : false);
    viewport->setDragScroll (prefs.middle_click_drags_page ? true : false);
    viewport->setScrollbarOnLeft (prefs.scrollbar_on_left ? true : false);
+   viewport->setScrollbarPageMode (prefs.scrollbar_page_mode ? true : false);
    layout->attachView (viewport);
    new_ui->set_render_layout(viewport);
    viewport->setScrollStep(prefs.scroll_step);

@@ -201,6 +201,7 @@ void PrefsParser::parse(FILE *fp)
       { "save_dir", &prefs.save_dir, PREFS_STRING, 0 },
       { "scroll_step", &prefs.scroll_step, PREFS_INT32, 0 },
       { "scrollbar_on_left", &prefs.scrollbar_on_left, PREFS_BOOL, 0 },
+      { "scrollbar_page_mode", &prefs.scrollbar_page_mode, PREFS_BOOL, 0 },
       { "search_url", &prefs.search_urls, PREFS_STRINGS, 0 },
       { "show_back", &prefs.show_back, PREFS_BOOL, 0 },
       { "show_bookmarks", &prefs.show_bookmarks, PREFS_BOOL, 0 },

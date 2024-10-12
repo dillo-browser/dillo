@@ -49,6 +49,12 @@
 # Place the vertical scrollbar on the left side (default right).
 #scrollbar_on_left=NO
 
+# Enable the page mode for the vertical scrollbar. When this mode is enabled,
+# clicking anywhere on the vertical scrollbar with the left button scrolls one
+# page down. With the right button, one page up. Click with the middle button to
+# jump to a given position.
+#scrollbar_page_mode=NO
+
 #-------------------------------------------------------------------------
 #                           RENDERING SECTION
 #-------------------------------------------------------------------------
