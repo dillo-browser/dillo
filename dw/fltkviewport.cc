@@ -300,6 +300,21 @@ int FltkViewport::handle (int event)
    case FL_PUSH:
       if (vscrollbar->visible() && Fl::event_inside(vscrollbar)) {
          if (scrollbarPageMode ^ (bool) Fl::event_shift()) {
+            /* Check top and bottom actions first */
+            int yclick = Fl::event_y();
+            int ytop = y() + SCROLLBAR_THICKNESS;
+            int ybottom = y() + h() - SCROLLBAR_THICKNESS;
+            if (hscrollbar->visible())
+               ybottom -= SCROLLBAR_THICKNESS;
+
+            if (yclick <= ytop) {
+               scroll(core::TOP_CMD);
+               return 1;
+            } else if (yclick >= ybottom) {
+               scroll(core::BOTTOM_CMD);
+               return 1;
+            }
+
             if (Fl::event_button() == FL_LEFT_MOUSE)
                pageScrolling = core::SCREEN_DOWN_CMD;
             else if (Fl::event_button() == FL_RIGHT_MOUSE)
