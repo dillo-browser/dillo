@@ -77,6 +77,7 @@ typedef struct {
    int32_t font_max_size;
    int32_t font_min_size;
    int32_t scroll_step;
+   int32_t scroll_page_overlap;
    bool_t scrollbar_on_left;
    bool_t scrollbar_page_mode;
    bool_t show_back;

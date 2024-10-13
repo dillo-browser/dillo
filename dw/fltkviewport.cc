@@ -73,6 +73,7 @@ FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
    scrollX = scrollY = scrollDX = scrollDY = 0;
    horScrolling = verScrolling = dragScrolling = 0;
    scrollbarPageMode = false;
+   pageOverlap = 50;
 
    gadgetOrientation[0] = GADGET_HORIZONTAL;
    gadgetOrientation[1] = GADGET_HORIZONTAL;
@@ -434,6 +435,11 @@ void FltkViewport::setScrollStep(int step)
    hscrollbar->linesize(step);
 }
 
+void FltkViewport::setPageOverlap(int overlap)
+{
+   pageOverlap = overlap;
+}
+
 void FltkViewport::setScrollbarPageMode(bool enable)
 {
    scrollbarPageMode = enable;
@@ -493,13 +499,13 @@ void FltkViewport::scroll (int dx, int dy)
 void FltkViewport::scroll (core::ScrollCommand cmd)
 {
    if (cmd == core::SCREEN_UP_CMD) {
-      scroll (0, -h () + vscrollbar->linesize ());
+      scroll (0, -h () + pageOverlap);
    } else if (cmd == core::SCREEN_DOWN_CMD) {
-      scroll (0, h () - vscrollbar->linesize ());
+      scroll (0, h () - pageOverlap);
    } else if (cmd == core::SCREEN_LEFT_CMD) {
-      scroll (-w() + hscrollbar->linesize (), 0);
+      scroll (-w() + pageOverlap, 0);
    } else if (cmd == core::SCREEN_RIGHT_CMD) {
-      scroll (w() - hscrollbar->linesize (), 0);
+      scroll (w() - pageOverlap, 0);
    } else if (cmd == core::LINE_UP_CMD) {
       scroll (0, -vscrollbar->linesize ());
    } else if (cmd == core::LINE_DOWN_CMD) {

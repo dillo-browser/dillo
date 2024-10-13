@@ -42,9 +42,12 @@
 
 # Set the increment in pixels that the page is moved up/down with each input
 # from the mouse wheel, keyboard arrow keys, or scrollbar arrow buttons.
-# Page movement with the Page Up/Down keys is one scroll_step less than the
-# height of the visible page area.
 #scroll_step=100
+
+# Controls the overlap in pixels when scrolling to the next or previous page.
+# It is used to repeat the last line(s) to avoid losing the reading flow. It
+# controls the overlap in both the vertical and horizontal directions.
+#scroll_page_overlap=50
 
 # Place the vertical scrollbar on the left side (default right).
 #scrollbar_on_left=NO

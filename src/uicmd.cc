@@ -633,6 +633,7 @@ static BrowserWindow *UIcmd_tab_new(CustTabs *tabs, UI *old_ui, int focus)
    layout->attachView (viewport);
    new_ui->set_render_layout(viewport);
    viewport->setScrollStep(prefs.scroll_step);
+   viewport->setPageOverlap(prefs.scroll_page_overlap);
 
    // Now, create a new browser window structure
    BrowserWindow *new_bw = a_Bw_new();

@@ -45,6 +45,7 @@ private:
    int hasDragScroll, dragScrolling, dragX, dragY;
    int horScrolling, verScrolling;
    bool scrollbarPageMode;
+   int pageOverlap;
 
    Fl_Scrollbar *vscrollbar, *hscrollbar;
 
@@ -100,6 +101,7 @@ public:
    void addGadget (Fl_Widget *gadget);
    void setScrollbarOnLeft (bool enable);
    void setScrollbarPageMode(bool enable);
+   void setPageOverlap(int overlap);
 };
 
 } // namespace fltk
