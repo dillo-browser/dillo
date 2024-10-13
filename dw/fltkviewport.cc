@@ -74,6 +74,10 @@ FltkViewport::FltkViewport (int X, int Y, int W, int H, const char *label):
    horScrolling = verScrolling = dragScrolling = 0;
    scrollbarPageMode = false;
    pageOverlap = 50;
+   pageScrolling = core::NONE_CMD;
+
+   pageScrollDelay = 0.300;
+   pageScrollInterval = 0.100;
 
    gadgetOrientation[0] = GADGET_HORIZONTAL;
    gadgetOrientation[1] = GADGET_HORIZONTAL;
@@ -296,11 +300,19 @@ int FltkViewport::handle (int event)
    case FL_PUSH:
       if (vscrollbar->visible() && Fl::event_inside(vscrollbar)) {
          if (scrollbarPageMode ^ (bool) Fl::event_shift()) {
-            if (Fl::event_button() == FL_LEFT_MOUSE) {
-               scroll(core::SCREEN_DOWN_CMD);
-               return 1;
-            } else if (Fl::event_button() == FL_RIGHT_MOUSE) {
-               scroll(core::SCREEN_UP_CMD);
+            if (Fl::event_button() == FL_LEFT_MOUSE)
+               pageScrolling = core::SCREEN_DOWN_CMD;
+            else if (Fl::event_button() == FL_RIGHT_MOUSE)
+               pageScrolling = core::SCREEN_UP_CMD;
+            else
+               pageScrolling = core::NONE_CMD;
+
+            if (pageScrolling != core::NONE_CMD) {
+               scroll(pageScrolling);
+               /* Repeat until released */
+               if (!Fl::has_timeout(repeatPageScroll, this))
+                  Fl::add_timeout(pageScrollDelay, repeatPageScroll, this);
+
                return 1;
             }
          }
@@ -363,6 +375,7 @@ int FltkViewport::handle (int event)
       break;
 
    case FL_RELEASE:
+      Fl::remove_timeout(repeatPageScroll);
       Fl::remove_timeout(selectionScroll);
       if (Fl::event_button() == FL_MIDDLE_MOUSE) {
          setCursor (core::style::CURSOR_DEFAULT);
@@ -545,6 +558,17 @@ void FltkViewport::selectionScroll (void *data)
 {
    ((FltkViewport *)data)->selectionScroll ();
    Fl::repeat_timeout(0.025, selectionScroll, data);
+}
+
+void FltkViewport::repeatPageScroll ()
+{
+   scroll(pageScrolling);
+   Fl::repeat_timeout(pageScrollInterval, repeatPageScroll, this);
+}
+
+void FltkViewport::repeatPageScroll (void *data)
+{
+   ((FltkViewport *)data)->repeatPageScroll ();
 }
 
 void FltkViewport::setScrollbarOnLeft (bool enable)

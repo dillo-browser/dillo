@@ -46,6 +46,9 @@ private:
    int horScrolling, verScrolling;
    bool scrollbarPageMode;
    int pageOverlap;
+   enum dw::core::ScrollCommand pageScrolling;
+   float pageScrollInterval;
+   float pageScrollDelay;
 
    Fl_Scrollbar *vscrollbar, *hscrollbar;
 
@@ -64,6 +67,9 @@ private:
 
    void selectionScroll();
    static void selectionScroll(void *vport);
+
+   void repeatPageScroll ();
+   static void repeatPageScroll (void *data);
 
    void updateCanvasWidgets (int oldScrollX, int oldScrollY);
    static void draw_area (void *data, int x, int y, int w, int h);
