@@ -293,11 +293,10 @@ dpip = static_library(
 dillo_libs += [dlib, dpip, liblout]
 
 subdir('dpi')
-
 subdir('dw')
 subdir('src')
-
 subdir('dpid')
+subdir('test')
 
 ##################
 # Config Summary #

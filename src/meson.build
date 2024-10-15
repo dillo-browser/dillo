@@ -53,7 +53,7 @@ dillo_files = files(
     'xembed.cc',
 )
 
-executable(
+dillo = executable(
     'dillo',
     sources: dillo_files,
     dependencies: dillo_deps,
