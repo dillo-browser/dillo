@@ -4,7 +4,7 @@ project(
     'c',
     version: '3.1.1',
     license: 'GPL-3.0-or-later',
-    meson_version: '>= 1.1.0', # meson.options
+    meson_version: '>= 1.4.0', #file.full_path()
     default_options: [
         'c_std=c11',
         'cpp_std=c++11',
@@ -50,11 +50,12 @@ conf.set_quoted(
     'DILLO_LIBDIR',
     get_option('prefix') / get_option('libdir') / meson.project_name(),
 )
+# This one needs a trailing slash in the dillo source; for 1:1 autotools compat we'll add it here for now
 conf.set_quoted(
     'DILLO_SYSCONF',
     get_option('prefix') / get_option('sysconfdir') / meson.project_name()
     + '/',
-) # This one needs a trailing slash in the dillo source; for 1:1 autotools compat we'll add it here for now
+)
 conf.set_quoted('DPIDRC_SYS', get_option('sysconfdir') / 'dpidrc')
 conf.set_quoted('EXEEXT', exe_suffix)
 conf.set_quoted('PACKAGE', meson.project_name())
@@ -260,12 +261,10 @@ configure_file(
 # Subdirs! #
 ############
 
-# SUBDIRS = lout dw dlib dpip src doc dpid dpi test
-
 # We store internal static libs here to link against in the main executable
 dillo_libs = []
 
-# We could some of these small libs, but honestly it's so small it's not worth it.
+# We could subdir some of these small libs, but honestly it's so small it's not worth it.
 dlib = static_library('dlib', sources: files('dlib/dlib.c'))
 
 liblout_files = files(
