@@ -24,6 +24,7 @@ dillo-3.2.0 [Not released yet]
  - Add scrollbar_page_mode option to easily scroll full pages with the mouse.
  - Control the page overlap with the scroll_page_overlap option.
  - Set focus_new_tab=NO and show_quit_dialog=NO by default.
+ - Fix GET requests over HTTPS via a proxy.
    Patches: Rodrigo Arias Mallo
 +- Add primitive support for SVG using the nanosvg.h library.
  - Add support for ch, rem, vw, vh, vmin and vmax CSS units.

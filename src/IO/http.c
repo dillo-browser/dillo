@@ -380,7 +380,7 @@ static Dstr *Http_make_content_type(const DilloUrl *url)
 /**
  * Make the http query string
  */
-static Dstr *Http_make_query_str(DilloWeb *web, bool_t use_proxy)
+static Dstr *Http_make_query_str(DilloWeb *web, bool_t use_proxy, bool_t use_tls)
 {
    char *ptr, *cookies, *referer, *auth;
    const DilloUrl *url = web->url;
@@ -397,7 +397,7 @@ static Dstr *Http_make_query_str(DilloWeb *web, bool_t use_proxy)
    const char *connection_hdr_val =
       (prefs.http_persistent_conns == TRUE) ? "keep-alive" : "close";
 
-   if (use_proxy) {
+   if (use_proxy && !use_tls) {
       dStr_sprintfa(request_uri, "%s%s",
                     URL_STR(url),
                     (URL_PATH_(url) || URL_QUERY_(url)) ? "" : "/");
@@ -485,7 +485,9 @@ static void Http_send_query(SocketData_t *S)
    DataBuf *dbuf;
 
    /* Create the query */
-   query = Http_make_query_str(S->web, S->flags & HTTP_SOCKET_USE_PROXY);
+   query = Http_make_query_str(S->web,
+		   S->flags & HTTP_SOCKET_USE_PROXY,
+		   S->flags & HTTP_SOCKET_TLS);
    dbuf = a_Chain_dbuf_new(query->str, query->len, 0);
 
    MSG_BW(S->web, 1, "Sending query%s...",
