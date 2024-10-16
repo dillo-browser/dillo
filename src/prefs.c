@@ -44,7 +44,7 @@ void a_Prefs_init(void)
    prefs.buffered_drawing = 1;
    prefs.contrast_visited_color = TRUE;
    prefs.enterpress_forces_submit = FALSE;
-   prefs.focus_new_tab = TRUE;
+   prefs.focus_new_tab = FALSE;
    prefs.font_cursive = dStrdup(PREFS_FONT_CURSIVE);
    prefs.font_factor = 1.0;
    prefs.zoom_factor = 1.0;

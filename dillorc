@@ -423,7 +423,7 @@ ui_tab_bg_color=#b7beb7
 
 # Focus follows new Tabs.
 # You can hold SHIFT to temporarily revert this behaviour.
-#focus_new_tab=YES
+#focus_new_tab=NO
 
 # Ask before quitting Dillo with more than one window or tab open.
 #show_quit_dialog=NO
