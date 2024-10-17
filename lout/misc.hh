@@ -1,3 +1,23 @@
+/*
+ * Dillo Widget
+ *
+ * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef __LOUT_MISC_HH__
 #define __LOUT_MISC_HH__
 
@@ -372,23 +392,6 @@ public:
       this->numAllocExtra = initAlloc;
       this->arrayMain = this->arrayExtra1 = this->arrayExtra2 = NULL;
       this->startExtra = -1;
-   }
-
-   inline NotSoSimpleVector (const NotSoSimpleVector &o)
-   {
-      this->arrayMain = NULL;
-      this->numMain = o.numMain;
-      this->numAllocMain = o.numAllocMain;
-      resizeMain ();
-      memcpy (this->arrayMain, o.arrayMain, sizeof (T) * numMain);
-
-      this->arrayExtra = NULL;
-      this->numExtra = o.numExtra;
-      this->numAllocExtra = o.numAllocExtra;
-      resizeExtra ();
-      memcpy (this->arrayExtra, o.arrayExtra, sizeof (T) * numExtra);
-
-      this->startExtra = o.startExtra;
    }
 
    inline ~NotSoSimpleVector ()
