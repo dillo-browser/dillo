@@ -13,6 +13,8 @@
 #ifndef __UICMD_HH__
 #define __UICMD_HH__
 
+/* This is C++ and we should be using <cstdint> but this file is currently included in a C file so... */
+#include <stdint.h>
 #include "bw.h"
 
 #ifdef __cplusplus
