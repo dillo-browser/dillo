@@ -1031,7 +1031,6 @@ void StyleEngine::init () {
       " h1, h2, h3, h4, h5, h6, header, main, nav, ol, p, pre, section, ul"
       " {display: block}"
       "i, em, cite, address, var {font-style: italic}"
-      ":link img, :visited img {border: 1px solid}"
       "frameset, ul, ol, dir {margin-left: 40px}"
       /* WORKAROUND: It should be margin: 1em 0
        * but as we don't collapse these margins yet, it
