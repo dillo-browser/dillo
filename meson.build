@@ -172,10 +172,30 @@ if use_tls.enabled()
         all_deps += [openssl]
         conf.set10('HAVE_OPENSSL', true)
     elif get_option('mbedtls')
-        mbedtls = dependency('mbedtls', required: true)
-        mbedx509 = dependency('mbedx509', required: true)
-        mbedcrypto = dependency('mbedcrypto', required: true)
-        all_deps += [mbedtls, mbedx509, mbedcrypto]
+        mbedtls = dependency('mbedtls', required: false)
+        mbedx509 = dependency('mbedx509', required: false)
+        mbedcrypto = dependency('mbedcrypto', required: false)
+        if mbedtls.found() and mbedx509.found() and mbedcrypto.found()
+            all_deps += [mbedtls, mbedx509, mbedcrypto]
+        else
+            # We're probably on an OS with an outdated mbedtls package that doesn't include a pkgconfig (etc).
+            # Try and find mbedtls3
+            mbedtls = cc.find_library('mbedtls', has_headers: 'mbedtls/net.h', required: false)
+            if mbedtls.found()
+                # Assume that we can find the other two libraries in the same way; die if we don't
+                mbedx509 = cc.find_library('mbedx509', required: true)
+                mbedcrypto = cc.find_library('mbedcrypto', required: true)
+                all_deps += [mbedtls, mbedx509, mbedcrypto]
+            else
+                # If all else fails assume that the user knows what they're doing and this is a very old mbedtls2
+                message('Using fallback mbedtls2 definition')
+                mbedtls = declare_dependency(
+                    include_directories: ['/usr/include/mbedtls2/'],
+                    link_args: ['-L/usr/lib/mbedtls2', '-lmbedtls', '-lmbedx509', '-lmbedcrypto']
+                )
+                all_deps += mbedtls
+            endif
+        endif
         conf.set10('HAVE_MBEDTLS', true)
     endif
 endif

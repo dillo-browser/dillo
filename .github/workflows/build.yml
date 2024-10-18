@@ -8,6 +8,7 @@ jobs:
     container:
       image: ${{ matrix.distro == 'alpine' && 'alpine:latest' || matrix.distro == 'ubuntu-20.04' && 'ubuntu:20.04' || 'ubuntu:latest' }}
     strategy:
+      fail-fast: false # Remove this line to fail the whole matrix if one job fails; included for testing as many CI pipelines as possible for now
       matrix:
         distro: [ubuntu, ubuntu-20.04, alpine]
         build-system: [autotools, meson]
@@ -135,7 +136,7 @@ jobs:
       - name: Run distcheck
         run: |
           HTML_TESTS_OPT=""
-          if [ "${{ matrix.distro }}" = "ubuntu" ] && [ "${{matrix.compiler}}" = "gcc" ]; then
+          if [ "${{ matrix.distro }}" = "ubuntu" ] && [ "${{matrix.compiler}}" = "gcc" ] && [ "${{ matrix.tls }}" = "none" ]; then
             if [ "${{ matrix.build-system }}" = "autotools" ]; then
               HTML_TESTS_OPT="--enable-html-tests"
             fi
@@ -259,6 +260,7 @@ jobs:
     strategy:
       matrix:
         build-system: [autotools, meson]
+        tls: [openssl, mbedtls]
     steps:
     - run: git config --global core.autocrlf input
     - uses: actions/checkout@v4
@@ -275,14 +277,21 @@ jobs:
         ls -l
         if [ "${{ matrix.build-system }}" = "autotools" ]; then
           ./autogen.sh
-          ./configure --disable-openssl
+          if [ "${{ matrix.tls }}" = "mbedtls" ]; then
+            ./configure --disable-openssl
+          else
+            ./configure --disable-mbedtls
+          fi
           make
           make check
           ls -l src/dillo
         else
           pip3.9 install meson
-          # Cygwin doesn't currently package a version of mbedtls that has a pkgconfig file
-          meson setup build -Dmbedtls=false -Dopenssl=true
+          if [ "${{ matrix.tls }}" = "mbedtls" ]; then
+            meson setup build -Dmbedtls=true -Dopenssl=false
+          else
+            meson setup build -Dmbedtls=false -Dopenssl=true
+          fi
           ninja -C build
           ninja -C build test
           ls -l build/src/dillo
