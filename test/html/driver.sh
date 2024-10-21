@@ -19,6 +19,11 @@ if [ ! -e $DILLOBIN ]; then
   exit 1
 fi
 
+magick_bin="convert"
+if command  -v magick 2>&1 >/dev/null; then
+  magick_bin="magick"
+fi
+
 function render_page() {
   htmlfile="$1"
   outpic="$2"
@@ -35,7 +40,7 @@ function render_page() {
     echo "cannot find Dillo window" >&2
     exit 1
   fi
-  xwd -id "$winid" -silent | convert xwd:- png:${outpic}
+  xwd -id "$winid" -silent | ${magick_bin} xwd:- png:${outpic}
 
   kill "$dillopid"
 }

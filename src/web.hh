@@ -2,6 +2,7 @@
 #define __WEB_H__
 
 #include <stdio.h>     /* for FILE */
+#include <stdint.h>     /* for int32_t */
 #include "bw.h"        /* for BrowserWindow */
 #include "cache.h"     /* for CA_Callback_t */
 #include "image.hh"    /* for DilloImage */
