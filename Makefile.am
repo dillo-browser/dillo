@@ -16,3 +16,6 @@ appicon128dir = $(datadir)/icons/hicolor/128x128/apps/
 appicon128_DATA = icons/128x128/dillo.png
 
 EXTRA_DIST += $(desktop_DATA) $(appicon48_DATA) $(appicon128_DATA)
+
+dist-hook:
+	echo '$(VERSION)' > $(distdir)/.tarball-version
