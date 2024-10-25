@@ -26,6 +26,7 @@ dillo-3.2.0 [Not released yet]
  - Set focus_new_tab=NO and show_quit_dialog=NO by default.
  - Fix GET requests over HTTPS via a proxy.
  - Improve image resize logic to always try to preserve the aspect ratio.
+ - Reload current page on SIGUSR1 signal
    Patches: Rodrigo Arias Mallo
 +- Add primitive support for SVG using the nanosvg.h library.
  - Add support for ch, rem, vw, vh, vmin and vmax CSS units.

@@ -69,6 +69,15 @@ using namespace dw::fltk;
  */
 static const char *save_dir = "";
 
+struct Tabgroup {
+   CustTabs *tabs;
+   struct Tabgroup *next;
+};
+
+/* An stack of CustTabs groups, each maps to one FLTK window. Points to
+ * the last one created. */
+static struct Tabgroup *tabgroups = NULL;
+
 /*
  * Forward declarations
  */
@@ -570,6 +579,13 @@ BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
 
    win->box(FL_NO_BOX);
    CustTabs *DilloTabs = new CustTabs(ww, wh, prefs.ui_tab_height);
+
+   struct Tabgroup *tg = new Tabgroup;
+   tg->tabs = DilloTabs;
+   tg->next = tabgroups;
+   tabgroups = tg;
+   _MSG("new: tabgroups=%p\n", (void *) tg);
+
    win->end();
    win->resizable(DilloTabs->wizard());
 
@@ -668,8 +684,26 @@ void a_UIcmd_close_bw(void *vbw)
    delete(layout);
    if (tabs) {
       tabs->remove_tab(ui);
-      if (tabs->num_tabs() == 0)
+      if (tabs->num_tabs() == 0) {
+         /* No more tabs, remove tabgroup */
+         struct Tabgroup *tmp = tabgroups;
+         struct Tabgroup *prev = NULL;
+         for (tmp = tabgroups; tmp; tmp = tmp->next) {
+            if (tmp->tabs == tabs) {
+               if (prev)
+                  prev->next = tmp->next;
+               else
+                  tabgroups = tmp->next;
+               break;
+            }
+            prev = tmp;
+         }
+         if (tmp) {
+            _MSG("gone: tmp=%p tabgroups=%p\n", (void *) tmp, (void *) tabgroups);
+            delete tmp;
+         }
          delete tabs->window();
+      }
    }
    a_Bw_free(bw);
 }
@@ -871,6 +905,19 @@ void a_UIcmd_home(void *vbw)
 void a_UIcmd_reload(void *vbw)
 {
    a_Nav_reload((BrowserWindow*)vbw);
+}
+
+/*
+ * Reload all active tabs
+ */
+void a_UIcmd_reload_all_active()
+{
+   struct Tabgroup *tg = tabgroups;
+   for (tg = tabgroups; tg; tg = tg->next) {
+      BrowserWindow *bw = a_UIcmd_get_bw_by_widget(tg->tabs->wizard()->value());
+      if (bw)
+         a_UIcmd_reload(bw);
+   }
 }
 
 /*

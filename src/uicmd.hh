@@ -37,6 +37,7 @@ void a_UIcmd_zoom_in(void *vbw);
 void a_UIcmd_zoom_out(void *vbw);
 void a_UIcmd_zoom_reset(void *vbw);
 void a_UIcmd_reload(void *vbw);
+void a_UIcmd_reload_all_active();
 void a_UIcmd_repush(void *vbw);
 void a_UIcmd_redirection0(void *vbw, const DilloUrl *url);
 void a_UIcmd_save(void *vbw);

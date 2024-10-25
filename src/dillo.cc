@@ -2,6 +2,7 @@
  * Dillo web browser
  *
  * Copyright 1999-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,6 +65,8 @@
 #include "dw/widget.hh"
 #include "dw/textblock.hh"
 #include "dw/table.hh"
+
+static volatile sig_atomic_t sig_reload = 0;
 
 /**
  * Command line options structure
@@ -145,6 +148,11 @@ static void raw_sigchld2(int signum)
    }
 }
 
+static void handler_usr1(int signum)
+{
+   sig_reload = 1;
+}
+
 /**
  * Establish SIGCHLD handler
  */
@@ -159,6 +167,11 @@ static void est_sigchld(void)
    sigact.sa_flags = SA_NOCLDSTOP;   /* ignore stop/resume states */
    if (sigaction(SIGCHLD, &sigact, NULL) == -1) {
       perror("sigaction");
+      exit(1);
+   }
+
+   if (signal(SIGUSR1, handler_usr1) == SIG_ERR) {
+      perror("signal failed");
       exit(1);
    }
 }
@@ -580,7 +593,15 @@ int main(int argc, char **argv)
       }
    }
 
-   Fl::run();
+   /* Don't use, as it can be free()'d */
+   bw = NULL;
+
+   while (Fl::wait() > 0) {
+      if (sig_reload) {
+         sig_reload = 0;
+         a_UIcmd_reload_all_active();
+      }
+   }
 
    /*
     * Memory deallocating routines
