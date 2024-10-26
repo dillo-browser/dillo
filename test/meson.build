@@ -201,6 +201,12 @@ dw_ui_test = executable(
 test('DW imgbuf mem test', dw_imgbuf_mem_test)
 
 if get_option('html-tests').enabled()
+    imgformats = ['png', 'svg']
+    foreach imgformat : imgformats
+        if not get_option(imgformat).enabled()
+            error(f'Option \'@imgformat@\' is required for the HTML tests')
+        endif
+    endforeach
     html_tests = [
         'html/render/b-div.html',
         'html/render/div-100-percent-with-padding.html',
