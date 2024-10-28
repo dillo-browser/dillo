@@ -25,9 +25,11 @@ Dillo][mobilized].
 [mobilized]: https://www.toomanyatoms.com/software/mobilized_dillo.html
 
 > [!WARNING]
-> As of December 2023, the host `dillo.org` is no longer under control
-> of Dillo developers. A [copy of the website from May 2022][may] is
-> archived in the Wayback Machine.
+> As of December 2023, the host `dillo.org` is [no longer under control][gone]
+> of Dillo developers. A copy of the old website is archived in
+> [GitHub Pages][old] and the [Wayback Machine (May 2022)][may].
 
+[gone]: https://dillo-browser.github.io/dillo.org.html
+[old]: https://dillo-browser.github.io/old/
 [may]: http://web.archive.org/web/20220508022123/https://www.dillo.org/
 
