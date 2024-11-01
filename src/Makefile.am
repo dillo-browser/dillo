@@ -25,6 +25,8 @@ dillo_LDADD = \
 
 dillo_SOURCES = \
 	dillo.cc \
+	version.cc \
+	version.hh \
 	paths.cc \
 	paths.hh \
 	tipwin.cc \

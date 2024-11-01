@@ -47,6 +47,7 @@
 #include "bw.h"
 #include "misc.h"
 #include "history.h"
+#include "version.hh"
 
 #include "dns.h"
 #include "web.hh"
@@ -441,7 +442,7 @@ int main(int argc, char **argv)
          }
          break;
       case DILLO_CLI_VERSION:
-         puts("Dillo version " VERSION);
+         version_print_info();
          return 0;
       case DILLO_CLI_HELP:
          printHelp(argv[0], Options);
