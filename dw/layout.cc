@@ -255,7 +255,7 @@ Layout::Anchor::~Anchor ()
 
 // ---------------------------------------------------------------------
 
-Layout::Layout (Platform *platform)
+Layout::Layout (Platform *platform, bool limit)
 {
    this->platform = platform;
    view = NULL;
@@ -308,6 +308,7 @@ Layout::Layout (Platform *platform)
 
    resizeIdleCounter = queueResizeCounter = sizeAllocateCounter
       = sizeRequestCounter = getExtremesCounter = resizeCounter = 0;
+   resizeLimit = limit;
 }
 
 Layout::~Layout ()
@@ -882,7 +883,7 @@ void Layout::resizeIdle ()
 
       /* Prevent infinite resize loop, if we reach this point it is very likely
        * there is a bug in the layouting process */
-      if (resizeCounter >= 1000) {
+      if (resizeLimit && resizeCounter >= 1000) {
          MSG_ERR("Emergency layout stop after %d iterations\n", resizeCounter);
          MSG_ERR("Please file a bug report with the complete console output\n");
          resizeIdleId = -1;

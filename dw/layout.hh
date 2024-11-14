@@ -247,12 +247,13 @@ private:
 
    int resizeIdleCounter, queueResizeCounter, sizeAllocateCounter,
       sizeRequestCounter, getExtremesCounter, resizeCounter;
+   bool resizeLimit;
 
    void enterResizeIdle () { resizeIdleCounter++; }
    void leaveResizeIdle () { resizeIdleCounter--; }
 
 public:
-   Layout (Platform *platform);
+   Layout (Platform *platform, bool limit=true);
    ~Layout ();
 
    inline void connectLink (LinkReceiver *receiver)

@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -343,7 +344,8 @@ void ComplexButtonResource::init (Widget *widget)
 {
    childWidget = widget;
 
-   layout = new Layout (createPlatform ());
+   /* FIXME: Buttons should not need a full Layout */
+   layout = new Layout (createPlatform (), false);
    setLayout (layout);
    DBG_OBJ_ASSOC_CHILD (layout);
    layout->setWidget (widget);
