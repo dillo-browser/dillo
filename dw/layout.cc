@@ -1329,6 +1329,7 @@ void Layout::viewportSizeChanged (View *view, int width, int height)
       canvasHeightGreater = false;   // reset value here
       viewportWidth = width;
       viewportHeight = height;
+      resizeCounter = 0;
       containerSizeChanged ();
 
       DBG_OBJ_SET_SYM ("canvasHeightGreater",
