@@ -407,11 +407,10 @@ static Dstr *Http_make_query_str(DilloWeb *web, bool_t use_proxy, bool_t use_tls
          dStr_sprintf(proxy_auth, "Proxy-Authorization: Basic %s\r\n",
                       HTTP_Proxy_Auth_base64);
    } else {
-      dStr_sprintfa(request_uri, "%s%s%s%s",
-                    URL_PATH(url),
+      dStr_sprintfa(request_uri, "%s%s%s",
+                    URL_PATH_(url) ? URL_PATH(url) : "/",
                     URL_QUERY_(url) ? "?" : "",
-                    URL_QUERY(url),
-                    (URL_PATH_(url) || URL_QUERY_(url)) ? "" : "/");
+                    URL_QUERY(url));
    }
 
    cookies = a_Cookies_get_query(url, web->requester);
