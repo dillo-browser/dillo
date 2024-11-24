@@ -4,7 +4,7 @@
  * Copyright (C) 2011 Benjamin Johnson <obeythepenguin@users.sourceforge.net>
  * (for the https code offered from dplus browser that formed the basis...)
  * Copyright 2016 corvid
- * Copyright (C) 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ extern "C" {
 
 #include "../url.h"
 
+const char *a_Tls_mbedtls_version(char *buf, int n);
 void a_Tls_mbedtls_init(void);
 int a_Tls_mbedtls_certificate_is_clean(const DilloUrl *url);
 int a_Tls_mbedtls_connect_ready(const DilloUrl *url);

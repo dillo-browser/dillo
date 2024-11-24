@@ -355,6 +355,17 @@ static void Tls_remove_psk_ciphersuites()
    mbedtls_ssl_conf_ciphersuites(&ssl_conf, our_ciphers);
 }
 
+const char *a_Tls_mbedtls_version(char *buf, int n)
+{
+   char ver[128]; /* Only 9 characters needed */
+   mbedtls_version_get_string(ver);
+
+   int k = snprintf(buf, n, "mbedTLS/%s", ver);
+   if (k >= n)
+      return "mbedTLS/?";
+   return buf;
+}
+
 /*
  * Initialize the mbed TLS library.
  */

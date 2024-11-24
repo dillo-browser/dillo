@@ -246,6 +246,27 @@ static void Tls_load_certificates(void)
       ;
 }
 
+const char *a_Tls_openssl_version(char *buf, int n)
+{
+   /* Ugly hack to replace "OpenSSL 3.4.0 22 Oct 2024" with
+    * "OpenSSL/3.4.0". It also works for LibreSSL. */
+   const char *ver = OpenSSL_version(OPENSSL_VERSION);
+   if (snprintf(buf, n, "%s", ver) >= n)
+      return "OpenSSL/?";
+
+   char *ossl = buf;
+   char *sp1 = strchr(ossl, ' ');
+   if (sp1) {
+      *sp1 = '/';
+      char *sp2 = strchr(ossl, ' ');
+      if (sp2) {
+         *sp2 = '\0';
+      }
+   }
+
+   return buf;
+}
+
 /*
  * Initialize the OpenSSL library.
  */

@@ -4,7 +4,7 @@
  * Copyright (C) 2011 Benjamin Johnson <obeythepenguin@users.sourceforge.net>
  * (for the https code offered from dplus browser that formed the basis...)
  * Copyright 2016 corvid
- * Copyright (C) 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ extern "C" {
 #define TLS_CONNECT_NOT_YET 0
 #define TLS_CONNECT_READY 1
 
+const char *a_Tls_version(char *buf, int n);
 void a_Tls_init(void);
 int a_Tls_certificate_is_clean(const DilloUrl *url);
 int a_Tls_connect_ready(const DilloUrl *url);

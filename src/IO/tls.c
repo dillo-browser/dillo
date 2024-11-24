@@ -4,7 +4,7 @@
  * Copyright (C) 2011 Benjamin Johnson <obeythepenguin@users.sourceforge.net>
  * (for the https code offered from dplus browser that formed the basis...)
  * Copyright 2016 corvid
- * Copyright (C) 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,22 @@
 #include "tls.h"
 #include "tls_openssl.h"
 #include "tls_mbedtls.h"
+
+/**
+ * Get the version of the TLS library.
+ */
+const char *a_Tls_version(char *buf, int n)
+{
+#if ! defined(ENABLE_TLS)
+   return NULL;
+#elif defined(HAVE_OPENSSL)
+   return a_Tls_openssl_version(buf, n);
+#elif defined(HAVE_MBEDTLS)
+   return a_Tls_mbedtls_version(buf, n);
+#else
+# error "no TLS library found but ENABLE_TLS set"
+#endif
+}
 
 /**
  * Initialize TLS library.
