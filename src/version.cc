@@ -21,6 +21,7 @@
 
 #include "djpeg.h"
 #include "dpng.h"
+#include "dwebp.h"
 #include "IO/tls.h"
 
 #include <FL/Fl.H>
@@ -51,6 +52,10 @@ static void print_libs()
 
 #ifdef ENABLE_PNG
    printf(" png/%s", a_Png_version());
+#endif
+
+#ifdef ENABLE_WEBP
+   printf(" webp/%s", a_Webp_version(buf, 256));
 #endif
 
 #ifdef ENABLE_TLS
@@ -84,6 +89,11 @@ static void print_features()
          " +SVG"
 #else
          " -SVG"
+#endif
+#ifdef ENABLE_WEBP
+         " +WEBP"
+#else
+         " -WEBP"
 #endif
 #if !( defined(DISABLE_XEMBED) || defined(WIN32) || defined(__APPLE__) )
          " +XEMBED"

@@ -2,6 +2,7 @@
  * File: webp.c
  *
  * Copyright (C) 2024 dogma
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -172,6 +173,23 @@ void a_Webp_callback(int Op, void *data)
    }
 }
 
+const char *a_Webp_version(char *buf, int n)
+{
+   /* Return the decoder's version number, packed in
+    * hexadecimal using 8bits for each of major/minor/revision.
+    * E.g: v2.5.7 is 0x020507. */
+   int ver = WebPGetDecoderVersion();
+
+   int major = (ver >> 16) & 0xff;
+   int minor = (ver >>  8) & 0xff;
+   int rev   = (ver >>  0) & 0xff;
+
+   int k = snprintf(buf, n, "%d.%d.%d", major, minor, rev);
+   if (k >= n)
+      return "?";
+   return buf;
+}
+
 /*
  * Create the image state data that must be kept between calls
  */
@@ -197,5 +215,6 @@ void *a_Webp_new(DilloImage *Image, DilloUrl *url, int version)
 
 void *a_Webp_new() { return 0; }
 void a_Webp_callback() { return; }
+const char *a_Webp_version(char *buf, int n) { return NULL; }
 
 #endif /* ENABLE_WEBP */

@@ -11,6 +11,7 @@ extern "C" {
 
 void *a_Webp_new(DilloImage *Image, DilloUrl *url, int version);
 void a_Webp_callback(int Op, void *data);
+const char *a_Webp_version(char *buf, int n);
 
 
 #ifdef __cplusplus
