@@ -2,6 +2,7 @@
  * Copyright Geoff Lane nov 1999 zzassgl@twirl.mcc.ac.uk
  * Copyright Luca Rota, Jorge Arellano Cid, Eric Gaudet 2000
  * Copyright Jorge Arellano Cid 2009
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  */
 
 /**
@@ -436,6 +437,11 @@ void a_Png_callback(int Op, void *data)
    }
 }
 
+const char *a_Png_version(void)
+{
+   return png_get_libpng_ver(NULL);
+}
+
 /**
  * Create the image state data that must be kept between calls
  */
@@ -465,5 +471,6 @@ void *a_Png_new(DilloImage *Image, DilloUrl *url, int version)
 
 void *a_Png_new() { return 0; }
 void a_Png_callback() { return; }
+const char *a_Png_version(void) { return NULL; }
 
 #endif /* ENABLE_PNG */
