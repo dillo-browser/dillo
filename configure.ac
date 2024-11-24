@@ -218,6 +218,8 @@ case $fltk_version in
          LIBFLTK_CXXFLAGS=`$FLTK_CONFIG --cxxflags`
          LIBFLTK_CFLAGS=`$FLTK_CONFIG --cflags`
          LIBFLTK_LIBS=`$FLTK_CONFIG --ldflags`;;
+  1.4.*) AC_MSG_RESULT(no)
+         AC_MSG_ERROR([FLTK $fltk_version not supported yet; use FLTK 1.3]);;
   ?*)    AC_MSG_RESULT(no)
          AC_MSG_ERROR(FLTK 1.3 required; version found: $fltk_version);;
   *)     AC_MSG_RESULT(no)
