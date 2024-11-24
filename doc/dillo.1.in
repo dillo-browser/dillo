@@ -16,7 +16,7 @@ HTTPS support can be enabled. Both FTP and Dillo's download manager use the
 .BR wget (1)
 downloader.
 .PP
-Dillo displays HTML, text, PNG, JPEG, GIF and SVG files.
+Dillo displays HTML, text, PNG, JPEG, GIF, SVG and WebP files.
 It handles cookies, HTTP authentication (basic and digest), proxying (basic),
 and some CSS.
 .PP
