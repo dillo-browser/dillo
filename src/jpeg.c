@@ -2,6 +2,7 @@
  * File: jpeg.c
  *
  * Copyright (C) 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -232,6 +233,21 @@ void a_Jpeg_callback(int Op, void *data)
    }
 }
 
+const char *a_Jpeg_version(void)
+{
+#define QUOTE(x) #x
+#define STR(x) QUOTE(x)
+
+#if defined(LIBJPEG_TURBO_VERSION)
+   return STR(LIBJPEG_TURBO_VERSION);
+#else
+   return STR(JPEG_LIB_VERSION);
+#endif
+
+#undef STR
+#undef QUOTE
+}
+
 /**
  * Receive and process new chunks of JPEG image data
  */
@@ -405,5 +421,6 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
 
 void *a_Jpeg_new() { return 0; }
 void a_Jpeg_callback() { return; }
+const char *a_Jpeg_version(void) { return NULL; }
 
 #endif /* ENABLE_JPEG */

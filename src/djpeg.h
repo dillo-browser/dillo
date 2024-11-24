@@ -11,6 +11,7 @@ extern "C" {
 
 void *a_Jpeg_new(DilloImage *Image, DilloUrl *url, int version);
 void a_Jpeg_callback(int Op, void *data);
+const char *a_Jpeg_version(void);
 
 
 #ifdef __cplusplus
