@@ -20,7 +20,7 @@ dillo_LDADD = \
 	$(top_builddir)/dw/libDw-fltk.a \
 	$(top_builddir)/dw/libDw-core.a \
 	$(top_builddir)/lout/liblout.a \
-	@LIBJPEG_LIBS@ @LIBPNG_LIBS@ @LIBFLTK_LIBS@ @LIBZ_LIBS@ \
+	@LIBJPEG_LIBS@ @LIBPNG_LIBS@ @LIBWEBP_LIBS@ @LIBFLTK_LIBS@ @LIBZ_LIBS@ \
 	@LIBICONV_LIBS@ @LIBPTHREAD_LIBS@ @LIBX11_LIBS@ @LIBSSL_LIBS@
 
 dillo_SOURCES = \
@@ -118,6 +118,8 @@ dillo_SOURCES = \
 	djpeg.h \
 	png.c \
 	dpng.h \
+	webp.c \
+	dwebp.h \
 	svg.c \
 	nanosvg.h \
 	nanosvgrast.h \

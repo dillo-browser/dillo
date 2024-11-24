@@ -19,14 +19,15 @@
 #include "web.hh"
 #include "dicache.h"
 #include "dpng.h"
+#include "dwebp.h"
 #include "dgif.h"
 #include "djpeg.h"
 #include "dsvg.h"
 
-
 enum {
    DIC_Gif,
    DIC_Png,
+   DIC_Webp,
    DIC_Jpeg,
    DIC_Svg
 };
@@ -390,6 +391,10 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
          DicEntry->Decoder = (CA_Callback_t)a_Gif_callback;
          DicEntry->DecoderData =
             a_Gif_new(web->Image, DicEntry->url, DicEntry->version);
+      } else if (ImgType == DIC_Webp) {
+         DicEntry->Decoder = (CA_Callback_t)a_Webp_callback;
+         DicEntry->DecoderData =
+            a_Webp_new(web->Image, DicEntry->url, DicEntry->version);
       } else if (ImgType == DIC_Png) {
          DicEntry->Decoder = (CA_Callback_t)a_Png_callback;
          DicEntry->DecoderData =
@@ -419,6 +424,15 @@ void *a_Dicache_png_image(const char *Type, void *Ptr, CA_Callback_t *Call,
                           void **Data)
 {
    return Dicache_image(DIC_Png, Type, Ptr, Call, Data);
+}
+
+/**
+ * WEBP wrapper for Dicache_image()
+ */
+void *a_Dicache_webp_image(const char *Type, void *Ptr, CA_Callback_t *Call,
+                          void **Data)
+{
+   return Dicache_image(DIC_Webp, Type, Ptr, Call, Data);
 }
 
 /**

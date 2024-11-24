@@ -51,6 +51,11 @@ AC_ARG_ENABLE([png],
   [enable_png=$enableval],
   [enable_png=yes])
 
+AC_ARG_ENABLE([webp],
+  [AS_HELP_STRING([--disable-webp], [Disable support for WEBP images])],
+  [enable_webp=$enableval],
+  [enable_webp=yes])
+
 AC_ARG_ENABLE([jpeg],
   [AS_HELP_STRING([--disable-jpeg], [Disable support for JPEG images])],
   [enable_jpeg=$enableval],
@@ -282,6 +287,30 @@ fi
 
 if test "x$jpeg_ok" = "xyes"; then
   AC_DEFINE([ENABLE_JPEG], [1], [Enable JPEG images])
+fi
+
+dnl ----------------
+dnl Test for libwebp
+dnl ----------------
+dnl
+if test "x$enable_webp" = "xyes"; then
+  AC_CHECK_HEADER(webp/decode.h, webp_ok=yes, webp_ok=no)
+
+  if test "x$webp_ok" = "xyes"; then
+    old_libs="$LIBS"
+    AC_CHECK_LIB(webp, WebPGetInfo, webp_ok=yes, webp_ok=no)
+    LIBS="$old_libs"
+  fi
+
+  if test "x$webp_ok" = "xyes"; then
+    LIBWEBP_LIBS="-lwebp"
+  else
+    AC_MSG_WARN([*** No libwebp found. Disabling webp images.***])
+  fi
+fi
+
+if test "x$webp_ok" = "xyes"; then
+  AC_DEFINE([ENABLE_WEBP], [1], [Enable webp images])
 fi
 
 dnl -------------
@@ -688,6 +717,7 @@ AC_SUBST(LIBJPEG_LDFLAGS)
 AC_SUBST(LIBJPEG_CPPFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 AC_SUBST(LIBPNG_CFLAGS)
+AC_SUBST(LIBWEBP_LIBS)
 AC_SUBST(LIBZ_LIBS)
 AC_SUBST(LIBSSL_LIBS)
 AC_SUBST(LIBPTHREAD_LIBS)
@@ -739,6 +769,7 @@ _AS_ECHO([  JPEG enabled   : ${jpeg_ok}])
 _AS_ECHO([  PNG enabled    : ${png_ok}])
 _AS_ECHO([  GIF enabled    : ${enable_gif}])
 _AS_ECHO([  SVG enabled    : ${enable_svg}])
+_AS_ECHO([  WEBP enabled   : ${enable_webp}])
 _AS_ECHO([])
 _AS_ECHO([  HTML tests     : ${html_tests_ok}])
 _AS_ECHO([])

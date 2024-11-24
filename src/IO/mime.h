@@ -32,6 +32,8 @@ void *a_Plain_text(const char *Type,void *web, CA_Callback_t *Call,
                        void **Data);
 void *a_Dicache_png_image (const char *Type,void *web, CA_Callback_t *Call,
                            void **Data);
+void *a_Dicache_webp_image (const char *Type,void *web, CA_Callback_t *Call,
+                           void **Data);
 void *a_Dicache_gif_image(const char *Type, void *Ptr, CA_Callback_t *Call,
                           void **Data);
 void *a_Dicache_jpeg_image(const char *Type, void *Ptr, CA_Callback_t *Call,

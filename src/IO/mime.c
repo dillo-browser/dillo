@@ -108,6 +108,9 @@ void a_Mime_init(void)
    Mime_add_minor_type("image/png", a_Dicache_png_image);
    Mime_add_minor_type("image/x-png", a_Dicache_png_image);    /* deprecated */
 #endif
+#ifdef ENABLE_WEBP
+   Mime_add_minor_type("image/webp", a_Dicache_webp_image);
+#endif
 #ifdef ENABLE_SVG
    Mime_add_minor_type("image/svg+xml", a_Dicache_svg_image);
 #endif
