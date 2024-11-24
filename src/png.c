@@ -471,6 +471,6 @@ void *a_Png_new(DilloImage *Image, DilloUrl *url, int version)
 
 void *a_Png_new() { return 0; }
 void a_Png_callback() { return; }
-const char *a_Png_version(void) { return NULL; }
+const char *a_Png_version(void) { return 0; }
 
 #endif /* ENABLE_PNG */

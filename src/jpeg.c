@@ -421,6 +421,6 @@ static void Jpeg_write(DilloJpeg *jpeg, void *Buf, uint_t BufSize)
 
 void *a_Jpeg_new() { return 0; }
 void a_Jpeg_callback() { return; }
-const char *a_Jpeg_version(void) { return NULL; }
+const char *a_Jpeg_version(void) { return 0; }
 
 #endif /* ENABLE_JPEG */

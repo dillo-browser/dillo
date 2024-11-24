@@ -215,6 +215,6 @@ void *a_Webp_new(DilloImage *Image, DilloUrl *url, int version)
 
 void *a_Webp_new() { return 0; }
 void a_Webp_callback() { return; }
-const char *a_Webp_version(char *buf, int n) { return NULL; }
+const char *a_Webp_version(char *buf, int n) { return 0; }
 
 #endif /* ENABLE_WEBP */
