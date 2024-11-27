@@ -144,7 +144,7 @@ autoconf and automake if you are building Dillo from the git repository.
 They are available in the Homebrew package manager:
 
 ```
-$ brew install autoconf automake fltk
+$ brew install autoconf automake fltk@1.3
 ```
 
 For OpenSSL you can use either 1.1 or 3.X (recommended):
