@@ -1,6 +1,6 @@
 dnl Process this file with aclocal, autoconf and automake.
 
-AC_INIT([dillo], [3.1.1])
+AC_INIT([dillo], m4_esyscmd([aux/git-version-gen .tarball-version]))
 
 dnl Detect the canonical target build environment
 AC_CANONICAL_TARGET
