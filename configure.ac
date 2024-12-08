@@ -711,6 +711,29 @@ if eval "test x$GCC = xyes"; then
   CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter -fno-rtti -fno-exceptions -pedantic -std=c++11 -D_POSIX_C_SOURCE=200112L"
 fi
 
+dnl ----------------------------------
+dnl Check if we can use the git commit
+dnl ----------------------------------
+git_ok=no
+AC_CHECK_PROG(git_found, git, yes, no)
+if test "x$git_found" = "xyes" ; then
+  AC_MSG_CHECKING([.git directory exists])
+  if test -d "$srcdir/.git"; then
+    AC_MSG_RESULT([yes])
+    AC_MSG_CHECKING(git describe works)
+    git_version=`git --work-tree="$srcdir" describe --dirty`
+    if test "x$git_version" = "x"; then
+      AC_MSG_RESULT(no)
+    else
+      git_ok=yes
+      AC_MSG_RESULT([yes ($git_version)])
+    fi
+  else
+    AC_MSG_RESULT([no])
+  fi
+fi
+AM_CONDITIONAL([GIT_AVAILABLE],  [test "x$git_ok" = "xyes"])
+
 AC_SUBST(BASE_CUR_WORKING_DIR)
 AC_SUBST(LIBJPEG_LIBS)
 AC_SUBST(LIBJPEG_LDFLAGS)
