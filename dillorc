@@ -19,6 +19,12 @@
 # menu.)
 #load_images=YES
 
+# A space separated list of image formats that will be ignored (not viewed).
+# An option to download the image will be offered instead.
+# Available formats: gif, png, webp, jpeg and svg.
+# ignore_image_formats="webp svg"
+#ignore_image_formats=""
+
 # Change this if you want background images to be loaded initially.
 # (While browsing, this can be changed from the tools/settings menu.)
 #load_background_images=NO

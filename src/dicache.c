@@ -25,13 +25,23 @@
 #include "dsvg.h"
 
 enum {
-   DIC_Gif,
+   DIC_Gif = 0,
    DIC_Png,
    DIC_Webp,
    DIC_Jpeg,
-   DIC_Svg
+   DIC_Svg,
+   DIC_MAX
 };
 
+static const char *format_name[DIC_MAX] = {
+   [DIC_Gif]  = "gif",
+   [DIC_Png]  = "png",
+   [DIC_Webp] = "webp",
+   [DIC_Jpeg] = "jpeg",
+   [DIC_Svg]  = "svg"
+};
+
+static int disabled_formats[DIC_MAX] = { 0 };
 
 /**
  * List of DICacheEntry. May hold several versions of the same image,
@@ -67,6 +77,15 @@ void a_Dicache_init(void)
 {
    CachedIMGs = dList_new(256);
    dicache_size_total = 0;
+
+   if (prefs.ignore_image_formats) {
+      for (int i = 0; i < DIC_MAX; i++) {
+         if (dStriAsciiStr(prefs.ignore_image_formats, format_name[i])) {
+            disabled_formats[i] = 1;
+            _MSG("Image format %s disabled\n", format_name[i]);
+         }
+      }
+   }
 }
 
 /**
@@ -371,6 +390,11 @@ static void *Dicache_image(int ImgType, const char *MimeType, void *Ptr,
    DICacheEntry *DicEntry;
 
    dReturn_val_if_fail(MimeType && Ptr, NULL);
+
+   if (ImgType >= 0 && ImgType < DIC_MAX && disabled_formats[ImgType]) {
+      _MSG("Ignoring image format %s\n", format_name[ImgType]);
+      return NULL;
+   }
 
    if (!web->Image) {
       web->Image =

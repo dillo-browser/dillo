@@ -186,6 +186,7 @@ void PrefsParser::parse(FILE *fp)
       { "adjust_min_width", &prefs.adjust_min_width, PREFS_BOOL, 0 },
       { "adjust_table_min_width", &prefs.adjust_table_min_width, PREFS_BOOL, 0 },
       { "load_images", &prefs.load_images, PREFS_BOOL, 0 },
+      { "ignore_image_formats", &prefs.ignore_image_formats, PREFS_STRING, 0 },
       { "load_background_images", &prefs.load_background_images, PREFS_BOOL, 0 },
       { "load_stylesheets", &prefs.load_stylesheets, PREFS_BOOL, 0 },
       { "middle_click_drags_page", &prefs.middle_click_drags_page,
