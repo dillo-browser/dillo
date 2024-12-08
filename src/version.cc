@@ -37,7 +37,11 @@ static void print_libs()
 
    /* FLTK only offers a single number */
    {
+#if FL_MAJOR_VERSION == 1 && FL_MINOR_VERSION == 3 && FL_PATCH_VERSION <= 3
+      int fltkver = Fl::version();
+#else
       int fltkver = Fl::api_version();
+#endif
       int fltk_maj = fltkver / 10000;
       int fltk_min = (fltkver / 100) % 100;
       int fltk_pat = fltkver % 100;
