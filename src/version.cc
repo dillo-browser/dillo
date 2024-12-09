@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "commit.h"
 
 #include "djpeg.h"
 #include "dpng.h"
@@ -114,7 +115,13 @@ static void print_features()
 
 void a_Version_print_info(void)
 {
-   printf("Dillo version " VERSION "\n");
+   const char *version = "v" VERSION;
+
+#ifdef GIT_COMMIT
+   version = GIT_COMMIT;
+#endif
+
+   printf("Dillo %s\n", version);
    print_libs();
    print_features();
 }

@@ -138,5 +138,21 @@ dillo_SOURCES = \
 	xembed.cc \
 	xembed.hh
 
+# https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html
+nodist_dillo_SOURCES = commit.h
+dillo.$(OBJEXT): commit.h
+CLEANFILES = commit.h
+
+if GIT_AVAILABLE
+# Always rebuild
+.PHONY: commit.h
+commit.h:
+	printf '#define GIT_COMMIT "%s"\n' `git --work-tree="$(top_srcdir)" describe --dirty` > commit.h
+else
+# No need to rebuild
+commit.h:
+	echo "" > commit.h
+endif # GIT_AVAILABLE
+
 dist_sysconf_DATA = domainrc keysrc hsts_preload
 EXTRA_DIST = chg srch
