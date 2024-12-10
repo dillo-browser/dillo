@@ -120,7 +120,7 @@ class DLItem {
    Fl_Widget *prTitle, *prGot, *prSize, *prRate, *pr_Rate, *prETA, *prETAt;
 
 public:
-   DLItem(const char *full_filename, const char *url);
+   DLItem(const char *full_filename, const char *url, const char *user_agent);
    ~DLItem();
    void child_init();
    void father_init();
@@ -174,7 +174,7 @@ class DLWin {
 
 public:
    DLWin(int ww, int wh);
-   void add(const char *full_filename, const char *url);
+   void add(const char *full_filename, const char *url, const char *user_agent);
    void del(int n_item);
    int num();
    int num_running();
@@ -284,7 +284,7 @@ static void prButton_scb(Fl_Widget *, void *cb_data)
    i->prButton_cb();
 }
 
-DLItem::DLItem(const char *full_filename, const char *url)
+DLItem::DLItem(const char *full_filename, const char *url, const char *user_agent)
 {
    struct stat ss;
    const char *p;
@@ -324,7 +324,6 @@ DLItem::DLItem(const char *full_filename, const char *url)
    cookies_path = dStrconcat(dGethomedir(), "/.dillo/cookies.txt", NULL);
    dl_argv = new char*[10];
    int i = 0;
-   const char *user_agent = "Dillo/" VERSION;
    dl_argv[i++] = (char*)"wget";
    if (stat(fullname, &ss) == 0)
       init_bytesize = (int)ss.st_size;
@@ -844,7 +843,7 @@ static void read_req_cb(int req_fd, void *)
    int sock_fd;
    socklen_t csz;
    Dsh *sh = NULL;
-   char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *dl_dest = NULL;
+   char *dpip_tag = NULL, *cmd = NULL, *url = NULL, *dl_dest = NULL, *ua = NULL;
 
    /* Initialize the value-result parameter */
    csz = sizeof(struct sockaddr_un);
@@ -898,7 +897,11 @@ static void read_req_cb(int req_fd, void *)
       MSG("Failed to parse 'destination' in {%s}\n", dpip_tag);
       goto end;
    }
-   dl_win->add(dl_dest, url);
+   if (!(ua = a_Dpip_get_attr(dpip_tag, "user-agent"))){
+      MSG("Failed to parse 'user-agent' in {%s}\n", dpip_tag);
+      goto end;
+   }
+   dl_win->add(dl_dest, url, ua);
 
 end:
    dFree(cmd);
@@ -931,9 +934,9 @@ static void dlwin_esc_cb(Fl_Widget *, void *)
  * Add a new download request to the main window and
  * fork a child to do the job.
  */
-void DLWin::add(const char *full_filename, const char *url)
+void DLWin::add(const char *full_filename, const char *url, const char *user_agent)
 {
-   DLItem *dl_item = new DLItem(full_filename, url);
+   DLItem *dl_item = new DLItem(full_filename, url, user_agent);
    mDList->add(dl_item);
    mPG->insert(*dl_item->get_widget(), 0);
 
