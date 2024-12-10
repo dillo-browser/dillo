@@ -39,7 +39,9 @@ static void print_libs()
    /* FLTK only offers a single number */
    {
 #if FL_MAJOR_VERSION == 1 && FL_MINOR_VERSION == 3 && FL_PATCH_VERSION <= 3
-      int fltkver = Fl::version();
+      /* The version comes in a double like this 1.0302 (1.3.3), so we
+       * transform it to a integer as Fl::api_version(): 1.0303 -> 10303 */
+      int fltkver = (int) (Fl::version() * 10000.0);
 #else
       int fltkver = Fl::api_version();
 #endif
