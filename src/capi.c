@@ -2,7 +2,7 @@
  * File: capi.c
  *
  * Copyright 2002-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright 2023 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "uicmd.hh"
 #include "domain.h"
 #include "../dpip/dpip.h"
+#include "prefs.h"
 
 /* for testing dpi chat */
 #include "bookmark.h"
@@ -305,8 +306,9 @@ static char *Capi_dpi_build_cmd(DilloWeb *web, char *server)
 
    if (strcmp(server, "downloads") == 0) {
       /* let the downloads server get it */
-      cmd = a_Dpip_build_cmd("cmd=%s url=%s destination=%s",
-                             "download", URL_STR(web->url), web->filename);
+      cmd = a_Dpip_build_cmd("cmd=%s url=%s destination=%s user-agent=%s",
+                             "download", URL_STR(web->url), web->filename,
+                             prefs.http_user_agent);
 
    } else {
       /* For everyone else, the url string is enough... */
