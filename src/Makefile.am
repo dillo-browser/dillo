@@ -144,10 +144,14 @@ dillo.$(OBJEXT): commit.h
 CLEANFILES = commit.h
 
 if GIT_AVAILABLE
-# Always rebuild
-.PHONY: commit.h
-commit.h:
-	printf '#define GIT_COMMIT "%s"\n' `git --work-tree="$(top_srcdir)" describe --dirty` > commit.h
+# Rebuild commit.tmp.h every time, but only change commit.h
+# if the version is different to avoid rebuilds.
+commit.h: commit.tmp.h
+	test -f $@ || (echo "" > $@)
+	if diff $@ $^ >/dev/null; then rm $^; else mv $^ $@; fi
+
+commit.tmp.h:
+	printf '#define GIT_COMMIT "%s"\n' `git --work-tree="$(top_srcdir)" describe --dirty` > $@
 else
 # No need to rebuild
 commit.h:
