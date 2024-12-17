@@ -140,7 +140,7 @@ dillo_SOURCES = \
 
 # https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html
 nodist_dillo_SOURCES = commit.h
-dillo.$(OBJEXT): commit.h
+version.$(OBJEXT) dillo.$(OBJEXT): commit.h
 CLEANFILES = commit.h
 
 if GIT_AVAILABLE
