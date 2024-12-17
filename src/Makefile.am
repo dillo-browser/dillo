@@ -39,6 +39,8 @@ dillo_SOURCES = \
 	bw.c \
 	cookies.c \
 	cookies.h \
+	actions.c \
+	actions.h \
 	hsts.c \
 	hsts.h \
 	auth.c \

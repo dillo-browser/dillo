@@ -780,7 +780,7 @@ bool DilloHtml::HtmlLinkReceiver::press (Widget *widget, int link, int img,
             a_UIcmd_page_popup(bw, bw->num_page_bugs != 0, html->cssUrls);
             ret = true;
          } else {
-            a_UIcmd_link_popup(bw, html->links->get(link));
+            a_UIcmd_link_popup(bw, html->links->get(link), html->page_url);
             ret = true;
          }
       }

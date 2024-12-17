@@ -1269,9 +1269,9 @@ void a_UIcmd_page_popup(void *vbw, bool_t has_bugs, void *v_cssUrls)
 /*
  * Popup the link menu
  */
-void a_UIcmd_link_popup(void *vbw, const DilloUrl *url)
+void a_UIcmd_link_popup(void *vbw, const DilloUrl *url, const DilloUrl *page_url)
 {
-   a_Menu_link_popup((BrowserWindow*)vbw, url);
+   a_Menu_link_popup((BrowserWindow*)vbw, url, page_url);
 }
 
 /*
