@@ -31,6 +31,7 @@ dillo-3.2.0 [Not released yet]
  - Allow image formats to be ignored with the "ignore_image_formats" option.
  - Add the "link_action" option to define custom menu entries to open links
    with external programs or scripts.
+ - Add support for line fragments in plain text files (file://foo/bar.txt#L42).
    Patches: Rodrigo Arias Mallo
 +- Add primitive support for SVG using the nanosvg.h library.
  - Add support for ch, rem, vw, vh, vmin and vmax CSS units.

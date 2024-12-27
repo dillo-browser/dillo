@@ -54,6 +54,7 @@ public:
    style::Style *widgetStyle;
    size_t Start_Ofs;    /* Offset of where to start reading next */
    int state;
+   long currentLine;
 
    DilloPlain(BrowserWindow *bw);
    ~DilloPlain();
@@ -95,6 +96,7 @@ DilloPlain::DilloPlain(BrowserWindow *p_bw)
    dw = new Textblock (prefs.limit_text_width);
    Start_Ofs = 0;
    state = ST_SeekingEol;
+   currentLine = 0L;
 
    Layout *layout = (Layout*) bw->render_layout;
    // TODO (1x) No URL?
@@ -141,6 +143,10 @@ void DilloPlain::addLine(char *Buf, uint_t BufSize)
    int len;
    char buf[129];
    char *end = Buf + BufSize;
+
+   currentLine++; /* Start at 1 */
+   sprintf(buf, "L%ld", currentLine); /* Always fits */
+   DW2TB(dw)->addAnchor(buf, widgetStyle);
 
    if (BufSize > 0) {
       // Limit word length to avoid X11 coordinate
