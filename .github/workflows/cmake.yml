@@ -88,7 +88,7 @@ jobs:
           libwebp-dev
           mbedtls-dev
     - run: |
-        cmake -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+        cmake -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_OPENSSL=OFF
         cmake --build build --parallel
       shell: alpine.sh {0}
   macOS-13-openssl-1-1:
@@ -122,18 +122,22 @@ jobs:
           freebsd-version
           CFLAGS='-I/usr/local/include' CXXFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON && cmake --build build
           ldd build/src/dillo
-  # windows-mingw64-mbedtls:
-  #   runs-on: windows-latest
-  #   defaults:
-  #     run:
-  #       shell: msys2 {0}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: msys2/setup-msys2@v2
-  #       with:
-  #         msystem: MSYS
-  #         update: true
-  #         install: git mingw-w64-x86_64-cc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-zlib mingw-w64-x86_64-mbedtls mingw-w64-x86_64-libiconv mingw-w64-x86_64-libwebp mingw-w64-x86_64-giflib mingw-w64-x86_64-libpng mingw-w64-x86_64-libjpeg-turbo --needed
-  #     - name: CI-Build
-  #       run: cmake -Bbuild -GNinja -DENABLE_TLS=ON && cmake --build build
+  windows-mbedtls:
+    runs-on: windows-latest
+    steps:
+    - run: git config --global core.autocrlf input
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    - uses: cygwin/cygwin-install-action@master
+      with:
+        packages: gcc-core gcc-g++ cmake make zlib-devel mbedtls-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
+    - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+      run: |
+        set -x
+        cd ${GITHUB_WORKSPACE}
+        pwd
+        ls -l
+        cmake -DFLTK_GRAPHICS_GDIPLUS=OFF -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+        cmake --build build
 
