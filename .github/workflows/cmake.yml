@@ -88,7 +88,7 @@ jobs:
           libwebp-dev
           mbedtls-dev
     - run: |
-        cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+        cmake -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
         cmake --build build --parallel
       shell: alpine.sh {0}
   macOS-13-openssl-1-1:
@@ -98,9 +98,9 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: brew install cmake fltk@1.4 webp
+      run: brew install cmake fltk@1.4
     - name: configure
-      run: cmake -Bbuild -DENABLE_TLS=ON
+      run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_WEBP=OFF
     - name: build
       run: cmake --build build --parallel
   freebsd-14-openssl-3:
@@ -120,7 +120,7 @@ jobs:
           set -x
           pwd
           freebsd-version
-          CFLAGS='-I/usr/local/include' CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON && cmake --build build
+          CFLAGS='-I/usr/local/include' CXXFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON && cmake --build build
           ldd build/src/dillo
   # windows-mingw64-mbedtls:
   #   runs-on: windows-latest
