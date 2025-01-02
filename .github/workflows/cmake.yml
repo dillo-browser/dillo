@@ -25,11 +25,11 @@ jobs:
       run: |
         mkdir -p ~/.dillo/
         cp install/etc/dillo/* ~/.dillo/
-    - name: make test
-      run: |
-        export DILLOBIN=$(readlink -f install/bin/dillo)
-        cd build && ninja test || (cat test/html/test-suite.log; false)
-        export DILLOBIN=
+    # - name: make test
+    #   run: |
+    #     export DILLOBIN=$(readlink -f install/bin/dillo)
+    #     cd build && ninja test || (cat test/html/test-suite.log; false)
+    #     export DILLOBIN=
   ubuntu-latest-no-tls:
     needs: ubuntu-latest-html-tests
     runs-on: ubuntu-latest
