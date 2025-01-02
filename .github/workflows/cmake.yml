@@ -131,7 +131,7 @@ jobs:
         fetch-depth: 1
     - uses: cygwin/cygwin-install-action@master
       with:
-        packages: gcc-core gcc-g++ cmake make zlib-devel mbedtls-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
+        packages: git gcc-core gcc-g++ cmake make zlib-devel mbedtls-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
     - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
       run: |
         set -x
