@@ -174,7 +174,7 @@ target_link_libraries(dillo PRIVATE
     JPEG::JPEG
     PNG::PNG
     ${WebP_LIBRARIES}
-    ${FLTK_LIBRARIES}
+    fltk::fltk
     ZLIB::ZLIB
     Iconv::Iconv
     Threads::Threads

@@ -4,7 +4,7 @@ set(DW_LIBS
     Dw-fltk
     Dw-core
     Dlib
-    ${FLTK_LIBRARIES}
+    fltk::fltk
 )
 
 function(add_dw_test_executable exe_name)

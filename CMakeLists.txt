@@ -75,8 +75,21 @@ if(NOT ENABLE_XEMBED)
     list(APPEND DILLO_COMPILE_DEFINITIONS DISABLE_XEMBED)
 endif()
 
-set(FLTK_SKIP_FLUID true)
-find_package(FLTK REQUIRED)
+find_package(FLTK 1.4 CONFIG)
+if(NOT FLTK_FOUND)
+    set(FLTK_BUILD_TEST OFF CACHE BOOL " " FORCE)
+    set(FLTK_BUILD_FLUID OFF CACHE BOOL " " FORCE)
+    set(FLTK_BUILD_FLTK_OPTIONS OFF CACHE BOOL " " FORCE)
+    include(FetchContent)
+    FetchContent_Declare( 
+        FLTK
+        GIT_REPOSITORY https://github.com/FLTK/FLTK
+        GIT_SHALLOW    TRUE
+        OVERRIDE_FIND_PACKAGE
+    )
+    FetchContent_MakeAvailable(FLTK)
+    find_package(FLTK 1.4 CONFIG REQUIRED)
+endif()
 
 find_package(ZLIB REQUIRED)
 
@@ -231,8 +244,8 @@ if (DILLO_BUILD_TESTS)
         find_program(CONVERT_EXECUTABLE convert)
         if(NOT (XVFB_EXECUTABLE AND XWD_EXECUTABLE AND XWININFO_EXECUTABLE AND CONVERT_EXECUTABLE))
             message(FATAL_ERROR "Cannot find all tools to enable HTML tests!")
+        endif()
     endif()
-endif()
 endif()
 
 include(CPack)

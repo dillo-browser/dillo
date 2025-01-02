@@ -26,8 +26,7 @@ add_executable(downloads_dpi
 )
 set_target_properties(downloads_dpi PROPERTIES OUTPUT_NAME "downloads.dpi")
 
-target_include_directories(downloads_dpi PRIVATE ${FLTK_INCLUDE_DIRS})
-target_link_libraries(downloads_dpi PRIVATE ${FLTK_LIBRARIES})
+target_link_libraries(downloads_dpi PRIVATE fltk::fltk)
 
 target_link_libraries(downloads_dpi PRIVATE
     Dpip

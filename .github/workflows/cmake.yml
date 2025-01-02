@@ -13,7 +13,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev libwebp-dev xvfb x11-apps x11-utils imagemagick ninja-build
+      run: sudo apt install -y libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev libssl-dev libwebp-dev xvfb x11-apps x11-utils imagemagick ninja-build
 
     - name: config
       run: cmake -Bbuild -GNinja -DDILLO_BUILD_TESTS=ON -DENABLE_HTML_TESTS=ON -DCMAKE_INSTALL_PREFIX=$(readlink -f install)
@@ -38,7 +38,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev
+      run: sudo apt install -y libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev
     - name: configure
       run: cmake -Bbuild -DENABLE_TLS=OFF
     - name: make
@@ -51,7 +51,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libmbedtls-dev
+      run: sudo apt install -y libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev libmbedtls-dev
     - name: configure
       run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
     - name: make
@@ -64,7 +64,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev
+      run: sudo apt install -y libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev libssl-dev
     - name: configure
       run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=OFF
     - name: make
@@ -96,7 +96,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: brew install cmake fltk@1.3
+      run: brew install cmake fltk@1.4
     - name: configure
       run: cmake -Bbuild -DENABLE_TLS=ON
     - name: build
@@ -132,7 +132,7 @@ jobs:
         fetch-depth: 1
     - uses: cygwin/cygwin-install-action@master
       with:
-        packages: gcc-core gcc-g++ cmake make zlib-devel mbedtls-devel libfltk-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
+        packages: gcc-core gcc-g++ cmake make zlib-devel mbedtls-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
     - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
       run: |
         set -x

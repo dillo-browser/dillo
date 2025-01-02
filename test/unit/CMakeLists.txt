@@ -5,7 +5,7 @@ set(BASE_LIBS
 function(add_unit_test_executable exe_name sources extra_libs)
   add_executable(${exe_name} ${sources})
   target_include_directories(${exe_name} PRIVATE ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR})  
-  target_link_libraries(${exe_name} PRIVATE ${BASE_LIBS} ${extra_libs} ${FLTK_LIBRARIES})
+  target_link_libraries(${exe_name} PRIVATE ${BASE_LIBS} ${extra_libs})
   target_compile_definitions(${exe_name} PRIVATE 
     CUR_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
     CUR_WORKING_DIR="${BASE_CUR_WORKING_DIR}/test/unit"
@@ -32,15 +32,14 @@ add_unit_test_executable(shapes
   "Dw-core;Dlib"
 )
 
-## unicode_test
 add_unit_test_executable(unicode_test
   unicode_test.cc
-  "${FLTK_LIBRARIES}"
+  "Dw-fltk"
 )
 
 add_unit_test_executable(liang
   liang.cc
-  "Dw-widgets;Dw-fltk;Dw-core;Dlib;${FLTK_LIBRARIES}"
+  "Dw-widgets;Dw-fltk;Dw-core;Dlib"
 )
 
 add_unit_test_executable(cookies
@@ -50,7 +49,7 @@ add_unit_test_executable(cookies
 
 add_unit_test_executable(trie
   trie.cc
-  "Dw-widgets;Dw-fltk;Dw-core;Dlib;${FLTK_LIBRARIES}"
+  "Dw-widgets;Dw-fltk;Dw-core;Dlib"
 )
 
 foreach(tst IN ITEMS containers identity liang notsosimplevector shapes unicode_test)

@@ -58,8 +58,8 @@ add_library(Dw-fltk STATIC
     fltkviewport.hh
 )
 
-target_include_directories(Dw-fltk PRIVATE ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${FLTK_INCLUDE_DIRS})
-target_link_libraries(Dw-fltk PUBLIC ${FLTK_LIBRARIES})
+target_include_directories(Dw-fltk PRIVATE ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+target_link_libraries(Dw-fltk PUBLIC fltk::fltk)
 target_compile_definitions(Dw-fltk PRIVATE ${DILLO_DEFINES})
 
 add_library(Dw-widgets STATIC
