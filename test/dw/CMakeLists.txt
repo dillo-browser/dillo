@@ -5,19 +5,12 @@ set(DW_LIBS
     Dw-core
     Dlib
     ${FLTK_LIBRARIES}
-    ${LIBX11_LIBS}
 )
 
 function(add_dw_test_executable exe_name)
   add_executable(${exe_name} ${ARGN})
   target_include_directories(${exe_name} PRIVATE ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR})
   target_compile_definitions(${exe_name} PRIVATE CUR_WORKING_DIR="${BASE_CUR_WORKING_DIR}/test")
-  if(DEFINED FLTK_CFLAGS)
-    target_compile_options(${exe_name} PRIVATE ${FLTK_CFLAGS})
-  endif()
-  if(DEFINED FLTK_CXXFLAGS)
-    target_compile_options(${exe_name} PRIVATE ${FLTK_CXXFLAGS})
-  endif()
   target_link_libraries(${exe_name} PRIVATE ${DW_LIBS})
 endfunction()
 

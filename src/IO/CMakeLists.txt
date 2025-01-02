@@ -45,20 +45,10 @@ target_compile_definitions(Diof
         CA_CERTS_DIR="${CA_CERTS_DIR}"
 )
 
-if(DEFINED FLTK_CFLAGS)
-    target_compile_options(Diof PRIVATE ${FLTK_CFLAGS})
-endif()
-
-if(DEFINED FLTK_CXXFLAGS)
-    target_compile_options(Diof PRIVATE ${FLTK_CXXFLAGS})
-endif()
-
 if (ENABLE_TLS)
-    if (ENABLE_OPENSSL)
-        target_link_libraries(Diof PUBLIC OpenSSL::SSL OpenSSL::Crypto)
-    elseif(ENABLE_MBEDTLS)
-        target_link_libraries(Diof PUBLIC ${MBEDTLS_LIB} ${MBEDX509_LIB} ${MBEDCRYPTO_LIB})
-    endif()
+    target_link_libraries(Diof PUBLIC ${SSL_LIBS})
 endif()
+
+
 
 # install(TARGETS Diof DESTINATION lib)

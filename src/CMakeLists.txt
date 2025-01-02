@@ -163,9 +163,6 @@ if(ENABLE_THREADED_DNS)
     target_compile_definitions(dillo PRIVATE D_DNS_THREADED)
 endif()
 
-target_compile_options(dillo PRIVATE ${LIBJPEG_CPPFLAGS})
-target_compile_options(dillo PRIVATE ${LIBPNG_CFLAGS} ${LIBFLTK_CXXFLAGS})
-
 target_link_libraries(dillo PRIVATE
     Dlib
     Dpip
@@ -174,15 +171,14 @@ target_link_libraries(dillo PRIVATE
     Dw-fltk
     Dw-core
     lout
-    ${LIBJPEG_LIBS}
-    ${LIBPNG_LIBS}
-    ${LIBWEBP_LIBS}
-    ${LIBFLTK_LIBS}
-    ${LIBZ_LIBS}
-    ${LIBICONV_LIBS}
-    ${LIBPTHREAD_LIBS}
-    ${LIBX11_LIBS}
-    ${LIBSSL_LIBS}
+    JPEG::JPEG
+    PNG::PNG
+    ${WebP_LIBRARIES}
+    ${FLTK_LIBRARIES}
+    ZLIB::ZLIB
+    Iconv::Iconv
+    Threads::Threads
+    ${SSL_LIBS}
 )
 
 install(TARGETS dillo
