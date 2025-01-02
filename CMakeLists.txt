@@ -22,6 +22,8 @@ option(ENABLE_XEMBED "Enable XEmbed" ON)
 option(ENABLE_HTML_TESTS "Enable HTML tests" OFF)
 option(DILLO_BUILD_TESTS "Build Dillo tests" OFF)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CA_CERTS_FILE "" CACHE STRING
     "Path to a bundle of trusted CA certificates (equivalent to --with-ca-certs-file)")
 
@@ -34,7 +36,7 @@ set(BASE_CUR_WORKING_DIR ${CMAKE_SOURCE_DIR})
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFile)
-include(GNUInstallDirs)  # Defines standard install directories like CMAKE_INSTALL_SYSCONFDIR
+include(GNUInstallDirs)
 
 set(CMAKE_INSTALL_SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/dillo/")
 
