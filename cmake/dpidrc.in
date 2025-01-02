@@ -1,0 +1,8 @@
+#define LIBDIR "@LIBDIR@"
+#define EXEEXT "@EXEEXT@"
+
+dpi_dir=@libdir@/dillo/dpi
+
+proto.file=file/file.dpi@EXEEXT@
+proto.ftp=ftp/ftp.filter.dpi@EXEEXT@
+proto.data=datauri/datauri.filter.dpi@EXEEXT@

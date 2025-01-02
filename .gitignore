@@ -1,6 +1,7 @@
 *.a
 *.o
 config.*
+!config.h.in
 autom4te.cache
 Makefile
 Makefile.in
@@ -45,3 +46,5 @@ tags
 /test/shapes
 /test/trie
 /test/unicode-test
+/bin
+/install
