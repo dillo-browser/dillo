@@ -163,6 +163,10 @@ if(ENABLE_THREADED_DNS)
     target_compile_definitions(dillo PRIVATE D_DNS_THREADED)
 endif()
 
+if(ENABLE_WEBP)
+    target_include_directories(dillo PRIVATE ${WEBP_CFLAGS})
+endif()
+
 target_link_libraries(dillo PRIVATE
     Dlib
     Dpip
@@ -173,7 +177,7 @@ target_link_libraries(dillo PRIVATE
     lout
     JPEG::JPEG
     PNG::PNG
-    ${WebP_LIBRARIES}
+    ${WEBP_LIBS}
     fltk::fltk
     ZLIB::ZLIB
     Iconv::Iconv
