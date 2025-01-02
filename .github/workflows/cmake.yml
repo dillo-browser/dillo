@@ -120,7 +120,7 @@ jobs:
           pwd
           freebsd-version
           CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON
-          cmake --build build --parallel
+          cmake --build build
           ldd build/src/dillo
   windows-mbedtls:
     needs: ubuntu-latest-html-tests
