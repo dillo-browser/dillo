@@ -131,13 +131,13 @@ jobs:
         fetch-depth: 1
     - uses: cygwin/cygwin-install-action@master
       with:
-        packages: git gcc-core gcc-g++ cmake make zlib-devel mbedtls-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
+        packages: git gcc-core gcc-g++ cmake make zlib-devel mbedtls-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel libX11-devel, libXcursor-devel, libXext-devel libXfixes-devel libXft-devel libXinerama-devel libXrender-devel libfontconfig-devel libpango1.0-devel libcairo-devel
     - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
       run: |
         set -x
         cd ${GITHUB_WORKSPACE}
         pwd
         ls -l
-        cmake -DFLTK_GRAPHICS_GDIPLUS=OFF -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+        cmake -DFLTK_BACKEND_X11=ON -DFLTK_USE_PANGO=ON -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
         cmake --build build
 
