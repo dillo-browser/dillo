@@ -79,6 +79,7 @@ jobs:
           build-base
           cmake
           fltk-dev
+          libfltk_cairo
           libpng-dev
           libjpeg-turbo-dev
           libwebp-dev
