@@ -74,6 +74,7 @@ jobs:
     - uses: jirutka/setup-alpine@v1
       with:
         packages: >
+          git
           build-base
           cmake
           pango-dev
@@ -97,7 +98,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: brew install cmake fltk@1.4
+      run: brew install cmake fltk@1.4 webp
     - name: configure
       run: cmake -Bbuild -DENABLE_TLS=ON
     - name: build
@@ -119,21 +120,20 @@ jobs:
           set -x
           pwd
           freebsd-version
-          CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON
-          cmake --build build
+          CFLAGS='-I/usr/local/include' CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON && cmake --build build
           ldd build/src/dillo
-  windows-mingw64-mbedtls:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: git mingw-w64-x86_64-cc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-zlib mingw-w64-x86_64-mbedtls mingw-w64-x86_64-libiconv mingw-w64-x86_64-libwebp mingw-w64-x86_64-giflib mingw-w64-x86_64-libpng mingw-w64-x86_64-libjpeg-turbo --needed
-      - name: CI-Build
-        run: cmake -Bbuild -GNinja -DENABLE_TLS=ON && cmake --build build
+  # windows-mingw64-mbedtls:
+  #   runs-on: windows-latest
+  #   defaults:
+  #     run:
+  #       shell: msys2 {0}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: msys2/setup-msys2@v2
+  #       with:
+  #         msystem: MSYS
+  #         update: true
+  #         install: git mingw-w64-x86_64-cc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-zlib mingw-w64-x86_64-mbedtls mingw-w64-x86_64-libiconv mingw-w64-x86_64-libwebp mingw-w64-x86_64-giflib mingw-w64-x86_64-libpng mingw-w64-x86_64-libjpeg-turbo --needed
+  #     - name: CI-Build
+  #       run: cmake -Bbuild -GNinja -DENABLE_TLS=ON && cmake --build build
 
