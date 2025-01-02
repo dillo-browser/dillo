@@ -38,6 +38,8 @@ target_include_directories(Diof
         ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR}
 )
 
+target_link_libraries(Diof PRIVATE fltk::fltk)
+
 target_compile_definitions(Diof
     PRIVATE
         DILLO_BINDIR="${CMAKE_INSTALL_BINDIR}/"
