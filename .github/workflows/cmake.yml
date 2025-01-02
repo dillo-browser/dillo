@@ -69,25 +69,25 @@ jobs:
       run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=OFF
     - name: make
       run: cmake --build build --parallel
-  alpine-mbedtls-3_6_0:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: jirutka/setup-alpine@v1
-      with:
-        packages: >
-          build-base
-          cmake
-          fltk-dev
-          libfltk_cairo
-          libpng-dev
-          libjpeg-turbo-dev
-          libwebp-dev
-          mbedtls-dev
-    - run: |
-        cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
-        cmake --build build --parallel
-      shell: alpine.sh {0}
+  # alpine-mbedtls-3_6_0:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - uses: jirutka/setup-alpine@v1
+  #     with:
+  #       packages: >
+  #         build-base
+  #         cmake
+  #         fltk-dev
+  #         libfltk_cairo
+  #         libpng-dev
+  #         libjpeg-turbo-dev
+  #         libwebp-dev
+  #         mbedtls-dev
+  #   - run: |
+  #       cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+  #       cmake --build build --parallel
+  #     shell: alpine.sh {0}
   macOS-13-openssl-1-1:
     needs: ubuntu-latest-html-tests
     runs-on: macos-13

@@ -75,7 +75,7 @@ if(NOT ENABLE_XEMBED)
     list(APPEND DILLO_COMPILE_DEFINITIONS DISABLE_XEMBED)
 endif()
 
-find_package(FLTK 1.3 NO_MODULE)
+find_package(FLTK NO_MODULE)
 if (not(FLTK_FOUND))
     find_package(FLTK 1.4 CONFIG REQUIRED)
 endif()
