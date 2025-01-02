@@ -1,6 +1,7 @@
 *.a
 *.o
 config.*
+!config.h.in
 autom4te.cache
 Makefile
 Makefile.in
