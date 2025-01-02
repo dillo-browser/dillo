@@ -25,13 +25,13 @@ jobs:
       run: |
         mkdir -p ~/.dillo/
         cp install/etc/dillo/* ~/.dillo/
-    # - name: make test
-    #   run: |
-    #     export DILLOBIN=$(readlink -f install/bin/dillo)
-    #     cd build && ninja test || (cat test/html/test-suite.log; false)
-    #     export DILLOBIN=
+    - name: make test
+      continue-on-error: true
+      run: |
+        export DILLOBIN=$(readlink -f install/bin/dillo)
+        cd build && ninja test || (cat test/html/test-suite.log; false)
+        export DILLOBIN=
   ubuntu-latest-no-tls:
-    needs: ubuntu-latest-html-tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -44,7 +44,6 @@ jobs:
     - name: make
       run: cmake --build build --parallel
   ubuntu-latest-mbedtls2:
-    needs: ubuntu-latest-html-tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -57,7 +56,6 @@ jobs:
     - name: make
       run: cmake --build build --parallel
   ubuntu-latest-openssl-3:
-    needs: ubuntu-latest-html-tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -69,27 +67,30 @@ jobs:
       run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=OFF
     - name: make
       run: cmake --build build --parallel
-  # alpine-mbedtls-3_6_0:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - uses: jirutka/setup-alpine@v1
-  #     with:
-  #       packages: >
-  #         build-base
-  #         cmake
-  #         fltk-dev
-  #         libfltk_cairo
-  #         libpng-dev
-  #         libjpeg-turbo-dev
-  #         libwebp-dev
-  #         mbedtls-dev
-  #   - run: |
-  #       cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
-  #       cmake --build build --parallel
-  #     shell: alpine.sh {0}
+  alpine-mbedtls-3_6_0:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: jirutka/setup-alpine@v1
+      with:
+        packages: >
+          build-base
+          cmake
+          pango-dev
+          fontconfig-dev
+          libxinerama-dev 
+          libxfixes-dev 
+          libxcursor-dev 
+          mesa-gl
+          libpng-dev
+          libjpeg-turbo-dev
+          libwebp-dev
+          mbedtls-dev
+    - run: |
+        cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+        cmake --build build --parallel
+      shell: alpine.sh {0}
   macOS-13-openssl-1-1:
-    needs: ubuntu-latest-html-tests
     runs-on: macos-13
     steps:
     - uses: actions/checkout@v1
@@ -102,7 +103,6 @@ jobs:
     - name: build
       run: cmake --build build --parallel
   freebsd-14-openssl-3:
-    needs: ubuntu-latest-html-tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -114,7 +114,7 @@ jobs:
         usesh: true
         prepare: |
           set -x
-          pkg install -y cmake fltk
+          pkg install -y git cmake jpeg-turbo png cairo pango fontconfig freetype2 libX11 libXext libXfixes libXdamage mesa-libs pkgconf gmake libXres binutils webp libiconv openssl
         run: |
           set -x
           pwd
@@ -122,23 +122,18 @@ jobs:
           CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON
           cmake --build build
           ldd build/src/dillo
-  windows-mbedtls:
-    needs: ubuntu-latest-html-tests
+  windows-mingw64-mbedtls:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
-    - run: git config --global core.autocrlf input
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 1
-    - uses: cygwin/cygwin-install-action@master
-      with:
-        packages: gcc-core gcc-g++ cmake make zlib-devel mbedtls-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
-    - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
-      run: |
-        set -x
-        cd ${GITHUB_WORKSPACE}
-        pwd
-        ls -l
-        CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON
-        cmake --build build --parallel
-        ls -l build/src/dillo
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git mingw-w64-x86_64-cc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-zlib mingw-w64-x86_64-mbedtls mingw-w64-x86_64-libiconv mingw-w64-x86_64-libwebp mingw-w64-x86_64-giflib mingw-w64-x86_64-libpng mingw-w64-x86_64-libjpeg-turbo --needed
+      - name: CI-Build
+        run: cmake -Bbuild -GNinja -DENABLE_TLS=ON && cmake --build build
+

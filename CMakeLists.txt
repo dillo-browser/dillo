@@ -121,7 +121,7 @@ if(ENABLE_WEBP)
     if(WebP_FOUND)
         list(APPEND DILLO_COMPILE_DEFINITIONS ENABLE_WEBP)
         list(APPEND WEBP_CFLAGS ${WebP_INCLUDE_DIRS})
-        list(APPEND WEBP_LIBS ${WebP_LIBRARIES})
+        list(APPEND WEBP_LIBS webp) # for some reason WebP_LIBRARIES gives a wrong name on macos!
     else()
         find_package(PkgConfig REQUIRED)
         pkg_search_module(LIBWEBP QUIET libwebp)
