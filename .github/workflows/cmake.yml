@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: cmake
+
+jobs:
+  ubuntu-latest-html-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libssl-dev libwebp-dev xvfb x11-apps x11-utils imagemagick ninja-build
+
+    - name: config
+      run: cmake -Bbuild -GNinja -DDILLO_BUILD_TESTS=ON -DENABLE_HTML_TESTS=ON -DCMAKE_INSTALL_PREFIX=$(readlink -f install)
+    - name: build
+      run: cmake --build build --parallel
+    - name: install
+      run: cmake --install build
+    - name: Copy config to .dillo
+      run: |
+        mkdir -p ~/.dillo/
+        cp install/etc/dillo/* ~/.dillo/
+    - name: make test
+      run: |
+        export DILLOBIN=$(readlink -f install/bin/dillo)
+        cd build && ninja test || (cat test/html/test-suite.log; false)
+        export DILLOBIN=
+  ubuntu-latest-no-tls:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=OFF
+    - name: make
+      run: cmake --build build --parallel
+  ubuntu-latest-mbedtls2:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libmbedtls-dev
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+    - name: make
+      run: cmake --build build --parallel
+  ubuntu-latest-openssl-3:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libssl-dev
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=OFF
+    - name: make
+      run: cmake --build build --parallel
+  alpine-mbedtls-3_6_0:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: jirutka/setup-alpine@v1
+      with:
+        packages: >
+          build-base
+          cmake
+          fltk-dev
+          libpng-dev
+          libjpeg-turbo-dev
+          libwebp-dev
+          mbedtls-dev
+    - run: |
+        cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+        cmake --build build --parallel
+      shell: alpine.sh {0}
+  macOS-13-openssl-1-1:
+    needs: ubuntu-latest-html-tests
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: brew install cmake fltk@1.3
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=ON
+    - name: build
+      run: cmake --build build --parallel
+  freebsd-14-openssl-3:
+    needs: ubuntu-latest-html-tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: FreeBSD VM build
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        release: "14.0"
+        usesh: true
+        prepare: |
+          set -x
+          pkg install -y cmake fltk
+        run: |
+          set -x
+          pwd
+          freebsd-version
+          CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON
+          cmake --build build --parallel
+          ldd build/src/dillo
+  windows-mbedtls:
+    needs: ubuntu-latest-html-tests
+    runs-on: windows-latest
+    steps:
+    - run: git config --global core.autocrlf input
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    - uses: cygwin/cygwin-install-action@master
+      with:
+        packages: gcc-core gcc-g++ cmake make zlib-devel mbedtls-devel libfltk-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
+    - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+      run: |
+        set -x
+        cd ${GITHUB_WORKSPACE}
+        pwd
+        ls -l
+        CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON
+        cmake --build build --parallel
+        ls -l build/src/dillo

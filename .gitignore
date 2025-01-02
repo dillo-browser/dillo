@@ -45,3 +45,5 @@ tags
 /test/shapes
 /test/trie
 /test/unicode-test
+/bin
+/install
