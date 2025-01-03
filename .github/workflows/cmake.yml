@@ -100,7 +100,7 @@ jobs:
     - name: Install dependencies
       run: brew install cmake fltk@1.4
     - name: configure
-      run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_WEBP=OFF
+      run: cmake -Bbuild -DENABLE_TLS=ON
     - name: build
       run: cmake --build build --parallel
   freebsd-14-openssl-3:
