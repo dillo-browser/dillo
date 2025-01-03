@@ -98,11 +98,13 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: brew install cmake fltk@1.4
+      run: |
+        pkg-config --debug libwebp
+        brew install cmake fltk@1.4
     - name: configure
       run: cmake -Bbuild -DENABLE_TLS=ON
     - name: build
-      run: cmake --build build --parallel
+      run: LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/lib/ cmake --build build --parallel
   freebsd-14-openssl-3:
     runs-on: ubuntu-latest
     steps:
