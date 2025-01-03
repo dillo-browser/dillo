@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: cmake
+
+jobs:
+  ubuntu-latest-html-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev libssl-dev libwebp-dev xvfb x11-apps x11-utils imagemagick ninja-build
+
+    - name: config
+      run: cmake -Bbuild -GNinja -DDILLO_BUILD_TESTS=ON -DENABLE_HTML_TESTS=ON -DCMAKE_INSTALL_PREFIX=$(readlink -f install)
+    - name: build
+      run: cmake --build build --parallel
+    - name: install
+      run: cmake --install build
+    - name: Copy config to .dillo
+      run: |
+        mkdir -p ~/.dillo/
+        cp install/etc/dillo/* ~/.dillo/
+    - name: make test
+      continue-on-error: true
+      run: |
+        export DILLOBIN=$(readlink -f install/bin/dillo)
+        cd build && ninja test || (cat test/html/test-suite.log; false)
+        export DILLOBIN=
+  ubuntu-latest-no-tls:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=OFF
+    - name: make
+      run: cmake --build build --parallel
+  ubuntu-latest-mbedtls2:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev libmbedtls-dev
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+    - name: make
+      run: cmake --build build --parallel
+  ubuntu-latest-openssl-3:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev libssl-dev
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=OFF
+    - name: make
+      run: cmake --build build --parallel
+  alpine-mbedtls-3_6_0:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: jirutka/setup-alpine@v1
+      with:
+        packages: >
+          git
+          build-base
+          cmake
+          pango-dev
+          fontconfig-dev
+          libxinerama-dev 
+          libxfixes-dev 
+          libxcursor-dev 
+          mesa-gl
+          libpng-dev
+          libjpeg-turbo-dev
+          libwebp-dev
+          mbedtls-dev
+    - run: |
+        cmake -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_OPENSSL=OFF
+        cmake --build build --parallel
+      shell: alpine.sh {0}
+  macOS-13-openssl-1-1:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: |
+        pkg-config --debug libwebp
+        brew install cmake fltk@1.4
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=ON
+    - name: build
+      run: LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/webp/lib cmake --build build --parallel
+  freebsd-14-openssl-3:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: FreeBSD VM build
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        release: "14.0"
+        usesh: true
+        prepare: |
+          set -x
+          pkg install -y git cmake jpeg-turbo png cairo pango fontconfig freetype2 libX11 libXext libXfixes libXdamage mesa-libs pkgconf gmake libXres binutils webp libiconv openssl
+        run: |
+          set -x
+          pwd
+          freebsd-version
+          CFLAGS='-I/usr/local/include' CXXFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON && cmake --build build
+          ldd build/src/dillo
+  windows-mbedtls:
+    runs-on: windows-latest
+    steps:
+    - run: git config --global core.autocrlf input
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    - uses: cygwin/cygwin-install-action@master
+      with:
+        packages: git gcc-core gcc-g++ cmake make ninja zlib-devel mbedtls-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel libX11-devel libXcursor-devel libXext-devel libXfixes-devel libXft-devel libXinerama-devel libXrender-devel libfontconfig-devel libpango1.0-devel libcairo-devel
+    - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+      run: |
+        set -x
+        cd ${GITHUB_WORKSPACE}
+        pwd
+        ls -l
+        CXXFLAGS='-DHAVE_TRUNC=1' cmake -GNinja -DFLTK_BACKEND_X11=ON -DFLTK_USE_PANGO=ON -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_OPENSSL=OFF && cmake --build build
+
