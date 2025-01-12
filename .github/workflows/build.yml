@@ -13,7 +13,7 @@ jobs:
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev libwebp-dev xvfb x11-apps x11-utils imagemagick
+      run: sudo apt install -y libfltk1.3-dev libssl-dev libpng-dev libjpeg-dev libwebp-dev xvfb x11-apps x11-utils imagemagick
 
     - name: autogen
       run: ./autogen.sh
