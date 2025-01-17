@@ -150,7 +150,7 @@ if GIT_AVAILABLE
 # if the version is different to avoid rebuilds.
 commit.h: commit.tmp.h
 	test -f $@ || (echo "" > $@)
-	if diff $@ $^ >/dev/null; then rm $^; else mv $^ $@; fi
+	if diff $@ $^ >/dev/null; then rm $^; else mv -f $^ $@; fi
 
 commit.tmp.h:
 	printf '#define GIT_COMMIT "%s"\n' `git --work-tree="$(top_srcdir)" describe --dirty` > $@
