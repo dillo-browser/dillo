@@ -1,7 +1,8 @@
 /*
    Copyright (C) 2003  Ferdi Franceschini <ferdif@optusnet.com.au>
-                 2020  Axel Beckert <abe@debian.org>
-                 2023  Michal Grezl <walley@walley.org>
+   Copyright (C) 2020  Axel Beckert <abe@debian.org>
+   Copyright (C) 2023  Michal Grezl <walley@walley.org>
+   Copyright (C) 2025  Rodrigo Arias Mallo <rodarima@gmail.com>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -294,7 +295,7 @@ int main(void)
    (void) sigemptyset(&mask_none);
    (void) sigprocmask(SIG_SETMASK, &mask_none, NULL);
 
-   printf("dpid started\n");
+   printf("dpid started (found %d dpis)\n", numdpis);
 /* Start main loop */
    while (1) {
       do {
