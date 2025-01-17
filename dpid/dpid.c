@@ -1,5 +1,6 @@
 /*
    Copyright (C) 2003  Ferdi Franceschini <ferdif@optusnet.com.au>
+   Copyright (C) 2025  Rodrigo Arias Mallo <rodarima@gmail.com>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -346,7 +347,6 @@ int register_service(struct dp *dpi_attr, char *service)
  */
 int register_all(struct dp **attlist)
 {
-   DIR *user_dir_stream, *sys_dir_stream;
    char *user_dpidir = NULL, *sys_dpidir = NULL, *dpidrc = NULL;
    struct dirent *user_dirent, *sys_dirent;
    int st;
@@ -385,28 +385,43 @@ int register_all(struct dp **attlist)
 
    /* Get list of services in user's .dillo/dpi directory */
    snum = 0;
-   if (user_dpidir && (user_dir_stream = opendir(user_dpidir)) != NULL) {
-      while ((user_dirent = readdir(user_dir_stream)) != NULL) {
-         if (user_dirent->d_name[0] == '.')
-            continue;
-         *attlist = (struct dp *) dRealloc(*attlist, (snum + 1) * dp_sz);
-         st=get_dpi_attr(user_dpidir, user_dirent->d_name, &(*attlist)[snum]);
-         if (st == 0)
-            snum++;
+   if (user_dpidir) {
+      DIR *user_dir_stream = opendir(user_dpidir);
+      /* Only complain if error is other than not found as the user may not have
+       * any DPIs installed. */
+      if (user_dir_stream == NULL && errno != ENOENT) {
+         MSG_ERR("cannot open user dpi directory '%s': %s\n",
+               user_dpidir, strerror(errno));
+      } else {
+         while ((user_dirent = readdir(user_dir_stream)) != NULL) {
+            if (user_dirent->d_name[0] == '.')
+               continue;
+            *attlist = (struct dp *) dRealloc(*attlist, (snum + 1) * dp_sz);
+            st=get_dpi_attr(user_dpidir, user_dirent->d_name, &(*attlist)[snum]);
+            if (st == 0)
+               snum++;
+         }
+         closedir(user_dir_stream);
       }
-      closedir(user_dir_stream);
    }
-   if (sys_dpidir && (sys_dir_stream = opendir(sys_dpidir)) != NULL) {
-      /* if system service is not in user list then add it */
-      while ((sys_dirent = readdir(sys_dir_stream)) != NULL) {
-         if (sys_dirent->d_name[0] == '.')
-           continue;
-         *attlist = (struct dp *) dRealloc(*attlist, (snum + 1) * dp_sz);
-         st=get_dpi_attr(sys_dpidir, sys_dirent->d_name, &(*attlist)[snum]);
-         if (st == 0)
-            snum++;
+   if (sys_dpidir) {
+      DIR *sys_dir_stream = opendir(sys_dpidir);
+      /* For system DPIs always complain. */
+      if (sys_dir_stream == NULL) {
+         MSG_ERR("cannot open system dpi directory '%s': %s\n",
+               sys_dpidir, strerror(errno));
+      } else {
+         /* if system service is not in user list then add it */
+         while ((sys_dirent = readdir(sys_dir_stream)) != NULL) {
+            if (sys_dirent->d_name[0] == '.')
+              continue;
+            *attlist = (struct dp *) dRealloc(*attlist, (snum + 1) * dp_sz);
+            st=get_dpi_attr(sys_dpidir, sys_dirent->d_name, &(*attlist)[snum]);
+            if (st == 0)
+               snum++;
+         }
+         closedir(sys_dir_stream);
       }
-      closedir(sys_dir_stream);
    }
 
    dFree(sys_dpidir);
