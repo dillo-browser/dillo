@@ -348,16 +348,20 @@ the middle button instead of the left button. The same applies to buttons to
 submit a form. A new tab can also be opened from the <code>File</code> menu or
 using the shortcut <code>Ctrl+T</code>.
 <p>
-By default the new tab will be automatically focused. If you want to change
-this behaviour, adjust the following options in the 
-<a href="#dillorc">dillorc</a> configuration file:
+Press <code>Shift</code> while middle-clicking a link to automatically focus the
+new tab. If you want this behaviour to be the default, set the following option
+in the <a href="#dillorc">dillorc</a> configuration file:
 <pre>
-middle_click_opens_new_tab
-focus_new_tab
+focus_new_tab=YES
 </pre>
+If this option is set, pressing <code>Shift</code> middle-clicking will instead
+avoid focusing the new tab.
 <p>
-Press <code>Shift</code> to temporarily reverse the focusing behaviour while
-middle-clicking on a link.
+It is also possible to have the middle-click open a window instead of a tab. For
+this set the option:
+<pre>
+middle_click_opens_new_tab=NO
+</pre>
 <p>
 To close a tab press the X button on the top right (only visible with multiple
 tabs). You can also close the tab by clicking with the right button on the tab
