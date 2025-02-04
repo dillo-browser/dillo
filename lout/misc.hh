@@ -450,7 +450,7 @@ public:
             numExtra += numInsert;
             resizeExtra ();
 
-            // Note: index refers to the *logical* adress, not to the
+            // Note: index refers to the *logical* address, not to the
             // *physical* one.
             int diff = index - this->startExtra - oldNumExtra;
             T *arrayMainI = arrayMain + this->startExtra;

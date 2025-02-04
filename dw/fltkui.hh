@@ -67,7 +67,7 @@ namespace fltk {
  *
  * <center>[\ref uml-legend "legend"]</center>
  *
- * where dw::fltk::ui::FltkResource provides some base funtionality for all
+ * where dw::fltk::ui::FltkResource provides some base functionality for all
  * conctrete FLTK implementations of sub-interfaces of dw::core::ui::Resource.
  * However, this is not directly possible in C++, since the base class
  * dw::core::ui::Resource is ambiguous for

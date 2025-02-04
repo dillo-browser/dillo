@@ -641,7 +641,7 @@ int Widget::getMinWidth (Extremes *extremes, bool forceValue)
          }
       }
 
-      // TODO Not completely clear whether this is feasable: Within
+      // TODO Not completely clear whether this is feasible: Within
       // the context of getAvailWidth(false) etc., getExtremes may not
       // be called. We ignore the minimal width then.
       if (extremes)
@@ -969,7 +969,7 @@ int Widget::calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
 }
 
 /**
- * Computes the final width if posible and constraints it by min-width and
+ * Computes the final width if possible and constraints it by min-width and
  * max-width.
  *
  * This function performs a very particular computation. It will try to find the
@@ -981,7 +981,7 @@ int Widget::calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
  * to auto.
  *
  * If both the initial *finalWidth and the style with are -1, the value will be
- * left as is, even if min-width and max-width could contraint the size. For the
+ * left as is, even if min-width and max-width could constraint the size. For the
  * width to be constrained, either the initial *finalWidth or the computed width
  * should return an absolute value.
  *
@@ -1604,7 +1604,7 @@ int Widget::getLevel ()
 }
 
 /**
- * \brief Get the level of the widget within the tree, regarting the
+ * \brief Get the level of the widget within the tree, regarding the
  * generators, not the parents.
  *
  * The root widget has the level 0.
@@ -1772,7 +1772,7 @@ int Widget::applyPerHeight (int containerHeight, style::Length perHeight)
  * @param child      The child widget of which the available width will be
  *                   computed.
  * @param forceValue If true, computes the width of the child with value
- *                   "auto". Otherwise, it wont.
+ *                   "auto". Otherwise, it won't.
  *
  * @return The available width in pixels or -1.
  */
@@ -2002,7 +2002,7 @@ bool Widget::correctReqAspectRatio (int pass, Widget *child, Requisition *requis
             if (allowDecreaseHeight) {
                /* FIXME: This may lose cases where allowDecreaseHeight is false, and
                 * the requisition has increased the height first, but we could still
-                * reduce the corrected hight above the original height, without
+                * reduce the corrected height above the original height, without
                 * making the requisition height smaller. */
                int h = (float) wReq / ratio;
                DEBUG_MSG(1, "decrease h: %d -> %d\n", hReq, h);
@@ -2078,7 +2078,7 @@ void Widget::correctReqHeightOfChild (Widget *child, Requisition *requisition,
                                       void (*splitHeightFun) (int, int*, int*),
                                       bool allowDecreaseHeight)
 {
-   // TODO Correct height by extremes? (Height extemes?)
+   // TODO Correct height by extremes? (Height extremes?)
 
    assert (this == child->quasiParent || this == child->container);
 

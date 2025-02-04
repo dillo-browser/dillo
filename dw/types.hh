@@ -64,7 +64,7 @@ public:
 };
 
 /**
- * \brief dw::core::Shape implemtation for simple rectangles.
+ * \brief dw::core::Shape implementation for simple rectangles.
  */
 class Rectangle: public Shape
 {
@@ -85,7 +85,7 @@ public:
 };
 
 /**
- * \brief dw::core::Shape implemtation for simple circles.
+ * \brief dw::core::Shape implementation for simple circles.
  */
 class Circle: public Shape
 {
@@ -99,7 +99,7 @@ public:
 };
 
 /**
- * \brief dw::core::Shape implemtation for polygons.
+ * \brief dw::core::Shape implementation for polygons.
  */
 class Polygon: public Shape
 {

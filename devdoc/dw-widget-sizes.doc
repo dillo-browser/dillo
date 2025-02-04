@@ -187,7 +187,7 @@ finished? These rules are important in two circumstances:
 
 Generally, the rules defined below are, in case of doubt, rather
 strict; when changing the rules, loosening is simpler than to tighten
-them, since this will make it neccessary to review old code for calls
+them, since this will make it necessary to review old code for calls
 previously allowed but now forbidden.
 
 Short recap:

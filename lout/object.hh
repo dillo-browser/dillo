@@ -61,7 +61,7 @@ public:
 /**
  * \brief Used for other orders as the one defined by Comparable.
  *
- * Compared objects must not neccessary be instances of Comparable.
+ * Compared objects must not necessarily be instances of Comparable.
  */
 class Comparator: public Object
 {

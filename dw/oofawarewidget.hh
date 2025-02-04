@@ -219,7 +219,7 @@ public:
 
    static inline bool testStyleOutOfFlow (core::style::Style *style)
    {  // Second part is equivalent to testStylePositioned(), but we still keep
-      // the two seperately.
+      // the two separately.
       return testStyleFloat (style) || testStyleAbsolutelyPositioned (style)
          || testStyleRelativelyPositioned (style)
          || testStyleFixedlyPositioned (style); }

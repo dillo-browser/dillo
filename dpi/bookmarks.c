@@ -142,7 +142,7 @@ CSS_STYLE
 "  </select>\n"
 "  , mark its operands and\n"
 "  <input type='submit' name='submit' value='Submit'>\n"
-"  <p>You can also modify the bookmarks by editting the\n"
+"  <p>You can also modify the bookmarks by editing the\n"
 "  <a href='file:~/.dillo/bm.txt'><code>~/.dillo/bm.txt</code></a> file.\n"
 "</div>\n";
 
@@ -1258,7 +1258,7 @@ static int Bmsrv_modify_add_url(Dsh *sh, char *s_url)
    section = 0;
 
    /* TODO: we should send an "Bookmark added" message, but the
-      msg-after-HTML functionallity is still pending, not hard though. */
+      msg-after-HTML functionality is still pending, not hard though. */
 
    /* Write new bookmarks file */
    Bms_save();

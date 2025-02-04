@@ -27,7 +27,7 @@ using namespace dw::core::style;
  * of StyleImage is deleted, possibly when the cache client is still
  * active.
  *
- * \todo Not neccessary for dw::Image? (dw::Image also implements
+ * \todo Not necessary for dw::Image? (dw::Image also implements
  * lout::signal::ObservedObject.)
  */
 class StyleImageDeletionReceiver:

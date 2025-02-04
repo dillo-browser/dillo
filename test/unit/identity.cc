@@ -4,7 +4,7 @@
  * classes have there root in IdentifiableObject.)
  *
  * Current status: With virtual superclasses, you get a class
- * hierarchie "root -> A -> B -> C", so that the first part of this
+ * hierarchy "root -> A -> B -> C", so that the first part of this
  * example works actually (C is a subclass of A and of B), but the
  * second fails (it should print "false", but it is erroneously
  * assumed that B is a subclass of A.)

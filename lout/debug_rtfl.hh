@@ -42,7 +42,7 @@
 
 // Prints an RTFL message to stdout. "fmt" contains simple format
 // characters how to deal with the additional arguments (no "%"
-// preceeding, as in printf) or "q" (which additionally
+// preceding, as in printf) or "q" (which additionally
 // (double-)quotes quotation marks) or "c" (short for "#%06x" and used
 // for colors), or other characters, which are simply printed. No
 // quoting: this function cannot be used to print the characters "d",

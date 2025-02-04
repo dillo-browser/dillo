@@ -63,7 +63,7 @@ occurs with inline blocks.
 This conflict is handled in different ways:
 
 1. Fortunately, this case is irrelevat for floats: an inline block
-   constitutes its own floats container, so that there is no dependance
+   constitutes its own floats container, so that there is no dependence
    on a position within another widget.
 
 2. For positioned elements, this case is relevant, since an inline

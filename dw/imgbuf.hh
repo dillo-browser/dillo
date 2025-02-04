@@ -65,7 +65,7 @@ namespace core {
  *
  * \code
  * dw::core::Imgbuf *curBuf, *oldBuf;
- * int width, heigt,
+ * int width, height,
  * // ...
  * oldBuf = curBuf;
  * curBuf = oldBuf->getScaledBuf(oldBuf, width, height);

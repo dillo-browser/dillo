@@ -196,7 +196,7 @@ static void Hsts_eat_value(const char **str)
 }
 
 /**
- * The reponse for this url had an HSTS header, so let's take action.
+ * The response for this url had an HSTS header, so let's take action.
  */
 void a_Hsts_set(const char *header, const DilloUrl *url)
 {

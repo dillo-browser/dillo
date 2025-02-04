@@ -584,8 +584,8 @@ int OOFFloatsMgr::addWidgetOOF (Widget *widget, OOFAwareWidget *generatingBlock,
    }
 
    // "sideSpanningIndex" is only compared, so this simple assignment
-   // is sufficient; differenciation between GB and CB lists is not
-   // neccessary.
+   // is sufficient; differentiation between GB and CB lists is not
+   // necessary.
    vloat->sideSpanningIndex =
       leftFloats->size() + rightFloats->size() - 1;
       
@@ -704,7 +704,7 @@ int OOFFloatsMgr::findTBInfo (int y)
    TBInfo::ComparePosition comparator (oofmIndex);
    int index = tbInfos->bsearch (&key, false, &comparator);
 
-   // "bsearch" returns next greater, but we are interrested in the last which
+   // "bsearch" returns next greater, but we are interested in the last which
    // is less or equal.
    int result = index > 0 ? index - 1 : index;
 
@@ -828,7 +828,7 @@ void OOFFloatsMgr::tellPosition1 (Widget *widget, int x, int y)
    DBG_OBJ_MSGF ("resize.oofm", 1, "vloat->yReq = %d, vloat->yReal = %d",
                  vloat->yReq, vloat->yReal);
 
-   // In some cases, an explicit update is neccessary, as in this example:
+   // In some cases, an explicit update is necessary, as in this example:
    //
    // <body>
    //     <div id="a">
@@ -1131,7 +1131,7 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
    if (first != -1) {
       // It is not sufficient to find the first float, since a line
       // (with height h) may cover the region of multiple float, of
-      // which the widest has to be choosen.
+      // which the widest has to be chosen.
       bool covers = true;
 
       // We are not searching until the end of the list, but until the
@@ -1297,7 +1297,7 @@ int OOFFloatsMgr::getClearPosition (OOFAwareWidget *widget, Side side)
    int pos;
    SortedFloatsVector *list = side == LEFT ? leftFloats : rightFloats;
 
-   // Search the last float before (therfore -1) this widget.
+   // Search the last float before (therefore -1) this widget.
    int i = list->findFloatIndex (widget, -1);
    if (i < 0)
       pos = 0;

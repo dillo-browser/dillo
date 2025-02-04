@@ -69,7 +69,7 @@ namespace dw {
  * [A] In this case, the new calculation is \em not forced, but only
  * done, when necessary.
  *
- * [B] In this case, the new calculation is allways necessary, since [C]
+ * [B] In this case, the new calculation is always necessary, since [C]
  * is the case.
  *
  * [C] Whether this function is called, depends on NEEDS_RESIZE /
@@ -378,7 +378,7 @@ private:
    lout::misc::SimpleVector<core::Extremes> *colExtremes;
 
    /**
-    * \brief Wether the column itself (in the future?) or at least one
+    * \brief Whether the column itself (in the future?) or at least one
     *    cell in this column or spanning over this column has CSS
     *    'width' specified.
     *
@@ -389,7 +389,7 @@ private:
    int numColWidthSpecified;
 
    /**
-    * \brief Wether the column itself (in the future?) or at least one
+    * \brief Whether the column itself (in the future?) or at least one
     *    cell in this column or spanning over this column has CSS
     *    'width' specified *as percentage value*.
     *

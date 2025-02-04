@@ -250,14 +250,14 @@ static void
       break;
    case 4:
      {
-        /* TODO: get the backgound color from the parent
+        /* TODO: get the background color from the parent
          * of the image widget -- Livio.                 */
         int a, bg_red, bg_green, bg_blue;
         uchar_t *pl = png->linebuf;
         uchar_t *data = png->image_data + (row_num * png->rowbytes);
 
         /* TODO: maybe change prefs.bg_color to `a_Dw_widget_get_bg_color`,
-         * when background colors are correctly implementated */
+         * when background colors are correctly implemented */
         bg_blue  = (png->bgcolor) & 0xFF;
         bg_green = (png->bgcolor>>8) & 0xFF;
         bg_red   = (png->bgcolor>>16) & 0xFF;

@@ -900,7 +900,7 @@ static size_t GIF_Block(DilloGif * gif, void *Buf,
          if (bsize < 2)
             return Size;
 
-         /* Have the extension block intepreted. */
+         /* Have the extension block interpreted. */
          C = *buf++;
          bsize--;
          mysize = Gif_do_extension(gif, C, buf, bsize);

@@ -112,7 +112,7 @@ void testVector2 ()
 
 void testVector3 ()
 {
-   // Regression test: resulted once incorrently (0, 2, 3), should
+   // Regression test: resulted once incorrectly (0, 2, 3), should
    // result in (1, 2, 3).
 
    puts ("--- testVector (3) ---");

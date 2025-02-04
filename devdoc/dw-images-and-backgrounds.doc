@@ -30,7 +30,7 @@ initiated:
 - Html_load_image: for embedded images (implemented by dw::Image,
   which implements dw::core::ImgRenderer);
 - StyleEngine::apply (search for "case
-  CSS_PROPERTY_BACKGROUND_IMAGE"): for backgrond images; there are
+  CSS_PROPERTY_BACKGROUND_IMAGE"): for background images; there are
   some implementations of dw::core::ImgRenderer within the context of
   dw::core::style::StyleImage.
 
@@ -214,7 +214,7 @@ dw::Image is only created with type RGB. This leads to several problems:
   with different background colors.
 - The dicache only handles background colors, not background images.
 
-The solution is basicly simple: keep alpha support out of dicache;
+The solution is basically simple: keep alpha support out of dicache;
 instead implement RGBA in dw::Image. As it seems, the main problem is
 alpha support in FLTK/X11.
 

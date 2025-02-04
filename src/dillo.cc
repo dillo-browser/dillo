@@ -165,7 +165,7 @@ static void est_sigchld(void)
 
    (void) sigemptyset(&set);
    sigact.sa_handler = raw_sigchld2; /* our custom handler */
-   sigact.sa_mask = set;             /* no aditional signal blocks */
+   sigact.sa_mask = set;             /* no additional signal blocks */
    sigact.sa_flags = SA_NOCLDSTOP;   /* ignore stop/resume states */
    if (sigaction(SIGCHLD, &sigact, NULL) == -1) {
       perror("sigaction");

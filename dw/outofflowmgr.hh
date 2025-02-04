@@ -73,7 +73,7 @@ public:
     * Get the left border for the vertical position of *y*, for a height
     * of *h", based on floats; relative to the *container*.
     *
-    * The border includes marging/border/padding of the calling textblock
+    * The border includes margin/border/padding of the calling textblock
     * but is 0 if there is no float, so a caller should also consider
     * other borders.
     */

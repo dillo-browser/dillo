@@ -98,7 +98,7 @@ Now, the font can be created:
    styleAttrs.font = dw::core::style::Font::create (layout, &fontAttrs);
 \endcode
 
-As the last attributes, the background and forground colors are
+As the last attributes, the background and foreground colors are
 defined, here dw::core::style::Color::createSimple must be called:
 
 \code
@@ -265,7 +265,7 @@ There are three dw::core::View implementations for FLTK:
      dw::fltk::ui::FltkComplexButtonResource::createNewWidget for details.
 </ul>
 
-More informations about views in general can be found in \ref
+More information about views in general can be found in \ref
 dw-layout-views.
 
 
@@ -344,7 +344,7 @@ dw::core::Layout::scrollTo. It expects several parameters:
 <ul>
 <li>a horizontal adjustment parameter, defined by dw::core::HPosition,
 <li>a vertical adjustment parameter, defined by dw::core::VPosition, and
-<li>a rectangle (\em x, \em y, \em width and \em heigh) of the region
+<li>a rectangle (\em x, \em y, \em width and \em height) of the region
     to be adjusted.
 </ul>
 

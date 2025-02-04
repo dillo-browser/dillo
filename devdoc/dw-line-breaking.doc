@@ -156,7 +156,7 @@ So we need the following values:
   stretched);
 - the shrinkability \f$y_i\f$, a value denoting how much the space
   after word\f$i\f$ can be shrunken (typically \f${1\over 3} s_i\f$
-  for justified text; otherwise 0, since the spaces are not shrinked);
+  for justified text; otherwise 0, since the spaces are not shrunk);
 - the penalty \f$p_i\f$, if the line is broken after word \f$i\f$;
 - a width \f$h_i\f$, which is added, when the line is broken after
   word \f$i\f$.
@@ -227,7 +227,7 @@ Ragged Borders
 --------------
 
 For other than justified text (left-, right-aligned and centered), the
-spaces between the words are not shrinked or stretched (so \f$y_i\f$
+spaces between the words are not shrunk or stretched (so \f$y_i\f$
 and \f$z_i\f$ are 0), but additional space is added to the left or
 right border or to both. For this reason, an additional stretchability
 \f${Y_0}_a^b\f$ is added (see definition above). Since this space at
@@ -275,7 +275,7 @@ Hyphens
 =======
 
 Words (instances of dw::Textblock::Word), which are actually part of a
-hyphenated word, are always drawn as a whole, not seperately. This
+hyphenated word, are always drawn as a whole, not separately. This
 way, the underlying platform is able to apply kerning, ligatures, etc.
 
 Calculating the width of such words causes some problems, since it is
@@ -342,7 +342,7 @@ calculating a line without hyphenation:
 
 After this, the line is re-calculated.
 
-A problem arrises when the textblock is rewrapped, e.&nbsp;g. when the
+A problem arises when the textblock is rewrapped, e.&nbsp;g. when the
 user changes the window width. In this case, some new instances of
 dw::Textblock::Word must be inserted into the word list,
 dw::Textblock::words. This word list is implemented as an array, which
@@ -448,7 +448,7 @@ resulting possibly in a different value for the minimal width.
 Possible strategies to deal with this problem:
 
 - Ignore. The implications should be minimal.
-- Any solution will make it neccessary to hyphenate at least some
+- Any solution will make it necessary to hyphenate at least some
   words when calculating extremes. Since the minimal widths of all
   words are used to calculate the minimal width of the text block, the
   simplest approach will hyphenate all words. This would, of course,

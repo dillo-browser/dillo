@@ -38,7 +38,7 @@ structure, so you should not have the document structure in mind.
 <h2>Styles</h2>
 
 Each widget is assigned a style, see dw::core::style for more
-informations.
+information.
 
 
 <h2>Iterators</h2>

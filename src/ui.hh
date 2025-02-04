@@ -46,7 +46,7 @@ class CustTabs;
 /**
  * Used to reposition group's widgets when some of them are hidden.
  * All children get the height of the group but retain their original width.
- * The resizable child get's the remaining space.
+ * The resizable child gets the remaining space.
  */
 class CustGroupHorizontal : public Fl_Group {
    Fl_Widget *rsz;

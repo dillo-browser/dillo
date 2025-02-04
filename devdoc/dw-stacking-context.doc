@@ -74,7 +74,7 @@ of dw::core::Widget::draw and dw::core::Widget::getWidgetAtPoint
 
 <td rowspan="4"> Likewise, the implementation should (i) test
                  dw::oof::OOFAwareWidget::getWidgetOOFAtPoint, and
-                 (ii) search through the chilren. Also, duplicate
+                 (ii) search through the children. Also, duplicate
                  calls should be avoided using
                  dw::core::StackingContextMgr::handledByStackingContextMgr.
 

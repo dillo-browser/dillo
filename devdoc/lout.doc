@@ -61,7 +61,7 @@ signals for deletion.
 <h2>Debugging</h2>
 
 In debug.hh, there are some some useful macros for debugging messages,
-see the file for mor informations.
+see the file for mor information.
 
 
 <h2>Identifying Classes at Runtime</h2>

@@ -227,7 +227,7 @@ private:
       int ratio; // ratio is only defined when badness is defined
       int badness, penalty[2];
 
-      // For debugging: define DEBUG for more informations in print().
+      // For debugging: define DEBUG for more information in print().
 #ifdef DEBUG
       int totalWidth, idealWidth, totalStretchability, totalShrinkability;
 #endif
@@ -386,8 +386,8 @@ protected:
       int borderDescent;        /* Maximum of all descents minus margin (but
                                    including padding and border: hence the name)
                                    of the words in this line. */
-      int contentAscent;        /* ??? (depricated?) */
-      int contentDescent;       /* ??? (depricated?) */
+      int contentAscent;        /* ??? (deprecated?) */
+      int contentDescent;       /* ??? (deprecated?) */
       int breakSpace;           /* Space between this line and the next one. */
       int textOffset;           /* Horizontal position of the first word of the
                                    line, in widget coordinates. */
@@ -396,7 +396,7 @@ protected:
        * \brief Returns the difference between two vertical lines
        *    positions: height of this line plus space below this
        *    line. The margin of the next line (marginAscent -
-       *    borderAscent) must be passed seperately.
+       *    borderAscent) must be passed separately.
        */
       inline int totalHeight (int marginNextLine)
       { return borderAscent + borderDescent
@@ -547,7 +547,7 @@ protected:
     *      (which is used by DwTable!), and
     * (ii) line1_offset is ignored (line1_offset_eff is set to 0),
     *      when line1_offset plus the width of the first word is
-    *      greater than the the line break witdh.
+    *      greater than the line break width.
     *
     * \todo Eliminate all these ad-hoc features by a new, simpler and
     *       more elegant design. ;-)
@@ -589,7 +589,7 @@ protected:
    // These four values are calculated by containingBlock->outOfFlowMgr
    // (when defined; otherwise, they are  false, or 0, respectively), for
    // the newly constructed line, only when needed: when a new line is
-   // added, or if something in the line currently constucted has
+   // added, or if something in the line currently constructed has
    // changed, e. g. a float has been added.
 
    bool newLineHasFloatLeft, newLineHasFloatRight;
@@ -601,7 +601,7 @@ protected:
 
    // Ascent and descent of the newly constructed line, i. e. maximum
    // of all words ascent/descent since the end of the last line. Not
-   // neccessary the ascent and descent of the newly added line, since
+   // necessary the ascent and descent of the newly added line, since
    // not all words are added to it.
    int newLineAscent, newLineDescent;
 
@@ -706,7 +706,7 @@ protected:
    // The following methods return the y offset of a line,
    // - given as pointer or by index;
    // - either within the canvas, or within this widget;
-   // - with allocation passed explicitely, or using the widget allocation
+   // - with allocation passed explicitly, or using the widget allocation
    //   (important: this is set *after* sizeRequestImpl is returning.
 
    inline int lineYOffsetWidget (Line *line, core::Allocation *allocation)

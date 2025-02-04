@@ -30,7 +30,7 @@ namespace dw {
  *
  * Once I understand how diamond inheritance works, a class TableCell
  * will be provided, from which SimpleTableCell and AlignedTableCell
- * will inherit, additionaly (in a multiple way).
+ * will inherit, additionally (in a multiple way).
  */
 namespace tablecell {
 

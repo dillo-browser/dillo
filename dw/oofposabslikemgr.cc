@@ -272,7 +272,7 @@ void OOFPosAbsLikeMgr::calcPosAndSizeChildOfChild (Child *child, int refWidth,
    DBG_OBJ_ENTER ("resize.oofm", 0, "calcPosAndSizeChildOfChild",
                   "[%p], %d, %d, ...", child->widget, refWidth, refHeight);
 
-   // TODO (i) Consider {min|max}-{width|heigt}. (ii) Height is always
+   // TODO (i) Consider {min|max}-{width|height}. (ii) Height is always
    // apportioned to descent (ascent is preserved), which makes sense
    // when the children are textblocks. (iii) Consider minimal width
    // (getMinWidth)?

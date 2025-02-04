@@ -107,14 +107,14 @@ namespace core {
  * <h3>...</h3>
  *
  *
- * <h3>Resouces needed for HTML</h3>
+ * <h3>Resources needed for HTML</h3>
  *
  * This chapter describes, how the form controls defined by HTML are
  * implemented in Dw. Some of them do not refer to UI resources, but to
  * other widgets, links to the respective documentations are provided
  * here.
  *
- * <h4>Resouces created with \<INPUT\></h4>
+ * <h4>Resources created with \<INPUT\></h4>
  *
  * The HTML \<INPUT\> is always implemented by using UI
  * resources. \<INPUT\> element has the following attributes:

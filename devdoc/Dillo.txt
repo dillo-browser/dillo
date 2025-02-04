@@ -84,7 +84,7 @@ upon HTTP header arrival.
 
    Well,  the  html  parser  gets  fed,  and proper functions are
 called  for  each tag (to parse and call the appropriate methods)
-and the whole page is contructed in a streamed way.
+and the whole page is constructed in a streamed way.
    Somewhere  in  the  middle of it, resize and repaint functions
 are  activated  and  idle  functions draw to screen what has been
 processed.

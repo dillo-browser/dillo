@@ -75,7 +75,7 @@ public:
    virtual int getScrollbarOnLeft () = 0;
 
    /**
-    * \brief Scroll the vieport to the given position.
+    * \brief Scroll the viewport to the given position.
     *
     * Does not have to be implemented, when usesViewport returns false.
     */

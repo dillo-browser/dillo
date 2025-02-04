@@ -87,7 +87,7 @@ int a_Digest_compute_digest(AuthRealm_t *realm, const char *username,
 }
 
 /**
- * This portion is calculatd for each request.
+ * This portion is calculated for each request.
  */
 static Dstr *Digest_create_response(AuthRealm_t *realm, const char *method,
                                     const char *digest_uri,

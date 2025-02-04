@@ -416,7 +416,7 @@ int TrieBuilder::insertState (StackEntry *state, bool root)
       return 0;
 
    if (root) {
-      i = 0; // we reseve slot 0 for the root state
+      i = 0; // we reserve slot 0 for the root state
    } else {
       /* The bigger pack is the more slots we check and the smaller
        * the trie will be, but CPU consumption also increases.

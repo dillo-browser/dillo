@@ -550,7 +550,7 @@ void Textblock::notifySetParent ()
    numSizeReferences = 0;
    for (int i = 0; i < NUM_OOFM; i++) {
       if (oofContainer[i] != this) {
-         // avoid dublicates
+         // avoid duplicates
          bool found = false;
          for (int j = 0; !found && j < numSizeReferences; j++)
             if (oofContainer[i] == oofContainer[j])
@@ -1748,7 +1748,7 @@ void Textblock::drawLevel (core::View *view, core::Rectangle *area,
       break;
 
    case SL_OOF_REF:
-      // TODO Inefficient. Perhaps store OOF references in seperate
+      // TODO Inefficient. Perhaps store OOF references in separate
       // (much smaller!) list.
       for (int oofmIndex = 0; oofmIndex < NUM_OOFM; oofmIndex++) {
          for (int wordIndex = 0; wordIndex < words->size (); wordIndex++) {
@@ -1795,7 +1795,7 @@ Textblock::Word *Textblock::addWord (int width, int ascent, int descent,
 }
 
 /**
- * Basic initialization, which is neccessary before fillWord.
+ * Basic initialization, which is necessary before fillWord.
  */
 void Textblock::initWord (int wordNo)
 {
@@ -2745,7 +2745,7 @@ void Textblock::addParbreak (int space, core::style::Style *style)
    DBG_OBJ_ENTER ("construct.word", 0, "addParbreak", "%d, %p",
                   space, style);
    DBG_OBJ_MSG ("construct.word", 0,
-                "<i>No nesting! Strack trace may be incomplete.</i>");
+                "<i>No nesting! Stack trace may be incomplete.</i>");
    DBG_OBJ_LEAVE ();
 
    Word *word;
@@ -2919,7 +2919,7 @@ core::Widget *Textblock::getWidgetAtPointLevel (int x, int y, int level,
       break;
 
    case SL_OOF_REF:
-      // TODO Inefficient. Perhaps store OOF references in seperate
+      // TODO Inefficient. Perhaps store OOF references in separate
       // (much smaller!) list.
       for (int oofmIndex = NUM_OOFM; widgetAtPoint == NULL && oofmIndex >= 0;
            oofmIndex--) {

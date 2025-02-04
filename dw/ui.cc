@@ -52,7 +52,7 @@ Embed::~Embed()
 void Embed::sizeRequestSimpl (Requisition *requisition)
 {
    resource->sizeRequest (requisition);
-   // TODO Correction should perhaps be left to the resouces.
+   // TODO Correction should perhaps be left to the resources.
    correctRequisition(requisition, core::splitHeightPreserveAscent, true, true);
 }
 

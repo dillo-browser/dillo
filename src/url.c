@@ -38,7 +38,7 @@
  *  abs_path    = "/" path_segments
  *
  *  Notes:
- *    - "undefined" means "preceeding separator does not appear".
+ *    - "undefined" means "preceding separator does not appear".
  *    - path is never "undefined" though it may be "empty".
  */
 
@@ -371,7 +371,7 @@ done:
 DilloUrl* a_Url_new(const char *url_str, const char *base_url)
 {
    DilloUrl *url;
-   char *urlstr = (char *)url_str;  /* auxiliar variable, don't free */
+   char *urlstr = (char *)url_str;  /* auxiliary variable, don't free */
    char *p, *str1 = NULL, *str2 = NULL;
    Dstr *SolvedUrl;
    int i, n_ic, n_ic_spc;

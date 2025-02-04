@@ -23,7 +23,7 @@ public:
        */
       RESTART,
 
-      /** \brief The patten does not at all occur in the text. */
+      /** \brief The pattern does not at all occur in the text. */
       NOT_FOUND
    } Result;
 

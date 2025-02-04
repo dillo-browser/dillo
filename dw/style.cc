@@ -1208,7 +1208,7 @@ void drawBorder (View *view, Layout *layout, Rectangle *area,
  * "heightRef" define the reference area, which is important for the
  * tiling of background images (for position 0%/0%, a tile is set at
  * xRef/yRef; for position 100%/100%, a tile is set at xRef +
- * widthRef/yRef + widthRef). See calls for more informations; in most
+ * widthRef/yRef + widthRef). See calls for more information; in most
  * cases, these boxes are identical (padding box). All these
  * coordinates are given in canvas coordinates.
  *
@@ -1216,7 +1216,7 @@ void drawBorder (View *view, Layout *layout, Rectangle *area,
  * canvas, not on top of other areas; this is only true for the
  * toplevel widget itself (not parts of its contents). Toplevel widget
  * background colors are already set as viewport background color, so
- * that drawing again is is not neccessary, but some time can be
+ * that drawing again is is not necessary, but some time can be
  * saved.
  *
  * Otherwise, the caller should not try to increase the performance by
@@ -1226,7 +1226,7 @@ void drawBorder (View *view, Layout *layout, Rectangle *area,
  * style->backgroundColor may simply used. However, when drawing is
  * inversed, and style->backgroundColor is undefined (NULL), a
  * background color defined higher in the hierarchy (which is not
- * accessable here) must be used.
+ * accessible here) must be used.
  *
  * (Background *images* are never drawn inverse.)
  */

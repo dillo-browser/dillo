@@ -19,7 +19,7 @@ As defined by CSS
 Idea for tables
 ---------------
 
-Often, tables have a header, which contains informations necessary to
+Often, tables have a header, which contains information necessary to
 interpret the columns in the table body. For this, HTML defines the elements
 &lt;thead&gt; and &lt;tbody&gt;
 <sup><a href="#note-table-footer" id="ref-table-footer">[1]</a></sup>.
@@ -28,7 +28,7 @@ For large tables, the problem occurs that the table header gets out of
 the reader's view. In paged media, where a large table covers multiple
 pages, this is often solved by *repeating* the table header on each
 page occupied by the table. When using a viewport, a table larger than
-the vieport could be displayed like this:
+the viewport could be displayed like this:
 
 1. If the top of the table is within the viewport, show the table
    header at the usual position.

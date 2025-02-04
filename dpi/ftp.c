@@ -172,7 +172,7 @@ static void make_wget_argv(char *url)
 
 /*
  * Fork, exec command, get its output and send via stdout.
- * Return: Number of bytes transfered, -1 if file-not_found, -2 if aborted.
+ * Return: Number of bytes transferred, -1 if file-not_found, -2 if aborted.
  */
 static int try_ftp_transfer(char *url)
 {

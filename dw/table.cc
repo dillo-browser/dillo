@@ -255,7 +255,7 @@ int Table::getAvailWidthOfChild (Widget *child, bool forceValue)
       // An alternative would be incremental resizing for tables; this
       // approach resembles the behaviour before GROWS.
 
-      // TODO Does it still make sence to return -1 when forceValue is
+      // TODO Does it still make sense to return -1 when forceValue is
       // set?
       if (forceValue)
          width = calcAvailWidthForDescendant (child);
@@ -273,7 +273,7 @@ int Table::calcAvailWidthForDescendant (Widget *child)
    DBG_OBJ_ENTER ("resize", 0, "calcAvailWidthForDescendant", "%p", child);
 
    // "child" is not a direct child, but a direct descendant. Search
-   // for the actual childs.
+   // for the actual children.
    Widget *actualChild = child;
    while (actualChild != NULL && actualChild->getParent () != this)
       actualChild = actualChild->getParent ();
@@ -1015,7 +1015,7 @@ void Table::actuallyCalcCellSizes (bool calcHeights)
                   colExtremes->getRef(col)->minWidthIntrinsic;
             else
                // Columns without percentage width get only the
-               // intrinsic mininal, so subtract this from the width for the
+               // intrinsic minimal, so subtract this from the width for the
                // columns *with* percentage
                widthPartPer -=
                   colExtremes->getRef(col)->minWidthIntrinsic;
@@ -1076,7 +1076,7 @@ void Table::actuallyCalcCellSizes (bool calcHeights)
                        "subcase 2b: %d column(s) with specified width",
                        numColWidthSpecified);
 
-         // Seperate columns with specified and unspecified width, and
+         // Separate columns with specified and unspecified width, and
          // apply apportion2() only to the latter.
 
          int numNotSpecified = colExtremes->size() - numColWidthSpecified;
@@ -1625,7 +1625,7 @@ void Table::apportion2 (int totalWidth, int firstCol, int lastCol,
             dest->set (destOffset - firstCol + col, width);
          }
       } else { // if (totalMin == 0)
-         // Last special case. Ssame algorithm, with
+         // Last special case. Same algorithm, with
          //
          //    x[i] = 1 (so cumX = i = col - firstCol + 1)
          //    y[i] = width[i]

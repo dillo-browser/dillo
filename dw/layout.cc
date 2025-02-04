@@ -355,7 +355,7 @@ void Layout::detachWidget (Widget *widget)
    // be detached, and check "layout != NULL" at relevant points.
 
    // Could be replaced by a virtual method in Widget, like getWidgetAtPoint,
-   // if performace were really a problem.
+   // if performance were really a problem.
 
    widget->layout = NULL;
    Iterator *it =

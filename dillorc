@@ -119,7 +119,7 @@
 #adjust_min_width=YES
 
 # If this is set to YES, all CSS size specifications for tables are
-# adjusted so that all contents can be displayed. This is seperated
+# adjusted so that all contents can be displayed. This is separated
 # from "adjust_min_width" so that it is able to mimic Firefox, which
 # differentiates between tables and, say, textblocks (in some cases).
 #adjust_table_min_width=YES

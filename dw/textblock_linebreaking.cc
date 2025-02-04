@@ -513,7 +513,7 @@ void Textblock::processWord (int wordIndex)
       //
       // (Note: the hyphenated word is often *before* wordIndex, and
       // it may be even more than one word, which makes it nearly
-      // impossible to reconstruct what has happend. Therefore, there
+      // impossible to reconstruct what has happened. Therefore, there
       // is no simpler approach to handle this.)
 
       DBG_OBJ_MSGF ("construct.paragraph", 1,
@@ -1492,7 +1492,7 @@ int Textblock::hyphenateWord (int wordIndex, int *addIndex1)
 
       // AccumulateWordData() will calculate the width, which depends
       // on the borders (possibly limited by floats), which depends on
-      // the widgeds so far. For this reason, it is important to first
+      // the widgets so far. For this reason, it is important to first
       // make all words consistent before calling
       // accumulateWordData(); therefore the second loop.
 
@@ -1553,7 +1553,7 @@ void Textblock::moveWordIndices (int wordIndex, int num, int *addIndex1)
          par->firstWord += num;
    }
 
-   // Addiditional indices. When needed, the number can be extended.
+   // Additional indices. When needed, the number can be extended.
    if (addIndex1 && *addIndex1 >= wordIndex)
       *addIndex1 += num;
 
@@ -1653,7 +1653,7 @@ void Textblock::accumulateWordData (int wordIndex)
                  lineIndex, firstWordOfLine, lineBreakWidth);
 
    if (wordIndex == firstWordOfLine) {
-      // first word of the (not neccessarily yet existing) line
+      // first word of the (not necessarily yet existing) line
       word->totalWidth = word->size.width + word->hyphenWidth;
       word->maxAscent = word->size.ascent;
       word->maxDescent = word->size.descent;

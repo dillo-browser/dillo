@@ -11,7 +11,7 @@ Additionally, there is a structure representing common properties of
 the platform. A platform is typically related to the underlying UI
 toolkit, but other uses may be thought of.
 
-This design helps to archieve two important goals:
+This design helps to achieve two important goals:
 
 <ul>
 <li> Abstraction of the actual drawing, by different implementations

@@ -9,8 +9,8 @@ namespace form {
 /**
  * \brief Handles HTML form data.
  *
- * Add resources by calling the respective add...Resource method. Furtermore,
- * this class impelements dw::core::ui::ButtonResource::ClickedReceiver, the
+ * Add resources by calling the respective add...Resource method. Furthermore,
+ * this class implements dw::core::ui::ButtonResource::ClickedReceiver, the
  * form data is printed to stdout, when the "clicked" signal is received.
  *
  * \todo wrong comment

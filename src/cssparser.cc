@@ -1105,7 +1105,7 @@ bool CssParser::parseValue(CssPropertyName prop,
    case CSS_TYPE_BACKGROUND_POSITION:
       // 'background-position' consists of one or two values: vertical and
       // horizontal position; in most cases in this order. However, as long it
-      // is unambigous, the order can be switched: "10px left" and "left 10px"
+      // is unambiguous, the order can be switched: "10px left" and "left 10px"
       // are both possible and have the same effect. For this reason, all
       // possibilities are tested in parallel.
 
@@ -1119,7 +1119,7 @@ bool CssParser::parseValue(CssPropertyName prop,
       for (i = 0; i < 2; i++) {
          CssValueType typeTmp;
          // tokenMatchesProperty will, for CSS_PROPERTY_BACKGROUND_POSITION,
-         // work on both parts, since they are exchangable.
+         // work on both parts, since they are exchangeable.
          if (tokenMatchesProperty (CSS_PROPERTY_BACKGROUND_POSITION,
                                    &typeTmp)) {
             h[i] = ttype != CSS_TK_SYMBOL ||

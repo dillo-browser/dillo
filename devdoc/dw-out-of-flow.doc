@@ -59,7 +59,7 @@ Implementation overview
   dw::core::Content::WIDGET_IN_FLOW is used. Notice that in the first case,
   there are two pieces of content referring to the same widget. An application
   of this distinction is iterators. (For selection and searching, the generating
-  hierarchy is used, whih is different from the widget hierarchy.)
+  hierarchy is used, which is different from the widget hierarchy.)
 
 Handling widgets out of flow is partly the task of class implementing
 dw::oof::OutOfFlowMgr, which is stored by dw::oof::OOFAwareWidget::outOfFlowMgr,

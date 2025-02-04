@@ -148,7 +148,7 @@ public:
    virtual void cancelTooltip () = 0;
 
    /**
-    * \brief Create a (platform speficic) image buffer.
+    * \brief Create a (platform specific) image buffer.
     *
     * "gamma" is the value by which the image data is gamma-encoded.
     */

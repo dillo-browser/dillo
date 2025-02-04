@@ -58,7 +58,7 @@
 // Handy macro
 #define BW2UI(bw) ((UI*)((bw)->ui))
 
-// Platform idependent part
+// Platform independent part
 using namespace dw::core;
 // FLTK related
 using namespace dw::fltk;

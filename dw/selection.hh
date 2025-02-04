@@ -94,7 +94,7 @@ namespace core {
  * the link handling state.
  *
  * The general selection works, for events not pointing on links, like
- * this (numbers in parantheses after the event denote the button, "n"
+ * this (numbers in parentheses after the event denote the button, "n"
  * means arbitrary button):
  *
  * \dot

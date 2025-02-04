@@ -19,7 +19,7 @@ digraph G {
 \enddot
 
 (In most cases, the attributes and operations are left away, for
-better readibility. Just click on it, to get to the detailed
+better readability. Just click on it, to get to the detailed
 description.)
 
 Of course, in C++, there are no interfaces, but here, we call a class,
@@ -42,7 +42,7 @@ digraph G {
 
 <h2>Objects</h2>
 
-In some cases, an examle for a concrete constellation of objects is
+In some cases, an example for a concrete constellation of objects is
 shown. An object is represented by a box containing a name and the
 class, separated by a colon.
 

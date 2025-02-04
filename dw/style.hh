@@ -190,7 +190,7 @@ namespace core {
  *
  *      <ul>
  *      <li> dw::core::Widget::~Widget, dw::Textblock::~Textblock, by the
- *           HTML parser, when popping an element fom the stack, and
+ *           HTML parser, when popping an element from the stack, and
  *      <li> dw::core::Widget::setStyle, dw::Textblock::addText etc.,
  *           these methods overwrite an existing style.
  *      </ul>

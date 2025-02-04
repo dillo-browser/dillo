@@ -15,7 +15,7 @@ handles it by:
      associated widget (DwImage).
      i.e. If 'Image' is the var for the structure, then
           'Image->dw' is the widget.
-   - Requesting the image to be feeded by the cache.
+   - Requesting the image to be fed by the cache.
    - Sending some info to the browser interface.
 
 * The  cache  can  either request the image data from the net, or

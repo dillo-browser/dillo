@@ -849,10 +849,10 @@ static NSVGgradient* nsvg__createGradient(NSVGparser* p, const char* id, const f
 			break;
 		}
 		nextRef = nsvg__findGradientData(p, ref->ref);
-		if (nextRef == ref) break; // prevent infite loops on malformed data
+		if (nextRef == ref) break; // prevent infinite loops on malformed data
 		ref = nextRef;
 		refIter++;
-		if (refIter > 32) break; // prevent infite loops on malformed data
+		if (refIter > 32) break; // prevent infinite loops on malformed data
 	}
 	if (stops == NULL) return NULL;
 

@@ -92,10 +92,10 @@ When searching for a solution, several difficulties show up:
 
 1. The available width, which is used for the width of the textblock,
    is defined independent of floats. Aside from problems when changing
-   this definition, a dependance on floats would be difficult to
+   this definition, a dependence on floats would be difficult to
    implement, since *sizeRequest* is independent of a position. (See
    also \ref dw-out-of-flow.)
-2. I must admit that I do not rembember the exact rationale and the
+2. I must admit that I do not remember the exact rationale and the
    test case behind adding the exception in
    dw::Textblock::getWidgetRegardingBorderForLine (see above), but
    simply removing this exception will result in a possible
@@ -124,7 +124,7 @@ Instead, this approach is focussed:
   all lines; *y* is irrelevant in this case.
 - Since the textblock will tend to become taller when getting
   narrower, and so possibly cover more (wider) floats, and so become
-  narrower again etc., there may be multible solutions for calculating
+  narrower again etc., there may be multiple solutions for calculating
   the size. Generally, a smaller height (and so larger width) is
   preferred.
 - There remains a problem: what if a word is too large? Should a

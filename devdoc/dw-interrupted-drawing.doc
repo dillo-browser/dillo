@@ -70,7 +70,7 @@ Since
 
 1. #sc-2 is a child of #sc-1, but
 2. #fl-1 is a child of the body, and
-3. a widget can only draw its descendants (not neccessary children,
+3. a widget can only draw its descendants (not necessary children,
    but drawing siblings is not allowed),
 
 #sc-1 cannot be drawn as a whole; instead drawing is **interrupted**

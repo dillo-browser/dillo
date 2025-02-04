@@ -339,7 +339,7 @@ void a_Html_tag_set_align_attr(DilloHtml *html, const char *tag, int tagsize)
          v.textAlign = TEXT_ALIGN_STRING;
          if ((charattr = a_Html_get_attr(html, tag, tagsize, "char"))) {
             if (charattr[0] == 0)
-               /* TODO: ALIGN=" ", and even ALIGN="&32;" will reult in
+               /* TODO: ALIGN=" ", and even ALIGN="&32;" will result in
                 * an empty string (don't know whether the latter is
                 * correct, has to be clarified with the specs), so
                 * that for empty strings, " " is assumed. */
@@ -2349,7 +2349,7 @@ static void Html_tag_close_map(DilloHtml *html)
 
       if (img) {
          // At this point, we know that img->ir represents an image
-         // widget. (Really? Is this assumtion safe?) Notice that the
+         // widget. (Really? Is this assumption safe?) Notice that the
          // order of the casts matters, because of multiple
          // inheritance.
          dw::Image *dwi = (dw::Image*)(dw::core::ImgRenderer*)img->img_rndr;
@@ -3903,7 +3903,7 @@ static void Html_parse_common_attrs(DilloHtml *html, char *tag, int tagsize)
    if (tagsize >= 8 &&        /* length of "<t id=i>" */
        (attrbuf = a_Html_get_attr(html, tag, tagsize, "id"))) {
       /* According to the SGML declaration of HTML 4, all NAME values
-       * occuring outside entities must be converted to uppercase
+       * occurring outside entities must be converted to uppercase
        * (this is what "NAMECASE GENERAL YES" says). But the HTML 4
        * spec states in Sec. 7.5.2 that anchor ids are case-sensitive.
        * So we don't do it and hope for better specs in the future ...
@@ -4290,7 +4290,7 @@ char *a_Html_get_attr_wdef(DilloHtml *html,
 }
 
 /**
- * Dispatch the apropriate function for 'Op'.
+ * Dispatch the appropriate function for 'Op'.
  * This function is a Cache client and gets called whenever new data arrives
  * @param Op      operation to perform.
  * @param CbData  a pointer to a DilloHtml structure

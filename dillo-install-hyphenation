@@ -106,7 +106,7 @@ EOT
          $lang = $arg;
       }
       
-      # First, donwload the pattern file to a temporary file.
+      # First, download the pattern file to a temporary file.
       $tmppat = tmpnam();
       if ($ftp->get ("hyph-$arg.pat.txt", $tmppat)) {
          printf ("Successfully downloaded pattern file for \"$arg\".\n");

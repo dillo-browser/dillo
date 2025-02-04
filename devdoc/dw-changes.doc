@@ -51,7 +51,7 @@ Related to the FLTK port, there have been many changes, this is a
 
 <li> Instead of border_spacing in the old DwStyle, there are two attributes,
      dw::core::style::Style::hBorderSpacing and
-     dw::core::style::Style::vBorderSpacing, since CSS allowes to specify
+     dw::core::style::Style::vBorderSpacing, since CSS allows to specify
      two values. Without CSS, both attributes should have the same value.
 
 <li> Images are handled differently, see \ref dw-images-and-backgrounds.
