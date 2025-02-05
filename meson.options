@@ -1,0 +1,90 @@
+option(
+    'ca-certs-dir',
+    type: 'string',
+    description: 'Specify where to find a directory containing trusted CA certificates for TLS',
+)
+option(
+    'ca-certs-file',
+    type: 'string',
+    description: 'Specify where to find a bundle of trusted CA certificates for TLS',
+)
+option(
+    'cookies',
+    type: 'feature',
+    value: 'enabled',
+    description: 'Enable cookie support',
+)
+option('gif', type: 'feature', value: 'auto', description: 'Enable gif support')
+option('ipv6', type: 'feature', value: 'enabled', description: 'IPv6 support') # There is rarely a reason to disable this
+option(
+    'jpeg',
+    type: 'feature',
+    value: 'auto',
+    description: 'Enable jpeg support',
+)
+option('png', type: 'feature', value: 'auto', description: 'Enable png support')
+option(
+    'posix-threads',
+    type: 'feature',
+    value: 'auto',
+    description: 'Enable POSIX thread support',
+)
+option('svg', type: 'feature', value: 'auto', description: 'Enable svg support')
+option(
+    'threaded-dns',
+    type: 'feature',
+    value: 'enabled',
+    description: 'Enable threaded DNS support',
+)
+option(
+    'tls',
+    type: 'feature',
+    value: 'enabled',
+    description: 'Enable TLS support',
+) # Default to enabling tls
+option('mbedtls', type: 'boolean', value: false, description: 'TLS via mbedTLS')
+option('openssl', type: 'boolean', value: true, description: 'TLS via OpenSSL')
+option(
+    'webp',
+    type: 'feature',
+    value: 'auto',
+    description: 'Enable webp support',
+)
+option(
+    'xembed',
+    type: 'feature',
+    value: 'enabled',
+    description: 'Enable XEmbed support',
+)
+
+# Testing, safety, and debugging options
+option(
+    'efence',
+    type: 'feature',
+    value: 'disabled',
+    description: 'Enable Electric Fence support',
+)
+option(
+    'gprof',
+    type: 'feature',
+    value: 'disabled',
+    description: 'Enable gprof support',
+)
+option(
+    'html-tests',
+    type: 'feature',
+    value: 'disabled',
+    description: 'Enable HTML tests (requires xvfb, xwd and imagemagick)',
+)
+# option(
+#     'insure',
+#     type: 'boolean',
+#     value: false,
+#     description: 'Enable Insure++ support',
+# )
+option(
+    'rtfl',
+    type: 'feature',
+    value: 'disabled',
+    description: 'Print low-level RTFL messages for debugging the renderer (very large slowdown)',
+)

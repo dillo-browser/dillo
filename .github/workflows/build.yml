@@ -6,226 +6,229 @@ on:
     branches: master
 
 jobs:
-  ubuntu-latest-html-tests:
+  Linux:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev libpng-dev libjpeg-dev libwebp-dev xvfb x11-apps x11-utils imagemagick
+    container:
+      image: ${{ matrix.distro == 'alpine' && 'alpine:latest' || matrix.distro == 'ubuntu-20.04' && 'ubuntu:20.04' || 'ubuntu:latest' }}
+    strategy:
+      fail-fast: false # Remove this line to fail the whole matrix if one job fails; included for testing as many CI pipelines as possible for now
+      matrix:
+        distro: [ubuntu, ubuntu-20.04, alpine]
+        build-system: [autotools, meson]
+        compiler: [gcc, clang]
+        tls: [openssl, mbedtls, none]
+        exclude:
+          - distro: alpine
+            tls: none
+          - distro: ubuntu-20.04
+            tls: none
 
-    - name: autogen
-      run: ./autogen.sh
-    - name: Make install dir
-      run: mkdir install build
-    - name: configure
-      run: cd build && ../configure --prefix=$(readlink -f ../install) --enable-html-tests
-    - name: make
-      run: cd build && make
-    - name: make install
-      run: cd build && make install
-    - name: Copy config to .dillo
-      run: |
-        mkdir -p ~/.dillo/
-        cp install/etc/dillo/* ~/.dillo/
-    - name: make check
-      run: |
-        export DILLOBIN=$(readlink -f install/bin/dillo)
-        cd build && make check || (cat test/html/test-suite.log; false)
-        export DILLOBIN=
-    - name: Check release fits in a floppy disk of 1.44 MB
-      run: |
-        cd build
-        make dist-gzip
-        size=$(stat -c %s dillo-*.tar.gz)
-        floppy=$((1474560 - 32*1024)) # Leave room for FAT table
-        echo "Floppy occupation: $(($size * 100 / $floppy)) %"
-        if [ $size -lt $floppy ]; then
-          echo 'OK: Fits in floopy disk'
-        else
-          echo "FAIL: Release size too big: $size / $floppy"
-          exit 1
-        fi
-    - name: make distcheck (with HTML tests)
-      run: |
-        export DILLOBIN=
-        mkdir build-distcheck install-distcheck
-        cd build-distcheck && ../configure --prefix=$(readlink -f ../install-distcheck) --enable-html-tests
-        make distcheck DISTCHECK_CONFIGURE_FLAGS=--enable-html-tests
-#   - name: Remove pipes
-#     run: find test/html -type p -delete || true
-#   - name: Archive production artifacts
-#     uses: actions/upload-artifact@v3
-#     with:
-#       name: upload-html-test-results
-#       path: |
-#         build/test/html
-  ubuntu-latest-no-tls:
-    needs: ubuntu-latest-html-tests
-    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-tls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  ubuntu-latest-mbedtls2:
-    needs: ubuntu-latest-html-tests
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libmbedtls-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-openssl
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  ubuntu-latest-openssl-3:
-    needs: ubuntu-latest-html-tests
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-mbedtls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  ubuntu-latest-with-old-std:
-    needs: ubuntu-latest-html-tests
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-mbedtls CFLAGS="-Werror" CXXFLAGS="-Werror"
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-  ubuntu-20-04-openssl-1-1:
-    needs: ubuntu-latest-html-tests
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-mbedtls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
-  alpine-mbedtls-3_6_0:
-    runs-on: ubuntu-latest
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ matrix.distro }}" = "ubuntu" ] || [ "${{ matrix.distro }}" = "ubuntu-20.04" ]; then
+            apt-get update
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get install -y autotools-dev autoconf automake build-essential clang git imagemagick libfltk1.3-dev libmbedtls-dev libpng-dev libssl-dev libturbojpeg0-dev libwebp-dev lld make ninja-build pip pkg-config x11-apps x11-utils xvfb zlib1g-dev
+            # HTML tests require meson 1.4.0 or later
+            pip3 install meson ${{ matrix.distro == 'ubuntu' && '--break-system-packages' || '' }}
+          else
+            apk add build-base autoconf automake clang fltk-dev git libpng-dev libjpeg-turbo-dev libwebp-dev lld mbedtls-dev meson ninja-build openssl-dev
+          fi
+
+      - name: Set git safe directory
+        run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - if: matrix.build-system == 'autotools'
+        name: Prepare Autotools
+        run: |
+            ./autogen.sh
+            mkdir install build
+
+        # Instead of using a matrix for HTML tests we will only set the option on ubuntu (latest) with gcc, no TLS
+      - name: Configure Build
+        run: |
+          HTML_TESTS_OPT=""
+          if [ "${{ matrix.distro }}" = "ubuntu" ] && [ "${{matrix.compiler}}" = "gcc" ] && [ "${{ matrix.tls }}" = "none" ]; then
+            if [ "${{ matrix.build-system }}" = "autotools" ]; then
+              HTML_TESTS_OPT="--enable-html-tests"
+            else
+              HTML_TESTS_OPT="-Dhtml-tests=enabled"
+            fi
+          fi
+          if [ "${{matrix.compiler}}" = "clang" ]; then
+            export CC=clang CXX=clang++ LDFLAGS="-fuse-ld=lld -Wl,--as-needed"
+          else
+            if [ "${{ matrix.distro }}" = "ubuntu" ]; then
+              export CFLAGS="-flto -Werror=odr -Werror=lto-type-mismatch -Werror=strict-aliasing"
+            fi
+          fi
+          if [ "${{ matrix.build-system }}" = "autotools" ]; then
+            if [ "${{ matrix.tls }}" = "none" ]; then
+              export TLS_OPT="--disable-tls"
+            elif [ "${{ matrix.tls }}" = "mbedtls" ]; then
+              export TLS_OPT="--disable-openssl"
+            else
+              export TLS_OPT="--disable-mbedtls"
+            fi
+          else
+            if [ "${{ matrix.tls }}" = "none" ]; then
+              export TLS_OPT="-Dtls=disabled -Dopenssl=false -Dmbedtls=false"
+            elif [ "${{ matrix.tls }}" = "mbedtls" ]; then
+              export TLS_OPT="-Dmbedtls=true -Dopenssl=false"
+            else
+              export TLS_OPT="-Dopenssl=true -Dmbedtls=false"
+            fi
+          fi
+
+          if [ "${{ matrix.build-system }}" = "autotools" ]; then
+            cd build
+            ../configure --prefix=$(readlink -f ../install) ${TLS_OPT} ${HTML_TESTS_OPT}
+          else
+            meson setup build --prefix="/tmp/dillo" -Dpng=enabled -Dsvg=enabled ${TLS_OPT} ${HTML_TESTS_OPT}
+          fi
+
+      - name: Build Dillo for ${{ matrix.distro }} with ${{ matrix.build-system }} and ${{ matrix.compiler }}
+        run: |
+          if [ "${{ matrix.build-system }}" = "autotools" ]; then
+            cd build
+            make && make install
+          else
+            ninja -C build install
+          fi
+
+      - if: matrix.build-system == 'autotools'
+        name: (Autotools) Prepare for tests
+        run: |
+          mkdir -p ~/.dillo/
+          dillorc=$(find install -type f -name dillorc)
+          cp ${dillorc} ~/.dillo/
+
+      - name: Run tests
+        run: |
+          if [ "${{ matrix.build-system }}" = "autotools" ]; then
+            cd build
+            export DILLOBIN=$(readlink -f bin/dillo)
+            make check || (cat test/html/test-suite.log; false)
+            export DILLOBIN=
+          else
+            meson test -C build -v --print-errorlogs
+          fi
+
+      - name: Check release fits in a floppy disk of 1.44 MB
+        run: |
+          if [ "${{ matrix.build-system }}" = "autotools" ]; then
+            cd build
+            make dist-gzip
+            size=$(stat -c %s dillo-*.tar.gz)
+            floppy=$((1474560 - 32*1024)) # Leave room for FAT table
+            echo "Floppy occupation: $(($size * 100 / $floppy)) %"
+            if [ $size -lt $floppy ]; then
+              echo 'OK: Fits in floopy disk'
+            else
+              echo "FAIL: Release size too big: $size / $floppy"
+              exit 1
+            fi
+          else
+            echo "Skipping floppy disk check for Meson build; not yet implemented"
+          fi
+
+      - name: Run distcheck
+        run: |
+          HTML_TESTS_OPT=""
+          if [ "${{ matrix.distro }}" = "ubuntu" ] && [ "${{matrix.compiler}}" = "gcc" ] && [ "${{ matrix.tls }}" = "none" ]; then
+            if [ "${{ matrix.build-system }}" = "autotools" ]; then
+              HTML_TESTS_OPT="--enable-html-tests"
+            fi
+          fi
+          if [ "${{ matrix.distro}}" = "ubuntu" ]; then
+            if [ "${{ matrix.build-system }}" = "autotools" ]; then
+              mkdir build-distcheck install-distcheck
+              cd build-distcheck && ../configure --prefix=$(readlink -f ../install-distcheck) ${HTML_TESTS_OPT}
+              make distcheck DISTCHECK_CONFIGURE_FLAGS="${HTML_TESTS_OPT}"
+            else
+                echo "TODO: run \`meson dist -C build\`; currently errors out"
+            fi
+          else
+            echo "Skipping distcheck for OS ${{ matrix.distro }}"
+          fi
+
+  macOS-13:
+    runs-on: macos-13
+    strategy:
+      matrix:
+        build-system: [autotools, meson]
+        tls: [openssl-1.1, openssl-3, mbedtls]
+
     steps:
     - uses: actions/checkout@v4
-    - uses: jirutka/setup-alpine@v1
-      with:
-        packages: >
-          build-base
-          autoconf
-          automake
-          fltk-dev
-          libpng-dev
-          libjpeg-turbo-dev
-          libwebp-dev
-          mbedtls-dev
-    - run: |
-        ./autogen.sh
-        ./configure
-        make
-        make check
-      shell: alpine.sh {0}
-  macOS-13-openssl-1-1:
-    needs: ubuntu-latest-html-tests
-    runs-on: macos-13
-    steps:
-    - uses: actions/checkout@v1
       with:
         fetch-depth: 1
+
     - name: Install dependencies
-      run: brew install autoconf automake fltk@1.3
-    - name: autogen
+      run: |
+        tls_lib=""
+        if [ "${{ matrix.tls }}" = "mbedtls" ]; then
+          tls_lib="mbedtls"
+        elif [ "${{ matrix.tls }}" = "openssl-3" ]; then
+          brew uninstall openssl@1.1
+          tls_lib="openssl@3"
+        fi
+        brew install autoconf automake fltk meson ${tls_lib}
+
+    - if: matrix.build-system == 'autotools'
+      name: Prepare Build
       run: ./autogen.sh
-    - name: configure
+
+    - name: Configure Build
       run: |
-        export PATH="/usr/local/opt/fltk@1.3/bin:$PATH"
-        ./configure --disable-mbedtls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
+        if [ "${{ matrix.build-system }}" = "autotools" ]; then
+          if [ "${{ matrix.tls }}" = "mbedtls" ]; then
+            ./configure --disable-openssl
+          else
+            ./configure --disable-mbedtls
+          fi
+        else
+          if [ "${{ matrix.tls }}" = "mbedtls" ]; then
+            meson setup build --buildtype=release --prefix=$(pwd)/install -Dmbedtls=true -Dopenssl=false
+          else
+            meson setup build --buildtype=release --prefix=$(pwd)/install -Dmbedtls=false -Dopenssl=true
+          fi
+        fi
+
+    - name: Build Dillo for macOS-13 with ${{ matrix.build-system }}
       run: |
-        export PATH="/usr/local/opt/fltk@1.3/bin:$PATH"
-        make distcheck
-  macOS-13-openssl-3:
-    needs: ubuntu-latest-html-tests
-    runs-on: macos-13
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Remove old OpenSSL 1.1
-      run: brew uninstall openssl@1.1
-    - name: Install dependencies
-      run: brew install autoconf automake fltk@1.3 openssl@3
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
+        if [ "${{ matrix.build-system }}" = "autotools" ]; then
+          make
+        else
+          ninja -C build
+        fi
+
+    - name: Run tests
       run: |
-        export PATH="/usr/local/opt/fltk@1.3/bin:$PATH"
-        ./configure --disable-mbedtls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
+        if [ "${{ matrix.build-system }}" = "autotools" ]; then
+          make check
+        else
+          # This will give more jobs time to finish while we debug the HTML tests
+          meson test -C build --timeout-multiplier 2
+        fi
+
+    - name: Run distcheck
       run: |
-        export PATH="/usr/local/opt/fltk@1.3/bin:$PATH"
-        make distcheck
-  freebsd-14-openssl-3:
-    needs: ubuntu-latest-html-tests
+        if [ "${{ matrix.build-system }}" = "autotools" ]; then
+          make distcheck
+        else
+          echo "TODO: run \`meson dist -C build\`; currently errors out"
+        fi
+
+  FreeBSD-14:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build-system: [autotools, meson]
     steps:
     - uses: actions/checkout@v4
     - name: FreeBSD VM build
@@ -236,20 +239,31 @@ jobs:
         usesh: true
         prepare: |
           set -x
-          pkg install -y automake fltk
+          pkg install -y automake fltk meson ninja
         run: |
           set -x
           pwd
           freebsd-version
-          ./autogen.sh
-          ./configure CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib'
-          cat config.log
-          make
-          make check
-          ldd src/dillo
-  windows-mbedtls:
-    needs: ubuntu-latest-html-tests
+          if [ "${{ matrix.build-system }}" = "autotools" ]; then
+            ./autogen.sh
+            ./configure CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib'
+            cat config.log
+            make
+            make check
+            ldd src/dillo
+          else
+            CPPFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' meson setup build
+            ninja -C build
+            ninja -C build test
+            ldd build/src/dillo
+          fi
+
+  Windows:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        build-system: [autotools, meson]
+        tls: [openssl, mbedtls]
     steps:
     - run: git config --global core.autocrlf input
     - uses: actions/checkout@v4
@@ -257,15 +271,31 @@ jobs:
         fetch-depth: 1
     - uses: cygwin/cygwin-install-action@master
       with:
-        packages: gcc-core gcc-g++ autoconf automake make zlib-devel mbedtls-devel libfltk-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
+        packages: autoconf automake gcc-core gcc-g++ libfltk-devel libgif-devel libiconv-devel libjpeg-devel libpng-devel libssl-devel make mbedtls-devel ninja zlib-devel python3-pip
     - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
       run: |
         set -x
         cd ${GITHUB_WORKSPACE}
         pwd
         ls -l
-        ./autogen.sh
-        ./configure
-        make
-        make check
-        ls -l src/dillo
+        if [ "${{ matrix.build-system }}" = "autotools" ]; then
+          ./autogen.sh
+          if [ "${{ matrix.tls }}" = "mbedtls" ]; then
+            ./configure --disable-openssl
+          else
+            ./configure --disable-mbedtls
+          fi
+          make
+          make check
+          ls -l src/dillo
+        else
+          pip3.9 install meson
+          if [ "${{ matrix.tls }}" = "mbedtls" ]; then
+            meson setup build -Dmbedtls=true -Dopenssl=false
+          else
+            meson setup build -Dmbedtls=false -Dopenssl=true
+          fi
+          ninja -C build
+          ninja -C build test
+          ls -l build/src/dillo
+        fi

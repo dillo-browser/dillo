@@ -22,7 +22,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-
+#include <stdint.h>    /* for int32_t */
 #include "bitvec.h"
 #include "url.h"
 
@@ -99,4 +99,3 @@ void a_Image_abort(DilloImage *Image);
 #endif /* __cplusplus */
 
 #endif /* __IMAGE_HH__ */
-
