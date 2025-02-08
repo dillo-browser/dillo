@@ -37,9 +37,9 @@ AC_ARG_ENABLE([insure],
   [enable_insure=no])
 
 AC_ARG_ENABLE([ipv6],
-  [AS_HELP_STRING([--enable-ipv6], [Build with support for IPv6])],
+  [AS_HELP_STRING([--disable-ipv6], [Disable support for IPv6])],
   [enable_ipv6=$enableval],
-  [enable_ipv6=no])
+  [enable_ipv6=yes])
 
 AC_ARG_ENABLE([cookies],
   [AS_HELP_STRING([--disable-cookies], [Dont compile support for cookies])],
