@@ -7,7 +7,9 @@ Makefile
 Makefile.in
 configure
 compile
-build
+/build*/
+test-driver
+configure~
 aclocal.m4
 depcomp
 install-sh
