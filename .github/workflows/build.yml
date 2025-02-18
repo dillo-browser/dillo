@@ -130,7 +130,9 @@ jobs:
     - name: autogen
       run: ./autogen.sh
     - name: configure
-      run: ./configure --disable-mbedtls CFLAGS="-Werror" CXXFLAGS="-Werror"
+      # Make sure we build with the C++11 standard, so we fail to build on newer
+      # features.
+      run: ./configure --disable-mbedtls CFLAGS="-Werror" CXXFLAGS="-Werror -std=c++11"
     - name: make
       run: make
     - name: make check
