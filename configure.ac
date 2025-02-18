@@ -708,7 +708,7 @@ dnl -----------
 dnl
 
 if eval "test x$GCC = xyes"; then
-  CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter -fno-rtti -fno-exceptions -pedantic -std=c++11 -D_POSIX_C_SOURCE=200112L"
+  CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter -fno-rtti -fno-exceptions -pedantic -D_POSIX_C_SOURCE=200112L"
 fi
 
 dnl ----------------------------------
