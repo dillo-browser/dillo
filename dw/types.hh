@@ -224,7 +224,7 @@ struct Content
       ALL               = 0xff,
       REAL_CONTENT      = 0xff ^ (START | END),
       SELECTION_CONTENT = TEXT | BREAK, // WIDGET_* must be set additionally
-      ANY_WIDGET        = WIDGET_IN_FLOW | WIDGET_OOF_CONT | WIDGET_OOF_REF,
+      ANY_WIDGET        = WIDGET_IN_FLOW | WIDGET_OOF_CONT | WIDGET_OOF_REF
    };
 
    /* Content is embedded in struct Word therefore we

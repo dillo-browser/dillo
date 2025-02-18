@@ -81,7 +81,7 @@ typedef enum {
    DILLO_CLI_VERSION       = 1 << 3,
    DILLO_CLI_LOCAL         = 1 << 4,
    DILLO_CLI_GEOMETRY      = 1 << 5,
-   DILLO_CLI_ERROR         = 1 << 15,
+   DILLO_CLI_ERROR         = 1 << 15
 } OptID;
 
 typedef struct {

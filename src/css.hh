@@ -24,13 +24,13 @@ typedef enum {
    CSS_PRIMARY_AUTHOR,
    CSS_PRIMARY_AUTHOR_IMPORTANT,
    CSS_PRIMARY_USER_IMPORTANT,
-   CSS_PRIMARY_LAST,
+   CSS_PRIMARY_LAST
 } CssPrimaryOrder;
 
 typedef enum {
    CSS_ORIGIN_USER_AGENT,
    CSS_ORIGIN_USER,
-   CSS_ORIGIN_AUTHOR,
+   CSS_ORIGIN_AUTHOR
 } CssOrigin;
 
 typedef enum {
@@ -267,7 +267,7 @@ typedef union {
 typedef enum {
    CSS_BORDER_WIDTH_THIN,
    CSS_BORDER_WIDTH_MEDIUM,
-   CSS_BORDER_WIDTH_THICK,
+   CSS_BORDER_WIDTH_THICK
 } CssBorderWidthExtensions;
 
 typedef enum {
@@ -275,7 +275,7 @@ typedef enum {
    CSS_FONT_WEIGHT_BOLDER,
    CSS_FONT_WEIGHT_LIGHT,
    CSS_FONT_WEIGHT_LIGHTER,
-   CSS_FONT_WEIGHT_NORMAL,
+   CSS_FONT_WEIGHT_NORMAL
 } CssFontWeightExtensions;
 
 typedef enum {
@@ -287,7 +287,7 @@ typedef enum {
    CSS_FONT_SIZE_XX_LARGE,
    CSS_FONT_SIZE_XX_SMALL,
    CSS_FONT_SIZE_X_LARGE,
-   CSS_FONT_SIZE_X_SMALL,
+   CSS_FONT_SIZE_X_SMALL
 } CssFontSizeExtensions;
 
 typedef enum {
@@ -361,14 +361,14 @@ class CssSimpleSelector {
    public:
       enum {
          ELEMENT_NONE = -1,
-         ELEMENT_ANY = -2,
+         ELEMENT_ANY = -2
       };
 
       typedef enum {
          SELECT_NONE,
          SELECT_CLASS,
          SELECT_PSEUDO_CLASS,
-         SELECT_ID,
+         SELECT_ID
       } SelectType;
 
       CssSimpleSelector ();
@@ -400,7 +400,7 @@ class CssSelector {
          COMB_NONE,
          COMB_DESCENDANT,
          COMB_CHILD,
-         COMB_ADJACENT_SIBLING,
+         COMB_ADJACENT_SIBLING
       } Combinator;
 
    private:

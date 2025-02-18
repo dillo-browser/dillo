@@ -1282,7 +1282,7 @@ bool OOFFloatsMgr::affectsLeftBorder (core::Widget *widget)
 bool OOFFloatsMgr::affectsRightBorder (core::Widget *widget)
 {
    return widget->getStyle()->vloat == core::style::FLOAT_RIGHT;
-};
+}
 
 bool OOFFloatsMgr::mayAffectBordersAtAll ()
 {

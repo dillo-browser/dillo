@@ -42,7 +42,7 @@
 static Fl_Color fltkui_dimmed(Fl_Color c, Fl_Color bg)
 {
    return fl_color_average(c, bg, .33f);
-};
+}
 
 //----------------------------------------------------------------------------
 /*
@@ -78,7 +78,7 @@ CustInput2::CustInput2 (int x, int y, int w, int h, const char* l) :
    placeholder = NULL;
    showing_placeholder = false;
    usual_color = FL_BLACK;      /* just init until widget style is set */
-};
+}
 
 /*
  * Show normal text.
@@ -235,7 +235,7 @@ CustTextEditor::CustTextEditor (int x, int y, int w, int h, const char* l) :
    buffer(new Fl_Text_Buffer());
    usual_color = FL_BLACK;      /* just init until widget style is set */
    text_copy = NULL;
-};
+}
 
 CustTextEditor::~CustTextEditor ()
 {

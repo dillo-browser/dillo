@@ -294,7 +294,7 @@ typedef struct {
                                  * determined  by the type */
       CSS_SHORTHAND_DIRECTIONS, /**< <t>{1,4} */
       CSS_SHORTHAND_BORDER,     /**< special, used for 'border' */
-      CSS_SHORTHAND_FONT,       /**< special, used for 'font' */
+      CSS_SHORTHAND_FONT        /**< special, used for 'font' */
    } type;
    const CssPropertyName *properties; /* CSS_SHORTHAND_MULTIPLE:
                                        *   must be terminated by

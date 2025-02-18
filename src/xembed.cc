@@ -149,10 +149,10 @@ void Xembed::createInternal(uint32_t parent) {
 #else  // X_PROTOCOL
 
 void
-Xembed::setXembedInfo(unsigned long flags) {};
+Xembed::setXembedInfo(unsigned long flags) {}
 
 void
-Xembed::sendXembedEvent(uint32_t message) {};
+Xembed::sendXembedEvent(uint32_t message) {}
 
 int
 Xembed::handle(int e) {

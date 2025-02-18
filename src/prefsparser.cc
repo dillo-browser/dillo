@@ -18,7 +18,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <locale.h>            /* for setlocale */
-#include <math.h>              /* for isinf */
+#include <math.h>              /* for HUGE_VAL */
 #include <limits.h>
 
 #include "prefs.h"
@@ -112,12 +112,11 @@ static int parseOption(char *name, char *value,
    case PREFS_FRACTION_100:
       {
          double d = strtod (value, NULL);
-         if (isinf(d)) {
-            if (d > 0)
-               *(int*)node->pref = INT_MAX;
-            else
-               *(int*)node->pref = INT_MIN;
-         } else
+         if (d == HUGE_VAL)
+            *(int*)node->pref = INT_MAX;
+         else if (d == -HUGE_VAL)
+            *(int*)node->pref = INT_MIN;
+         else
             *(int*)node->pref = 100 * d;
       }
       break;

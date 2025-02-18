@@ -93,7 +93,7 @@ protected:
        *
        * The dw::Image widget uses this flag, see dw::Image::setBuffer.
        */
-      WAS_ALLOCATED    = 1 << 6,
+      WAS_ALLOCATED    = 1 << 6
    };
 
    /**
