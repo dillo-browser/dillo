@@ -20,7 +20,7 @@
 #if !HAVE_SETENV
 int setenv(const char *name, const char *val, int overwrite)
 {
-   if (name == NULL || name[0] == '\0' || strchr(name, '=') == NULL || val == NULL) {
+   if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL || val == NULL) {
       errno = EINVAL;
       return -1;
    }
