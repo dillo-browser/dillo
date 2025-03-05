@@ -29,8 +29,10 @@ int setenv(const char *name, const char *val, int overwrite)
    if (overwrite == 0 && getenv(name) != NULL)
       return 0;
 
+#ifndef __sgi /* Not available on IRIX */
    /* Otherwise undefine first */
    unsetenv(name);
+#endif
 
    int len = strlen(name) + strlen(val) + 2;
    char *env = malloc(len);
