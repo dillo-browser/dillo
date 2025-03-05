@@ -27,7 +27,12 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/tcp.h>
+#ifdef __sgi
+/* IRIX fails to include netinet/tcp.h */
+# define TCP_NODELAY 1
+#else
+# include <netinet/tcp.h>
+#endif
 #include <arpa/inet.h>
 
 #include <unistd.h>
