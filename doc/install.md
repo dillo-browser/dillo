@@ -79,7 +79,7 @@ help.
 ## Dpi programs
 
 These are installed by `make install`. If you don't have root access,
-copy "dillo" and "dpid" to some directory in your path and install
+copy "dpi" and "dpid" to some directory in your path and install
 the dpis by running `./install-dpi-local` from the top directory (they
 will be installed under ~/.dillo).
 
