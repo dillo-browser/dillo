@@ -1,5 +1,6 @@
 *.a
 *.o
+.deps/
 config.*
 autom4te.cache
 Makefile
