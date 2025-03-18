@@ -21,6 +21,8 @@
 #define _MSG(...)
 #define MSG(...)  printf("[dpid]: " __VA_ARGS__)
 #define MSG_ERR(...)  fprintf(stderr, "[dpid]: " __VA_ARGS__)
+#define MSG_COMM_RECV(...)  fprintf(stderr, "[dpid]: RECV - " __VA_ARGS__)
+#define MSG_COMM_SEND(...)  fprintf(stderr, "[dpid]: SEND - " __VA_ARGS__)
 
 #define dotDILLO_DPI ".dillo/dpi"
 #define dotDILLO_DPIDRC ".dillo/dpidrc"

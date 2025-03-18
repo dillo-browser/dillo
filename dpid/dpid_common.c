@@ -33,6 +33,7 @@ ssize_t ckd_write(int fd, char *msg, char *file, int line)
 {
    ssize_t ret;
 
+   MSG_COMM_SEND("%s\n", msg);
    do {
       ret = write(fd, msg, strlen(msg));
    } while (ret == -1 && errno == EINTR);

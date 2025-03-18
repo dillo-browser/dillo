@@ -142,6 +142,10 @@ static char *get_request(Dsh *sh)
    dpip_tag = a_Dpip_dsh_read_token(sh, 1);
    (void) sigprocmask(SIG_UNBLOCK, &mask_sigchld, NULL);
 
+   if (dpip_tag) {
+      MSG_COMM_RECV("%s\n", dpip_tag);
+   }
+
    return dpip_tag;
 }
 
