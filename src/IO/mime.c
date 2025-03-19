@@ -2,7 +2,7 @@
  * File: mime.c
  *
  * Copyright (C) 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,6 +116,9 @@ void a_Mime_init(void)
 #endif
    Mime_add_minor_type("text/html", a_Html_text);
    Mime_add_minor_type("application/xhtml+xml", a_Html_text);
+   Mime_add_minor_type("application/xml", a_Plain_text);
+   Mime_add_minor_type("application/rss+xml", a_Plain_text);
+   Mime_add_minor_type("application/atom+xml", a_Plain_text);
    Mime_add_minor_type("application/json", a_Plain_text);
 
    /* Add a major type to handle all the text stuff */
