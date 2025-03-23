@@ -1088,10 +1088,10 @@ static int UIcmd_save_file_check(const char *name)
 /*
  * Save a URL
  */
-static void UIcmd_save(BrowserWindow *bw, const DilloUrl *url,
+static void UIcmd_save(BrowserWindow *bw, const DilloUrl *url, char *filename,
                        const char *title)
 {
-   char *SuggestedName = UIcmd_make_save_filename(url);
+   char *SuggestedName = filename ? filename : UIcmd_make_save_filename(url);
 
    while (1) {
       const char *name = a_Dialog_save_file(title, NULL, SuggestedName);
@@ -1129,7 +1129,7 @@ void a_UIcmd_save(void *vbw)
    const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
 
    if (url) {
-      UIcmd_save(bw, url, "Save Page as File");
+      UIcmd_save(bw, url, NULL, "Save Page as File");
    }
 }
 
@@ -1248,9 +1248,9 @@ const char *a_UIcmd_get_passwd(const char *user)
 /*
  * Save link URL
  */
-void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url)
+void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url, char *filename)
 {
-   UIcmd_save(bw, url, "Dillo: Save Link as File");
+   UIcmd_save(bw, url, filename, "Dillo: Save Link as File");
 }
 
 /*

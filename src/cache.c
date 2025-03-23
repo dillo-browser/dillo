@@ -52,6 +52,7 @@ typedef struct {
    char *TypeHdr;            /**< MIME type string as from the HTTP Header */
    char *TypeMeta;           /**< MIME type string from META HTTP-EQUIV */
    char *TypeNorm;           /**< MIME type string normalized */
+   char *ContentDisposition; /**< Content-Disposition header */
    Dstr *Header;             /**< HTTP header */
    const DilloUrl *Location; /**< New URI for redirects */
    Dlist *Auth;              /**< Authentication fields */
@@ -196,6 +197,7 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->TypeHdr = NULL;
    NewEntry->TypeMeta = NULL;
    NewEntry->TypeNorm = NULL;
+   NewEntry->ContentDisposition = NULL;
    NewEntry->Header = dStr_new("");
    NewEntry->Location = NULL;
    NewEntry->Auth = NULL;
@@ -302,6 +304,7 @@ static void Cache_entry_free(CacheEntry_t *entry)
    dFree(entry->TypeHdr);
    dFree(entry->TypeMeta);
    dFree(entry->TypeNorm);
+   dFree(entry->ContentDisposition);
    dStr_free(entry->Header, TRUE);
    a_Url_free((DilloUrl *)entry->Location);
    Cache_auth_free(entry->Auth);
@@ -813,6 +816,9 @@ static void Cache_parse_header(CacheEntry_t *entry)
       _MSG("TypeMeta {%s}\n", entry->TypeMeta);
       dFree(Type);
    }
+
+   entry->ContentDisposition = Cache_parse_field(header, "Content-Disposition");
+
    Cache_ref_data(entry);
 }
 
@@ -1123,6 +1129,7 @@ static void Cache_null_client(int Op, CacheClient_t *Client)
 typedef struct {
    BrowserWindow *bw;
    DilloUrl *url;
+   char* filename;
 } Cache_savelink_t;
 
 /**
@@ -1133,7 +1140,7 @@ static void Cache_savelink_cb(void *vdata)
 {
    Cache_savelink_t *data = (Cache_savelink_t*) vdata;
 
-   a_UIcmd_save_link(data->bw, data->url);
+   a_UIcmd_save_link(data->bw, data->url, data->filename);
    a_Url_free(data->url);
    dFree(data);
 }
@@ -1184,6 +1191,8 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
    bool_t AbortEntry = FALSE;
    bool_t OfferDownload = FALSE;
    bool_t TypeMismatch = FALSE;
+   char *dtype = NULL;
+   char *dfilename = NULL;
 
    if (Busy)
       MSG_ERR("FATAL!: >>>> Cache_process_queue Caught busy!!! <<<<\n");
@@ -1203,6 +1212,9 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
          entry->Flags |= CA_GotContentType;
       } else
          return entry;  /* i.e., wait for more data */
+   }
+   if (entry->ContentDisposition) {
+      a_Misc_parse_content_disposition(entry->ContentDisposition, &dtype, &dfilename);
    }
 
    Busy = TRUE;
@@ -1268,6 +1280,8 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
                          * connection and to keep a failed-resource flag in
                          * the cache entry. */
                      }
+                  } else if (dtype && dStrnAsciiCasecmp(dtype, "attachment", 10) == 0) {
+                     AbortEntry = OfferDownload = TRUE;
                   }
                }
                if (AbortEntry) {
@@ -1337,6 +1351,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
             Cache_savelink_t *data = dNew(Cache_savelink_t, 1);
             data->bw = Client_bw;
             data->url = a_Url_dup(url);
+            data->filename = dStrdup(dfilename);
             a_Timeout_add(0.0, Cache_savelink_cb, data);
          }
       }
@@ -1344,6 +1359,8 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
    } else if (entry->Auth && !(entry->Flags & CA_InProgress)) {
       Cache_auth_entry(entry, Client_bw);
    }
+
+   dFree(dtype); dFree(dfilename);
 
    /* Trigger cleanup when there are no cache clients */
    if (dList_length(ClientQueue) == 0) {
