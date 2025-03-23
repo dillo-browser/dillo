@@ -354,6 +354,52 @@ int a_Misc_content_type_check(const char *EntryType, const char *DetectedType)
    return st;
 }
 
+
+/**
+ * Parse Content-Disposition string, e.g., "attachment; filename="file name.jpg"".
+ * Content-Disposition is defined in RFC 6266
+ */
+void a_Misc_parse_content_disposition(const char *disposition, char **type, char **filename)
+{
+   static const char tspecials_space[] = "()<>@,;:\\\"/[]?= ";
+   const char *str, *s;
+
+   if (type)
+      *type = NULL;
+   if (filename)
+      *filename = NULL;
+   if (!(str = disposition))
+      return;
+
+   for (s = str; *s && d_isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
+      !strchr(tspecials_space, *s); s++) ;
+   if (type)
+      *type = dStrndup(str, s - str);
+
+   if (*s == ';') {
+      const char terminators[] = " ;\t";
+      const char key[] = "filename";
+
+      if ((s = dStriAsciiStr(str, key)) &&
+          (s == str || strchr(terminators, s[-1]))) {
+         s += sizeof(key) - 1;
+         for ( ; *s == ' ' || *s == '\t'; ++s);
+         if (*s == '=') {
+            size_t len;
+            for (++s; *s == ' ' || *s == '\t'; ++s);
+            if ((len = strcspn(s, terminators))) {
+               if (*s == '"' && s[len-1] == '"' && len > 1) {
+                 /* quoted string */
+                 s++;
+                 len -= 2;
+               }
+               *filename = dStrndup(s, len);
+            }
+         }
+      }
+   }
+}
+
 /**
  * Parse a geometry string.
  */
