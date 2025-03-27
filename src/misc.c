@@ -371,7 +371,7 @@ void a_Misc_parse_content_disposition(const char *disposition, char **type, char
    if (!(str = disposition))
       return;
 
-   for (s = str; *s && d_isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
+   for (s = str; *s && d_isascii(*s) && !iscntrl(*s) &&
       !strchr(tspecials_space, *s); s++) ;
    if (type)
       *type = dStrndup(str, s - str);
@@ -385,15 +385,33 @@ void a_Misc_parse_content_disposition(const char *disposition, char **type, char
          s += sizeof(key) - 1;
          for ( ; *s == ' ' || *s == '\t'; ++s);
          if (*s == '=') {
-            size_t len;
+            size_t len = 0;
             for (++s; *s == ' ' || *s == '\t'; ++s);
-            if ((len = strcspn(s, terminators))) {
-               if (*s == '"' && s[len-1] == '"' && len > 1) {
-                 /* quoted string */
-                 s++;
-                 len -= 2;
+            if (*s == '"') {
+               s++;
+               for ( ; *s == '.'; ++s);
+               bool_t escaped = FALSE;
+               const char *c;
+               unsigned int maxlen = strlen(s);
+               for (c = s; !(*c == '"' && !escaped); c++) {
+                  if ((len = c - s) == maxlen) {
+                     return;
+                  }
+                  escaped = *c == '\\';
                }
                *filename = dStrndup(s, len);
+            } else {
+               for ( ; *s == '.'; ++s);
+               if ((len = strcspn(s, terminators))) {
+                  *filename = dStrndup(s, len);
+               }
+            }
+
+            const char invalid_characters[] = "/\\|";
+            for (char *s = *filename; s < *filename + len; s++) {
+               if (strchr(invalid_characters, *s)) {
+                  *s = '_';
+               }
             }
          }
       }
