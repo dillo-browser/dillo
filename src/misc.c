@@ -394,7 +394,7 @@ void a_Misc_parse_content_disposition(const char *disposition, char **type, char
                const char *c;
                unsigned int maxlen = strlen(s);
                for (c = s; !(*c == '"' && !escaped); c++) {
-                  if ((len = c - s) == maxlen) {
+                  if ((len = c - s + 1) > maxlen) {
                      return;
                   }
                   escaped = *c == '\\';
