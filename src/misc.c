@@ -407,7 +407,7 @@ void a_Misc_parse_content_disposition(const char *disposition, char **type, char
                }
             }
 
-            const char invalid_characters[] = "/\\|";
+            const char invalid_characters[] = "/\\|~";
             for (char *s = *filename; s < *filename + len; s++) {
                if (strchr(invalid_characters, *s)) {
                   *s = '_';

@@ -36,6 +36,7 @@ disposition_SOURCES = \
 	disposition.c
 disposition_LDADD = \
 	$(top_builddir)/dlib/libDlib.a
+disposition_CFLAGS = -flto
 notsosimplevector_SOURCES = notsosimplevector.cc
 identity_SOURCES = identity.cc
 identity_LDADD = \
