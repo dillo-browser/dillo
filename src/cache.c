@@ -1280,7 +1280,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
                          * connection and to keep a failed-resource flag in
                          * the cache entry. */
                      }
-                  } else if (dtype && dStrnAsciiCasecmp(dtype, "attachment", 10) == 0) {
+                  } else if (dtype && dStrnAsciiCasecmp(dtype, "inline", 6) != 0) {
                      AbortEntry = OfferDownload = TRUE;
                   }
                }
