@@ -362,6 +362,7 @@ int a_Misc_content_type_check(const char *EntryType, const char *DetectedType)
 void a_Misc_parse_content_disposition(const char *disposition, char **type, char **filename)
 {
    static const char tspecials_space[] = "()<>@,;:\\\"/[]?= ";
+   const char terminators[] = " ;\t";
    const char *str, *s;
 
    if (type)
@@ -371,13 +372,22 @@ void a_Misc_parse_content_disposition(const char *disposition, char **type, char
    if (!(str = disposition))
       return;
 
-   for (s = str; *s && d_isascii(*s) && !iscntrl(*s) &&
+   for (s = str; *s && d_isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
       !strchr(tspecials_space, *s); s++) ;
-   if (type)
+   if (type && !(s == str))
       *type = dStrndup(str, s - str);
 
+   if (!*type) {
+      return;
+   }
+
+   if (!strchr(terminators, *s)) {
+      *type = NULL;
+      return;
+   }
+
    if (*s == ';') {
-      const char terminators[] = " ;\t";
+      bool_t quoted = FALSE;
       const char key[] = "filename";
 
       if ((s = dStriAsciiStr(str, key)) &&
@@ -388,6 +398,7 @@ void a_Misc_parse_content_disposition(const char *disposition, char **type, char
             size_t len = 0;
             for (++s; *s == ' ' || *s == '\t'; ++s);
             if (*s == '"') {
+               quoted = TRUE;
                s++;
                for ( ; *s == '.'; ++s);
                bool_t escaped = FALSE;
@@ -408,10 +419,30 @@ void a_Misc_parse_content_disposition(const char *disposition, char **type, char
             }
 
             const char invalid_characters[] = "/\\|~";
-            for (char *s = *filename; s < *filename + len; s++) {
+            char *s = *filename, *d = *filename;
+
+            for ( ; s < *filename + len; s++) {
                if (strchr(invalid_characters, *s)) {
-                  *s = '_';
+                  // If this is a backslash preceding a quote, we want to just
+                  // skip past it without advancing the destination pointer or
+                  // copying anything.
+                  if (!(*s == '\\' && *(s+1) == '"')) {
+                     *d = '_';
+                     d++;
+                  }
+               } else if (!quoted && (!d_isascii((uchar_t)*s) || *s == '=')) {
+                  *filename = NULL;
+                  return;
+               } else {
+                  *d = *s;
+                  d++;
                }
+            }
+
+            // Truncate filename to deal with the string being shorter if we
+            // skipped over any backslash characters in the above loop
+            if (s != d) {
+               *d = '\0';
             }
          }
       }
