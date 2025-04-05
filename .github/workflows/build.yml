@@ -12,6 +12,8 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
+    - name: Update package lists
+      run: sudo apt update
     - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev libssl-dev libpng-dev libjpeg-dev libwebp-dev xvfb x11-apps x11-utils imagemagick
 
@@ -68,6 +70,8 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
+    - name: Update package lists
+      run: sudo apt update
     - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev
     - name: autogen
@@ -87,6 +91,8 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
+    - name: Update package lists
+      run: sudo apt update
     - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev libmbedtls-dev
     - name: autogen
@@ -106,6 +112,8 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
+    - name: Update package lists
+      run: sudo apt update
     - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev libssl-dev
     - name: autogen
@@ -125,6 +133,8 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
+    - name: Update package lists
+      run: sudo apt update
     - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev libssl-dev
     - name: autogen
@@ -144,6 +154,8 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
+    - name: Update package lists
+      run: sudo apt update
     - name: Install dependencies
       run: sudo apt install -y libfltk1.3-dev libssl-dev
     - name: autogen
