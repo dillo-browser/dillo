@@ -32,11 +32,9 @@ containers_LDADD = \
 	$(top_builddir)/lout/liblout.a \
 	$(top_builddir)/dlib/libDlib.a
 disposition_SOURCES = \
-	$(top_srcdir)/src/misc.c \
 	disposition.c
 disposition_LDADD = \
 	$(top_builddir)/dlib/libDlib.a
-disposition_CFLAGS = -flto
 notsosimplevector_SOURCES = notsosimplevector.cc
 identity_SOURCES = identity.cc
 identity_LDADD = \
