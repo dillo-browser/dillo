@@ -107,6 +107,11 @@ AC_ARG_ENABLE([mbedtls],
   [enable_mbedtls=$enableval],
   [enable_mbedtls=yes])
 
+AC_ARG_ENABLE([brotli],
+  [AS_HELP_STRING([--disable-brotli], [Disable support for brotli encoding])],
+  [enable_brotli=$enableval],
+  [enable_brotli=yes])
+
 AC_ARG_WITH([ca-certs-file],
   [AS_HELP_STRING([--with-ca-certs-file=FILE], [Specify where to find a bundle of trusted CA certificates for TLS])],
   CA_CERTS_FILE=$withval)
@@ -329,6 +334,33 @@ if test "x$libz_ok" = xyes; then
   LIBZ_LIBS="-lz"
 else
   AC_MSG_ERROR(zlib must be installed!)
+fi
+
+dnl ---------------
+dnl Test for brotli
+dnl ---------------
+dnl
+if test "x$enable_brotli" = "xyes"; then
+  AC_CHECK_HEADER(brotli/decode.h, brotli_ok=yes, brotli_ok=no)
+
+  if test "x$brotli_ok" = "xyes"; then
+    old_libs="$LIBS"
+    AC_CHECK_LIB(brotlidec, BrotliDecoderVersion, brotli_ok=yes, brotli_ok=no)
+    LIBS="$old_libs"
+
+    if test "x$brotli_ok" = "xyes"; then
+      BROTLI_LIBS="-lbrotlidec"
+    else
+      AC_MSG_WARN([*** libbrotlidec not found. Disabling brotli encoding.***])
+    fi
+  else
+    AC_MSG_WARN([*** brotli/decode.h not found. Disabling brotli encoding.***])
+  fi
+
+fi
+
+if test "x$brotli_ok" = "xyes"; then
+  AC_DEFINE([ENABLE_BROTLI], [1], [Enable brotli encoding])
 fi
 
 dnl ---------------
@@ -742,6 +774,7 @@ AC_SUBST(LIBPNG_LIBS)
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBWEBP_LIBS)
 AC_SUBST(LIBZ_LIBS)
+AC_SUBST(BROTLI_LIBS)
 AC_SUBST(LIBSSL_LIBS)
 AC_SUBST(LIBPTHREAD_LIBS)
 AC_SUBST(LIBPTHREAD_LDFLAGS)
@@ -793,6 +826,7 @@ _AS_ECHO([  PNG enabled    : ${png_ok}])
 _AS_ECHO([  GIF enabled    : ${enable_gif}])
 _AS_ECHO([  SVG enabled    : ${enable_svg}])
 _AS_ECHO([  WEBP enabled   : ${enable_webp}])
+_AS_ECHO([  Brotli enabled : ${enable_brotli}])
 _AS_ECHO([])
 _AS_ECHO([  HTML tests     : ${html_tests_ok}])
 _AS_ECHO([])

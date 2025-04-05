@@ -15,7 +15,7 @@ jobs:
     - name: Update package lists
       run: sudo apt update
     - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev libpng-dev libjpeg-dev libwebp-dev xvfb x11-apps x11-utils imagemagick
+      run: sudo apt install -y libfltk1.3-dev libssl-dev libpng-dev libjpeg-dev libwebp-dev libbrotli-dev xvfb x11-apps x11-utils imagemagick
 
     - name: autogen
       run: ./autogen.sh
@@ -271,7 +271,7 @@ jobs:
         fetch-depth: 1
     - uses: cygwin/cygwin-install-action@master
       with:
-        packages: gcc-core gcc-g++ autoconf automake make zlib-devel mbedtls-devel libfltk-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel
+        packages: gcc-core gcc-g++ autoconf automake make zlib-devel mbedtls-devel libfltk-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel libbrotli-devel
     - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
       run: |
         set -x

@@ -35,7 +35,7 @@ packages to build Dillo:
 ```sh
 $ sudo apt install gcc g++ autoconf automake make zlib1g-dev \
     libfltk1.3-dev libssl-dev libc6-dev \
-    libpng-dev libjpeg-dev libwebp-dev
+    libpng-dev libjpeg-dev libwebp-dev libbrotli-dev
 ```
 
 If you prefer to use mbedTLS, replace `libssl-dev` with
@@ -170,7 +170,7 @@ will need the following dependencies to build Dillo with mbedTLS:
 
 ```
 gcc-core gcc-g++ autoconf automake make zlib-devel mbedtls-devel libfltk-devel
-libiconv-devel libpng-devel libjpeg-devel libwebp-devel
+libiconv-devel libpng-devel libjpeg-devel libwebp-devel libbrotli-devel
 ```
 
 **Note**: Dillo can also be built with OpenSSL (libssl-devel) but there is a
@@ -187,7 +187,7 @@ xorg-server xinit
 
 You can also install all the dependencies from the command line with:
 ```
-setup-x86_64.exe -q -P gcc-core,gcc-g++,autoconf,automake,make,zlib-devel,mbedtls-devel,libfltk-devel,libiconv-devel,libpng-devel,libjpeg-devel,libwebp-devel,xorg-server,xinit
+setup-x86_64.exe -q -P gcc-core,gcc-g++,autoconf,automake,make,zlib-devel,mbedtls-devel,libfltk-devel,libiconv-devel,libpng-devel,libjpeg-devel,libwebp-devel,libbrotli-devel,xorg-server,xinit
 ```
 
 To build Dillo, follow the usual steps from a Cygwin shell:
