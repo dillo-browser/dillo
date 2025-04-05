@@ -147,7 +147,7 @@ static void Menu_find_text_cb(Fl_Widget*, void*)
 static void Menu_save_link_cb(Fl_Widget*, void *user_data)
 {
    DilloUrl *url = (DilloUrl *)user_data;
-   a_UIcmd_save_link(popup_bw, url);
+   a_UIcmd_save_link(popup_bw, url, NULL);
 }
 
 /**
