@@ -32,6 +32,7 @@ struct testcase cases[] = {
    { "attachment; filename=/foo", "attachment", "_foo" },
    { "attachment; filename=./../foo", "attachment", "_.._foo" },
    { "attachment; filename=", "attachment", NULL },
+   { "attachment; filename=\"foo", "attachment", NULL },
    { "attachment; filename= ", "attachment", NULL },
    { "attachment; filename=\"", "attachment", NULL },
    { "attachment; filename=\"foo", "attachment", NULL },
