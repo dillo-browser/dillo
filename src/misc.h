@@ -33,12 +33,13 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
    const char terminators[] = " ;\t";
    const char *str, *s;
 
-   if (type)
-      *type = NULL;
-   if (filename)
-      *filename = NULL;
-   if (!(str = disposition))
+   /* All are mandatory */
+   if (!disposition || !type || !filename)
       return;
+
+   *type = NULL;
+   *filename = NULL;
+   str = disposition;
 
    for (s = str; *s && d_isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
       !strchr(tspecials_space, *s); s++) ;
