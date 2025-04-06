@@ -2,6 +2,7 @@
  * File: decode.c
  *
  * Copyright 2007-2008 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -9,10 +10,16 @@
  * (at your option) any later version.
  */
 
+#include "config.h"
+
 #include <zlib.h>
 #include <iconv.h>
 #include <errno.h>
 #include <stdlib.h>     /* strtol */
+
+#ifdef ENABLE_BROTLI
+#include <brotli/decode.h>
+#endif
 
 #include "decode.h"
 #include "utf8.hh"
@@ -232,6 +239,82 @@ static Dstr *Decode_deflate(Decode *dc, const char *instr, int inlen)
    return output;
 }
 
+#ifdef ENABLE_BROTLI
+/**
+ * Decode brotli compressed data in stream mode.
+ */
+static Dstr *Decode_brotli_process(Decode *dc, const char *instr, int inlen)
+{
+   Dstr *output = dStr_new("");
+   BrotliDecoderState *st = (BrotliDecoderState *) dc->state;
+
+   const uint8_t *next_in = (const uint8_t *) instr;
+   size_t avail_in = inlen;
+   BrotliDecoderResult res;
+
+   _MSG("Decode_brotli_process inlen=%d\n", inlen);
+
+   /* Handle empty case */
+   if (avail_in == 0)
+      return output;
+
+   do {
+      /* Always reset output buffer */
+      uint8_t *next_out = (uint8_t *) dc->buffer;
+      size_t avail_out = bufsize;
+
+      _MSG("Decode_brotli_process decoding %zd bytes\n", avail_in);
+
+      res = BrotliDecoderDecompressStream(st,
+            &avail_in, &next_in, &avail_out, &next_out, NULL);
+
+      _MSG("Decode_brotli_process res=%d\n", res);
+
+      if (res == BROTLI_DECODER_RESULT_ERROR) {
+         MSG_ERR("brotli decompression error\n");
+         break;
+      }
+
+      size_t delta = bufsize - avail_out;
+      _MSG("Decode_brotli_process delta=%zd\n", delta);
+      dStr_append_l(output, dc->buffer, delta);
+
+   } while (res == BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT);
+
+   _MSG("Decode_brotli_process exitting with res=%d\n", res);
+
+   return output;
+}
+
+static void Decode_brotli_free(Decode *dc)
+{
+   BrotliDecoderState *st = (BrotliDecoderState *) dc->state;
+   BrotliDecoderDestroyInstance(st);
+
+   dFree(dc->buffer);
+}
+
+static Decode *Decode_brotli_init(void)
+{
+   BrotliDecoderState *st = BrotliDecoderCreateInstance(NULL, NULL, NULL);
+   if (st == NULL) {
+      MSG_ERR("Cannot create brotli decoder instance\n");
+      return NULL;
+   }
+
+   Decode *dc = dNew0(Decode, 1);
+
+   dc->buffer = dNew(char, bufsize);
+   dc->state = st;
+   dc->leftover = NULL; /* not used */
+   dc->decode = Decode_brotli_process;
+   dc->free = Decode_brotli_free;
+
+   return dc;
+}
+#endif /* ENABLE_BROTLI */
+
+
 /**
  * Translate to desired character set (UTF-8)
  */
@@ -322,7 +405,7 @@ static Decode *Decode_content_init_common(void)
 }
 
 /**
- * Initialize content decoder. Currently handles 'gzip' and 'deflate'.
+ * Initialize content decoder. Currently handles 'gzip', 'deflate' and 'br'.
  */
 Decode *a_Decode_content_init(const char *format)
 {
@@ -348,6 +431,11 @@ Decode *a_Decode_content_init(const char *format)
          inflateInit(zs);
 
          dc->decode = Decode_deflate;
+#ifdef ENABLE_BROTLI
+      } else if (!dStrAsciiCasecmp(format, "br")) {
+         _MSG("brotli data!\n");
+         dc = Decode_brotli_init();
+#endif
       } else {
          MSG("Content-Encoding '%s' not recognized.\n", format);
       }

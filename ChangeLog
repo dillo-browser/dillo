@@ -6,6 +6,11 @@ Here we list changes that are relatively significant and/or visible to the
 user. For a history of changes in full detail, see our Git repository
 at https://github.com/dillo-browser/dillo
 
+dillo-3.3.0 [Unreleased]
+
++- Add optional support for brotli (br) content encoding.
+   Patches: Rodrigo Arias Mallo
+
 dillo-3.2.0 [Jan 18, 2025]
 
 +- Add new_tab_page option to open a custom new tab page.
