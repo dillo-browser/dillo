@@ -51,6 +51,7 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
    }
 
    if (!strchr(terminators, *s)) {
+      dFree(*type);
       *type = NULL;
       return;
    }
@@ -100,6 +101,7 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
                      d++;
                   }
                } else if (!quoted && (!d_isascii((uchar_t)*s) || *s == '=')) {
+                  dFree(*filename);
                   *filename = NULL;
                   return;
                } else {
