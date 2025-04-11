@@ -10,6 +10,7 @@ dillo-3.3.0 [Unreleased]
 
 +- Add optional support for brotli (br) content encoding.
  - Add about:keys to display current keyboard shortcuts.
+ - Control + left click opens links in new tab (emulates mouse middle button).
    Patches: Rodrigo Arias Mallo
 
 dillo-3.2.0 [Jan 18, 2025]

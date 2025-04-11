@@ -2,7 +2,7 @@
  * File: html.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -813,11 +813,21 @@ bool DilloHtml::HtmlLinkReceiver::click (Widget *widget, int link, int img,
       Html_set_link_coordinates(html, link, x, y);
 
       if (event->button == 1) {
-         a_UIcmd_open_url(bw, url);
+         if (event->state & CONTROL_MASK) {
+            if (prefs.middle_click_opens_new_tab) {
+               int focus = prefs.focus_new_tab ? 1 : 0;
+               if (event->state & SHIFT_MASK) focus = !focus;
+               a_UIcmd_open_url_nt(bw, url, focus);
+            } else {
+               a_UIcmd_open_url_nw(bw, url);
+            }
+         } else {
+            a_UIcmd_open_url(bw, url);
+         }
       } else if (event->button == 2) {
          if (prefs.middle_click_opens_new_tab) {
             int focus = prefs.focus_new_tab ? 1 : 0;
-            if (event->state == SHIFT_MASK) focus = !focus;
+            if (event->state & SHIFT_MASK) focus = !focus;
             a_UIcmd_open_url_nt(bw, url, focus);
          } else
             a_UIcmd_open_url_nw(bw, url);
