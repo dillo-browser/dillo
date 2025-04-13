@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,9 +141,11 @@ void Vector::put(Object *newElement, int newPos)
    if (newPos >= numAlloc) {
       while (newPos >= numAlloc)
          numAlloc *= 2;
-      void *vp;
-      assert((vp = realloc(array, numAlloc * sizeof(Object*))));
-      if (!vp) exit(-2); // when NDEBUG is defined
+      void *vp = realloc(array, numAlloc * sizeof(Object*));
+      if (vp == NULL) {
+         perror("realloc failed");
+         exit(1);
+      }
       array = (Object**)vp;
    }
 
@@ -177,9 +180,11 @@ void Vector::insert(Object *newElement, int pos)
       if (numElements >= numAlloc) {
          // Allocated memory has to be increased.
          numAlloc *= 2;
-         void *vp;
-         assert((vp = realloc(array, numAlloc * sizeof(Object*))));
-         if (!vp) exit(-2); // when NDEBUG is defined
+         void *vp = realloc(array, numAlloc * sizeof(Object*));
+         if (vp == NULL) {
+            perror("realloc failed");
+            exit(1);
+         }
          array = (Object**)vp;
       }
 

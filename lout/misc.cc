@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,10 +164,11 @@ void BitSet::set(int i, bool val)
       int newNumBytes = numBytes;
       while (8 * i >= newNumBytes)
          newNumBytes *= 2;
-
-      void *vp;
-      assert((vp = realloc(bits, newNumBytes * sizeof(unsigned char))));
-      if (!vp) exit(-2); // when NDEBUG is defined
+      void *vp = realloc(bits, newNumBytes * sizeof(unsigned char));
+      if (vp == NULL) {
+         perror("realloc failed");
+         exit(1);
+      }
       bits = (unsigned char*)vp;
       memset(bits + numBytes, 0, newNumBytes - numBytes);
       numBytes = newNumBytes;
