@@ -147,27 +147,6 @@ jobs:
       run: make
     - name: make check
       run: make check
-  ubuntu-20-04-openssl-1-1:
-    needs: ubuntu-latest-html-tests
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Update package lists
-      run: sudo apt update
-    - name: Install dependencies
-      run: sudo apt install -y libfltk1.3-dev libssl-dev
-    - name: autogen
-      run: ./autogen.sh
-    - name: configure
-      run: ./configure --disable-mbedtls
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
   alpine-mbedtls-3_6_0:
     runs-on: ubuntu-latest
     steps:
