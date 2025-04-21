@@ -47,6 +47,7 @@
 #include "prefs.h"
 #include "misc.h"
 #include "dlib/dlib.h"
+#include "IO/control.h"
 
 #include "dw/fltkviewport.hh"
 
@@ -936,6 +937,18 @@ void a_UIcmd_reload(void *vbw)
    a_Nav_reload((BrowserWindow*)vbw);
 }
 
+BrowserWindow *a_UIcmd_get_first_active_bw(void)
+{
+   struct Tabgroup *tg = tabgroups;
+   for (tg = tabgroups; tg; tg = tg->next) {
+      BrowserWindow *bw = a_UIcmd_get_bw_by_widget(tg->tabs->wizard()->value());
+      if (bw)
+         return bw;
+   }
+
+   return NULL;
+}
+
 /*
  * Reload all active tabs
  */
@@ -1634,6 +1647,25 @@ void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
    sens = (a_Nav_stack_ptr(bw) < a_Nav_stack_size(bw) - 1 &&
            !a_Bw_expecting(bw));
    BW2UI(bw)->button_set_sens(UI_FORW, sens);
+
+   a_UIcmd_finish_loading(bw);
+}
+
+int a_UIcmd_has_finished(BrowserWindow *bw)
+{
+   if (dList_length(bw->ImageClients) || dList_length(bw->RootClients))
+	   return 0;
+
+   return 1;
+}
+
+void a_UIcmd_finish_loading(BrowserWindow *bw)
+{
+	/* Not yet */
+   if (dList_length(bw->ImageClients) || dList_length(bw->RootClients))
+	   return;
+
+   a_Control_notify_finish(bw);
 }
 
 /*

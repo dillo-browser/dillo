@@ -23,11 +23,14 @@ extern "C" {
 BrowserWindow *a_UIcmd_browser_window_new(int ww, int wh,
                                           uint32_t xid, const void *v_bw);
 BrowserWindow *a_UIcmd_get_bw_by_widget(void *v_wid);
+BrowserWindow *a_UIcmd_get_first_active_bw(void);
 void a_UIcmd_send_event_to_tabs_by_wid(int e, void *v_wid);
 void a_UIcmd_open_urlstr(void *vbw, const char *urlstr);
 void a_UIcmd_open_url(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_url_nw(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_open_url_nt(void *vbw, const DilloUrl *url, int focus);
+int a_UIcmd_has_finished(BrowserWindow *bw);
+void a_UIcmd_finish_loading(BrowserWindow *bw);
 void a_UIcmd_back(void *vbw);
 void a_UIcmd_back_nt(void *vbw);
 void a_UIcmd_back_popup(void *vbw, int x, int y);

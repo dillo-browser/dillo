@@ -54,6 +54,7 @@
 #include "IO/tls.h"
 #include "IO/Url.h"
 #include "IO/mime.h"
+#include "IO/control.h"
 #include "capi.h"
 #include "dicache.h"
 #include "cookies.h"
@@ -509,6 +510,7 @@ int main(int argc, char **argv)
    a_Hsts_init(Paths::getPrefsFP(PATHS_HSTS_PRELOAD));
    a_Auth_init();
    a_UIcmd_init();
+   a_Control_init();
    StyleEngine::init();
 
    Keys::genAboutKeys();

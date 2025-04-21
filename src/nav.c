@@ -331,6 +331,7 @@ void a_Nav_expect_done(BrowserWindow *bw)
    dFree(fragment);
    Nav_stack_clean(bw);
    a_UIcmd_set_buttons_sens(bw);
+   a_UIcmd_finish_loading(bw);
    _MSG("Nav: a_Nav_expect_done\n");
 }
 

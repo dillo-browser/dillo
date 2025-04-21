@@ -1,5 +1,6 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
+	-I$(top_srcdir)/src \
 	-DDILLO_BINDIR='"$(bindir)/"' \
 	-DCA_CERTS_FILE='"@CA_CERTS_FILE@"' \
 	-DCA_CERTS_DIR='"@CA_CERTS_DIR@"' \
@@ -27,6 +28,8 @@ libDiof_a_SOURCES = \
 	mime.c \
 	mime.h \
 	about.c \
+	control.c \
+	control.h \
 	Url.h \
 	http.c \
 	tls.h \
