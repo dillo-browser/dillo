@@ -633,6 +633,7 @@ int main(int argc, char **argv)
     * (This can be left to the OS, but we'll do it, with a view to test
     *  and fix our memory management)
     */
+   a_Control_free();
    a_Domain_freeall();
    a_Cookies_freeall();
    a_Hsts_freeall();

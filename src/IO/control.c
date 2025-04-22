@@ -21,15 +21,16 @@
 
 #if ENABLE_CONTROL_SOCKET
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#include <sys/un.h>
 #include <assert.h>
 #include <errno.h>
-#include <unistd.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/un.h>
+#include <unistd.h>
 
 #include "iowatch.hh"
 #include "uicmd.hh"
@@ -38,6 +39,7 @@
 
 /* One control fd per process */
 static int control_fd = -1;
+static char *control_path = NULL;
 
 /* The BrowserWindow that we are currently waiting to finish */
 static BrowserWindow *bw_waiting = NULL;
@@ -146,45 +148,90 @@ void a_Control_notify_finish(BrowserWindow *bw)
 
 int a_Control_init(void)
 {
-   if ((control_fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+   int fd;
+   if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
       MSG("cannot create control socket: %s\n", strerror(errno));
       exit(1);
       return -1;
    }
 
-   struct sockaddr_un server_addr;
+   struct sockaddr_un addr;
+   addr.sun_family = AF_UNIX;
 
-   server_addr.sun_family = AF_UNIX;
-   /* FIXME */
-   strcpy(server_addr.sun_path, "/home/ram/.dillo/control.sock");
-   int slen = sizeof(server_addr);
+#define LEN ((int) sizeof(addr.sun_path))
 
-   fcntl(control_fd, F_SETFL, O_NONBLOCK);
+   char ctldir[LEN];
+   if (snprintf(ctldir, LEN, "%s/.dillo/ctl", dGethomedir()) >= LEN) {
+      MSG("path too long\n");
+      return -1;
+   }
+
+   /* Only the user should have access, otherwise other users could control the
+    * browser remotely */
+   if (mkdir(ctldir, 0700) != 0) {
+      if (errno != EEXIST) {
+         MSG("cannot create ctl dir: %s\n", strerror(errno));
+         return -1;
+      }
+   }
+
+   if (snprintf(addr.sun_path, LEN, "%s/%d", ctldir, (int) getpid()) >= LEN) {
+      MSG("path too long\n");
+      return -1;
+   }
+
+   int slen = sizeof(addr);
+
+   fcntl(fd, F_SETFL, O_NONBLOCK);
 
    int on = 1;
-   if (setsockopt(control_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) < 0) {
+   if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) < 0) {
       MSG("setsockopt failed: %s\n", strerror(errno));
       exit(-1);
    }
 
-   if (ioctl(control_fd, FIONBIO, (char *)&on) != 0) {
+   if (ioctl(fd, FIONBIO, (char *)&on) != 0) {
       MSG("ioctl failed: %s\n", strerror(errno));
       exit(1);
    }
 
-   if (bind(control_fd, (struct sockaddr *) &server_addr, slen) != 0) {
+   if (bind(fd, (struct sockaddr *) &addr, slen) != 0) {
       MSG("cannot bind control socket: %s\n", strerror(errno));
       exit(1);
       return -1;
    }
 
-   if (listen(control_fd, 32) != 0) {
+   if (listen(fd, 32) != 0) {
       MSG("cannot listen control socket: %s\n", strerror(errno));
       exit(1);
    }
 
+   control_fd = fd;
+   control_path = dStrdup(addr.sun_path);
+
    a_IOwatch_add_fd(control_fd, DIO_READ, Control_read_cb, NULL);
 
+   return 0;
+}
+
+int a_Control_free(void)
+{
+   /* Nothing to do */
+   if (control_fd == -1)
+      return 0;
+
+   assert(control_path);
+
+   a_IOwatch_remove_fd(control_fd, DIO_READ);
+   if (close(control_fd) != 0) {
+      MSG_ERR("close ctl socket failed\n");
+      return -1;
+   }
+   if (unlink(control_path) != 0) {
+      MSG_ERR("unlink ctl socket failed\n");
+      return -1;
+   }
+   dFree(control_path);
    return 0;
 }
 
@@ -192,5 +239,6 @@ int a_Control_init(void)
 
 int a_Control_init(void) { return 0; }
 void a_Control_notify_finish(BrowserWindow *bw) { (void) bw; }
+int a_Control_free(void) { return 0; }
 
 #endif
