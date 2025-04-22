@@ -17,6 +17,10 @@
 
 #include "control.h"
 
+#include "config.h"
+
+#if ENABLE_CONTROL_SOCKET
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/ioctl.h>
@@ -183,3 +187,10 @@ int a_Control_init(void)
 
    return 0;
 }
+
+#else
+
+int a_Control_init(void) { return 0; }
+void a_Control_notify_finish(BrowserWindow *bw) { (void) bw; }
+
+#endif
