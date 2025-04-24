@@ -108,6 +108,8 @@ static void Control_read_cb(int fd, void *data)
    } else if (strncmp(cmd, "open ", 5) == 0) {
       a_UIcmd_open_urlstr(bw, cmd+5);
       fprintf(f, "ok\n");
+   } else if (strcmp(cmd, "url") == 0) {
+      fprintf(f, "%s\n", a_UIcmd_get_location_text(bw));
    } else if (strcmp(cmd, "quit") == 0) {
       /* FIXME: May create confirmation dialog */
       a_UIcmd_close_all_bw(NULL);
