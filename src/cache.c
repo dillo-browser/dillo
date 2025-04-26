@@ -2,7 +2,7 @@
  * File: cache.c
  *
  * Copyright 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,7 +89,6 @@ static uint_t DelayedQueueIdleId = 0;
 static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry);
 static void Cache_delayed_process_queue(CacheEntry_t *entry);
 static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw);
-static void Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds);
 
 /**
  * Determine if two cache entries are equal (used by CachedURLs)
@@ -125,7 +124,7 @@ void a_Cache_init(void)
    {
       DilloUrl *url = a_Url_new("about:splash", NULL);
       Dstr *ds = dStr_new(AboutSplash);
-      Cache_entry_inject(url, ds);
+      a_Cache_entry_inject(url, ds);
       dStr_free(ds, 1);
       a_Url_free(url);
    }
@@ -266,7 +265,7 @@ static CacheEntry_t *Cache_entry_add(const DilloUrl *Url)
  * Inject full page content directly into the cache.
  * Used for "about:splash". May be used for "about:cache" too.
  */
-static void Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
+void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
 {
    CacheEntry_t *entry;
 

@@ -2,7 +2,7 @@
  * Key parser
  *
  * Copyright (C) 2009 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #include "keys.hh"
 #include "utf8.hh"
 #include "msg.h"
+#include "cache.h"
+#include "misc.h"
 
 /*
  *  Local data types
@@ -260,6 +262,26 @@ int Keys::getKeyCode(char *keyName)
    return -1;
 }
 
+const char *Keys::getKeyName(int key)
+{
+   static char buf[128];
+
+   uint_t i;
+   for (i = 0; i < sizeof(keyNames) / sizeof(keyNames[0]); i++) {
+      if (keyNames[i].value == key)
+         return keyNames[i].name;
+   }
+
+   if (d_isascii(key)) {
+      sprintf(buf, "%c", key);
+   } else {
+      /* Otherwise print hexadecimal */
+      sprintf(buf, "0x%x", key);
+   }
+
+   return buf;
+}
+
 /**
  * Takes a command name and searches it in the mapping table.
  * Return value: command code if found, -1 otherwise
@@ -397,4 +419,95 @@ void Keys::parse(FILE *fp)
       ++lineno;
    }
    fclose(fp);
+}
+
+void Keys::genAboutKeys(void)
+{
+   int len = dList_length(bindings);
+   Dstr *table = dStr_new("");
+
+   dStr_sprintfa(table, 
+         "<!DOCTYPE HTML>\n"
+         "<html>\n"
+         "<head>\n"
+         "  <title>Keyboard shortcuts</title>\n"
+         "  <style>\n"
+         "    body {\n"
+         "      background: white;\n"
+         "      margin: 3em;\n"
+         "      font-size: 16px;\n"
+         "      font-family: sans-serif;\n"
+         "      line-height: 1.4em;\n"
+         "    }\n"
+         "    .main { max-width: 40em; }\n"
+         "    p { margin-top: 1em; }\n"
+         "    table {\n"
+         "      border-collapse: collapse;\n"
+         "    }\n"
+         "    th,td {\n"
+         "      padding: 0.25em;\n"
+         "      padding: 0.25em;\n"
+         "      border-spacing: 0px;\n"
+         "      border-top: solid 1px #ccc;\n"
+         "      border-bottom: solid 1px #ccc;\n"
+         "    }\n"
+         "    td.key {\n"
+         "      min-width: 15em;\n"
+         "    }\n"
+         "    td.action {\n"
+         "      min-width: 10em;\n"
+         "    }\n"
+         "    th {\n"
+         "      background-color: #eee;\n"
+         "    }\n"
+         "    kbd {\n"
+         "      display: inline-block;\n"
+         "      border: solid 1px #aaa;\n"
+         "      padding: 1px 5px;\n"
+         "    }\n"
+         "    kbd.mod {\n"
+         "      background: #f5f5f5;\n"
+         "    }\n"
+         "  </style>\n"
+         "</head>\n"
+         "<body>\n"
+         "<div class=\"main\">\n"
+         "\n"
+         "<h1>Keyboard shortcuts</h1>\n"
+         "\n"
+         "<p>The following table contains the current key bindings in Dillo.\n"
+         "To change them, edit the configuration file <code>~/.dillo/keysrc</code> \n"
+         "and restart the browser.</p>\n"
+         "<table>\n"
+         "<tr><th>Shortcut<th>Action</tr>\n");
+
+   for (int i = 0; i < len; i++) {
+      KeyBinding_t *node = (KeyBinding_t*)dList_nth_data(bindings, i);
+      const char *key = Keys::getKeyName(node->key);
+
+      dStr_sprintfa(table, "<tr><td class=key><code>");
+
+      for (uint_t j = 0; j < sizeof(modifierNames) / sizeof(modifierNames[0]); j++) {
+         if (modifierNames[j].value & node->modifier) {
+            dStr_sprintfa(table, "<kbd class=mod>%s</kbd> ",
+                  modifierNames[j].name);
+         }
+      }
+
+      dStr_sprintfa(table, "<kbd class=key>%s</kbd></code></td>", key);
+      dStr_sprintfa(table, "<td class=action><code>%s</code></td>", node->name);
+      dStr_sprintfa(table, "</tr>\n");
+   }
+
+   dStr_sprintfa(table, 
+         "</table>\n"
+         "</div>\n"
+         "</body>\n"
+         "</html>\n");
+
+   /* inject keymaps after loading them */
+   DilloUrl *url = a_Url_new("about:keys", NULL);
+   a_Cache_entry_inject(url, table);
+   dStr_free(table, 1);
+   a_Url_free(url);
 }

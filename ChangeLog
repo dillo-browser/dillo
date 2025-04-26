@@ -9,6 +9,7 @@ at https://github.com/dillo-browser/dillo
 dillo-3.3.0 [Unreleased]
 
 +- Add optional support for brotli (br) content encoding.
+ - Add about:keys to display current keyboard shortcuts.
    Patches: Rodrigo Arias Mallo
 
 dillo-3.2.0 [Jan 18, 2025]

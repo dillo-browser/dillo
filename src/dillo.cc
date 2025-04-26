@@ -2,7 +2,7 @@
  * Dillo web browser
  *
  * Copyright 1999-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -495,6 +495,8 @@ int main(int argc, char **argv)
    a_Auth_init();
    a_UIcmd_init();
    StyleEngine::init();
+
+   Keys::genAboutKeys();
 
    dw::core::Widget::setAdjustMinWidth (prefs.adjust_min_width);
    dw::Table::setAdjustTableMinWidth (prefs.adjust_table_min_width);

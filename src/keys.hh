@@ -2,7 +2,7 @@
  * Key parser
  *
  * Copyright (C) 2009 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,12 +62,14 @@ private:
    static int getKeyCode(char *keyName);
    static int getModifier(char *modifierName);
    static void parseKey(char *key, char *symbol);
+   static const char *getKeyName(int key);
 public:
    static void init();
    static void free();
    static void parse(FILE *fp);
    static KeysCommand_t getKeyCmd(void);
    static int getShortcut(KeysCommand_t cmd);
+   static void genAboutKeys(void);
 };
 
 

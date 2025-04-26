@@ -1,3 +1,15 @@
+/*
+ * File: cache.c
+ *
+ * Copyright 2000-2009 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #ifndef __CACHE_H__
 #define __CACHE_H__
 
@@ -60,6 +72,7 @@ struct CacheClient {
  * Function prototypes
  */
 void a_Cache_init(void);
+void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds);
 int a_Cache_open_url(void *Web, CA_Callback_t Call, void *CbData);
 int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize);
 void a_Cache_unref_buf(const DilloUrl *Url);
