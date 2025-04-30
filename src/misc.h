@@ -109,21 +109,32 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
 
       bool_t escaped = FALSE;
       const char *c;
-      unsigned int maxlen = strlen(s);
-      for (c = s; !(*c == '"' && !escaped); c++) {
-         if ((len = c - s + 1) > maxlen) {
-            return;
+      size_t maxlen = strlen(s);
+
+      for (size_t i = 1; i < maxlen; i++) {
+         /* Find closing quote not escaped */
+         if (s[i - 1] != '\\' && s[i] == '"') {
+            /* Copy i bytes, skip closing quote */
+            len = i;
+            *filename = dStrndup(s, len);
+            break;
          }
-         escaped = *c == '\\';
       }
-      *filename = dStrndup(s, len);
    } else {
-      for ( ; *s == '.'; ++s);
+      /* Ignore dots at the beginning of the filename */
+      while (*s == '.')
+         s++;
+
       if ((len = strcspn(s, terminators))) {
          *filename = dStrndup(s, len);
       }
    }
 
+   /* No filename, stop here */
+   if (*filename == NULL)
+      return;
+
+   /* Otherwise remove invalid characters from filename */
    const char invalid_characters[] = "/\\|~";
    char *f = *filename, *d = *filename;
 
