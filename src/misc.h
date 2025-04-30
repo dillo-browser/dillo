@@ -107,9 +107,11 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
       while (*s == '.')
          s++;
 
-      bool_t escaped = FALSE;
-      const char *c;
       size_t maxlen = strlen(s);
+
+      /* Must have at least two characters left */
+      if (maxlen < 2)
+         return;
 
       for (size_t i = 1; i < maxlen; i++) {
          /* Find closing quote not escaped */
@@ -125,6 +127,7 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
       while (*s == '.')
          s++;
 
+      /* Keep filename until we find a terminator */
       if ((len = strcspn(s, terminators))) {
          *filename = dStrndup(s, len);
       }
@@ -134,33 +137,43 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
    if (*filename == NULL)
       return;
 
-   /* Otherwise remove invalid characters from filename */
-   const char invalid_characters[] = "/\\|~";
-   char *f = *filename, *d = *filename;
+   /* Otherwise remove bad characters from filename */
+   const char bad_characters[] = "/\\|~";
 
-   for ( ; f < *filename + len; f++) {
-      if (strchr(invalid_characters, *f)) {
-         // If this is a backslash preceding a quote, we want to just
-         // skip past it without advancing the destination pointer or
-         // copying anything.
-         if (!(*f == '\\' && *(f+1) == '"')) {
-            *d = '_';
-            d++;
-         }
-      } else if (!quoted && (!d_isascii((uchar_t)*f) || *f == '=')) {
-         dFree(*filename);
-         *filename = NULL;
-         return;
+   /* Make a copy */
+   char *src = dStrndup(*filename, len);
+   char *dst = *filename;
+   int bad = 0;
+   size_t j = 0;
+
+   for (size_t i = 0; i < len; i++) {
+      int c = src[i];
+      if (i + 1 < len && c == '\\' && src[i + 1] == '\"') {
+         /* Found \", copy the quote only */
+         dst[j++] = '"';
+         i++; /* Skip quote in src */
+      } else if (strchr(bad_characters, c)) {
+         /* Bad character, replace with '_' */
+         dst[j++] = '_';
+      } else if (!quoted && (!d_isascii((uchar_t) c) || c == '=')) {
+         /* Found non-ascii character or '=', disregard */
+         bad = 1;
+         break;
       } else {
-         *d = *f;
-         d++;
+         /* Character is fine, just copy as-is */
+         dst[j++] = src[i];
       }
    }
 
-   // Truncate filename to deal with the string being shorter if we
-   // skipped over any backslash characters in the above loop
-   if (f != d) {
-      *d = '\0';
+   /* Always terminate filename */
+   dst[j] = '\0';
+
+   dFree(src);
+
+   if (bad) {
+      dFree(*filename);
+      *filename = NULL;
+      return;
    }
 }
 
