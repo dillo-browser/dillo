@@ -35,8 +35,19 @@ struct testcase cases[] = {
    { "attachment; filename=\"foo", "attachment", NULL },
    { "attachment; filename= ", "attachment", NULL },
    { "attachment; filename=\"", "attachment", NULL },
+   { "attachment; filename=\"\"", "attachment", NULL },
+   { "attachment; filename=\"a\"", "attachment", "a" },
    { "attachment; filename=\"foo", "attachment", NULL },
    { "attachment; filename=~/foo", "attachment", "__foo" },
+
+   /* Note that due to the rules for implied linear whitespace (Section 2.1 of
+    * [RFC2616]), OPTIONAL whitespace can appear between words (token or
+    * quoted-string) and separator characters. */
+   { "attachment ; filename=foo", "attachment", "foo" },
+   { "attachment; filename =foo", "attachment", "foo" },
+   { "attachment; filename= foo", "attachment", "foo" },
+   { "attachment; filename = foo", "attachment", "foo" },
+   { "attachment ; filename = foo", "attachment", "foo" },
 
    /* See http://test.greenbytes.de/tech/tc2231/ */
    { "inline", "inline", NULL },

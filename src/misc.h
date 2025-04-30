@@ -59,7 +59,9 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
       return;
    }
 
-   /* FIXME: what about "attachment ; filename=foo"? */
+   /* Skip blanks like "attachment   ; ..." */
+   while (*s == ' ' || *s == '\t')
+      s++;
 
    /* Stop if the terminator is not ; */
    if (*s != ';')
