@@ -868,6 +868,14 @@ void a_UIcmd_back(void *vbw)
 }
 
 /*
+ * Send the browser back to previous page in a new tab
+ */
+void a_UIcmd_back_nt(void *vbw)
+{
+   a_Nav_back_nt((BrowserWindow*)vbw);
+}
+
+/*
  * Popup the navigation menu of the Back button
  */
 void a_UIcmd_back_popup(void *vbw, int x, int y)
@@ -881,6 +889,14 @@ void a_UIcmd_back_popup(void *vbw, int x, int y)
 void a_UIcmd_forw(void *vbw)
 {
    a_Nav_forw((BrowserWindow*)vbw);
+}
+
+/*
+ * Send the browser to next page in the history list in new tab
+ */
+void a_UIcmd_forw_nt(void *vbw)
+{
+   a_Nav_forw_nt((BrowserWindow*)vbw);
 }
 
 /*

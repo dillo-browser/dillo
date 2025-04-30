@@ -18,7 +18,9 @@ void a_Nav_push(BrowserWindow *bw, const DilloUrl *url,
                 const DilloUrl *requester);
 void a_Nav_repush(BrowserWindow *bw);
 void a_Nav_back(BrowserWindow *bw);
+void a_Nav_back_nt(BrowserWindow *bw);
 void a_Nav_forw(BrowserWindow *bw);
+void a_Nav_forw_nt(BrowserWindow *bw);
 void a_Nav_home(BrowserWindow *bw);
 void a_Nav_reload(BrowserWindow *bw);
 void a_Nav_jump(BrowserWindow *bw, int offset, int new_bw);

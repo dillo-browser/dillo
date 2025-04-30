@@ -312,6 +312,8 @@ static void b1_cb(Fl_Widget *wid, void *cb_data)
    case UI_BACK:
       if (b == FL_LEFT_MOUSE) {
          a_UIcmd_back(a_UIcmd_get_bw_by_widget(wid));
+      } else if (b == FL_MIDDLE_MOUSE) {
+         a_UIcmd_back_nt(a_UIcmd_get_bw_by_widget(wid));
       } else if (b == FL_RIGHT_MOUSE) {
          a_UIcmd_back_popup(a_UIcmd_get_bw_by_widget(wid), wid->x(),
                             wid->y() + wid->h());
@@ -320,6 +322,8 @@ static void b1_cb(Fl_Widget *wid, void *cb_data)
    case UI_FORW:
       if (b == FL_LEFT_MOUSE) {
          a_UIcmd_forw(a_UIcmd_get_bw_by_widget(wid));
+      } else if (b == FL_MIDDLE_MOUSE) {
+         a_UIcmd_forw_nt(a_UIcmd_get_bw_by_widget(wid));
       } else if (b == FL_RIGHT_MOUSE) {
          a_UIcmd_forw_popup(a_UIcmd_get_bw_by_widget(wid), wid->x(),
                             wid->y() + wid->h());

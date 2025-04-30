@@ -447,6 +447,19 @@ void a_Nav_back(BrowserWindow *bw)
 }
 
 /*
+ * Send the browser back to previous page in new tab
+ */
+void a_Nav_back_nt(BrowserWindow *bw)
+{
+   int idx = a_Nav_stack_ptr(bw);
+
+   if (--idx >= 0){
+      a_UIcmd_set_msg(bw, "");
+      a_UIcmd_open_url_nt(bw, a_History_get_url(NAV_UIDX(bw, idx)), -1);
+   }
+}
+
+/*
  * Send the browser to next page in the history list
  */
 void a_Nav_forw(BrowserWindow *bw)
@@ -457,6 +470,19 @@ void a_Nav_forw(BrowserWindow *bw)
    if (++idx < a_Nav_stack_size(bw)) {
       a_UIcmd_set_msg(bw, "");
       Nav_open_url(bw, a_History_get_url(NAV_UIDX(bw,idx)), NULL, +1);
+   }
+}
+
+/*
+ * Send the browser to next page in the history list in new tab
+ */
+void a_Nav_forw_nt(BrowserWindow *bw)
+{
+   int idx = a_Nav_stack_ptr(bw);
+
+   if (++idx < a_Nav_stack_size(bw)) {
+      a_UIcmd_set_msg(bw, "");
+      a_UIcmd_open_url_nt(bw, a_History_get_url(NAV_UIDX(bw, idx)), +1);
    }
 }
 
