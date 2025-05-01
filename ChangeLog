@@ -14,6 +14,8 @@ dillo-3.3.0 [Unreleased]
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex
++- Add support for Content-Disposition header to set the filename.
+   Patches: Cameron Paul, Rodrigo Arias Mallo
 
 dillo-3.2.0 [Jan 18, 2025]
 
