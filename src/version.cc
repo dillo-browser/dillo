@@ -1,7 +1,7 @@
 /*
  * Dillo web browser
  *
- * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,10 @@
 #include <FL/Fl.H>
 #include <zlib.h>
 
+#ifdef ENABLE_BROTLI
+#include <brotli/decode.h>
+#endif
+
 #include <stdio.h>
 
 static void print_libs()
@@ -51,8 +55,6 @@ static void print_libs()
       printf(" fltk/%d.%d.%d", fltk_maj, fltk_min, fltk_pat);
    }
 
-   printf(" zlib/%s", zlibVersion());
-
 #ifdef ENABLE_JPEG
    printf(" jpeg/%s", a_Jpeg_version());
 #endif
@@ -64,6 +66,28 @@ static void print_libs()
 #ifdef ENABLE_WEBP
    printf(" webp/%s", a_Webp_version(buf, 256));
 #endif
+
+   printf(" zlib/%s", zlibVersion());
+
+#ifdef ENABLE_BROTLI
+   /* From brotli:
+    *
+    *   Compose 3 components into a single number. In a hexadecimal
+    *   representation B and C components occupy exactly 3 digits:
+    *
+    *   #define BROTLI_MAKE_HEX_VERSION(A, B, C) ((A << 24) | (B << 12) | C)
+    */
+   {
+      /* Decode the version into each component */
+      uint32_t br_ver = BrotliDecoderVersion();
+      int br_maj = (br_ver >> 24) & 0x7ff;
+      int br_min = (br_ver >> 12) & 0x7ff;
+      int br_pat = (br_ver >>  0) & 0x7ff;
+
+      printf(" brotli/%d.%d.%d", br_maj, br_min, br_pat);
+   }
+#endif
+
 
 #ifdef ENABLE_TLS
    /* TLS prints the name/version format, as it determines which SSL
@@ -101,6 +125,11 @@ static void print_features()
          " +WEBP"
 #else
          " -WEBP"
+#endif
+#ifdef ENABLE_BROTLI
+         " +BROTLI"
+#else
+         " -BROTLI"
 #endif
 #if !( defined(DISABLE_XEMBED) || defined(WIN32) || defined(__APPLE__) )
          " +XEMBED"
