@@ -205,6 +205,8 @@ search_url="dd DuckDuckGo (https) https://duckduckgo.com/lite/?kp=-1&kd=-1&q=%s"
 search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&go=Go"
 search_url="Free Dictionary http://www.thefreedictionary.com/%s"
 search_url="Startpage (https) https://www.startpage.com/do/search?query=%s"
+search_url="Marginalia https://marginalia-search.com/search?query=%s"
+search_url="Wiby https://wiby.org/?q=%s"
 
 # If set, dillo will ask web servers to send pages in this language.
 # This setting does NOT change dillo's user interface.
