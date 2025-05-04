@@ -205,7 +205,6 @@ search_url="dd DuckDuckGo (https) https://duckduckgo.com/lite/?kp=-1&kd=-1&q=%s"
 search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&go=Go"
 search_url="Free Dictionary http://www.thefreedictionary.com/%s"
 search_url="Startpage (https) https://www.startpage.com/do/search?query=%s"
-search_url="Google https://www.google.com/search?ie=UTF-8&oe=UTF-8&gbv=1&q=%s"
 
 # If set, dillo will ask web servers to send pages in this language.
 # This setting does NOT change dillo's user interface.
