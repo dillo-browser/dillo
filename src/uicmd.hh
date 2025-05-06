@@ -2,7 +2,7 @@
  * File: uicmd.cc
  *
  * Copyright (C) 2005-2011 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ void a_UIcmd_image_popup(void *vbw, const DilloUrl *url, bool_t loaded_img,
 void a_UIcmd_form_popup(void *vbw, const DilloUrl *url, void *vform,
                         bool_t showing_hiddens);
 void a_UIcmd_file_popup(void *vbw, void *v_wid);
-void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr);
+void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr, int destination);
 void a_UIcmd_view_page_source(BrowserWindow *bw, const DilloUrl *url);
 void a_UIcmd_view_page_bugs(void *vbw);
 void a_UIcmd_bugmeter_popup(void *vbw);

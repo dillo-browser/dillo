@@ -241,16 +241,27 @@ ESC.
 
 <h3 id="copy-and-paste">Copy and paste</h3>
 <p>
-To copy some text just hold down the left mouse button and move to select the
-area to copy. To paste, go to the target application and press the middle mouse
-button.
+Dillo uses the Primary and Clipboard selections to copy and paste text. The
+Primary selection captures text that gets selected as soon as the left button is
+released, while to copy it in the Clipboard selection it requires the usual
+Ctrl+C and Ctrl+V shortcut.
+<p>
+To copy some text in the Primary selection just hold down the left mouse button
+and move to select the area to copy. To paste, go to the target application and
+press the middle mouse button. Currently it is not possible to copy the
+selection to the Clipboard via Ctrl+C.
 <p>
 If you want to select more than one screen, hold the mouse left button down and
 scroll with PgUp, PgDn or the arrow keys.
-<P>
-If you want to paste an URL into Dillo, do it on the "clear-URL"
-button (the "X" next to the <a href="#location-bar">location bar</a>).
 <p>
+When a link is copied from the context menu, it is placed both in the Primary
+and Clipboard selections, so you can paste the URL with the middle click or with
+Ctrl+V.
+<p>
+If you want to paste an URL into Dillo from the Primary selection, do it on the
+"clear-URL" button (the "X" next to the <a href="#location-bar">location
+bar</a>) and the URL will be opened as well. You can also paste the URL using
+the Clipboard by using the Ctrl+V shortcut then pressing Enter to visit it.
 
 <h3 id="zoom">Zoom</h3>
 <p>
