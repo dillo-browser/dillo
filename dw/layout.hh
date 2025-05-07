@@ -438,6 +438,11 @@ public:
       platform->copySelection(text, destination);
    }
 
+   inline void copyCurrentSelection(int destination)
+   {
+      selectionState.copy(destination);
+   }
+
    inline ui::ResourceFactory *getResourceFactory ()
    {
       return platform->getResourceFactory ();

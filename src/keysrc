@@ -78,6 +78,9 @@
 # "goto" goes to the location bar at the top of the window.
 #<ctrl>l = goto
 
+# "copy" copies the selected text into the clipboard.
+#<ctrl>c = copy
+
 # "stop" loading the page.
 #(stop has no default binding)
 

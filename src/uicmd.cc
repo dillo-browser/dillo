@@ -953,6 +953,16 @@ void a_UIcmd_redirection0(void *vbw, const DilloUrl *url)
 }
 
 /*
+ * Copy selection to clipboard
+ */
+void a_UIcmd_copy(void *vbw)
+{
+   BrowserWindow *bw = (BrowserWindow*) vbw;
+   Layout *layout = (Layout*)bw->render_layout;
+   layout->copyCurrentSelection(1);
+}
+
+/*
  * Zoom in
  */
 void a_UIcmd_zoom_in(void *vbw)

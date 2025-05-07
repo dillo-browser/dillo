@@ -198,7 +198,7 @@ bool SelectionState::buttonRelease (Iterator *it, int charPos, int linkNo,
          // nothing selected
          resetSelection ();
       else {
-         copy ();
+         copy (0);
          selectionState = SELECTED;
       }
    }
@@ -423,7 +423,7 @@ void SelectionState::highlight0 (bool fl, DeepIterator *from, int fromChar,
    }
 }
 
-void SelectionState::copy()
+void SelectionState::copy(int selection)
 {
    if (from && to) {
       Iterator *si;
@@ -495,7 +495,7 @@ void SelectionState::copy()
          delete i;
       }
 
-      layout->copySelection(strbuf.getChars(), 0);
+      layout->copySelection(strbuf.getChars(), selection);
    }
 }
 
