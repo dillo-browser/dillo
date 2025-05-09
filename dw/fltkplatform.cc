@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -700,9 +701,9 @@ core::style::Tooltip *FltkPlatform::createTooltip (const char *text)
    return FltkTooltip::create (text);
 }
 
-void FltkPlatform::copySelection(const char *text)
+void FltkPlatform::copySelection(const char *text, int destination)
 {
-   Fl::copy(text, strlen(text), 0);
+   Fl::copy(text, strlen(text), destination);
 }
 
 core::Imgbuf *FltkPlatform::createImgbuf (core::Imgbuf::Type type,

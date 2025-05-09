@@ -2,7 +2,7 @@
  * File: uicmd.cc
  *
  * Copyright (C) 2005-2011 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -953,6 +953,16 @@ void a_UIcmd_redirection0(void *vbw, const DilloUrl *url)
 }
 
 /*
+ * Copy selection to clipboard
+ */
+void a_UIcmd_copy(void *vbw)
+{
+   BrowserWindow *bw = (BrowserWindow*) vbw;
+   Layout *layout = (Layout*)bw->render_layout;
+   layout->copyCurrentSelection(1);
+}
+
+/*
  * Zoom in
  */
 void a_UIcmd_zoom_in(void *vbw)
@@ -1317,12 +1327,14 @@ void a_UIcmd_file_popup(void *vbw, void *v_wid)
 }
 
 /*
- * Copy url string to paste buffer
+ * Copy url string to paste buffer.
+ *
+ * For destination use: 0=primary, 1=clipboard, 2=both
  */
-void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr)
+void a_UIcmd_copy_urlstr(BrowserWindow *bw, const char *urlstr, int destination)
 {
    Layout *layout = (Layout*)bw->render_layout;
-   layout->copySelection(urlstr);
+   layout->copySelection(urlstr, destination);
 }
 
 /*

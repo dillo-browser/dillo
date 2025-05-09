@@ -2,7 +2,7 @@
  * File: menu.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,7 +89,7 @@ static void Menu_copy_urlstr_cb(Fl_Widget*, void *user_data)
 {
    if (user_data) {
       DilloUrl *url = (DilloUrl *)user_data ;
-      a_UIcmd_copy_urlstr(popup_bw, URL_STR(url));
+      a_UIcmd_copy_urlstr(popup_bw, URL_STR(url), 2);
    }
 }
 

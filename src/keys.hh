@@ -49,6 +49,7 @@ typedef enum {
    KEYS_RIGHT,
    KEYS_TOP,
    KEYS_BOTTOM,
+   KEYS_COPY,
    KEYS_ZOOM_IN,
    KEYS_ZOOM_OUT,
    KEYS_ZOOM_RESET
