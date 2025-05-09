@@ -784,6 +784,12 @@ bool DilloHtml::HtmlLinkReceiver::press (Widget *widget, int link, int img,
             ret = true;
          }
       }
+   } else if (event->button == 8) {
+        a_UIcmd_back(bw);
+        ret = true;
+   } else if (event->button == 9) {
+        a_UIcmd_forw(bw);
+        ret = true;
    }
    return ret;
 }
