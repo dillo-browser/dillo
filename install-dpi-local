@@ -18,7 +18,7 @@ fi
 
 # Try to communicate with any currently-running dpid to tell it
 # to stop itself and the dpi programs.
-dpidc stop
+pgrep dpid > /dev/null && dpidc stop
 
 if [ ! -d $BASE ] ; then
   mkdir $BASE
