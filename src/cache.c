@@ -1213,9 +1213,6 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
       } else
          return entry;  /* i.e., wait for more data */
    }
-   if (entry->ContentDisposition) {
-      a_Misc_parse_content_disposition(entry->ContentDisposition, &dtype, &dfilename);
-   }
 
    Busy = TRUE;
    for (i = 0; (Client = dList_nth_data(ClientQueue, i)); ++i) {
@@ -1224,6 +1221,11 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry)
          Client_bw = ClientWeb->bw;  /* 'bw' in a local var */
 
          if (ClientWeb->flags & WEB_RootUrl) {
+            /* Only parse Content-Disposition on root URLs */
+            if (entry->ContentDisposition) {
+               a_Misc_parse_content_disposition(entry->ContentDisposition,
+                     &dtype, &dfilename);
+            }
             if (!(entry->Flags & CA_MsgErased)) {
                /* clear the "expecting for reply..." message */
                a_UIcmd_set_msg(Client_bw, "");
