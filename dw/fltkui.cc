@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -174,8 +175,8 @@ int CustInput2::handle(int e)
          return 0;
       }
       if (modifier == FL_CTRL) {
-         if (k == 'a' || k == 'e') {
-            position(k == 'a' ? 0 : size());
+         if (k == 'e') {
+            position(size());
             return 1;
          } else if (k == 'k') {
             cut(position(), size());
