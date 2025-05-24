@@ -32,11 +32,20 @@ function render_page() {
   dillopid=$!
 
   # TODO: We need a better system to determine when the page loaded
-  sleep 1
+  # This will poll for the window every 5th of a second for up to 5 seconds
+  found_window=false
+  for i in {0..25}; do
+    sleep 0.2
 
-  # Capture only Dillo window
-  winid=$(xwininfo -all -root | awk '/Dillo:/ {print $1}')
-  if [ -z "$winid" ]; then
+    # Capture only Dillo window
+    winid=$(xwininfo -all -root | awk '/Dillo:/ {print $1}')
+    if [ ! -z "$winid" ]; then
+      found_window=true
+      break
+    fi
+  done
+
+  if ! $found_window; then
     echo "cannot find Dillo window" >&2
     exit 1
   fi
