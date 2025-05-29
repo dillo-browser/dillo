@@ -635,24 +635,28 @@ void StyleEngine::apply (int i, StyleAttrs *attrs, CssPropertyList *props,
             attrs->listStyleType = (ListStyleType) p->value.intVal;
             break;
          case CSS_PROPERTY_MARGIN_BOTTOM:
-            computeValue (&attrs->margin.bottom, p->value.lenVal, attrs->font);
-            if (attrs->margin.bottom < 0) // \todo fix negative margins in dw/*
-               attrs->margin.bottom = 0;
+            computeLength (&attrs->margin.bottom, p->value.lenVal, attrs->font);
+             // \todo fix negative margins in dw/*
+            if (isAbsLength(attrs->margin.bottom) && absLengthVal(attrs->margin.bottom) < 0)
+               attrs->margin.bottom = createAbsLength(0);
             break;
          case CSS_PROPERTY_MARGIN_LEFT:
-            computeValue (&attrs->margin.left, p->value.lenVal, attrs->font);
-            if (attrs->margin.left < 0) // \todo fix negative margins in dw/*
-               attrs->margin.left = 0;
+            computeLength (&attrs->margin.left, p->value.lenVal, attrs->font);
+             // \todo fix negative margins in dw/*
+            if (isAbsLength(attrs->margin.left) && absLengthVal(attrs->margin.left) < 0)
+               attrs->margin.left = createAbsLength(0);
             break;
          case CSS_PROPERTY_MARGIN_RIGHT:
-            computeValue (&attrs->margin.right, p->value.lenVal, attrs->font);
-            if (attrs->margin.right < 0) // \todo fix negative margins in dw/*
-               attrs->margin.right = 0;
+            computeLength (&attrs->margin.right, p->value.lenVal, attrs->font);
+             // \todo fix negative margins in dw/*
+            if (isAbsLength(attrs->margin.right) && absLengthVal(attrs->margin.right) < 0)
+               attrs->margin.right = createAbsLength(0);
             break;
          case CSS_PROPERTY_MARGIN_TOP:
-            computeValue (&attrs->margin.top, p->value.lenVal, attrs->font);
-            if (attrs->margin.top < 0) // \todo fix negative margins in dw/*
-               attrs->margin.top = 0;
+            computeLength (&attrs->margin.top, p->value.lenVal, attrs->font);
+             // \todo fix negative margins in dw/*
+            if (isAbsLength(attrs->margin.top) && absLengthVal(attrs->margin.top) < 0)
+               attrs->margin.top = createAbsLength(0);
             break;
          case CSS_PROPERTY_OVERFLOW:
             attrs->overflow = (Overflow) p->value.intVal;

@@ -81,7 +81,7 @@ void StyleAttrs::initValues ()
    position = POSITION_STATIC;
    top = bottom = left = right = LENGTH_AUTO;
    textIndent = 0;
-   margin.setVal (0);
+   margin.setVal (createAbsLength(0));
    borderWidth.setVal (0);
    padding.setVal (0);
    borderCollapse = BORDER_MODEL_SEPARATE;
@@ -123,7 +123,7 @@ void StyleAttrs::resetValues ()
    height = LENGTH_AUTO;
    minWidth = maxWidth = minHeight = maxHeight = LENGTH_AUTO;
 
-   margin.setVal (0);
+   margin.setVal (createAbsLength(0));
    borderWidth.setVal (0);
    padding.setVal (0);
    setBorderColor (NULL);
@@ -1167,16 +1167,17 @@ static void drawBorderRight(View *view, Style *style,
  */
 void drawBorder (View *view, Layout *layout, Rectangle *area,
                  int x, int y, int width, int height,
+                 int marginLeft, int marginRight,
                  Style *style, bool inverse)
 {
    /** \todo a lot! */
    int xb1, yb1, xb2, yb2;
 
    // top left and bottom right point of outer border boundary
-   xb1 = x + style->margin.left;
-   yb1 = y + style->margin.top;
-   xb2 = x + (width > 0 ? width - 1 : 0) - style->margin.right;
-   yb2 = y + (height > 0 ? height - 1 : 0) - style->margin.bottom;
+   xb1 = x + marginLeft;
+   yb1 = y + style->marginTop();
+   xb2 = x + (width > 0 ? width - 1 : 0) - marginRight;
+   yb2 = y + (height > 0 ? height - 1 : 0) - style->marginBottom();
 
    /*
       // top left and bottom right point of inner border boundary

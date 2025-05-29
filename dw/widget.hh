@@ -27,6 +27,12 @@
 
 #include "../lout/identity.hh"
 
+typedef struct {
+   int total;
+   int marginLeft;
+   int marginRight;
+} BoxWidth;
+
 /**
  * \brief The type for callback functions.
  */
@@ -224,6 +230,8 @@ protected:
     * correct this value within dw::core::Widget::sizeRequestImpl.
     */
    style::Box extraSpace;
+
+   style::Box margin;
 
    /**
     * \brief Set iff this widget constitutes a stacking context, as defined by
@@ -488,17 +496,42 @@ public:
          y <= allocation.y + getHeight ();
    }
 
+   int marginBoxOffsetX ()
+   { return getStyle()->borderWidth.left + getStyle()->padding.left + margin.left; }
+   int marginBoxRestWidth ()
+   { return getStyle()->borderWidth.right + getStyle()->padding.right + margin.right; }
+   int marginBoxDiffWidth ()
+   { return marginBoxOffsetX() + marginBoxRestWidth(); }
+   // TODO: replace marginTop() with margin.top once it's populated
+   int marginBoxOffsetY ()
+   { return getStyle()->borderWidth.top + getStyle()->padding.top + getStyle()->marginTop(); }
+   // TODO: replace marginBottom() with margin.bottom once it's populated
+   int marginBoxRestHeight ()
+   { return getStyle()->borderWidth.bottom + getStyle()->padding.bottom + getStyle()->marginBottom(); }
+   int marginBoxDiffHeight ()
+   { return marginBoxOffsetY() + marginBoxRestHeight(); }
+
    inline int boxOffsetX ()
-   { return extraSpace.left + getStyle()->boxOffsetX (); }
+   { return extraSpace.left + marginBoxOffsetX(); }
    inline int boxRestWidth ()
-   { return extraSpace.right + getStyle()->boxRestWidth (); }
+   { return extraSpace.right + marginBoxRestWidth(); }
    inline int boxDiffWidth () { return boxOffsetX () + boxRestWidth (); }
    inline int boxOffsetY ()
-   { return extraSpace.top + getStyle()->boxOffsetY (); }
+   { return extraSpace.top + marginBoxOffsetY(); }
    inline int boxRestHeight ()
-   { return extraSpace.bottom + getStyle()->boxRestHeight (); }
+   { return extraSpace.bottom + marginBoxRestHeight(); }
    inline int boxDiffHeight () { return boxOffsetY () + boxRestHeight (); }
-   
+
+   inline int contentWidth(bool forceValue)
+   {
+      int width = -1;
+      int availWidth = getAvailWidth (forceValue);
+      if (availWidth != -1) {
+         width = availWidth - boxDiffWidth ();
+      }
+      return width;
+   }
+
    /**
     * \brief See \ref dw-widget-sizes (or \ref dw-size-request-pos).
     */
@@ -534,8 +567,8 @@ public:
                             void (*splitHeightFun) (int, int*, int*),
                             bool allowDecreaseWidth, bool allowDecreaseHeight);
    void correctExtremes (Extremes *extremes, bool useAdjustmentWidth);
-   int calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
-                  int limitMinWidth, bool forceValue);
+   BoxWidth calcWidth (style::Length cssValue, int refWidth, Widget *refWidget,
+                       int limitMinWidth, bool forceValue);
    void calcFinalWidth (style::Style *style, int refWidth, Widget *refWidget,
                         int limitMinWidth, bool forceValue, int *finalWidth);
    int calcHeight (style::Length cssValue, bool usePercentage, int refHeight,
