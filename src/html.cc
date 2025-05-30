@@ -2778,15 +2778,6 @@ static void Html_tag_close_a(DilloHtml *html)
 }
 
 /*
- * <BLOCKQUOTE>
- */
-static void Html_tag_open_blockquote(DilloHtml *html,
-                                     const char *tag, int tagsize)
-{
-   Html_add_textblock(html, true, 9, false);
-}
-
-/*
  * <Q>
  */
 static void Html_tag_open_q(DilloHtml *html, const char *tag, int tagsize)
@@ -3045,14 +3036,6 @@ static void Html_tag_open_dt(DilloHtml *html, const char *tag, int tagsize)
 {
    html->styleEngine->inheritBackgroundColor ();
    HT2TB(html)->addParbreak (9, html->wordStyle ());
-}
-
-/*
- * <DD>
- */
-static void Html_tag_open_dd(DilloHtml *html, const char *tag, int tagsize)
-{
-   Html_add_textblock(html, true, 9, false);
 }
 
 /*
@@ -3490,7 +3473,7 @@ static const TagInfo Tags[] = {
  /* basefont 010001 -- obsolete in HTML5 */
  /* bdo 010101 */
  {"big", B8(01011),'R', Html_tag_open_default, NULL, NULL},
- {"blockquote", B8(01110),'R', Html_tag_open_blockquote, NULL, NULL},
+ {"blockquote", B8(01110),'R', Html_tag_open_default, NULL, NULL},
  {"body", B8(01110),'O', Html_tag_open_body, NULL, Html_tag_close_body},
  {"br", B8(01001),'F', Html_tag_open_default, Html_tag_content_br, NULL},
  {"button", B8(01111),'R', Html_tag_open_button,NULL,Html_tag_close_button},
@@ -3500,7 +3483,7 @@ static const TagInfo Tags[] = {
  {"code", B8(01011),'R', Html_tag_open_default, NULL, NULL},
  /* col 010010 'F' */
  /* colgroup */
- {"dd", B8(01110),'O', Html_tag_open_dd, NULL, NULL},
+ {"dd", B8(01110),'O', Html_tag_open_default, NULL, NULL},
  {"del", B8(01111),'R', Html_tag_open_default, NULL, NULL},
  {"dfn", B8(01011),'R', Html_tag_open_default, NULL, NULL},
  {"dir", B8(01100),'R', Html_tag_open_dir, NULL, Html_tag_close_par},
