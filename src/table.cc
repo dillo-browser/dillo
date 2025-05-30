@@ -338,7 +338,7 @@ static void Html_set_collapsing_border_model(DilloHtml *html, Widget *col_tb)
    marginWidth = tableStyle->margin.top;
 
    collapseCellAttrs = *(html->style ());
-   collapseCellAttrs.margin.setVal (0);
+   collapseCellAttrs.margin.setVal (createAbsLength(0));
    collapseCellAttrs.borderWidth.left = 0;
    collapseCellAttrs.borderWidth.top = 0;
    collapseCellAttrs.borderWidth.right = borderWidth;
@@ -378,7 +378,7 @@ static void Html_set_separate_border_model(DilloHtml *html, Widget *col_tb)
 
    separateCellAttrs = *(html->style ());
    /* CSS2 17.5: Internal table elements do not have margins */
-   separateCellAttrs.margin.setVal (0);
+   separateCellAttrs.margin.setVal (createAbsLength(0));
    separateStyle = Style::create(&separateCellAttrs);
    col_tb->setStyle (separateStyle);
 }

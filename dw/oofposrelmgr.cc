@@ -177,7 +177,7 @@ int OOFPosRelMgr::getChildPosX (Child *child, int refWidth)
                              child->widget->getStyle()->right,
                              child->x,
                              refWidth
-                             - child->widget->getStyle()->boxDiffWidth ());
+                             - child->widget->marginBoxDiffWidth ());
 
    DBG_OBJ_LEAVE_VAL ("%d + %d = %d", gx, dim, gx + dim);
    return gx + dim;
@@ -194,7 +194,7 @@ int OOFPosRelMgr::getChildPosY (Child *child, int refHeight)
                              child->widget->getStyle()->bottom,
                              child->y,
                              refHeight
-                             - child->widget->getStyle()->boxDiffHeight ());
+                             - child->widget->marginBoxDiffHeight ());
 
    DBG_OBJ_LEAVE_VAL ("%d + %d = %d", gy, dim, gy + dim);
    return gy + dim;

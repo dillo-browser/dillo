@@ -400,7 +400,7 @@ Textblock::Line *Textblock::addLine (int firstWord, int lastWord,
    // just before. The correction in sizeAllocateImpl() is irrelevant
    // in this regard. Also, right floats are not regarded here, but in
    // OutOfFlowMgr::getSize(),
-   lineWidth += (line->leftOffset - getStyle()->boxOffsetX ());
+   lineWidth += (line->leftOffset - marginBoxOffsetX ());
 
    if (lines->size () == 1) {
       // first line
@@ -1589,9 +1589,9 @@ void Textblock::accumulateWordForLine (int lineIndex, int wordIndex)
       marginAscent = word->size.ascent;
       marginDescent = word->size.descent;
       borderAscent =
-         marginAscent - word->content.widget->getStyle()->margin.top;
+         marginAscent - word->content.widget->getStyle()->marginTop();
       borderDescent =
-         marginDescent - word->content.widget->getStyle()->margin.bottom;
+         marginDescent - word->content.widget->getStyle()->marginBottom();
 
       word->content.widget->parentRef = makeParentRefInFlow (lineIndex);
       DBG_OBJ_SET_NUM_O (word->content.widget, "parentRef",
