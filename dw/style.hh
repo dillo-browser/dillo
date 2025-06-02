@@ -589,16 +589,38 @@ public:
       borderStyle.top = borderStyle.right = borderStyle.bottom
          = borderStyle.left = val; }
 
-   inline int boxOffsetX ()
-   { return margin.left + borderWidth.left + padding.left; }
-   inline int boxRestWidth ()
-   { return margin.right + borderWidth.right + padding.right; }
-   inline int boxDiffWidth () { return boxOffsetX () + boxRestWidth (); }
-   inline int boxOffsetY ()
-   { return margin.top + borderWidth.top + padding.top; }
-   inline int boxRestHeight ()
-   { return margin.bottom + borderWidth.bottom + padding.bottom; }
-   inline int boxDiffHeight () { return boxOffsetY () + boxRestHeight (); }
+   inline int marginLeft()
+   {
+      if (style::isAbsLength (margin.left)) {
+         return style::absLengthVal (margin.left);
+      } else {
+         return 0;
+      }
+   }
+   inline int marginRight()
+   {
+      if (style::isAbsLength (margin.right)) {
+         return style::absLengthVal (margin.right);
+      } else {
+         return 0;
+      }
+   }
+   inline int marginTop()
+   {
+      if (style::isAbsLength (margin.top)) {
+         return style::absLengthVal (margin.top);
+      } else {
+         return 0;
+      }
+   }
+   inline int marginBottom()
+   {
+      if (style::isAbsLength (margin.bottom)) {
+         return style::absLengthVal (margin.bottom);
+      } else {
+         return 0;
+      }
+   }
 
    inline bool hasBackground ()
    { return backgroundColor != NULL || backgroundImage != NULL; }
@@ -901,6 +923,7 @@ public:
 
 void drawBorder (View *view, Layout *layout, Rectangle *area,
                  int x, int y, int width, int height,
+                 int marginLeft, int marginRight,
                  Style *style, bool inverse);
 void drawBackground (View *view, Layout *layout, Rectangle *area,
                      int x, int y, int width, int height,
