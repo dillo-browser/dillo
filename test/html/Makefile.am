@@ -23,6 +23,7 @@ TESTS = \
 	render/img-aspect-ratio-mix.html \
 	render/img-aspect-ratio-relative-inside-fixed.html \
 	render/img-aspect-ratio.html \
+	render/margin-rounding.html \
 	render/main-style.html \
 	render/margin-auto.html \
 	render/max-width-body.html \
@@ -50,6 +51,7 @@ TESTS = \
 XFAIL_TESTS = \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
+	render/margin-rounding.html \
 	render/margin-auto.html \
 	render/max-width-html.html \
 	render/min-width-html.html \
