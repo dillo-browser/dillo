@@ -25,6 +25,7 @@ TESTS = \
 	render/img-aspect-ratio.html \
 	render/main-style.html \
 	render/margin-auto.html \
+	render/margin-auto-max-width.html \
 	render/max-width-body.html \
 	render/max-width-div-clamp.html \
 	render/max-width-div.html \
@@ -50,7 +51,7 @@ TESTS = \
 XFAIL_TESTS = \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
-	render/margin-auto.html \
+	render/margin-auto-max-width.html \
 	render/max-width-html.html \
 	render/min-width-html.html \
 	render/span-padding.html \

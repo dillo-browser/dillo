@@ -441,7 +441,7 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
       // Left floats are always aligned on the left side of the generator
       // (content, not allocation) ...
       x = generator->getGeneratorX (oofmIndex)
-         + generator->getStyle()->boxOffsetX();
+         + generator->marginBoxOffsetX();
 
       // ... but when the float exceeds the line break width of the container,
       // it is corrected (but not left of the container).  This way, we save
@@ -479,7 +479,7 @@ int OOFFloatsMgr::calcFloatX (Float *vloat)
                  vloat->generator->getMaxGeneratorWidth ());
 
       x = max (generator->getGeneratorX (oofmIndex) + effGeneratorWidth
-               - vloat->size.width - generator->getStyle()->boxRestWidth(),
+               - vloat->size.width - generator->marginBoxRestWidth(),
                // Do not exceed container allocation:
                0);
       break;
@@ -1064,7 +1064,7 @@ void OOFFloatsMgr::getFloatsExtremes (Extremes *cbExtr, Side side,
       // For the maximal width, borders must be considered.
       *maxWidth = max (*maxWidth,
                        extr.maxWidth
-                       + vloat->generator->getStyle()->boxDiffWidth(),
+                       + vloat->generator->marginBoxDiffWidth(),
                        + max (container->getGeneratorWidth ()
                               - vloat->generator->getGeneratorWidth (),
                               0));
@@ -1147,7 +1147,7 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
             switch (side) {
             case LEFT:
                d = vloat->generator->getGeneratorX (oofmIndex)
-                  + vloat->generator->getStyle()->boxOffsetX ();
+                  + vloat->generator->marginBoxOffsetX ();
                break;
 
             case RIGHT:
@@ -1158,7 +1158,7 @@ int OOFFloatsMgr::getBorder (Side side, int y, int h, OOFAwareWidget *lastGB,
                d = container->getMaxGeneratorWidth ()
                   - (vloat->generator->getGeneratorX (oofmIndex)
                      + vloat->generator->getMaxGeneratorWidth ())
-                  + vloat->generator->getStyle()->boxRestWidth ();
+                  + vloat->generator->marginBoxRestWidth ();
                break;
 
             default:

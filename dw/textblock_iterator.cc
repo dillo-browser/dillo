@@ -229,7 +229,7 @@ void Textblock::TextblockIterator::getAllocation (int start, int end,
             Word *w = textblock->words->getRef (i);
             int borderAscent =
                w->content.type == core::Content::WIDGET_IN_FLOW ?
-               w->size.ascent - w->content.widget->getStyle()->margin.top :
+               w->size.ascent - w->content.widget->getStyle()->marginTop() :
                w->size.ascent;
             lineBorderAscent = misc::max (lineBorderAscent, borderAscent);
          }
