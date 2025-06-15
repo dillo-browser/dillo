@@ -44,6 +44,7 @@ TESTS = \
 	render/table-td-width-percent.html \
 	render/table-thead-tfoot.html \
 	render/table-thead-tfoot-open-tag.html \
+	render/text-align-center.html \
 	render/white-space.html
 
 # To be fixed
@@ -53,5 +54,6 @@ XFAIL_TESTS = \
 	render/margin-auto.html \
 	render/max-width-html.html \
 	render/min-width-html.html \
+	render/text-align-center.html \
 	render/span-padding.html \
 	render/table-td-width-percent.html
