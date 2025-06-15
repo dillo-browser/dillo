@@ -46,16 +46,18 @@ TESTS = \
 	render/table-td-width-percent.html \
 	render/table-thead-tfoot.html \
 	render/table-thead-tfoot-open-tag.html \
+	render/text-align-center.html \
 	render/white-space.html
 
 # To be fixed
 XFAIL_TESTS = \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
-	render/margin-rounding.html \
 	render/margin-auto.html \
+	render/margin-rounding.html \
 	render/max-width-html.html \
 	render/min-width-html.html \
 	render/multiple-floats.html \
 	render/span-padding.html \
-	render/table-td-width-percent.html
+	render/table-td-width-percent.html \
+	render/text-align-center.html
