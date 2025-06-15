@@ -42,7 +42,7 @@ function render_page() {
     if [ ! -z "$winid" ]; then
       found_window=true
       # Wait some after the window appears to ensure rendering is done
-      sleep 0.25
+      sleep ${DILLO_TEST_WAIT_TIME:-1}
       break
     fi
   done
