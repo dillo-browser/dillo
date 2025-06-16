@@ -2,6 +2,7 @@
  * File: dpi.c
  *
  * Copyright (C) 2002-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +32,12 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>
-#include <netinet/tcp.h>
+#ifdef __sgi
+/* IRIX fails to include netinet/tcp.h */
+# define TCP_NODELAY 1
+#else
+# include <netinet/tcp.h>
+#endif
 #include <arpa/inet.h>
 #include <netdb.h>
 
