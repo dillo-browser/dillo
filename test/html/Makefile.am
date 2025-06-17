@@ -59,5 +59,4 @@ XFAIL_TESTS = \
 	render/min-width-html.html \
 	render/multiple-floats.html \
 	render/span-padding.html \
-	render/table-td-width-percent.html \
-	render/text-align-center.html
+	render/table-td-width-percent.html

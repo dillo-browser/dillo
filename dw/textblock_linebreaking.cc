@@ -1804,7 +1804,23 @@ void Textblock::alignLine (int lineIndex)
          int lineBreakWidth =
             this->lineBreakWidth - (line->leftOffset + line->rightOffset);
 
-         switch (firstWord->style->textAlign) {
+         core::style::TextAlignType alignStyle = core::style::TEXT_ALIGN_LEFT;
+
+         /**
+          * Only inline elements should be affected by the text-align property.
+          * While alignStyle will still apply to other elements, the default
+          * value of TEXT_ALIGN_LEFT will have no effect on the alignment.
+          */
+         if (firstWord->style->display == core::style::DISPLAY_INLINE ||
+             firstWord->style->display == core::style::DISPLAY_INLINE_BLOCK) {
+            /**
+             * Elements that *are* affected by text-align are aligned based on
+             * the text-align value of their containing element.
+             */
+            alignStyle = getStyle()->textAlign;
+         }
+
+         switch (alignStyle) {
          case core::style::TEXT_ALIGN_LEFT:
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: left'");
