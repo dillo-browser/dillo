@@ -3,19 +3,73 @@
   <head>
     <title>Test text-align: center</title>
     <style>
-      .outer {
+      .center {
+        background-color:aquamarine;
+        text-align: center;
+        width: 400px;
+      }
+
+      .outer1 {
         background-color:coral;
         width: 400px;
       }
-      .inner {
+      .inner1 {
         background-color:aquamarine;
         text-align: center;
         width: 100px;
       }
+
+      .outer2 {
+        background-color:coral;
+        text-align: center;
+        width: 400px;
+      }
+      .inner2 {
+        background-color:aquamarine;
+        width: 100px;
+      }
+
+      .outer3 {
+        background-color:coral;
+        width: 400px;
+      }
+      .inner3 {
+        background-color:aquamarine;
+        text-align: center;
+        width: 100px;
+      }
+
+      .outer4 {
+        background-color:coral;
+        text-align: center;
+        width: 400px;
+      }
+      .inner4 {
+        background-color:aquamarine;
+        width: 100px;
+      }
+
+      body > div {
+        margin-bottom: 10px;
+      }
     </style>
   </head>
   <body>
-    <div class="outer">
-      <div class="inner">center</div>
+    <div class="center">simple centered text</div>
+
+    <div class="outer1">
+      <div class="inner1">nested div with inner center</div>
+    </div>
+
+    <div class="outer2">
+      <div class="inner2">nested div with outer center</div>
+    </div>
+
+    <div class="outer3">
+      <span class="inner3">nested span with inner center</span>
+    </div>
+
+    <div class="outer4">
+      <span class="inner4">nested span with outer center</span>
     </div>
 </html>
