@@ -8,20 +8,70 @@
         margin: 0;
         padding: 0;
       }
-      .outer {
+      table {
+        margin-bottom: 10px;
+      }
+
+      .center {
+        background-color: aquamarine;
+        width: 400px;
+      }
+      .center td {
+        text-align: center;
+      }
+
+      .outer1 {
         background-color:coral;
         width: 400px;
       }
-      .inner {
+      .inner1 {
         background-color:aquamarine;
         text-align: center;
         width: 100px;
       }
+
+      .outer3 {
+        background-color:coral;
+        width: 400px;
+      }
+      .inner3 {
+        background-color:aquamarine;
+        text-align: center;
+        width: 100px;
+        white-space: nowrap;
+      }
+
+      .outer4 {
+        background-color:coral;
+        width: 400px;
+      }
+      .inner4 {
+        background-color:aquamarine;
+        text-align: center;
+        width: 100px;
+        white-space: nowrap;
+      }
     </style>
   </head>
   <body>
-    <table class="outer">
-      <tr><td class="inner">center</td><td></td></tr>
+    <table class="center">
+      <tr><td>simple centered text</td><td></td></tr>
+    </table>
+
+    <table class="outer1">
+      <tr><td class="inner1">nested div with inner center</td><td></td></tr>
+    </table>
+
+    <table class="outer1">
+      <tr><td class="inner1">nested div with outer center</td><td></td></tr>
+    </table>
+
+    <table class="outer3">
+      <tr><td class="inner3">nested span with inner center</td><td></td></tr>
+    </table>
+
+    <table class="outer4">
+      <tr><td></td><td class="inner4">nested span with outer center</td><td></td></tr>
     </table>
   </body>
 </html>
