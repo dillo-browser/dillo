@@ -1547,7 +1547,7 @@ void Widget::drawBox (View *view, style::Style *style, Rectangle *area,
        allocation.x + x + margin.left + style->borderWidth.left,
        allocation.y + y + style->marginTop() + style->borderWidth.top,
        width - margin.left - style->borderWidth.left
-       - style->margin.right - style->borderWidth.right,
+       - margin.right - style->borderWidth.right,
        height - style->marginTop() - style->borderWidth.top
        - style->marginBottom() - style->borderWidth.bottom,
        xPad, yPad, widthPad, heightPad, style, style->backgroundColor,
