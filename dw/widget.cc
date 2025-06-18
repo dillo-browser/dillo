@@ -1039,11 +1039,19 @@ void Widget::calcFinalWidth (style::Style *style, int refWidth,
                                forceValue);
    DBG_OBJ_MSGF ("resize", 1, "w = %d, width = %d", w, width);
 
-   if (width.total != -1)
-      w = width.total;
+   int marginLeft;
+   int marginRight;
 
-   int marginLeft = width.marginLeft;
-   int marginRight = width.marginRight;
+   if (width.total != -1) {
+      w = width.total;
+      marginLeft = width.marginLeft;
+      marginRight = width.marginRight;
+   } else {
+      BoxWidth maxWidth = calcWidth (style->maxWidth, refWidth, refWidget,
+                                     limitMinWidth, forceValue);
+      marginLeft = maxWidth.marginLeft;
+      marginRight = maxWidth.marginRight;
+   }
 
    /* Only correct w if not set to auto (-1) */
    if (w != -1) {
