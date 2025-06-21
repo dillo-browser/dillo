@@ -1804,7 +1804,14 @@ void Textblock::alignLine (int lineIndex)
          int lineBreakWidth =
             this->lineBreakWidth - (line->leftOffset + line->rightOffset);
 
-         switch (firstWord->style->textAlign) {
+         core::style::TextAlignType alignStyle = core::style::TEXT_ALIGN_LEFT;
+
+         if (firstWord->style->display == core::style::DISPLAY_INLINE ||
+             firstWord->style->display == core::style::DISPLAY_INLINE_BLOCK) {
+            alignStyle = getStyle()->textAlign;
+         }
+
+         switch (alignStyle) {
          case core::style::TEXT_ALIGN_LEFT:
             DBG_OBJ_MSG ("construct.line", 1,
                          "first word has 'text-align: left'");
