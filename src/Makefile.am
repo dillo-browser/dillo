@@ -20,8 +20,10 @@ dillo_LDADD = \
 	$(top_builddir)/dw/libDw-fltk.a \
 	$(top_builddir)/dw/libDw-core.a \
 	$(top_builddir)/lout/liblout.a \
+	@LIBSSL_LDFLAGS@ @LIBSSL_LIBS@ \
 	@LIBJPEG_LIBS@ @LIBPNG_LIBS@ @LIBWEBP_LIBS@ @LIBFLTK_LIBS@ @LIBZ_LIBS@ \
-	@LIBICONV_LIBS@ @LIBPTHREAD_LIBS@ @LIBX11_LIBS@ @LIBSSL_LIBS@ @BROTLI_LIBS@
+	@LIBICONV_LIBS@ @LIBPTHREAD_LIBS@ @LIBX11_LIBS@ \
+	@BROTLI_LIBS@
 
 dillo_SOURCES = \
 	dillo.cc \

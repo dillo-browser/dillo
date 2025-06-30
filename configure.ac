@@ -23,11 +23,11 @@ AC_ARG_WITH([jpeg-inc],
 
 AC_ARG_WITH([mbedtls-lib],
   [AS_HELP_STRING([--with-mbedtls-lib=DIR], [Specify where to find MbedTLS libraries])],
-  [LDFLAGS="$LDFLAGS -L$withval"])
+  [MBEDTLS_LIBDIR=$withval])
 
 AC_ARG_WITH([mbedtls-inc],
   [AS_HELP_STRING([--with-mbedtls-inc=DIR], [Specify where to find MbedTLS headers])],
-  [CFLAGS="$CFLAGS -I$withval" CXXFLAGS="$CXXFLAGS -I$withval"])
+  [MBEDTLS_INCDIR=$withval])
 
 AC_ARG_ENABLE([efence],
   [AS_HELP_STRING([--enable-efence], [Try to compile and run with Electric Fence])],
@@ -491,15 +491,29 @@ if test "x$enable_tls" = "xyes"; then
   dnl Try to find mbedTLS if OpenSSL failed or is disabled
   if test "x$enable_mbedtls" = "xyes"; then
     if test "x$openssl_ok" != "xyes"; then
+
+      if test -n "$MBEDTLS_LIBDIR"; then
+        MBEDTLS_LDFLAGS="-L$MBEDTLS_LIBDIR"
+      fi
+      if test -n "$MBEDTLS_INCDIR"; then
+        MBEDTLS_CPPFLAGS="-I$MBEDTLS_INCDIR"
+      fi
+
+      old_cppflags="$CPPFLAGS"
+      CPPFLAGS="$CPPFLAGS $MBEDTLS_CPPFLAGS"
       dnl In mbed TLS 2.3.0, ssl.h needs platform.h but fails to include it.
       AC_CHECK_HEADER(mbedtls/ssl.h, mbedtls_ok=yes, mbedtls_ok=no, [#include <mbedtls/platform.h>])
+      CPPFLAGS="$old_cppflags"
 
       dnl If the headers are found, try to link with mbedTLS
       if test "x$mbedtls_ok" = "xyes"; then
         old_libs="$LIBS"
+        old_ldflags="$LDFLAGS"
+        LDFLAGS="$LDFLAGS $MBEDTLS_LDFLAGS"
         AC_SEARCH_LIBS(mbedtls_ssl_init, [mbedtls-3 mbedtls], mbedtls_ok=yes, mbedtls_ok=no)
         AC_SEARCH_LIBS(mbedtls_pk_get_name, [mbedcrypto-3 mbedcrypto], mbedcrypto_ok=yes, mbedcrypto_ok=no)
         AC_SEARCH_LIBS(mbedtls_x509_crt_init, [mbedx509-3 mbedx509], mbedx509_ok=yes, mbedx509_ok=no)
+        LDFLAGS="$old_ldflags"
         LIBS="$old_libs"
       fi
 
@@ -509,6 +523,8 @@ if test "x$enable_tls" = "xyes"; then
         tls_impl="mbedTLS"
         AC_DEFINE([HAVE_MBEDTLS], [1], [mbedTLS works])
         LIBSSL_LIBS="$ac_cv_search_mbedtls_ssl_init $ac_cv_search_mbedtls_pk_get_name $ac_cv_search_mbedtls_x509_crt_init"
+        LIBSSL_LDFLAGS="$MBEDTLS_LDFLAGS"
+        LIBSSL_CPPFLAGS="$MBEDTLS_CPPFLAGS"
       else
         mbedtls_ok=no
         AC_MSG_NOTICE([Cannot find mbedTLS])
@@ -787,6 +803,8 @@ AC_SUBST(LIBWEBP_LIBS)
 AC_SUBST(LIBZ_LIBS)
 AC_SUBST(BROTLI_LIBS)
 AC_SUBST(LIBSSL_LIBS)
+AC_SUBST(LIBSSL_LDFLAGS)
+AC_SUBST(LIBSSL_CPPFLAGS)
 AC_SUBST(LIBPTHREAD_LIBS)
 AC_SUBST(LIBPTHREAD_LDFLAGS)
 AC_SUBST(LIBFLTK_CXXFLAGS)
