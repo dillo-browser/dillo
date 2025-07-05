@@ -1027,7 +1027,7 @@ void StyleEngine::init () {
       ":link {color: blue; text-decoration: underline; cursor: pointer}"
       ":visited {color: #800080; text-decoration: underline; cursor: pointer}"
       "h1, h2, h3, h4, h5, h6, b, strong {font-weight: bolder}"
-      "address, article, aside, center, div, figure, figcaption, footer,"
+      "address, article, aside, blockquote, center, div, dd, figure, figcaption, footer,"
       " h1, h2, h3, h4, h5, h6, header, main, nav, ol, p, pre, section, ul"
       " {display: block}"
       "i, em, cite, address, var {font-style: italic}"
