@@ -151,13 +151,19 @@ void FltkFont::initSystemFonts ()
       char *name = dStrdup (Fl::get_font_name ((Fl_Font) i, &t));
 
       // normalize font family names (strip off "bold", "italic")
-      if (t & FL_ITALIC)
+      if (t & FL_ITALIC) {
+         strstrip(name, " oblique");
          strstrip(name, " italic");
+      }
+
       if (t & FL_BOLD)
          strstrip(name, " bold");
 
-      _MSG("Found font: %s%s%s\n", name, t & FL_BOLD ? " bold" : "",
-                                  t & FL_ITALIC ? " italic" : "");
+      /* Always strip Book, similar to Regular */
+      strstrip(name, " book");
+
+      _MSG("Found font: %s%s%s\n", name, t & FL_BOLD ? " Bold" : "",
+                                  t & FL_ITALIC ? " Italic" : "");
 
       object::String *familyName = new object::String(name);
       free (name);
