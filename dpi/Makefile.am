@@ -21,7 +21,7 @@ datauri_PROGRAMS = datauri.filter.dpi
 bookmarks_dpi_LDADD = \
 	$(top_builddir)/dpip/libDpip.a \
 	$(top_builddir)/dlib/libDlib.a
-downloads_dpi_LDADD = @LIBFLTK_LIBS@ \
+downloads_dpi_LDADD = @FLTK_LIBS@ \
 	$(top_builddir)/dpip/libDpip.a \
 	$(top_builddir)/dlib/libDlib.a
 ftp_filter_dpi_LDADD = \
@@ -43,7 +43,7 @@ datauri_filter_dpi_LDADD = \
 	$(top_builddir)/dpip/libDpip.a \
 	$(top_builddir)/dlib/libDlib.a
 
-downloads_dpi_CXXFLAGS = @LIBFLTK_CXXFLAGS@
+downloads_dpi_CXXFLAGS = @FLTK_CXXFLAGS@
 
 bookmarks_dpi_SOURCES = bookmarks.c dpiutil.c dpiutil.h
 downloads_dpi_SOURCES = downloads.cc dpiutil.c dpiutil.h

@@ -2,8 +2,8 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	-DCUR_WORKING_DIR='"@BASE_CUR_WORKING_DIR@/test"'
 
-AM_CFLAGS = @LIBFLTK_CFLAGS@
-AM_CXXFLAGS = @LIBFLTK_CXXFLAGS@
+AM_CFLAGS = @FLTK_CFLAGS@
+AM_CXXFLAGS = @FLTK_CXXFLAGS@
 
 LDADD = \
 	$(top_builddir)/dw/libDw-widgets.a \
@@ -11,7 +11,7 @@ LDADD = \
 	$(top_builddir)/dw/libDw-core.a \
 	$(top_builddir)/lout/liblout.a \
 	$(top_builddir)/dlib/libDlib.a \
-	@LIBFLTK_LIBS@ @LIBX11_LIBS@
+	@FLTK_LIBS@ @LIBX11_LIBS@
 
 check_PROGRAMS = \
 	dw-anchors-test \

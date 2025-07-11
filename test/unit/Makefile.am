@@ -3,8 +3,8 @@ AM_CPPFLAGS = \
 	-DCUR_SRC_DIR="\"$(srcdir)\"" \
 	-DCUR_WORKING_DIR='"@BASE_CUR_WORKING_DIR@/test/unit"'
 
-AM_CFLAGS = @LIBFLTK_CFLAGS@
-AM_CXXFLAGS = @LIBFLTK_CXXFLAGS@
+AM_CFLAGS = @FLTK_CFLAGS@
+AM_CXXFLAGS = @FLTK_CXXFLAGS@
 
 LDADD = \
 	$(top_builddir)/lout/liblout.a
@@ -52,7 +52,7 @@ shapes_LDADD = \
 unicode_test_SOURCES = unicode_test.cc
 unicode_test_LDADD = \
 	$(top_builddir)/lout/liblout.a \
-	@LIBFLTK_LIBS@ @LIBX11_LIBS@
+	@FLTK_LIBS@ @LIBX11_LIBS@
 liang_SOURCES = liang.cc
 liang_LDADD = \
 	$(top_builddir)/dw/libDw-widgets.a \
@@ -60,7 +60,7 @@ liang_LDADD = \
 	$(top_builddir)/dw/libDw-core.a \
 	$(top_builddir)/lout/liblout.a \
 	$(top_builddir)/dlib/libDlib.a \
-	@LIBFLTK_LIBS@ @LIBX11_LIBS@
+	@FLTK_LIBS@ @LIBX11_LIBS@
 trie_SOURCES = trie.cc
 trie_LDADD = \
 	$(top_builddir)/dw/libDw-widgets.a \
@@ -68,4 +68,4 @@ trie_LDADD = \
 	$(top_builddir)/dw/libDw-core.a \
 	$(top_builddir)/lout/liblout.a \
 	$(top_builddir)/dlib/libDlib.a \
-	@LIBFLTK_LIBS@ @LIBX11_LIBS@
+	@FLTK_LIBS@ @LIBX11_LIBS@

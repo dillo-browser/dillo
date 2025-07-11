@@ -145,6 +145,11 @@ AC_ARG_ENABLE([experimental-fltk],
   [enable_experimental_fltk=$enableval],
   [enable_experimental_fltk=no])
 
+AC_ARG_VAR(FLTK_CONFIG,   [Absolute path to fltk-config program])
+AC_ARG_VAR(FLTK_CFLAGS,   [Set flags to build C code with FLTK])
+AC_ARG_VAR(FLTK_CXXFLAGS, [Set flags to build C++ code with FLTK])
+AC_ARG_VAR(FLTK_LIBS,     [Set flags to link with FLTK])
+
 if test "x$enable_ssl" = "xno"; then
   AC_MSG_ERROR([The flag --disable-ssl is deprecated, use --disable-tls])
 fi
@@ -243,20 +248,15 @@ AC_PATH_PROGS(FLTK_CONFIG,[fltk-config1.3 fltk-config])
 AC_MSG_CHECKING([FLTK version])
 fltk_version="`$FLTK_CONFIG --version 2>/dev/null`"
 
+dnl Make sure the version is OK
 case $fltk_version in
   1.3.*)
     AC_MSG_RESULT([yes ($fltk_version)])
-    LIBFLTK_CXXFLAGS=`$FLTK_CONFIG --cxxflags`
-    LIBFLTK_CFLAGS=`$FLTK_CONFIG --cflags`
-    LIBFLTK_LIBS="`$FLTK_CONFIG --ldflags`"
     ;;
   1.4.*|1.5.*)
     if test "x$enable_experimental_fltk" = "xyes"; then
       AC_MSG_RESULT([yes ($fltk_version)])
       AC_MSG_WARN([*** Using experimental FLTK support, expect graphical glitches. ***])
-      LIBFLTK_CXXFLAGS=`$FLTK_CONFIG --cxxflags`
-      LIBFLTK_CFLAGS=`$FLTK_CONFIG --cflags`
-      LIBFLTK_LIBS="`$FLTK_CONFIG --ldflags`"
     else
       AC_MSG_RESULT([too new ($fltk_version)])
       AC_MSG_NOTICE([Support for FLTK >= 1.4 is experimental and has known graphical issues])
@@ -274,6 +274,17 @@ case $fltk_version in
     AC_MSG_ERROR(FLTK 1.3 required; fltk-config not found)
 esac
 
+dnl Only set FLTK_* variables if not set (including to empty)
+if test -z "${FLTK_CFLAGS+set}"; then
+  FLTK_CFLAGS="`$FLTK_CONFIG --cflags`"
+fi
+if test -z "${FLTK_CXXFLAGS+set}"; then
+  FLTK_CXXFLAGS="`$FLTK_CONFIG --cxxflags`"
+fi
+if test -z "${FLTK_LIBS+set}"; then
+  FLTK_LIBS="`$FLTK_CONFIG --ldflags`"
+fi
+
 dnl -----------------------------------
 dnl Test for X11 (only on some systems)
 dnl -----------------------------------
@@ -281,8 +292,8 @@ AC_MSG_CHECKING([whether to link to X11])
 AC_LANG_PUSH([C++])
 old_libs=$LIBS
 old_cxxflags=$CXXFLAGS
-LIBS=$LIBFLTK_LIBS
-CXXFLAGS=$LIBFLTK_CXXFLAGS
+LIBS=$FLTK_LIBS
+CXXFLAGS=$FLTK_CXXFLAGS
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[
 #define FL_INTERNALS
 #include <FL/x.H>
@@ -905,9 +916,9 @@ AC_SUBST(LIBSSL_LDFLAGS)
 AC_SUBST(LIBSSL_CPPFLAGS)
 AC_SUBST(LIBPTHREAD_LIBS)
 AC_SUBST(LIBPTHREAD_LDFLAGS)
-AC_SUBST(LIBFLTK_CXXFLAGS)
-AC_SUBST(LIBFLTK_CFLAGS)
-AC_SUBST(LIBFLTK_LIBS)
+AC_SUBST(FLTK_CXXFLAGS)
+AC_SUBST(FLTK_CFLAGS)
+AC_SUBST(FLTK_LIBS)
 AC_SUBST(LIBICONV_LIBS)
 AC_SUBST(LIBX11_LIBS)
 AC_SUBST(CA_CERTS_FILE)
@@ -946,6 +957,11 @@ _AS_ECHO([  CC      : ${CC}])
 _AS_ECHO([  CFLAGS  : ${CFLAGS}])
 _AS_ECHO([  CXX     : ${CXX}])
 _AS_ECHO([  CXXFLAGS: ${CXXFLAGS}])
+_AS_ECHO([])
+_AS_ECHO([  FLTK_CONFIG  : ${FLTK_CONFIG}])
+_AS_ECHO([  FLTK_CFLAGS  : ${FLTK_CFLAGS}])
+_AS_ECHO([  FLTK_CXXFLAGS: ${FLTK_CFLAGS}])
+_AS_ECHO([  FLTK_LIBS    : ${FLTK_LIBS}])
 _AS_ECHO([])
 _AS_ECHO([  TLS enabled: ${tls_ok}])
 _AS_ECHO([  TLS library: ${tls_impl}])

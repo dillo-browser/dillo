@@ -58,7 +58,7 @@ libDw_fltk_a_SOURCES = \
 	fltkviewport.cc \
 	fltkviewport.hh
 
-libDw_fltk_a_CXXFLAGS = @LIBFLTK_CXXFLAGS@
+libDw_fltk_a_CXXFLAGS = @FLTK_CXXFLAGS@
 
 libDw_widgets_a_SOURCES = \
 	alignedtablecell.cc \
