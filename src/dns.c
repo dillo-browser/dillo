@@ -13,6 +13,7 @@
  * Non blocking pthread-handled Dns scheme
  */
 
+#include "config.h"
 
 /*
  * Uncomment the following line for debugging or gprof profiling.

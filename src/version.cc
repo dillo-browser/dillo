@@ -141,6 +141,11 @@ static void print_features()
 #else
          " -TLS"
 #endif
+#ifdef ENABLE_IPV6
+         " +IPV6"
+#else
+         " -IPV6"
+#endif
          "\n");
 }
 

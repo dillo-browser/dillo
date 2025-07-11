@@ -693,6 +693,10 @@ connect(fd, (struct sockaddr *)&sa, len);
   AC_MSG_RESULT([$enable_ipv6])
 fi
 
+if test "x$enable_ipv6" = "xyes"; then
+  AC_DEFINE([ENABLE_IPV6], [1], [Enable IPv6 support])
+fi
+
 dnl ----------
 dnl HTML tests
 dnl ----------
@@ -731,9 +735,6 @@ dnl
 if test "x$enable_cookies" = "xno" ; then
   CFLAGS="$CFLAGS -DDISABLE_COOKIES"
   CXXFLAGS="$CXXFLAGS -DDISABLE_COOKIES"
-fi
-if test "x$enable_ipv6" = "xyes" ; then
-  CFLAGS="$CFLAGS -DENABLE_IPV6"
 fi
 if test "x$enable_efence" = "xyes" ; then
   LIBS="-lefence $LIBS"

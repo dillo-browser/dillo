@@ -15,7 +15,7 @@
  */
 
 
-#include <config.h>
+#include "config.h"
 
 #include <ctype.h>              /* isdigit */
 #include <unistd.h>
