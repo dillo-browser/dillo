@@ -45,9 +45,9 @@ AC_ARG_ENABLE([insure],
   [enable_insure=no])
 
 AC_ARG_ENABLE([ipv6],
-  [AS_HELP_STRING([--enable-ipv6], [Build with support for IPv6])],
+  [AS_HELP_STRING([--enable-ipv6], [Build with support for IPv6 (default: auto)])],
   [enable_ipv6=$enableval],
-  [enable_ipv6=no])
+  [enable_ipv6=auto])
 
 AC_ARG_ENABLE([cookies],
   [AS_HELP_STRING([--disable-cookies], [Dont compile support for cookies])],
@@ -669,6 +669,30 @@ pthread_ok=yes, pthread_ok=no)
 esac
 fi
 
+dnl ------------
+dnl IPv6 support
+dnl ------------
+dnl
+html_tests_ok=no
+if test "x$enable_ipv6" = "xauto" ; then
+  dnl Detect support for IPv6 in libc
+  AC_MSG_CHECKING([for IPv6 support])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/socket.h>
+#include <netinet/in.h>
+]],[[
+struct sockaddr_in6 sa;
+size_t len = sizeof(struct sockaddr_in6);
+sa.sin6_family = AF_INET6;
+int fd;
+connect(fd, (struct sockaddr *)&sa, len);
+]])],
+  enable_ipv6=yes,
+  enable_ipv6=no)
+
+  AC_MSG_RESULT([$enable_ipv6])
+fi
+
 dnl ----------
 dnl HTML tests
 dnl ----------
@@ -856,6 +880,7 @@ _AS_ECHO([  GIF enabled    : ${enable_gif}])
 _AS_ECHO([  SVG enabled    : ${enable_svg}])
 _AS_ECHO([  WEBP enabled   : ${webp_ok}])
 _AS_ECHO([  Brotli enabled : ${brotli_ok}])
+_AS_ECHO([  IPv6 enabled   : ${enable_ipv6}])
 _AS_ECHO([])
 _AS_ECHO([  HTML tests     : ${html_tests_ok}])
 _AS_ECHO([])
