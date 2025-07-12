@@ -84,11 +84,6 @@ AC_ARG_ENABLE([threaded-dns],
   [enable_threaded_dns=$enableval],
   [enable_threaded_dns=yes])
 
-AC_ARG_ENABLE([rtfl],
-  [AS_HELP_STRING([--enable-rtfl], [Print low-level RTFL messages for debugging the renderer (very large slowdown)])],
-  [enable_rtfl=$enableval],
-  [enable_rtfl=no])
-
 AC_ARG_ENABLE([xembed],
   [AS_HELP_STRING([--disable-xembed], [Disable support for X11 XEmbed])],
   [enable_xembed=$enableval],
@@ -128,11 +123,17 @@ AC_ARG_WITH([ca-certs-dir],
   [AS_HELP_STRING([--with-ca-certs-dir=DIR], [Specify where to find a directory containing trusted CA certificates for TLS])],
   CA_CERTS_DIR=$withval)
 
+dnl Developer options
 
 AC_ARG_ENABLE([html-tests],
-  [AS_HELP_STRING([--enable-html-tests], [Enable HTML tests (requires xvfb, xwd and imagemagick)])],
+  [AS_HELP_STRING([--enable-html-tests], [Enable HTML rendering tests, requires xvfb, xwd and imagemagick (for developers only)])],
   [enable_html_tests=$enableval],
   [enable_html_tests=no])
+
+AC_ARG_ENABLE([rtfl],
+  [AS_HELP_STRING([--enable-rtfl], [Print low-level RTFL messages for debugging the renderer. Adds very large slowdown (for developers only)])],
+  [enable_rtfl=$enableval],
+  [enable_rtfl=no])
 
 if test "x$enable_ssl" = "xno"; then
   AC_MSG_ERROR([The flag --disable-ssl is deprecated, use --disable-tls])
