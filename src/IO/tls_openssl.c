@@ -8,7 +8,7 @@
  * (for the certificate hostname checking from wget)
  * Copyright (C) 2011 Benjamin Johnson <obeythepenguin@users.sourceforge.net>
  * (for the https code offered from dplus browser that formed the basis...)
- * Copyright (C) 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2023-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -215,6 +215,7 @@ static void Tls_load_certificates(void)
       "/usr/share/ssl/certs/ca-bundle.crt",
       "/usr/local/share/certs/ca-root.crt",
       "/etc/ssl/cert.pem",
+      "/etc/openssl/certs/ca-certificates.crt",
       CA_CERTS_FILE
    };
 
