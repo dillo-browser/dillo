@@ -2,6 +2,7 @@
  * File: dpi.c
  *
  * Copyright (C) 2002-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -713,8 +714,11 @@ void a_Dpi_ccc(int Op, int Branch, int Dir, ChainLink *Info,
             /* Data1 = dbuf */
             Dpi_process_dbuf(IORead, Data1, Info->LocalKey);
             break;
+         case OpAbort:
+            MSG_WARN("Dpi server aborted the connection\n");
+            /* fallthrough */
          case OpEnd:
-            a_Chain_fcb(OpEnd, Info, NULL, NULL);
+            a_Chain_fcb(Op, Info, NULL, NULL);
             Dpi_conn_free(Info->LocalKey);
             dFree(Info);
             break;
