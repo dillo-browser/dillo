@@ -65,6 +65,7 @@ typedef struct {
    int ExpectedSize;         /**< Goal size of the HTTP transfer (0 if unknown)*/
    int TransferSize;         /**< Actual length of the HTTP transfer */
    uint_t Flags;             /**< See Flag Defines in cache.h */
+   int Hits;                 /**< Counter of hits for the entry */
 } CacheEntry_t;
 
 
@@ -210,6 +211,7 @@ static void Cache_entry_init(CacheEntry_t *NewEntry, const DilloUrl *Url)
    NewEntry->ExpectedSize = 0;
    NewEntry->TransferSize = 0;
    NewEntry->Flags = CA_IsEmpty | CA_InProgress | CA_KeepAlive;
+   NewEntry->Hits = 0;
 }
 
 /**
@@ -391,6 +393,7 @@ int a_Cache_open_url(void *web, CA_Callback_t Call, void *CbData)
       /* URL is cached: feed our client with cached data */
       ClientKey = Cache_client_enqueue(entry->Url, Web, Call, CbData);
       Cache_delayed_process_queue(entry);
+      entry->Hits++;
 
    } else {
       /* URL not cached: create an entry, send our client to the queue,
