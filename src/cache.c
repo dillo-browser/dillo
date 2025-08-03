@@ -36,6 +36,7 @@
 #include "domain.h"
 #include "timeout.hh"
 #include "uicmd.hh"
+#include "dlib/dlib.h"
 
 /** Maximum initial size for the automatically-growing data buffer */
 #define MAX_INIT_BUF  1024*1024
@@ -91,6 +92,7 @@ static uint_t DelayedQueueIdleId = 0;
 static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry);
 static void Cache_delayed_process_queue(CacheEntry_t *entry);
 static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw);
+static Dstr *Cache_data(CacheEntry_t *entry);
 
 /**
  * Determine if two cache entries are equal (used by CachedURLs)
@@ -266,6 +268,19 @@ static CacheEntry_t *Cache_entry_add(const DilloUrl *Url)
 }
 
 /**
+ * Compute the actual size occupied by a cache entry.
+ *
+ * The size is computed from the allocated buffer. */
+static int Cache_bufsize(CacheEntry_t *e)
+{
+   Dstr *buf = Cache_data(e);
+   if (buf)
+      return buf->len;
+   else
+      return 0;
+}
+
+/**
  * Inject full page content directly into the cache.
  * Used for "about:splash". May be used for "about:cache" too.
  */
@@ -365,6 +380,64 @@ void a_Cache_entry_remove_by_url(DilloUrl *url)
 
 /* Misc. operations ------------------------------------------------------- */
 
+static Dstr *Cache_stats(void)
+{
+   float totalKB = 0.0f;
+
+   Dstr *s = dStr_new(
+      "<!DOCTYPE HTML>\n"
+      "<html>\n"
+      "<head><title>Dillo Cache</title></head>\n"
+      "<body>\n");
+
+   int n = dList_length(CachedURLs);
+   dStr_sprintfa(s, "<h1>Cached URLs (%d)</h1>\n", n);
+
+   dStr_append(s, "<table>\n");
+   dStr_append(s, "<tr>\n");
+   dStr_append(s, "<th>Hits</th>\n");
+   dStr_append(s, "<th>Size</th>\n");
+   dStr_append(s, "<th>URL</th>\n");
+   dStr_append(s, "</tr>\n");
+   for (int i = 0; i < n; i++) {
+      CacheEntry_t *e = dList_nth_data(CachedURLs, i);
+      float sizeKB = Cache_bufsize(e) / 1024.0f;
+      const char *url = URL_STR(e->Url);
+      dStr_append(s, "<tr>\n");
+      dStr_sprintfa(s, "<td style='text-align:right'>%d</td>\n", e->Hits);
+      dStr_sprintfa(s, "<td style='text-align:right'>%.2f KiB</td>\n", sizeKB);
+      dStr_sprintfa(s, "<td><a href='%s'>", url);
+      dStr_shorten(s, url, 60);
+      dStr_append(s, "</a></td>\n");
+      dStr_append(s, "</tr>\n");
+      totalKB += sizeKB;
+   }
+   dStr_append(s, "</table>\n");
+   dStr_sprintfa(s, "<p>Total cached: %.2f MiB</p>\n", totalKB / 1024.0f);
+   dStr_append(s,
+      "</body>\n"
+      "</html>\n");
+
+   return s;
+}
+
+static int Cache_internal_url(CacheEntry_t *entry)
+{
+   Dstr *s = NULL;
+
+   if (strcmp(URL_PATH(entry->Url), "cache") == 0) {
+      s = Cache_stats();
+   }
+
+   if (s != NULL) {
+      a_Cache_entry_inject(entry->Url, s);
+      /* Remove InternalUrl */
+      entry->Flags = CA_GotHeader + CA_GotLength;
+   }
+
+   return 0;
+}
+
 /**
  * Try finding the url in the cache. If it hits, send the cache contents
  * from there. If it misses, set up a new connection.
@@ -383,6 +456,13 @@ int a_Cache_open_url(void *web, CA_Callback_t Call, void *CbData)
    CacheEntry_t *entry;
    DilloWeb *Web = web;
    DilloUrl *Url = Web->url;
+   int isInternal = 0;
+
+   if (dStrAsciiCasecmp(URL_SCHEME(Url), "about") == 0) {
+      _MSG("got internal URL: %s\n", URL_STR(Url));
+      isInternal = 1;
+      Cache_entry_remove(NULL, Url);
+   }
 
    if (URL_FLAGS(Url) & URL_E2EQuery) {
       /* remove current entry */
@@ -390,16 +470,27 @@ int a_Cache_open_url(void *web, CA_Callback_t Call, void *CbData)
    }
 
    if ((entry = Cache_entry_search(Url))) {
+      _MSG("serving cached entry: %s\n", URL_STR(Url));
       /* URL is cached: feed our client with cached data */
       ClientKey = Cache_client_enqueue(entry->Url, Web, Call, CbData);
       Cache_delayed_process_queue(entry);
       entry->Hits++;
 
    } else {
+      _MSG("serving new entry: %s\n", URL_STR(Url));
       /* URL not cached: create an entry, send our client to the queue,
        * and open a new connection */
       entry = Cache_entry_add(Url);
-      ClientKey = Cache_client_enqueue(entry->Url, Web, Call, CbData);
+
+      /* URL is an internal call, populate */
+      if (isInternal) {
+         _MSG("handling internal: %s\n", URL_STR(Url));
+         Cache_internal_url(entry);
+         ClientKey = Cache_client_enqueue(entry->Url, Web, Call, CbData);
+         Cache_delayed_process_queue(entry);
+      } else {
+         ClientKey = Cache_client_enqueue(entry->Url, Web, Call, CbData);
+      }
    }
 
    return ClientKey;
