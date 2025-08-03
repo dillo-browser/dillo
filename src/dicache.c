@@ -10,6 +10,12 @@
  * (at your option) any later version.
  */
 
+/** @file
+ * DICache stands for Decompressed Image Cache. It holds the raw buffers (RGB)
+ * of images after they are decompressed of their respective formats (png, jpeg,
+ * gif, ...).
+ */
+
 #include <string.h>         /* for memset */
 #include <stdlib.h>
 
