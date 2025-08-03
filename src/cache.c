@@ -427,6 +427,8 @@ static int Cache_internal_url(CacheEntry_t *entry)
 
    if (strcmp(URL_PATH(entry->Url), "cache") == 0) {
       s = Cache_stats();
+   } else if (strcmp(URL_PATH(entry->Url), "dicache") == 0) {
+      s = a_Dicache_stats();
    }
 
    if (s != NULL) {

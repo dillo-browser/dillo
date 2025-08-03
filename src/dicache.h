@@ -1,3 +1,15 @@
+/*
+ * File: dicache.c
+ *
+ * Copyright 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #ifndef __DICACHE_H__
 #define __DICACHE_H__
 
@@ -9,6 +21,7 @@ extern "C" {
 #include "bitvec.h"
 #include "image.hh"
 #include "cache.h"
+#include "dlib/dlib.h"
 
 /** Symbolic name to request the last version of an image */
 #define DIC_Last  -1
@@ -76,6 +89,7 @@ DICacheEntry* a_Dicache_ref(const DilloUrl *Url, int version);
 void a_Dicache_unref(const DilloUrl *Url, int version);
 void a_Dicache_cleanup(void);
 void a_Dicache_freeall(void);
+Dstr *a_Dicache_stats(void);
 
 
 #ifdef __cplusplus
