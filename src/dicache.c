@@ -2,7 +2,7 @@
  * File: dicache.c
  *
  * Copyright 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -189,6 +189,14 @@ static void Dicache_remove(const DilloUrl *Url, int version)
       entry->Decoder(CA_Abort, entry->DecoderData);
    }
    dFree(entry);
+}
+
+static int Dicache_is_last_ref(DICacheEntry *entry)
+{
+   if (entry->v_imgbuf)
+      return a_Imgbuf_last_reference(entry->v_imgbuf);
+
+   return 0;
 }
 
 /**
@@ -598,4 +606,50 @@ void a_Dicache_freeall(void)
       dFree(entry);
    }
    dList_free(CachedIMGs);
+}
+
+Dstr *a_Dicache_stats(void)
+{
+   long bytesCached = 0L;
+   Dstr *s = dStr_new(
+      "<!DOCTYPE HTML>\n"
+      "<html>\n"
+      "<head><title>Decompressed Image Cache</title></head>\n"
+      "<body>\n");
+
+   int n = dList_length(CachedIMGs);
+   dStr_sprintfa(s, "<h1>Decompressed Image Cache (%d)</h1>\n", n);
+
+   dStr_append(s, "<table>\n");
+   dStr_append(s, "<tr>\n");
+   dStr_append(s, "<th><span title='Survival Counter'>S</span></th>\n");
+   dStr_append(s, "<th><span title='Last Reference'>L</span></th>\n");
+   dStr_append(s, "<th>Area</th>\n");
+   dStr_append(s, "<th>Size</th>\n");
+   dStr_append(s, "<th>URL</th>\n");
+   dStr_append(s, "</tr>\n");
+   for (int i = 0; i < n; i++) {
+      DICacheEntry *e = dList_nth_data(CachedIMGs, i);
+      dStr_append(s, "<tr>\n");
+      dStr_sprintfa(s, "<td style='text-align:right'>%hd</td>", e->SurvCleanup);
+      dStr_sprintfa(s, "<td style='text-align:right'>%d</td>", Dicache_is_last_ref(e));
+      dStr_sprintfa(s, "<td style='text-align:right'>%ux%u</td>", e->width, e->height);
+      dStr_sprintfa(s, "<td style='text-align:right'>%.2f KiB</td>\n",
+            e->TotalSize / 1024.0f);
+      dStr_sprintfa(s, "<td><a href='%s'>", URL_STR(e->url));
+      dStr_shorten(s, URL_STR(e->url), 60);
+      dStr_append(s, "</a></td>\n");
+      dStr_append(s, "</tr>\n");
+      bytesCached += (long) e->TotalSize;
+   }
+   dStr_append(s, "</table>\n");
+   float mb = (float) bytesCached / (1024.0f * 1024.0f);
+
+   dStr_sprintfa(s, "<p>Total cached: %.2f MiB</p>\n", mb);
+
+   dStr_append(s,
+      "</body>\n"
+      "</html>\n");
+
+   return s;
 }
