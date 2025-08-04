@@ -331,7 +331,9 @@ static void b1_cb(Fl_Widget *wid, void *cb_data)
       break;
    case UI_HOME:
       if (b == FL_LEFT_MOUSE) {
-         a_UIcmd_home(a_UIcmd_get_bw_by_widget(wid));
+         a_UIcmd_home(a_UIcmd_get_bw_by_widget(wid), 0);
+      } else if (b == FL_MIDDLE_MOUSE) {
+         a_UIcmd_home(a_UIcmd_get_bw_by_widget(wid), 1);
       }
       break;
    case UI_RELOAD:
@@ -351,7 +353,9 @@ static void b1_cb(Fl_Widget *wid, void *cb_data)
       break;
    case UI_BOOK:
       if (b == FL_LEFT_MOUSE) {
-         a_UIcmd_book(a_UIcmd_get_bw_by_widget(wid));
+         a_UIcmd_book(a_UIcmd_get_bw_by_widget(wid), 0);
+      } else if (b == FL_MIDDLE_MOUSE) {
+         a_UIcmd_book(a_UIcmd_get_bw_by_widget(wid), 1);
       }
       break;
    case UI_TOOLS:
@@ -440,11 +444,11 @@ void UI::make_toolbar(int tw, int th)
 
    Back->set_tooltip("Previous page");
    Forw->set_tooltip("Next page");
-   Home->set_tooltip("Go to the Home page");
+   Home->set_tooltip("Go to the Home page\nMiddle-click for new tab.");
    Reload->set_tooltip("Reload");
    Save->set_tooltip("Save this page");
    Stop->set_tooltip("Stop loading");
-   Bookmarks->set_tooltip("View bookmarks");
+   Bookmarks->set_tooltip("View bookmarks\nMiddle-click for new tab.");
    Tools->set_tooltip("Settings");
 }
 
@@ -755,7 +759,7 @@ int UI::handle(int event)
          a_UIcmd_zoom_reset(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_BOOKMARKS) {
-         a_UIcmd_book(a_UIcmd_get_bw_by_widget(this));
+         a_UIcmd_book(a_UIcmd_get_bw_by_widget(this), 0);
          ret = 1;
       } else if (cmd == KEYS_FIND) {
          findbar_toggle(1);
@@ -775,7 +779,7 @@ int UI::handle(int event)
          a_UIcmd_open_file(a_UIcmd_get_bw_by_widget(this));
          ret = 1;
       } else if (cmd == KEYS_HOME) {
-         a_UIcmd_home(a_UIcmd_get_bw_by_widget(this));
+         a_UIcmd_home(a_UIcmd_get_bw_by_widget(this), 0);
          ret = 1;
       } else if (cmd == KEYS_RELOAD) {
          a_UIcmd_reload(a_UIcmd_get_bw_by_widget(this));

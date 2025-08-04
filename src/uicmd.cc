@@ -920,9 +920,12 @@ void a_UIcmd_forw_popup(void *vbw, int x, int y)
 /*
  * Send the browser to home URL
  */
-void a_UIcmd_home(void *vbw)
+void a_UIcmd_home(void *vbw, int nt)
 {
-   a_UIcmd_open_url((BrowserWindow*)vbw, prefs.home);
+   if (nt)
+      a_UIcmd_open_url_nt((BrowserWindow*)vbw, prefs.home, 1);
+   else
+      a_UIcmd_open_url((BrowserWindow*)vbw, prefs.home);
 }
 
 /*
@@ -1276,10 +1279,15 @@ void a_UIcmd_save_link(BrowserWindow *bw, const DilloUrl *url, char *filename)
 /*
  * Request the bookmarks page
  */
-void a_UIcmd_book(void *vbw)
+void a_UIcmd_book(void *vbw, int nt)
 {
    DilloUrl *url = a_Url_new("dpi:/bm/", NULL);
-   a_UIcmd_open_url((BrowserWindow*)vbw, url);
+
+   if (nt)
+      a_UIcmd_open_url_nt((BrowserWindow*)vbw, url, 1);
+   else
+      a_UIcmd_open_url((BrowserWindow*)vbw, url);
+
    a_Url_free(url);
 }
 
