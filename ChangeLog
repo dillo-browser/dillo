@@ -13,6 +13,7 @@ dillo-3.3.0 [Unreleased]
  - Control + left click opens links in new tab (emulates mouse middle button).
  - Ctrl+C copies selected text into the clipboard so Ctrl+V works as expected.
  - Enable IPv6 support by default if supported by the platform.
+ - Focus the N-th tab with the Alt+<number> shortcut.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex

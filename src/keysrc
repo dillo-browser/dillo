@@ -95,6 +95,18 @@
 # "zoom-reset" resets the zoom to 100%.
 #<ctrl>0 = zoom-reset
 
+# "focus-tab<N>" focus the N-th tab (starting in 1).
+#<alt>1 = focus-tab1
+#<alt>2 = focus-tab2
+#<alt>3 = focus-tab3
+#<alt>4 = focus-tab4
+#<alt>5 = focus-tab5
+#<alt>6 = focus-tab6
+#<alt>7 = focus-tab7
+#<alt>8 = focus-tab8
+#<alt>9 = focus-tab9
+#<alt>0 = focus-tab10
+
 #--------------------------------------------------------------------
 #                     MOTION COMMANDS
 #--------------------------------------------------------------------

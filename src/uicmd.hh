@@ -74,6 +74,7 @@ void a_UIcmd_view_page_bugs(void *vbw);
 void a_UIcmd_bugmeter_popup(void *vbw);
 int *a_UIcmd_get_history(BrowserWindow *bw, int direction);
 void a_UIcmd_nav_jump(BrowserWindow *bw, int offset, int new_bw);
+void a_UIcmd_focus_tab(void *vbw, int index);
 
 void a_UIcmd_close_bw(void *vbw);
 void a_UIcmd_close_all_bw(void *p);

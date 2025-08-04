@@ -189,6 +189,7 @@ public:
    Fl_Wizard *wizard(void) { return Wizard; }
    int num_tabs() { return (Pack ? Pack->children() : 0); }
    void switch_tab(CustTabButton *cbtn);
+   void switch_tab(int index);
    void prev_tab(void);
    void next_tab(void);
    void set_tab_label(UI *ui, const char *title);
@@ -484,6 +485,15 @@ void CustTabs::next_tab()
 
    if ((idx = get_btn_idx((UI*)Wizard->value())) != -1)
       switch_tab((CustTabButton*)Pack->child((idx+1<num_tabs()) ? idx+1 : 0));
+}
+
+/**
+ * Make index tab the active one, starting from 0.
+ */
+void CustTabs::switch_tab(int index)
+{
+   if (index >= 0 && index < num_tabs())
+      switch_tab((CustTabButton*)Pack->child(index));
 }
 
 /**
@@ -1684,3 +1694,14 @@ void a_UIcmd_focus_location(void *vbw)
    BW2UI(bw)->focus_location();
 }
 
+/*
+ * Focus the tab at index, starting from 0.
+ */
+void a_UIcmd_focus_tab(void *vbw, int index)
+{
+   BrowserWindow *bw = (BrowserWindow*)vbw;
+   UI *ui = BW2UI(bw);
+   CustTabs *tabs = ui->tabs();
+   if (tabs)
+      tabs->switch_tab(index);
+}

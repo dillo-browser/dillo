@@ -144,6 +144,16 @@ static const KeyBinding_t default_keys[] = {
    { "zoom-in"      , KEYS_ZOOM_IN      , FL_CTRL   , '=' /* US + */  },
    { "zoom-out"     , KEYS_ZOOM_OUT     , FL_CTRL   , '-'             },
    { "zoom-reset"   , KEYS_ZOOM_RESET   , FL_CTRL   , '0'             },
+   { "focus-tab1"   , KEYS_FOCUS_TAB1   , FL_ALT    , '1'             },
+   { "focus-tab2"   , KEYS_FOCUS_TAB2   , FL_ALT    , '2'             },
+   { "focus-tab3"   , KEYS_FOCUS_TAB3   , FL_ALT    , '3'             },
+   { "focus-tab4"   , KEYS_FOCUS_TAB4   , FL_ALT    , '4'             },
+   { "focus-tab5"   , KEYS_FOCUS_TAB5   , FL_ALT    , '5'             },
+   { "focus-tab6"   , KEYS_FOCUS_TAB6   , FL_ALT    , '6'             },
+   { "focus-tab7"   , KEYS_FOCUS_TAB7   , FL_ALT    , '7'             },
+   { "focus-tab8"   , KEYS_FOCUS_TAB8   , FL_ALT    , '8'             },
+   { "focus-tab9"   , KEYS_FOCUS_TAB9   , FL_ALT    , '9'             },
+   { "focus-tab10"  , KEYS_FOCUS_TAB10  , FL_ALT    , '0'             },
 };
 
 static Dlist *bindings;

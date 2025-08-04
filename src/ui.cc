@@ -794,6 +794,10 @@ int UI::handle(int event)
          const DilloUrl *url = a_History_get_url(NAV_TOP_UIDX(bw));
          a_UIcmd_view_page_source(bw, url);
          ret = 1;
+      } else if (cmd >= KEYS_FOCUS_TAB1 && cmd <= KEYS_FOCUS_TAB10) {
+         int index = cmd - KEYS_FOCUS_TAB1; /* zero-based index */
+         a_UIcmd_focus_tab(a_UIcmd_get_bw_by_widget(this), index);
+         ret = 1;
       }
    } else if (event == FL_RELEASE) {
       if (Fl::event_button() == FL_MIDDLE_MOUSE &&
