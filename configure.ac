@@ -229,7 +229,7 @@ dnl Test for FLTK 1.3 library
 dnl -------------------------
 dnl
 dnl For debugging and to be user friendly
-AC_PATH_PROG(FLTK_CONFIG,fltk-config)
+AC_PATH_PROGS(FLTK_CONFIG,[fltk-config1.3 fltk-config])
 AC_MSG_CHECKING([FLTK 1.3])
 fltk_version="`$FLTK_CONFIG --version 2>/dev/null`"
 case $fltk_version in
