@@ -2,7 +2,7 @@
  * File: dlib.c
  *
  * Copyright (C) 2006-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -536,6 +536,34 @@ const char *dStr_printable(Dstr *in, int maxlen)
    if (out->len >= maxlen)
       dStr_append(out, "...");
    return out->str;
+}
+
+/** Shorten string so it fits in n characters.
+ *
+ * Cuts the string src so that it fits in n by replacing the middle of
+ * the string with "...", but leaving both the start and the end.
+ *
+ * The length n must be at least 9. If the src string is already shorter
+ * than n, it is appended as-is.
+ *
+ * The resulting string is appended to out.
+ */
+void dStr_shorten(Dstr *dst, const char *src, int n)
+{
+   if (n < 9)
+      n = 9;
+
+   int len = strlen(src);
+   if (len > n) {
+      int m = n - 3;
+      int n1 = m / 2; /* First half */
+      int n2 = m - n1; /* Second half */
+      dStr_append_l(dst, src, n1);
+      dStr_append(dst, "...");
+      dStr_append(dst, &src[len - n2]);
+   } else {
+      dStr_append(dst, src);
+   }
 }
 
 /*

@@ -1,3 +1,15 @@
+/*
+ * File: dlib.h
+ *
+ * Copyright (C) 2006-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
 #ifndef __DLIB_H__
 #define __DLIB_H__
 
@@ -124,6 +136,7 @@ void dStr_sprintfa (Dstr *ds, const char *format, ...);
 int  dStr_cmp(Dstr *ds1, Dstr *ds2);
 char *dStr_memmem(Dstr *haystack, Dstr *needle);
 const char *dStr_printable(Dstr *in, int maxlen);
+void dStr_shorten(Dstr *dst, const char *src, int n);
 
 /*
  *-- dList --------------------------------------------------------------------
