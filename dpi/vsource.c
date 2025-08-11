@@ -4,7 +4,7 @@
  * This server is an example. Play with it and modify to your taste.
  *
  * Copyright 2010-2015 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -124,7 +124,7 @@ void send_html_text(Dsh *sh, const char *url, int data_size)
                      "    white-space: pre-wrap;\n"
                      "    font-family: monospace;\n"
                      "    margin: 0;\n"
-                     "    width: 100%;\n"
+                     "    width: 100%%;\n"
                      "  }\n"
                      "  table { border:0 }\n"
                      "  td.num {\n"

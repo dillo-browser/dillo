@@ -14,6 +14,7 @@ dillo-3.3.0 [Unreleased]
  - Ctrl+C copies selected text into the clipboard so Ctrl+V works as expected.
  - Enable IPv6 support by default if supported by the platform.
  - Focus the N-th tab with the Alt+<number> shortcut.
+ - Fix vsource dpi infinite loop on musl due to unescaped "%" printf format.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex
