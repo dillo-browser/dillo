@@ -207,6 +207,7 @@ search_url="Free Dictionary http://www.thefreedictionary.com/%s"
 search_url="Startpage (https) https://www.startpage.com/do/search?query=%s"
 search_url="Marginalia https://marginalia-search.com/search?query=%s"
 search_url="Wiby https://wiby.org/?q=%s"
+search_url="mj Mojeek https://www.mojeek.com/search?q=%s"
 
 # If set, dillo will ask web servers to send pages in this language.
 # This setting does NOT change dillo's user interface.
