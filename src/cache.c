@@ -283,6 +283,9 @@ static int Cache_bufsize(CacheEntry_t *e)
 /**
  * Inject full page content directly into the cache.
  * Used for "about:splash". May be used for "about:cache" too.
+ *
+ * The @param data_ds buffer is copied into the entry buffer, so it is
+ * responsibility of the caller to free it.
  */
 void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
 {
@@ -433,6 +436,7 @@ static int Cache_internal_url(CacheEntry_t *entry)
 
    if (s != NULL) {
       a_Cache_entry_inject(entry->Url, s);
+      dStr_free(s, 1);
       /* Remove InternalUrl */
       entry->Flags = CA_GotHeader + CA_GotLength;
    }
