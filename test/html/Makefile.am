@@ -14,6 +14,7 @@ TESTS = \
 	render/b-div.html \
 	render/div-100-percent-with-padding.html \
 	render/float-img-justify.html \
+	render/floating-blockquote.html \
 	render/github-infinite-loop.html \
 	render/hackernews.html \
 	render/img-aspect-ratio-absolute.html \
