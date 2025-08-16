@@ -30,6 +30,8 @@
 #include "ui.hh" // for (UI *)
 #include "keys.hh"
 #include "timeout.hh"
+#include <stdlib.h>
+#include "dlib/compat.h" /* setenv */
 
 /*
  * Local data types
