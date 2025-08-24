@@ -343,7 +343,9 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    char *charset, *first;
    const char *attrbuf;
 
-   HT2TB(html)->addParbreak (9, html->wordStyle ());
+   /* Don't break paragraph if the form is under display:none */
+   if (a_Html_should_display(html))
+      HT2TB(html)->addParbreak (9, html->wordStyle ());
 
    if (html->InFlags & IN_FORM) {
       BUG_MSG("Nested <form>.");
