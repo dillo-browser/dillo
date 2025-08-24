@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test form inputs with display:none</title>
+    <style>
+      /* * { border: solid 1px blue; margin: 5px; padding: 5px; } */
+      .container { display: none; }
+    </style>
+  </head>
+  <body>
+    <hr>
+    <p>There are some elements below, but you shouldn't see any. Disable CSS to
+    see them.</p>
+    <!-- inherited from container -->
+    <div class="container">
+      <form method="POST" enctype="multipart/form-data">
+        <label for="text">First name:</label>
+        <input type="text" id="text" name="text">
+        <label for="cars">Choose a car:</label>
+        <select id="cars" name="cars">
+          <option value="volvo">Volvo</option>
+          <option value="saab">Saab</option>
+          <option value="fiat">Fiat</option>
+          <option value="audi">Audi</option>
+        </select>
+        <textarea name="message" rows="4" cols="30">
+          The cat was playing in the garden.
+        </textarea>
+        <input type="submit" id="submit" name="submit" value="Submit!">
+        <input type="reset" id="reset" name="reset" value="Reset!">
+        <input type="file" id="file" name="file" value="Select file...">
+        <label>
+          <input type="checkbox" id="checkbox" name="checkbox" value="">
+          Select me!
+        </label>
+        <input type="hidden" id="hidden" name="hidden" value="Hidden value">
+        <button>Hello</button>
+      </form>
+    </div>
+    <hr>
+    <p>The ones below are outside the form</p>
+    <input style="display: none" type="text" name="out-text">
+    <hr>
+  </body>
+</html>
