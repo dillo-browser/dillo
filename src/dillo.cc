@@ -69,6 +69,7 @@
 #include "dw/table.hh"
 
 static volatile sig_atomic_t sig_reload = 0;
+static volatile sig_atomic_t sig_exit = 0;
 
 /**
  * Command line options structure
@@ -155,6 +156,11 @@ static void handler_usr1(int signum)
    sig_reload = 1;
 }
 
+static void handler_usr2(int signum)
+{
+   sig_exit = 1;
+}
+
 /**
  * Establish SIGCHLD handler
  */
@@ -173,6 +179,15 @@ static void est_sigchld(void)
    }
 
    if (signal(SIGUSR1, handler_usr1) == SIG_ERR) {
+      perror("signal failed");
+      exit(1);
+   }
+
+   /* For now we use SIGUSR2 to exit cleanly, so we can run the
+    * automatic HTML test and check that there are no leaks. In the
+    * future we should use a better communication mechanism. This
+    * feature is not documented, as it is intended for testing only. */
+   if (signal(SIGUSR2, handler_usr2) == SIG_ERR) {
       perror("signal failed");
       exit(1);
    }
@@ -605,6 +620,8 @@ int main(int argc, char **argv)
       if (sig_reload) {
          sig_reload = 0;
          a_UIcmd_reload_all_active();
+      } else if (sig_exit) {
+         break;
       }
    }
 
