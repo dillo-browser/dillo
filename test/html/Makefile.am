@@ -7,6 +7,7 @@ LOG_COMPILER = $(srcdir)/driver.sh
 
 EXTRA_DIST = \
 	driver.sh \
+	leakfilter.awk \
 	manual \
 	render
 
