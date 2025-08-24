@@ -63,6 +63,35 @@ jobs:
 #       name: upload-html-test-results
 #       path: |
 #         build/test/html
+  ubuntu-latest-memory-leaks:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Update package lists
+      run: sudo apt update
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libssl-dev libpng-dev libjpeg-dev libwebp-dev libbrotli-dev xvfb x11-apps x11-utils imagemagick
+    - name: autogen
+      run: ./autogen.sh
+    - name: Make install dir
+      run: mkdir install build
+    - name: configure
+      run: cd build && ../configure CFLAGS="-fsanitize=address" CXXFLAGS="-fsanitize=address" --prefix=$(readlink -f ../install) --enable-html-tests
+    - name: make
+      run: cd build && make
+    - name: make install
+      run: cd build && make install
+    - name: Copy config to .dillo
+      run: |
+        mkdir -p ~/.dillo/
+        cp install/etc/dillo/* ~/.dillo/
+    - name: make check
+      run: |
+        export DILLOBIN=$(readlink -f install/bin/dillo)
+        cd build && make check || (cat test/html/test-suite.log; false)
+        export DILLOBIN=
   ubuntu-latest-no-tls:
     needs: ubuntu-latest-html-tests
     runs-on: ubuntu-latest
