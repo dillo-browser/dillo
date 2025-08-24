@@ -2,7 +2,7 @@
 #
 # File: driver.sh
 #
-# Copyright (C) 2023-2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+# Copyright (C) 2023-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +13,10 @@ set -e
 set -x
 
 DILLOBIN=${DILLOBIN:-$TOP_BUILDDIR/src/dillo}
+LEAKFILTER=${LEAKFILTER:-$TOP_SRCDIR/test/html/leakfilter.awk}
+
+# Clean asan options if set
+unset ASAN_OPTIONS
 
 if [ ! -e $DILLOBIN ]; then
   echo missing dillo binary, set DILLOBIN with the path to dillo
@@ -27,8 +31,9 @@ fi
 function render_page() {
   htmlfile="$1"
   outpic="$2"
+  outerr="$2.err"
 
-  "$DILLOBIN" -f "$htmlfile" &
+  "$DILLOBIN" -f "$htmlfile" 2> "$outerr" &
   dillopid=$!
 
   # TODO: We need a better system to determine when the page loaded
@@ -53,7 +58,12 @@ function render_page() {
   fi
   xwd -id "$winid" -silent | ${magick_bin} xwd:- png:${outpic}
 
-  kill "$dillopid"
+  # Exit cleanly
+  kill -USR2 "$dillopid"
+
+  # Dillo may fail due to leaks, but we will check them manually
+  wait "$dillopid" || true
+  awk -f "$LEAKFILTER" < "$outerr"
 }
 
 function test_file() {

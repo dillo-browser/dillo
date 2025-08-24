@@ -1,3 +1,23 @@
+/*
+ * Dillo Widget
+ *
+ * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "lout/object.hh"
 #include "lout/container.hh"
 
@@ -24,7 +44,9 @@ void testHashSet ()
    h.put (new String ("two"));
    h.put (new String ("three"));
 
-   puts (h.toString());
+   char *p;
+   puts (p = h.toString());
+   dFree(p);
 }
 
 void testHashTable ()
@@ -37,13 +59,16 @@ void testHashTable ()
    h.put (new String ("two"), new Integer (2));
    h.put (new String ("three"), new Integer (3));
 
-   puts (h.toString());
+   char *p;
+   puts (p = h.toString());
+   dFree(p);
 
    h.put (new String ("one"), new Integer (4));
    h.put (new String ("two"), new Integer (5));
    h.put (new String ("three"), new Integer (6));
 
-   puts (h.toString());
+   puts (p = h.toString());
+   dFree(p);
 }
 
 void testVector1 ()
@@ -54,41 +79,53 @@ void testVector1 ()
 
    Vector<String> v (true, 1);
 
+   char *p;
+
    v.put (new String ("one"));
    v.put (new String ("two"));
    v.put (new String ("three"));
-   puts (v.toString());
+   puts (p = v.toString());
+   dFree(p);
 
    v.sort (&reverse);
-   puts (v.toString());
+   puts (p = v.toString());
+   dFree(p);
 
    v.sort ();
-   puts (v.toString());
+   puts (p = v.toString());
+   dFree(p);
 }
 
 void testVector2 ()
 {
    puts ("--- testVector (2) ---");
 
-   Vector<String> v (true, 1);
+   Vector<String> v (1, true);
+   char *p;
 
    v.insertSorted (new String ("one"));
-   puts (v.toString());
+   puts (p = v.toString());
+   dFree(p);
 
    v.insertSorted (new String ("two"));
-   puts (v.toString());
+   puts (p = v.toString());
+   dFree(p);
 
    v.insertSorted (new String ("three"));
-   puts (v.toString());
+   puts (p = v.toString());
+   dFree(p);
 
    v.insertSorted (new String ("five"));
-   puts (v.toString());
+   puts (p = v.toString());
+   dFree(p);
 
    v.insertSorted (new String ("six"));
-   puts (v.toString());
+   puts (p = v.toString());
+   dFree(p);
 
    v.insertSorted (new String ("four"));
-   puts (v.toString());
+   puts (p = v.toString());
+   dFree(p);
 
    for (int b = 0; b < 2; b++) {
       bool mustExist = b;

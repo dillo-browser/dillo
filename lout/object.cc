@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,12 +77,11 @@ Object *Object::clone()
  * \brief Use object::Object::intoStringBuffer to return a textual
  *    representation of the object.
  *
- * The caller does not have to free the memory, object::Object is responsible
+ * The caller must free the memory, object::Object is not responsible
  * for this.
  */
-const char *Object::toString()
+char *Object::toString()
 {
-   /** \todo garbage! */
    misc::StringBuffer sb;
    intoStringBuffer(&sb);
    char *s = dStrdup(sb.getChars());
