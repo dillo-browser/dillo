@@ -574,7 +574,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       }
 
       /* Don't add to textbox if we are under a display:none element */
-      if (!S_TOP(html)->display_none)
+      if (a_Html_should_display(html))
          HT2TB(html)->addWidget (embed, html->backgroundStyle());
    }
    dFree(type);
@@ -687,7 +687,7 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
       textres->setEditable(false);
    Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
 
-   if (!S_TOP(html)->display_none)
+   if (a_Html_should_display(html))
       HT2TB(html)->addWidget (embed, html->backgroundStyle ());
 
    dFree(name);
@@ -781,7 +781,7 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
                                         attrbuf);
    }
 
-   if (!S_TOP(html)->display_none)
+   if (a_Html_should_display(html))
       HT2TB(html)->addWidget (embed, html->backgroundStyle ());
 
    Html_add_input(html, type, embed, name, NULL, false);
