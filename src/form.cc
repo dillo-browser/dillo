@@ -2,7 +2,7 @@
  * File: form.cc
  *
  * Copyright 2008 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -485,7 +485,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       resource = factory->createEntryResource(size, false, name, NULL);
    } else if (!dStrAsciiCasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
-      init_str = (value) ? value : dStrdup("submit");
+      init_str = (value) ? value : dStrdup("Submit");
       resource = factory->createLabelButtonResource(init_str);
    } else if (!dStrAsciiCasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_RESET;
