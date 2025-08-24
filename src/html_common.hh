@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2008-2016 Jorge Arellano Cid <jcid@dillo.org>
  * Copyright (C) 2008-2014 Johannes Hofmann <Johannes.Hofmann@gmx.de>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -288,5 +288,6 @@ bool a_Html_tag_set_valign_attr(DilloHtml *html,
                                 const char *tag, int tagsize);
 
 void a_Html_load_stylesheet(DilloHtml *html, DilloUrl *url);
+bool a_Html_should_display(DilloHtml *html);
 
 #endif /* __HTML_COMMON_HH__ */

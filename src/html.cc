@@ -4026,6 +4026,17 @@ static void Html_display_listitem(DilloHtml *html)
    }
 }
 
+bool a_Html_should_display(DilloHtml *html)
+{
+   if (S_TOP(html)->display_none)
+      return false;
+
+   if (html->style()->display == DISPLAY_NONE)
+      return false;
+
+   return true;
+}
+
 /**
  * Process a tag, given as 'tag' and 'tagsize'. -- tagsize is [1 based]
  * ('tag' must include the enclosing angle brackets)
