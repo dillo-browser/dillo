@@ -31,8 +31,9 @@ fi
 function render_page() {
   htmlfile="$1"
   outpic="$2"
+  outerr="$2.err"
 
-  "$DILLOBIN" -f "$htmlfile" 2> dillo.err &
+  "$DILLOBIN" -f "$htmlfile" 2> "$outerr" &
   dillopid=$!
 
   # TODO: We need a better system to determine when the page loaded
@@ -62,7 +63,7 @@ function render_page() {
 
   # Dillo may fail due to leaks, but we will check them manually
   wait "$dillopid" || true
-  awk -f "$LEAKFILTER" < dillo.err
+  awk -f "$LEAKFILTER" < "$outerr"
 }
 
 function test_file() {
