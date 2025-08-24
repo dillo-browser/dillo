@@ -953,12 +953,7 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
 
-      /* If we are inside a display:none container, instead of creating
-       * a new hierarchy of elements, add a simple button. */
-      if (S_TOP(html)->display_none) {
-         Resource *resource = factory->createLabelButtonResource("dummy");
-         embed = new Embed(resource);
-      } else {
+      if (a_Html_should_display(html)) {
          /* We used to have Textblock (prefs.limit_text_width, ...) here,
           * but it caused 100% CPU usage.
           */
@@ -969,6 +964,13 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
          embed = new Embed(resource);
          HT2TB(html)->addWidget (embed, html->backgroundStyle ());
          S_TOP(html)->textblock = html->dw = page;
+      } else {
+         /* If we are inside a display:none container, instead of
+          * creating a new hierarchy of elements, add a simple button. */
+         Resource *resource = factory->createLabelButtonResource("dummy");
+         embed = new Embed(resource);
+         /* Don't add the embed to the current textblock, it is only
+          * used to hold the name and value below. */
       }
 
       /* Always add the input element, so is present in the form */
