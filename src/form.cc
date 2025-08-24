@@ -2,7 +2,7 @@
  * File: form.cc
  *
  * Copyright 2008 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -343,7 +343,9 @@ void Html_tag_open_form(DilloHtml *html, const char *tag, int tagsize)
    char *charset, *first;
    const char *attrbuf;
 
-   HT2TB(html)->addParbreak (9, html->wordStyle ());
+   /* Don't break paragraph if the form is under display:none */
+   if (a_Html_should_display(html))
+      HT2TB(html)->addParbreak (9, html->wordStyle ());
 
    if (html->InFlags & IN_FORM) {
       BUG_MSG("Nested <form>.");
@@ -485,7 +487,7 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       resource = factory->createEntryResource(size, false, name, NULL);
    } else if (!dStrAsciiCasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
-      init_str = (value) ? value : dStrdup("submit");
+      init_str = (value) ? value : dStrdup("Submit");
       resource = factory->createLabelButtonResource(init_str);
    } else if (!dStrAsciiCasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_RESET;
@@ -572,7 +574,10 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
          html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
                                            attrbuf);
       }
-      HT2TB(html)->addWidget (embed, html->backgroundStyle());
+
+      /* Don't add to textbox if we are under a display:none element */
+      if (a_Html_should_display(html))
+         HT2TB(html)->addWidget (embed, html->backgroundStyle());
    }
    dFree(type);
    dFree(name);
@@ -684,7 +689,9 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
       textres->setEditable(false);
    Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
 
-   HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+   if (a_Html_should_display(html))
+      HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+
    dFree(name);
 }
 
@@ -775,7 +782,9 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
       html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
                                         attrbuf);
    }
-   HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+
+   if (a_Html_should_display(html))
+      HT2TB(html)->addWidget (embed, html->backgroundStyle ());
 
    Html_add_input(html, type, embed, name, NULL, false);
    a_Html_stash_init(html);
@@ -932,10 +941,8 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
       /* Render the button */
-      Widget *page;
       Embed *embed;
       const char *attrbuf;
-      char *name, *value;
 
       if (prefs.show_tooltip &&
           (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
@@ -943,24 +950,32 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
          html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
                                            attrbuf);
       }
-      /* We used to have Textblock (prefs.limit_text_width, ...) here,
-       * but it caused 100% CPU usage.
-       */
-      page = new Textblock (false, true);
-      page->setStyle (html->backgroundStyle ());
 
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
-      Resource *resource = factory->createComplexButtonResource(page, true);
-      embed = new Embed(resource);
-// a_Dw_button_set_sensitive (DW_BUTTON (button), FALSE);
 
-      HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+      if (a_Html_should_display(html)) {
+         /* We used to have Textblock (prefs.limit_text_width, ...) here,
+          * but it caused 100% CPU usage.
+          */
+         Widget *page = new Textblock (false, true);
+         page->setStyle (html->backgroundStyle ());
 
-      S_TOP(html)->textblock = html->dw = page;
+         ComplexButtonResource *resource = factory->createComplexButtonResource(page, true);
+         embed = new Embed(resource);
+         HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+         S_TOP(html)->textblock = html->dw = page;
+      } else {
+         /* If we are inside a display:none container, instead of
+          * creating a new hierarchy of elements, add a simple button. */
+         Resource *resource = factory->createLabelButtonResource("dummy");
+         embed = new Embed(resource);
+         /* Don't add the embed to the current textblock, it is only
+          * used to hold the name and value below. */
+      }
 
-      value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
-      name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
-
+      /* Always add the input element, so is present in the form */
+      char *value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
+      char *name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
       Html_add_input(html, inp_type, embed, name, value, FALSE);
       dFree(name);
       dFree(value);
