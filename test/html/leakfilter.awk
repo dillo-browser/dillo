@@ -1,5 +1,5 @@
 # Detect beginning of leak message
-/^Direct leak/                  { msg=msg "\n" $0; inleak=1; next }
+/^(Direct|Indirect) leak/       { msg=msg "\n" $0; inleak=1; next }
 
 # Ignore anything coming from libfontconfig.so
 inleak && /libfontconfig.so/    { inleak=0; msg="" }
