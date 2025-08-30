@@ -621,7 +621,8 @@ int main(int argc, char **argv)
          sig_reload = 0;
          a_UIcmd_reload_all_active();
       } else if (sig_exit) {
-         break;
+         sig_exit = 0;
+         a_UIcmd_close_all_bw(NULL);
       }
    }
 
