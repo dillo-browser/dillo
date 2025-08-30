@@ -16,6 +16,7 @@
       <form method="POST" enctype="multipart/form-data">
         <label for="text">First name:</label>
         <input type="text" id="text" name="text">
+        <input type="password" id="password" name="password">
         <label for="cars">Choose a car:</label>
         <select id="cars" name="cars">
           <option value="volvo">Volvo</option>
@@ -33,7 +34,18 @@
           <input type="checkbox" id="checkbox" name="checkbox" value="">
           Select me!
         </label>
+        <label>
+          <input type="radio" id="radio-fast" name="radio" value="fast" checked>
+          Fast
+        </label>
+        <label>
+          <input type="radio" id="radio-slow" name="radio" value="slow">
+          Slow
+        </label>
         <input type="hidden" id="hidden" name="hidden" value="Hidden value">
+        <input type="image" id="image" name="image" src="pic.png">
+        <input type="button" id="button" name="button" value="Button!">
+        <input type="unknown" id="unknown" name="unknown">
         <button>Hello</button>
       </form>
     </div>
@@ -41,6 +53,7 @@
     <p>The ones below are outside the form</p>
     <input style="display: none" type="text" name="out-text">
     <button style="display: none">Look at this <img src="pic.png"> image</button>
+    <isindex style="display: none" prompt="Search for " id="isindex">
     <hr>
   </body>
 </html>
