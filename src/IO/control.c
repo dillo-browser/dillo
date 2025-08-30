@@ -47,7 +47,7 @@ static FILE *bw_waiting_file = NULL;
 
 static void Control_read_cb(int fd, void *data)
 {
-   MSG("Control_read_cb called\n");
+   _MSG("Control_read_cb called\n");
    int st;
    char buf[1024];
    const int buf_sz = 1024;
@@ -65,7 +65,7 @@ static void Control_read_cb(int fd, void *data)
 
    do {
       st = read(new_fd, buf, buf_sz);
-      MSG("read = %d\n", st);
+      _MSG("read = %d\n", st);
       if (st < 0) {
          if (errno == EINTR) {
             continue;
@@ -78,7 +78,7 @@ static void Control_read_cb(int fd, void *data)
       }
    } while (st == buf_sz);
 
-   MSG("got msg: %s\n", dstr->str);
+   _MSG("got msg: %s\n", dstr->str);
 
    char *cmd = dstr->str;
    for (char *p = cmd; *p != '\0'; p++) {
@@ -100,6 +100,8 @@ static void Control_read_cb(int fd, void *data)
 
    if (strcmp(cmd, "ping") == 0) {
       fprintf(f, "pong\n");
+   } else if (strcmp(cmd, "pid") == 0) {
+      fprintf(f, "%d\n", getpid());
    } else if (strcmp(cmd, "reload") == 0) {
       a_UIcmd_reload_all_active();
       fprintf(f, "ok\n");
