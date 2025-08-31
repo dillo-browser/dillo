@@ -18,6 +18,7 @@ TESTS = \
 	render/form-display-none.html \
 	render/github-infinite-loop.html \
 	render/hackernews.html \
+	render/hr.html \
 	render/img-aspect-ratio-absolute.html \
 	render/img-aspect-ratio-div.html \
 	render/img-aspect-ratio-mix-border.html \

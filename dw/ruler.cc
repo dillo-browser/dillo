@@ -2,6 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +42,10 @@ Ruler::~Ruler ()
 
 void Ruler::sizeRequestSimpl (core::Requisition *requisition)
 {
-   requisition->width = lout::misc::max (getAvailWidth (true), boxDiffWidth ());
+   /* The ruler will be drawn by using a 1px border, so we substract the
+    * border from the available width when computing the content width. */
+   int w = lout::misc::max(0, getAvailWidth(true) - boxDiffWidth());
+   requisition->width = w;
    requisition->ascent = boxOffsetY ();
    requisition->descent = boxRestHeight ();
 }

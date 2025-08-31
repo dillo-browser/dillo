@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test hr length</title>
+  </head>
+<style>
+div {
+  border: 1px inset;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+</style>
+  <body>
+    <!--
+      Default canvas width is 780, with 5 pixels of margin for body on each
+      side, so we have 770 pixels of space available before the scrollbar is
+      shown. The ruler needs one pixel on each side by default, so 768 px is the
+      available width.
+    -->
+    <div style="width: 768px"></div>
+    <!-- Same but with 20 pixels for the ruler border -->
+    <div style="width: 750px; border-width: 10px"></div>
+  </body>
+</html>
