@@ -34,6 +34,7 @@
 
 #include "iowatch.hh"
 #include "uicmd.hh"
+#include "capi.h"
 #include "dlib/dlib.h"
 #include "msg.h"
 
@@ -112,6 +113,14 @@ static void Control_read_cb(int fd, void *data)
       fprintf(f, "ok\n");
    } else if (strcmp(cmd, "url") == 0) {
       fprintf(f, "%s\n", a_UIcmd_get_location_text(bw));
+   } else if (strcmp(cmd, "dump") == 0) {
+      DilloUrl *url = a_Url_new(a_UIcmd_get_location_text(bw), NULL);
+      char *buf;
+      int size;
+      if (a_Capi_get_buf(url, &buf, &size)) {
+         fwrite(buf, 1, size, f);
+      }
+      a_Url_free(url);
    } else if (strcmp(cmd, "quit") == 0) {
       /* FIXME: May create confirmation dialog */
       a_UIcmd_close_all_bw(NULL);
