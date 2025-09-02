@@ -1,0 +1,176 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: cmake
+
+jobs:
+  ubuntu-latest-html-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev libssl-dev libwebp-dev xvfb x11-apps x11-utils imagemagick ninja-build
+
+    - name: config
+      run: cmake -Bbuild -GNinja -DDILLO_BUILD_TESTS=ON -DENABLE_HTML_TESTS=ON -DCMAKE_INSTALL_PREFIX=$(readlink -f install)
+    - name: build
+      run: cmake --build build --parallel
+    - name: install
+      run: cmake --install build
+    - name: Copy config to .dillo
+      run: |
+        mkdir -p ~/.dillo/
+        cp install/etc/dillo/* ~/.dillo/
+    - name: make test
+      continue-on-error: true
+      run: |
+        export DILLOBIN=$(readlink -f install/bin/dillo)
+        cd build && ninja test || (cat test/html/test-suite.log; false)
+        export DILLOBIN=
+  ubuntu-latest-no-tls:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=OFF
+    - name: make
+      run: cmake --build build --parallel
+  ubuntu-latest-mbedtls2:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev libmbedtls-dev
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=ON
+    - name: make
+      run: cmake --build build --parallel
+  ubuntu-latest-openssl-3:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: sudo apt install -y libfltk1.3-dev libx11-dev libxext-dev libxft-dev libxinerama-dev libxcursor-dev libxrender-dev libxfixes-dev libpango1.0-dev libgl1-mesa-dev libglu1-mesa-dev libssl-dev
+    - name: configure
+      run: cmake -Bbuild -DENABLE_TLS=ON -DENABLE_MBEDTLS=OFF
+    - name: make
+      run: cmake --build build --parallel
+  alpine-mbedtls-3_6_0:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: jirutka/setup-alpine@v1
+      with:
+        packages: >
+          git
+          build-base
+          cmake
+          fltk-dev
+          fltk-fluid
+          libfltk_cairo
+          pango-dev
+          fontconfig-dev
+          libxinerama-dev 
+          libxfixes-dev 
+          libxcursor-dev 
+          mesa-gl
+          libpng-dev
+          libjpeg-turbo-dev
+          libwebp-dev
+          mbedtls-dev
+    - run: |
+        cmake -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_OPENSSL=OFF
+        cmake --build build --parallel
+      shell: alpine.sh {0}
+  macOS-13-openssl-1-1:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install dependencies
+      run: |
+        pkg-config --debug libwebp
+        brew install cmake fltk@1.3
+        brew link fltk@1.3
+    - name: Build
+      run: |
+        export LDFLAGS="-L/usr/local/opt/fltk@1.3/lib"
+        export CPPFLAGS="-I/usr/local/opt/fltk@1.3/include"
+        cmake -DCMAKE_PREFIX_PATH=/opt/homebrew -Bbuild -DENABLE_TLS=ON
+        LIBRARY_PATH=$LIBRARY_PATH:/usr/local/opt/webp/lib cmake --build build --parallel
+  freebsd-14-openssl-3:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: FreeBSD VM build
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        release: "14.0"
+        usesh: true
+        prepare: |
+          set -x
+          pkg install -y git cmake fltk jpeg-turbo png cairo pango fontconfig freetype2 libX11 libXext libXfixes libXdamage mesa-libs pkgconf gmake libXres binutils webp libiconv openssl
+        run: |
+          set -x
+          pwd
+          freebsd-version
+          CFLAGS='-I/usr/local/include' CXXFLAGS='-I/usr/local/include' LDFLAGS='-L/usr/local/lib' cmake -Bbuild -DENABLE_TLS=ON && cmake --build build
+          ldd build/src/dillo
+  windows-mbedtls:
+    runs-on: windows-latest
+    steps:
+    - run: git config --global core.autocrlf input
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    - uses: cygwin/cygwin-install-action@master
+      with:
+        packages: git gcc-core gcc-g++ cmake make ninja libfltk-devel fluid zlib-devel mbedtls-devel libiconv-devel libpng-devel libjpeg-devel libwebp-devel libgif-devel libX11-devel libXcursor-devel libXext-devel libXfixes-devel libXft-devel libXinerama-devel libXrender-devel libfontconfig-devel libpango1.0-devel libcairo-devel
+    - shell: C:\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+      run: |
+        set -x
+        cd ${GITHUB_WORKSPACE}
+        pwd
+        ls -l
+        CXXFLAGS='-DHAVE_TRUNC=1' cmake -GNinja -DFLTK_BACKEND_X11=ON -DFLTK_USE_PANGO=ON -DFLTK_BUILD_GL=OFF -Bbuild -DENABLE_TLS=ON -DENABLE_OPENSSL=OFF && cmake --build build
+  ubuntu-arm-latest-openssl:
+    name: Check-arm64
+    runs-on: ubuntu-22.04
+    env:
+      CC: aarch64-linux-gnu-gcc
+      CXX: aarch64-linux-gnu-g++
+      PKG_CONFIG_PATH: "/usr/lib/aarch64-linux-gnu/pkgconfig/:${PKG_CONFIG_PATH}"
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Download deps
+        run: |
+          git submodule update --init --recursive
+          sudo dpkg --add-architecture arm64
+          echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ $(lsb_release -c -s) main restricted universe multiverse" | sudo tee /etc/apt/sources.list
+          echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ $(lsb_release -c -s)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ $(lsb_release -c -s)-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ $(lsb_release -c -s)-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $(lsb_release -c -s) main multiverse universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $(lsb_release -c -s)-security main multiverse universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $(lsb_release -c -s)-backports main multiverse universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $(lsb_release -c -s)-updates main multiverse universe" | sudo tee -a /etc/apt/sources.list
+          sudo apt-get update -y
+          sudo apt-get install -y libpango1.0-dev:arm64 libx11-dev:arm64 libxext-dev:arm64 libxft-dev:arm64 libxinerama-dev:arm64 libxcursor-dev:arm64 libxrender-dev:arm64 libxfixes-dev:arm64 libpng-dev:arm64 libasound2-dev:arm64 libssl-dev:arm64 libwebp-dev:arm64 libjpeg-dev:arm64 libgl1-mesa-dev:arm64 libglu1-mesa-dev:arm64
+          sudo apt-get install g++-aarch64-linux-gnu ninja-build
+      - run: cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -GNinja -Bbuild -DENABLE_FLTK_1_4=ON -DENABLE_TLS=ON && cmake --build build --parallel
+
