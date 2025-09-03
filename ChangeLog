@@ -18,6 +18,7 @@ dillo-3.3.0 [Unreleased]
  - Add about:cache and about:dicache pages to show internal cache details.
  - Add mojeek search engine with shortcut "mj".
  - Hide form elements (like buttons and inputs) with display:none in CSS.
+ - Increase margin in location bar to make it easier to select with the mouse.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex

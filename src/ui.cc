@@ -90,13 +90,26 @@ static struct iconset *icons = &standard_icons;
 
 //----------------------------------------------------------------------------
 
+#define DILLO_INPUTBOX (Fl_Boxtype) (FL_FREE_BOXTYPE + 1)
+
 /**
  * Used to avoid certain shortcuts in the location bar
  */
 class CustInput : public TipWinInput {
 public:
+   static const int margin_x = 3;
    CustInput (int x, int y, int w, int h, const char* l=0) :
-      TipWinInput(x,y,w,h,l) {};
+      TipWinInput(x,y,w,h,l) {
+         /* Increase the margin of the current box by making a new clone
+          * of the current box with extra margin on dx. */
+         Fl_Boxtype b = box();
+         Fl::set_boxtype(DILLO_INPUTBOX, Fl::get_boxtype(b),
+               Fl::box_dx(b) + margin_x,
+               Fl::box_dy(b),
+               Fl::box_dw(b) + margin_x,
+               Fl::box_dh(b));
+         box(DILLO_INPUTBOX);
+      }
    virtual int handle(int e);
 };
 
