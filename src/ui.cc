@@ -36,6 +36,13 @@
 #include "history.h"
 #include "nav.h"
 
+/* FLTK versions prior to 1.3.10 didn't define back or forward buttons.
+ * They are now mapped to 4 and 5, but the raw values for X11 are 8 and 9. */
+#if (FL_MAJOR_VERSION == 1 && FL_MINOR_VERSION == 3 && FL_PATCH_VERSION < 10)
+#define FL_BACK_MOUSE    8
+#define FL_FORWARD_MOUSE 9
+#endif
+
 struct iconset {
    Fl_Image *ImgMeterOK, *ImgMeterBug,
             *ImgHome, *ImgReload, *ImgSave, *ImgBook, *ImgTools,
@@ -821,6 +828,16 @@ int UI::handle(int event)
           prefs.middle_click_drags_page == 0) {
          /* nobody claimed the event; try paste */
          paste_url();
+         ret = 1;
+      }
+   } else if (event == FL_PUSH) {
+      BrowserWindow *bw = a_UIcmd_get_bw_by_widget(this);
+      _MSG("pressed button %d\n", Fl::event_button());
+      if (Fl::event_button() == FL_BACK_MOUSE) {
+         a_UIcmd_back(bw);
+         ret = 1;
+      } else if (Fl::event_button() == FL_FORWARD_MOUSE) {
+         a_UIcmd_forw(bw);
          ret = 1;
       }
    }
