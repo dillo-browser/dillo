@@ -23,6 +23,9 @@
 #include <stdlib.h>      /* for exit */
 #include <assert.h>      /* for assert */
 #include <sys/stat.h>    /* for umask */
+#include <sys/select.h>  /* for select */
+#include <sys/time.h>    /* for struct timeval */
+#include <sys/types.h>   /* for fd_set */
 
 #include "dpid_common.h"
 #include "dpid.h"
