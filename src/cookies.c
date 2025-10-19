@@ -3,6 +3,7 @@
  *
  * Copyright 2001 Lars Clausen   <lrclause@cs.uiuc.edu>
  *                Jörgen Viksell <jorgen.viksell@telia.com>
+ * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -182,7 +183,8 @@ void a_Cookies_set(Dlist *cookie_strings, const DilloUrl *set_url,
 /**
  * Return a string containing cookie data for an HTTP query.
  */
-char *a_Cookies_get_query(const DilloUrl *query_url, const DilloUrl *requester)
+char *a_Cookies_get_query(const DilloUrl *query_url, const DilloUrl *requester,
+                          int is_root_url)
 {
    char *cmd, *dpip_tag, *query;
    const char *path;
@@ -199,8 +201,8 @@ char *a_Cookies_get_query(const DilloUrl *query_url, const DilloUrl *requester)
 
    if (requester == NULL) {
       /* request made by user */
-   } else if (!a_Url_same_organization(query_url, requester)) {
-      MSG("Cookies: not sent for request by '%s' for '%s'\n",
+   } else if (!is_root_url && !a_Url_same_organization(query_url, requester)) {
+      MSG("Cookies: not sent for non-root request by '%s' for '%s'\n",
           URL_HOST(requester), URL_HOST(query_url));
       return dStrdup("");
    }

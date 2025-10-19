@@ -413,7 +413,7 @@ static Dstr *Http_make_query_str(DilloWeb *web, bool_t use_proxy, bool_t use_tls
                     URL_QUERY(url));
    }
 
-   cookies = a_Cookies_get_query(url, web->requester);
+   cookies = a_Cookies_get_query(url, web->requester, web->flags & WEB_RootUrl);
    auth = a_Auth_get_auth_str(url, request_uri->str);
    referer = Http_get_referer(url);
    if (URL_FLAGS(url) & URL_Post) {
@@ -427,7 +427,7 @@ static Dstr *Http_make_query_str(DilloWeb *web, bool_t use_proxy, bool_t use_tls
          "%s" /* language */
          "Accept-Encoding: gzip, deflate"
 #ifdef ENABLE_BROTLI
-	 ", br"
+         ", br"
 #endif
          "\r\n"
          "%s" /* auth */

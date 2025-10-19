@@ -872,11 +872,23 @@ static void Cache_parse_header(CacheEntry_t *entry)
          if (client->Url == entry->Url) {
             DilloWeb *web = client->Web;
 
-            if (!web->requester ||
-                a_Url_same_organization(entry->Url, web->requester)) {
-               /* If cookies are third party, don't even consider them. */
-               char *server_date = Cache_parse_field(header, "Date");
+            /* Only set cookies if any of:
+             * - User made request (requester == NULL)
+             * - Is a redirect for the root url (safe)
+             * - Same organization (first party cookie)
+             *
+             * Always block third party cookies from images or css files which
+             * are commonly used to track users (those that don't have the
+             * WEB_RootUrl flag and come from a different organization).
+             * https://en.wikipedia.org/wiki/Third-party_cookies
+             * https://support.mozilla.org/en-US/kb/third-party-trackers
+             */
+            int safe_redirect =
+               entry->Flags & CA_Redirect && web->flags & WEB_RootUrl;
 
+            if (!web->requester || safe_redirect ||
+                a_Url_same_organization(entry->Url, web->requester)) {
+               char *server_date = Cache_parse_field(header, "Date");
                a_Cookies_set(Cookies, entry->Url, server_date);
                dFree(server_date);
                break;
@@ -1124,8 +1136,7 @@ static int Cache_redirect(CacheEntry_t *entry, int Flags, BrowserWindow *bw)
        (entry->Flags & CA_ForceRedirect || entry->Flags & CA_TempRedirect ||
         !entry->Data->len || entry->Data->len < 1024)) {
 
-      _MSG(">>>> Redirect from: %s\n to %s <<<<\n",
-           URL_STR_(entry->Url), URL_STR_(entry->Location));
+      MSG("Redirect to: %s\n", URL_STR_(entry->Location));
       _MSG("%s", entry->Header->str);
 
       if (Flags & WEB_RootUrl) {

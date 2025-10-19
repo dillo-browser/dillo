@@ -1,5 +1,5 @@
 /*
- * File: cache.c
+ * File: cache.h
  *
  * Copyright 2000-2009 Jorge Arellano Cid <jcid@dillo.org>
  * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
