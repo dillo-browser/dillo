@@ -1745,3 +1745,31 @@ void a_UIcmd_focus_tab(void *vbw, int index)
    if (tabs)
       tabs->switch_tab(index);
 }
+
+int a_UIcmd_by_name(void *vbw, const char *cmd_name)
+{
+   BrowserWindow *bw = (BrowserWindow*)vbw;
+   KeysCommand_t cmd = Keys::getCmdCode(cmd_name);
+   if (cmd == KEYS_INVALID)
+      return -1;
+
+   UI *ui = BW2UI(bw);
+   CustTabs *tabs = ui->tabs();
+
+   if (cmd == KEYS_NEW_TAB) {
+      a_UIcmd_open_url_nt(bw, NULL, 1);
+   } else if (cmd == KEYS_CLOSE_TAB) {
+      a_UIcmd_close_bw(bw);
+   } else if (cmd == KEYS_LEFT_TAB) {
+      tabs->prev_tab();
+   } else if (cmd == KEYS_RIGHT_TAB) {
+      tabs->next_tab();
+   } else if (cmd == KEYS_NEW_WINDOW) {
+      a_UIcmd_open_url_nw(bw, NULL);
+   } else {
+      /* Unknown command or not implemented */
+      return -1;
+   }
+
+   return 0;
+}

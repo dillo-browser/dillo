@@ -126,6 +126,10 @@ static void Control_read_cb(int fd, void *data)
       /* FIXME: May create confirmation dialog */
       a_UIcmd_close_all_bw(NULL);
       fprintf(f, "0\n");
+   } else if (strncmp(cmd, "cmd ", 4) == 0) {
+      const char *cmdname = cmd + 4;
+      int ret = a_UIcmd_by_name(bw, cmdname);
+      fprintf(f, "%d\n", ret == 0 ? 0 : 1);
    } else if (strcmp(cmd, "wait") == 0) {
       if (a_UIcmd_has_finished(bw)) {
          fprintf(f, "0\n");

@@ -69,7 +69,6 @@ class Keys {
 private:
    static int nodeByKeyCmp(const void *node, const void *key);
    static void delKeyCmd(int key, int mod);
-   static KeysCommand_t getCmdCode(const char *symbolName);
    static int getKeyCode(char *keyName);
    static int getModifier(char *modifierName);
    static void parseKey(char *key, char *symbol);
@@ -79,6 +78,7 @@ public:
    static void free();
    static void parse(FILE *fp);
    static KeysCommand_t getKeyCmd(void);
+   static KeysCommand_t getCmdCode(const char *symbolName);
    static int getShortcut(KeysCommand_t cmd);
    static void genAboutKeys(void);
 };
