@@ -56,7 +56,7 @@ char *get_unique_dillo_pid(void)
    }
 
    int npids = 0;
-   const char *pid = NULL;
+   char *pid = NULL;
 
    while ((ep = readdir (dp)) != NULL) {
       const char *n = ep->d_name;
@@ -152,17 +152,17 @@ int main(int argc, char *argv[])
 {
    if (argc <= 1) {
       fprintf(stderr, "missing command\n");
-      return 1;
+      return 2;
    }
 
    int pid = get_dillo_pid();
 
    if (pid < 0)
-      return 1;
+      return 2;
 
    int fd;
    if (connect_to_socket(pid, &fd) != 0)
-      return 1;
+      return 2;
 
    Dstr *cmd = dStr_new("");
    for (int i = 1; i < argc; i++) {
@@ -177,23 +177,43 @@ int main(int argc, char *argv[])
       w = write(fd, cmd->str + w, cmd->len - w);
       if (w < 0) {
          perror("write");
-         return 1;
+         return 2;
       }
    }
 
    dStr_free(cmd, 1);
+
+   /* First two bytes determine exit code */
+   int saw_rc = 0;
+   int rc = 2;
 
    uint8_t buf[1024];
    while (1) {
       ssize_t r = read(fd, buf, 1024);
       if (r == 0) {
          break;
-      } else if (r < 0) {
+      } else if (r < 2) {
          perror("read");
-         return 1;
+         return 2;
       }
 
       uint8_t *p = buf;
+
+      if (!saw_rc) {
+         int ch = buf[0];
+         if (!isdigit(ch)) {
+            fprintf(stderr, "malformed reply: expected digit at first byte (got %c)\n", ch);
+            return 2;
+         }
+         if (buf[1] != '\n') {
+            fprintf(stderr, "malformed reply: expected newline at second byte\n");
+            return 2;
+         }
+         rc = (int) ch - '0';
+         r -= 2;
+         p += 2;
+         saw_rc = 1;
+      }
 
       while (r > 0) {
          size_t w = write(1, p, r);
@@ -204,5 +224,5 @@ int main(int argc, char *argv[])
 
    close(fd);
 
-   return 0;
+   return rc;
 }

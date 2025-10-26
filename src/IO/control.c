@@ -100,23 +100,24 @@ static void Control_read_cb(int fd, void *data)
    int do_close = 1;
 
    if (strcmp(cmd, "ping") == 0) {
-      fprintf(f, "pong\n");
+      fprintf(f, "0\npong\n");
    } else if (strcmp(cmd, "pid") == 0) {
-      fprintf(f, "%d\n", getpid());
+      fprintf(f, "0\n%d\n", getpid());
    } else if (strcmp(cmd, "reload") == 0) {
       a_UIcmd_reload_all_active();
-      fprintf(f, "ok\n");
+      fprintf(f, "0\n");
    } else if (strcmp(cmd, "has_finished") == 0) {
-      fprintf(f, "%d\n", a_UIcmd_has_finished(bw));
+      fprintf(f, "0\n%d\n", a_UIcmd_has_finished(bw));
    } else if (strncmp(cmd, "open ", 5) == 0) {
       a_UIcmd_open_urlstr(bw, cmd+5);
-      fprintf(f, "ok\n");
+      fprintf(f, "0\n");
    } else if (strcmp(cmd, "url") == 0) {
-      fprintf(f, "%s\n", a_UIcmd_get_location_text(bw));
+      fprintf(f, "0\n%s\n", a_UIcmd_get_location_text(bw));
    } else if (strcmp(cmd, "dump") == 0) {
       DilloUrl *url = a_Url_new(a_UIcmd_get_location_text(bw), NULL);
       char *buf;
       int size;
+      fprintf(f, "0\n");
       if (a_Capi_get_buf(url, &buf, &size)) {
          fwrite(buf, 1, size, f);
       }
@@ -124,10 +125,10 @@ static void Control_read_cb(int fd, void *data)
    } else if (strcmp(cmd, "quit") == 0) {
       /* FIXME: May create confirmation dialog */
       a_UIcmd_close_all_bw(NULL);
-      fprintf(f, "ok\n");
+      fprintf(f, "0\n");
    } else if (strcmp(cmd, "wait") == 0) {
       if (a_UIcmd_has_finished(bw)) {
-         fprintf(f, "done\n");
+         fprintf(f, "0\n");
       } else {
          assert(bw_waiting == NULL);
          bw_waiting = bw;
@@ -135,7 +136,7 @@ static void Control_read_cb(int fd, void *data)
          do_close = 0;
       }
    } else {
-      fprintf(f, "?\n");
+      fprintf(f, "1\nunknown command: %s\n", cmd);
    }
 
 
@@ -156,7 +157,7 @@ void a_Control_notify_finish(BrowserWindow *bw)
 
    FILE *f = bw_waiting_file;
 
-   fprintf(f, "done\n");
+   fprintf(f, "0\n");
    fclose(f);
 
    bw_waiting = NULL;
