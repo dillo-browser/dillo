@@ -124,7 +124,7 @@ AC_ARG_WITH([ca-certs-dir],
   CA_CERTS_DIR=$withval)
 
 AC_ARG_ENABLE([control-socket],
-  [AS_HELP_STRING([--enable-control-socket], [Allow remote control of the browser via a UNIX socket])],
+  [AS_HELP_STRING([--enable-control-socket], [Allow remote control of the browser via a UNIX socket (experimental)])],
   [enable_control_socket=$enableval],
   [enable_control_socket=no])
 
