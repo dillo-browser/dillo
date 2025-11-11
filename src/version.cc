@@ -146,6 +146,11 @@ static void print_features()
 #else
          " -IPV6"
 #endif
+#ifdef ENABLE_CONTROL_SOCKET
+         " +CTL"
+#else
+         " -CTL"
+#endif
          "\n");
 }
 
