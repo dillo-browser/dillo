@@ -10,14 +10,17 @@ AM_CXXFLAGS = @LIBPNG_CFLAGS@ @LIBFLTK_CXXFLAGS@
 
 SUBDIRS = IO
 
-bin_PROGRAMS = dillo dilloc
+bin_PROGRAMS = dillo
 
+if ENABLE_CONTROL_SOCKET
+bin_PROGRAMS += dilloc
 dilloc_LDADD = \
 	$(top_builddir)/dlib/libDlib.a \
 	$(top_builddir)/dw/libDw-core.a
 
 dilloc_SOURCES = \
 	dilloc.c
+endif
 
 dillo_LDADD = \
 	$(top_builddir)/dlib/libDlib.a \

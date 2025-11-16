@@ -745,6 +745,7 @@ if test "x$enable_control_socket" = "xyes"; then
 else
   AC_MSG_NOTICE([Disabling control socket])
 fi
+AM_CONDITIONAL([ENABLE_CONTROL_SOCKET],  [test "x$enable_control_socket" = "xyes"])
 
 dnl --------------------
 dnl Command line options
@@ -906,5 +907,5 @@ _AS_ECHO([  SVG enabled    : ${enable_svg}])
 _AS_ECHO([  WEBP enabled   : ${webp_ok}])
 _AS_ECHO([  Brotli enabled : ${brotli_ok}])
 _AS_ECHO([  IPv6 enabled   : ${enable_ipv6}])
-_AS_ECHO([  Control socket : ${enable_control_socket}])
+_AS_ECHO([  Control socket : ${enable_control_socket} (experimental)])
 _AS_ECHO([])
