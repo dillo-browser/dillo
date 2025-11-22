@@ -16,6 +16,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -25,119 +26,38 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-int parse_number(const char *str, int *n)
+static int
+is_number(const char *str)
 {
-   char *end;
-   long p = strtol(str, &end, 10);
+   for (const char *p = str; *p; p++) {
+      if (!isdigit(*p))
+         return 0;
+   }
 
-   if (*end != '\0')
-      return -1;
-
-   *n = (int) p;
-
-   return 0;
+   return 1;
 }
 
-/* Try to locate dillo if there is only one process */
-char *get_unique_dillo_pid(void)
+static int
+connect_given_pid(int *sock, const char *pid)
 {
-   char path[1024];
-   if (snprintf(path, 1024, "%s/.dillo/ctl", dGethomedir()) >= 1024) {
-      fprintf(stderr, "path too long\n");
-      return NULL;
-   }
+   struct sockaddr_un addr;
+   addr.sun_family = AF_UNIX;
 
-   struct dirent *ep;
-   DIR *dp = opendir (path);
-   if (dp == NULL) {
-      fprintf(stderr, "error: cannot open %s directory: %s\n",
-            path, strerror(errno));
-      return NULL;
-   }
-
-   int npids = 0;
-   char *pid = NULL;
-
-   while ((ep = readdir (dp)) != NULL) {
-      const char *n = ep->d_name;
-      /* Skip . and .. directories */
-      if (!strcmp(n, ".") || !strcmp(n, ".."))
-         continue;
-
-      /* Make sure it is only digits */
-      for (const char *p = n; *p; p++) {
-         if (!isdigit(*p)) {
-            n = NULL;
-            break;
-         }
-      }
-
-      if (n) {
-         npids++;
-         if (!pid)
-            pid = dStrdup(n);
-      }
-   }
-
-   closedir(dp);
-
-   if (npids == 1)
-      return pid;
-
-   if (pid == NULL) {
-      fprintf(stderr, "error: no pid files in: %s\n", path);
-      return NULL;
-   }
-
-   dFree(pid);
-   fprintf(stderr, "error: multiple pid files in: %s\n", path);
-   return NULL;
-}
-
-int get_dillo_pid(void)
-{
-   /* First try the env var, then try to locate a unique dillo process */
-   char *spid = getenv("DILLO_PID");
-   if (spid) {
-      spid = dStrdup(spid);
-   } else if ((spid = get_unique_dillo_pid()) == NULL) {
-      fprintf(stderr, "error: cannot find control socket, set DILLO_PID\n");
-      return -1;
-   }
-
-   int pid;
-   if (parse_number(spid, &pid) != 0) {
-      fprintf(stderr, "error: cannot parse pid: %s\n", spid);
-      dFree(spid);
-      return -1;
-   }
-
-   dFree(spid);
-   return pid;
-}
-
-int connect_to_socket(int pid, int *sock)
-{
    int fd;
    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
       fprintf(stderr, "socket() failed: %s\n", strerror(errno));
       return -1;
    }
 
-   struct sockaddr_un addr;
-   addr.sun_family = AF_UNIX;
-
 #define LEN ((int) sizeof(addr.sun_path))
-
-   if (snprintf(addr.sun_path, LEN, "%s/.dillo/ctl/%d", dGethomedir(), pid) >= LEN) {
-      fprintf(stderr, "path too long\n");
+   if (snprintf(addr.sun_path, LEN, "%s/.dillo/ctl/%s", dGethomedir(), pid) >= LEN) {
+      fprintf(stderr, "pid path too long\n");
       return -1;
    }
+#undef LEN
 
-   int slen = sizeof(addr);
-
-   if (connect(fd, (struct sockaddr *) &addr, slen) != 0) {
-      fprintf(stderr, "error: cannot connect to %s: %s\n",
+   if (connect(fd, (struct sockaddr *) &addr, sizeof(addr)) != 0) {
+      fprintf(stderr, "cannot connect to %s: %s\n",
             addr.sun_path, strerror(errno));
       return -1;
    }
@@ -147,6 +67,110 @@ int connect_to_socket(int pid, int *sock)
    return 0;
 }
 
+/* Try to locate dillo if there is only one process */
+static int
+find_working_socket(int *sock)
+{
+   char ctlpath[PATH_MAX];
+   if (snprintf(ctlpath, PATH_MAX, "%s/.dillo/ctl", dGethomedir()) >= PATH_MAX) {
+      fprintf(stderr, "path too long\n");
+      return -1;
+   }
+
+   struct dirent *ep;
+   DIR *dp = opendir(ctlpath);
+   if (dp == NULL) {
+      fprintf(stderr, "error: cannot open %s directory: %s\n",
+            ctlpath, strerror(errno));
+      return -1;
+   }
+
+   int found_pid = 0;
+   struct sockaddr_un addr;
+   addr.sun_family = AF_UNIX;
+
+   while ((ep = readdir (dp)) != NULL) {
+      const char *num = ep->d_name;
+      /* Skip . and .. directories */
+      if (!strcmp(num, ".") || !strcmp(num, ".."))
+         continue;
+
+      /* Make sure it is only digits */
+      if (!is_number(num))
+         continue;
+
+#define LEN ((int) sizeof(addr.sun_path))
+      if (snprintf(addr.sun_path, LEN, "%s/%s", ctlpath, num) >= LEN) {
+         fprintf(stderr, "pid path too long\n");
+         return -1;
+      }
+#undef LEN
+
+      int fd;
+      if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+         fprintf(stderr, "socket() failed: %s\n", strerror(errno));
+         return -1;
+      }
+
+      int ret = connect(fd, (struct sockaddr *) &addr, sizeof(addr));
+
+      if (ret == 0) {
+         if (++found_pid == 1) {
+            *sock = fd; /* Found ok */
+            fd = -1;
+            /* Leave it open */
+         }
+      } else {
+         /* Remove the PID file if we cannot connect to it */
+         if (errno == ECONNREFUSED) {
+            /* Try to remove but don't check for errors */
+            remove(addr.sun_path);
+         } else {
+            fprintf(stderr, "cannot connect to %s, skipping: %s\n",
+                  addr.sun_path, strerror(errno));
+         }
+      }
+
+      if (fd != -1 && close(fd) != 0) {
+         fprintf(stderr, "cannot close fd: %s", strerror(errno));
+         return -1;
+      }
+   }
+
+   closedir(dp);
+
+   if (found_pid == 1)
+      return 0;
+   else if (found_pid == 0) {
+      fprintf(stderr, "error: cannot find ctl socket, is dillo running?\n");
+      return -1;
+   }
+
+   fprintf(stderr, "multiple ctl sockets found, set DILLO_PID\n");
+   close(*sock);
+   return -1;
+}
+
+static int
+connect_to_dillo(int *sock)
+{
+   /* If the PID is given, use only that one */
+   char *given_pid = getenv("DILLO_PID");
+   int fd;
+   if (given_pid) {
+      if (connect_given_pid(&fd, given_pid) != 0)
+         return -1;
+   } else {
+      /* Otherwise, try to find a working pid and remove those that don't work,
+       * which are likely dead processes */
+      if (find_working_socket(&fd) != 0)
+         return -1;
+   }
+
+   *sock = fd;
+
+   return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -155,13 +179,8 @@ int main(int argc, char *argv[])
       return 2;
    }
 
-   int pid = get_dillo_pid();
-
-   if (pid < 0)
-      return 2;
-
    int fd;
-   if (connect_to_socket(pid, &fd) != 0)
+   if (connect_to_dillo(&fd) != 0)
       return 2;
 
    Dstr *cmd = dStr_new("");
