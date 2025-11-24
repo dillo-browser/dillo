@@ -764,6 +764,13 @@ dnl -----------------------
 dnl
 AC_CHECK_HEADERS(fcntl.h unistd.h sys/uio.h)
 
+dnl --------------------
+dnl Checks for functions
+dnl --------------------
+dnl
+AC_CHECK_DECLS([setenv], [], [], [[#include <stdlib.h>]])
+AC_CHECK_FUNCS([setenv], [], [])
+
 dnl --------------------------
 dnl Check for compiler options
 dnl --------------------------
