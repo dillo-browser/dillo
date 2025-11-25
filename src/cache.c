@@ -128,7 +128,7 @@ void a_Cache_init(void)
    {
       DilloUrl *url = a_Url_new("about:splash", NULL);
       Dstr *ds = dStr_new(AboutSplash);
-      a_Cache_entry_inject(url, ds);
+      a_Cache_entry_inject(url, ds->str, ds->len, 1);
       dStr_free(ds, 1);
       a_Url_free(url);
    }
@@ -287,17 +287,19 @@ static int Cache_bufsize(CacheEntry_t *e)
  * The @param data_ds buffer is copied into the entry buffer, so it is
  * responsibility of the caller to free it.
  */
-void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds)
+void a_Cache_entry_inject(const DilloUrl *Url, const char *buf, size_t len, int internal)
 {
    CacheEntry_t *entry;
 
    if (!(entry = Cache_entry_search(Url)))
       entry = Cache_entry_add(Url);
-   entry->Flags = CA_GotHeader + CA_GotLength + CA_InternalUrl;
-   if (data_ds->len)
+   entry->Flags = CA_GotHeader | CA_GotLength;
+   if (internal)
+      entry->Flags |= CA_InternalUrl;
+   if (len)
       entry->Flags &= ~CA_IsEmpty;
    dStr_truncate(entry->Data, 0);
-   dStr_append_l(entry->Data, data_ds->str, data_ds->len);
+   dStr_append_l(entry->Data, buf, len);
    dStr_fit(entry->Data);
    entry->ExpectedSize = entry->TransferSize = entry->Data->len;
 }
@@ -435,7 +437,7 @@ static int Cache_internal_url(CacheEntry_t *entry)
    }
 
    if (s != NULL) {
-      a_Cache_entry_inject(entry->Url, s);
+      a_Cache_entry_inject(entry->Url, s->str, s->len, 1);
       dStr_free(s, 1);
       /* Remove InternalUrl */
       entry->Flags = CA_GotHeader + CA_GotLength;
@@ -665,6 +667,15 @@ int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize)
       *BufSize = 0;
    }
    return (entry ? 1 : 0);
+}
+
+Dstr *a_Cache_get_header(const DilloUrl *Url)
+{
+   CacheEntry_t *entry = Cache_entry_search_with_redirect(Url);
+   if (entry == NULL)
+      return NULL;
+
+   return entry->Header;
 }
 
 /**

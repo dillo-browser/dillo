@@ -46,10 +46,49 @@ static char *control_path = NULL;
 static BrowserWindow *bw_waiting = NULL;
 static FILE *bw_waiting_file = NULL;
 
+static void
+cmd_load(FILE *f, int fd)
+{
+   MSG("cmd_load()\n");
+   Dstr *dstr = dStr_sized_new(1);
+   ssize_t r;
+   size_t len = 0;
+   do {
+      char buf[1];
+      r = read(fd, buf, 1);
+      MSG("read buf = %zd\n", r);
+      if (r < 0) {
+         if (errno == EINTR) {
+            continue;
+         } else {
+            MSG_ERR("Control_read_cb %s\n", dStrerror(errno));
+            exit(1);
+         }
+      } else if (r > 0) {
+         dStr_append_l(dstr, buf, r);
+      }
+      len += r;
+   } while (r);
+
+   BrowserWindow *bw = a_UIcmd_get_first_active_bw();
+   /* Load the given content in the current page */
+   DilloUrl *url = a_Url_new(a_UIcmd_get_location_text(bw), NULL);
+   if (url == NULL) {
+      fprintf(f, "0\ncannot get current url");
+      return;
+   }
+
+   a_Cache_entry_inject(url, dstr->str, dstr->len, 0);
+   a_UIcmd_repush(bw);
+
+   dStr_free(dstr, 1);
+
+   fprintf(f, "0\n");
+}
+
 static void Control_read_cb(int fd, void *data)
 {
    _MSG("Control_read_cb called\n");
-   int st;
    char buf[1024];
    const int buf_sz = 1024;
    Dstr *dstr = dStr_sized_new(buf_sz);
@@ -64,22 +103,25 @@ static void Control_read_cb(int fd, void *data)
       return;
    }
 
+   ssize_t r;
    do {
-      st = read(new_fd, buf, buf_sz);
-      _MSG("read = %d\n", st);
-      if (st < 0) {
+      r = read(new_fd, buf, 1);
+      MSG("read = %zd\n", r);
+      if (r < 0) {
          if (errno == EINTR) {
             continue;
          } else {
             MSG_ERR("Control_read_cb %s\n", dStrerror(errno));
             exit(1);
          }
-      } else if (st > 0) {
-         dStr_append_l(dstr, buf, st);
+      } else if (r > 0) {
+         dStr_append_l(dstr, buf, r);
       }
-   } while (st == buf_sz);
+      if (buf[0] == '\n')
+         break;
+   } while (r);
 
-   _MSG("got msg: %s\n", dstr->str);
+   MSG("got msg: %s\n", dstr->str);
 
    char *cmd = dstr->str;
    for (char *p = cmd; *p != '\0'; p++) {
@@ -122,6 +164,18 @@ static void Control_read_cb(int fd, void *data)
          fwrite(buf, 1, size, f);
       }
       a_Url_free(url);
+   } else if (strcmp(cmd, "hdump") == 0) {
+      DilloUrl *url = a_Url_new(a_UIcmd_get_location_text(bw), NULL);
+      Dstr *header = a_Cache_get_header(url);
+      if (header == NULL) {
+         fprintf(f, "1\nCurrent url not cached");
+      } else {
+         fprintf(f, "0\n");
+         fwrite(header->str, 1, header->len, f);
+      }
+      a_Url_free(url);
+   } else if (strcmp(cmd, "load") == 0) {
+      cmd_load(f, new_fd);
    } else if (strcmp(cmd, "quit") == 0) {
       /* FIXME: May create confirmation dialog */
       a_UIcmd_close_all_bw(NULL);

@@ -183,6 +183,11 @@ int main(int argc, char *argv[])
    if (connect_to_dillo(&fd) != 0)
       return 2;
 
+   int is_load = 0;
+   if (argv[1] && strcmp(argv[1], "load") == 0) {
+      is_load = 1;
+   }
+
    Dstr *cmd = dStr_new("");
    for (int i = 1; i < argc; i++) {
       dStr_append(cmd, argv[i]);
@@ -201,6 +206,35 @@ int main(int argc, char *argv[])
    }
 
    dStr_free(cmd, 1);
+
+   /* Forward stdin to the socket */
+   if (is_load) {
+      uint8_t buf[1024];
+      while (1) {
+         ssize_t r = read(STDIN_FILENO, buf, 1024);
+         if (r == 0) {
+            break;
+         } else if (r < 0) {
+            perror("read");
+            return 2;
+         }
+
+         uint8_t *p = buf;
+
+         while (r > 0) {
+            ssize_t w = write(fd, p, r);
+            if (w < 0) {
+               perror("write");
+               return 2;
+            }
+            r -= w;
+            p += w;
+         }
+      }
+
+      close(fd);
+      return 0;
+   }
 
    /* First two bytes determine exit code */
    int saw_rc = 0;

@@ -72,10 +72,11 @@ struct CacheClient {
  * Function prototypes
  */
 void a_Cache_init(void);
-void a_Cache_entry_inject(const DilloUrl *Url, Dstr *data_ds);
+void a_Cache_entry_inject(const DilloUrl *Url, const char *buf, size_t len, int internal);
 int a_Cache_open_url(void *Web, CA_Callback_t Call, void *CbData);
 int a_Cache_get_buf(const DilloUrl *Url, char **PBuf, int *BufSize);
 void a_Cache_unref_buf(const DilloUrl *Url);
+Dstr *a_Cache_get_header(const DilloUrl *Url);
 const char *a_Cache_get_content_type(const DilloUrl *url);
 const char *a_Cache_set_content_type(const DilloUrl *url, const char *ctype,
                                      const char *from);
