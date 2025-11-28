@@ -2,7 +2,7 @@
  * File: form.cc
  *
  * Copyright 2008 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -144,6 +144,7 @@ class DilloHtmlInput {
 
 private:
    Embed *embed; /* May be NULL (think: hidden input) */
+   bool owns_embed; /* Should destroy embed? */
 
 public:  //BUG: for now everything is public
    DilloHtmlInputType type;
@@ -162,8 +163,8 @@ private:
    void readFile(BrowserWindow *bw);
 
 public:
-   DilloHtmlInput (DilloHtmlInputType type, Embed *embed,
-                   const char *name, const char *init_str, bool init_val);
+   DilloHtmlInput (DilloHtmlInputType type, Embed *embed, 
+                   const char *name, const char *init_str, bool init_val, bool owns_embed);
    ~DilloHtmlInput ();
    void appendValuesTo(Dlist *values, bool is_active_submit);
    void reset();
@@ -277,12 +278,12 @@ void a_Html_form_display_hiddens2(void *vform, bool display)
  * Add an HTML control
  */
 static void Html_add_input(DilloHtml *html, DilloHtmlInputType type,
-                           Embed *embed, const char *name,
-                           const char *init_str, bool init_val)
+                           Embed *embed, const char *name, const char *init_str,
+                           bool init_val, bool owns_embed)
 {
    _MSG("name=[%s] init_str=[%s] init_val=[%d]\n", name, init_str, init_val);
-   DilloHtmlInput *input = new DilloHtmlInput(type, embed, name, init_str,
-                                              init_val);
+   DilloHtmlInput *input =
+      new DilloHtmlInput(type, embed, name, init_str, init_val, owns_embed);
    if (html->InFlags & IN_FORM) {
       html->getCurrentForm()->addInput(input, type);
    } else {
@@ -436,6 +437,7 @@ static int Html_input_get_size(DilloHtml *html, const char *attrbuf)
  */
 void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
 {
+   bool owns_embed = true;
    DilloHtmlInputType inp_type;
    Resource *resource = NULL;
    Embed *embed = NULL;
@@ -467,56 +469,49 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       placeholder = a_Html_get_attr_wdef(html, tag,tagsize,"placeholder",NULL);
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
-      if (a_Html_should_display(html))
-         resource = factory->createEntryResource (size, true, NULL, placeholder);
+      resource = factory->createEntryResource (size, true, NULL, placeholder);
       init_str = value;
    } else if (!dStrAsciiCasecmp(type, "checkbox")) {
       inp_type = DILLO_HTML_INPUT_CHECKBOX;
-      if (a_Html_should_display(html))
-         resource = factory->createCheckButtonResource(false);
+      resource = factory->createCheckButtonResource(false);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = (value) ? value : dStrdup("on");
    } else if (!dStrAsciiCasecmp(type, "radio")) {
       inp_type = DILLO_HTML_INPUT_RADIO;
-      if (a_Html_should_display(html)) {
-         RadioButtonResource *rb_r = NULL;
-         DilloHtmlInput *input = Html_get_radio_input(html, name);
-         if (input && input->getResource())
-            rb_r = (RadioButtonResource*) input->getResource();
-         resource = factory->createRadioButtonResource(rb_r, false);
-      }
+      RadioButtonResource *rb_r = NULL;
+      DilloHtmlInput *input = Html_get_radio_input(html, name);
+      if (input && input->getResource())
+         rb_r = (RadioButtonResource*) input->getResource();
+      resource = factory->createRadioButtonResource(rb_r, false);
       init_val = (a_Html_get_attr(html, tag, tagsize, "checked") != NULL);
       init_str = value;
    } else if (!dStrAsciiCasecmp(type, "hidden")) {
       inp_type = DILLO_HTML_INPUT_HIDDEN;
       init_str = value;
       int size = Html_input_get_size(html, NULL);
-      if (a_Html_should_display(html))
-         resource = factory->createEntryResource(size, false, name, NULL);
+      resource = factory->createEntryResource(size, false, name, NULL);
    } else if (!dStrAsciiCasecmp(type, "submit")) {
       inp_type = DILLO_HTML_INPUT_SUBMIT;
       init_str = (value) ? value : dStrdup("Submit");
-      if (a_Html_should_display(html))
-         resource = factory->createLabelButtonResource(init_str);
+      resource = factory->createLabelButtonResource(init_str);
    } else if (!dStrAsciiCasecmp(type, "reset")) {
       inp_type = DILLO_HTML_INPUT_RESET;
       init_str = (value) ? value : dStrdup("Reset");
-      if (a_Html_should_display(html))
-         resource = factory->createLabelButtonResource(init_str);
+      resource = factory->createLabelButtonResource(init_str);
    } else if (!dStrAsciiCasecmp(type, "image")) {
-      if (URL_FLAGS(html->base_url) & URL_SpamSafe) {
+      if (URL_FLAGS(html->base_url) & URL_SpamSafe ||
+            !a_Html_should_display(html)) {
          /* Don't request the image; make a text submit button instead */
          inp_type = DILLO_HTML_INPUT_SUBMIT;
          attrbuf = a_Html_get_attr(html, tag, tagsize, "alt");
          label = attrbuf ? attrbuf : value ? value : name ? name : "Submit";
          init_str = dStrdup(label);
-         if (a_Html_should_display(html))
-            resource = factory->createLabelButtonResource(init_str);
+         resource = factory->createLabelButtonResource(init_str);
       } else {
          inp_type = DILLO_HTML_INPUT_IMAGE;
          /* use a dw_image widget */
-         if (a_Html_should_display(html))
-            embed = Html_input_image(html, tag, tagsize);
+         embed = Html_input_image(html, tag, tagsize);
+         owns_embed = false; /* adds it to the tree */
          init_str = value;
       }
    } else if (!dStrAsciiCasecmp(type, "file")) {
@@ -538,15 +533,13 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       if (valid) {
          inp_type = DILLO_HTML_INPUT_FILE;
          init_str = dStrdup("File selector");
-         if (a_Html_should_display(html))
-            resource = factory->createLabelButtonResource(init_str);
+         resource = factory->createLabelButtonResource(init_str);
       }
    } else if (!dStrAsciiCasecmp(type, "button")) {
       inp_type = DILLO_HTML_INPUT_BUTTON;
       if (value) {
          init_str = value;
-         if (a_Html_should_display(html))
-            resource = factory->createLabelButtonResource(init_str);
+         resource = factory->createLabelButtonResource(init_str);
       }
    } else {
       /* Text input, which also is the default */
@@ -554,27 +547,17 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
       placeholder = a_Html_get_attr_wdef(html, tag,tagsize,"placeholder",NULL);
       attrbuf = a_Html_get_attr(html, tag, tagsize, "size");
       int size = Html_input_get_size(html, attrbuf);
-      if (a_Html_should_display(html))
-         resource = factory->createEntryResource(size, false, NULL, placeholder);
+      resource = factory->createEntryResource(size, false, NULL, placeholder);
       init_str = value;
    }
 
-   /* Resource should not be set with display:none */
-   assert(!resource || a_Html_should_display(html));
-
-   if (resource)
-      embed = new Embed (resource);
-
    if (inp_type != DILLO_HTML_INPUT_UNKNOWN) {
-      Html_add_input(html, inp_type, embed, name,
-                     (init_str) ? init_str : "", init_val);
-   }
 
-   /* Embed should not be set with display:none */
-   assert(!embed || a_Html_should_display(html));
+      if (!embed)
+         embed = new Embed(resource);
 
-   if (embed != NULL && inp_type != DILLO_HTML_INPUT_IMAGE &&
-       inp_type != DILLO_HTML_INPUT_UNKNOWN) {
+      assert(embed);
+
       if (inp_type == DILLO_HTML_INPUT_HIDDEN) {
          /* TODO Perhaps do this with access to current form setting */
          embed->setDisplayed(false);
@@ -597,8 +580,17 @@ void Html_tag_open_input(DilloHtml *html, const char *tag, int tagsize)
                                            attrbuf);
       }
 
-      HT2TB(html)->addWidget (embed, html->backgroundStyle());
+      /* Only add to the tree if needs to be shown. Ignore images as
+       * they are already added in Html_input_image(). */
+      if (a_Html_should_display(html) && inp_type != DILLO_HTML_INPUT_IMAGE) {
+         HT2TB(html)->addWidget (embed, html->backgroundStyle());
+         owns_embed = false;
+      }
+
+      Html_add_input(html, inp_type, embed, name,
+                     (init_str) ? init_str : "", init_val, owns_embed);
    }
+
    dFree(type);
    dFree(name);
    if (init_str != value)
@@ -630,7 +622,9 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
                  html->charset);
    html->InFlags |= IN_FORM;
 
-   Embed *embed = NULL;
+   ResourceFactory *factory = HT2LT(html)->getResourceFactory();
+   EntryResource *resource = factory->createEntryResource(20, false, NULL, NULL);
+   Embed *embed = new Embed (resource);
 
    if (a_Html_should_display(html)) {
       HT2TB(html)->addParbreak (9, html->wordStyle ());
@@ -638,15 +632,11 @@ void Html_tag_open_isindex(DilloHtml *html, const char *tag, int tagsize)
       if ((attrbuf = a_Html_get_attr(html, tag, tagsize, "prompt")))
          HT2TB(html)->addText(attrbuf, html->wordStyle ());
 
-      ResourceFactory *factory = HT2LT(html)->getResourceFactory();
-      EntryResource *entryResource = factory->createEntryResource (20, false,
-                                                                   NULL, NULL);
-      embed = new Embed (entryResource);
-
       HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+      Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, false, false);
+   } else {
+      Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, false, true);
    }
-
-   Html_add_input(html, DILLO_HTML_INPUT_INDEX, embed, NULL, NULL, FALSE);
 
    a_Url_free(action);
    html->InFlags &= ~IN_FORM;
@@ -703,21 +693,26 @@ void Html_tag_content_textarea(DilloHtml *html, const char *tag, int tagsize)
 
    attrbuf = a_Html_get_attr(html, tag, tagsize, "placeholder");
 
-   Embed *embed = NULL;
+   /* The textarea should never call the _content hook on display:none,
+    * but we still treat it as if it is posible for robustness. */
+
+   ResourceFactory *factory = HT2LT(html)->getResourceFactory();
+   MultiLineTextResource *textres =
+      factory->createMultiLineTextResource (cols, rows, attrbuf);
+
+   Embed *embed = new Embed(textres);
+
+   /* Readonly or not? */
+   if (a_Html_get_attr(html, tag, tagsize, "readonly"))
+      textres->setEditable(false);
+
    if (a_Html_should_display(html)) {
-      ResourceFactory *factory = HT2LT(html)->getResourceFactory();
-      MultiLineTextResource *textres =
-         factory->createMultiLineTextResource (cols, rows, attrbuf);
-
-      embed = new Embed(textres);
-      /* Readonly or not? */
-      if (a_Html_get_attr(html, tag, tagsize, "readonly"))
-         textres->setEditable(false);
-
       HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+      Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false, false);
+   } else {
+      Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false, true);
    }
 
-   Html_add_input(html, DILLO_HTML_INPUT_TEXTAREA, embed, name, NULL, false);
 
    dFree(name);
 }
@@ -795,35 +790,34 @@ void Html_tag_open_select(DilloHtml *html, const char *tag, int tagsize)
    else
       type = DILLO_HTML_INPUT_SEL_LIST;
 
-   Embed *embed = NULL;
 
-   if (a_Html_should_display(html)) {
-      ResourceFactory *factory = HT2LT(html)->getResourceFactory ();
-      SelectionResource *res;
+   ResourceFactory *factory = HT2LT(html)->getResourceFactory ();
+   SelectionResource *res;
 
-      if (type == DILLO_HTML_INPUT_SELECT) {
-         res = factory->createOptionMenuResource ();
-      } else {
-         ListResource::SelectionMode mode;
-         type = DILLO_HTML_INPUT_SEL_LIST;
-         mode = multi ? ListResource::SELECTION_MULTIPLE
-                      : ListResource::SELECTION_AT_MOST_ONE;
-         res = factory->createListResource (mode, rows);
-      }
-
-      embed = new Embed(res);
-
-      if (prefs.show_tooltip &&
-          (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
-
-         html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP, CSS_TYPE_STRING,
-                                           attrbuf);
-      }
-
-      HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+   if (type == DILLO_HTML_INPUT_SELECT) {
+      res = factory->createOptionMenuResource ();
+   } else {
+      ListResource::SelectionMode mode;
+      type = DILLO_HTML_INPUT_SEL_LIST;
+      mode = multi ? ListResource::SELECTION_MULTIPLE
+                   : ListResource::SELECTION_AT_MOST_ONE;
+      res = factory->createListResource (mode, rows);
    }
 
-   Html_add_input(html, type, embed, name, NULL, false);
+   Embed *embed = new Embed(res);
+
+   if (a_Html_should_display(html)) {
+      if (prefs.show_tooltip &&
+          (attrbuf = a_Html_get_attr(html, tag, tagsize, "title"))) {
+         html->styleEngine->setNonCssHint (PROPERTY_X_TOOLTIP,
+               CSS_TYPE_STRING, attrbuf);
+      }
+      HT2TB(html)->addWidget (embed, html->backgroundStyle ());
+      Html_add_input(html, type, embed, name, NULL, false, false);
+   } else {
+      Html_add_input(html, type, embed, name, NULL, false, true);
+   }
+
    a_Html_stash_init(html);
    dFree(name);
 }
@@ -990,8 +984,13 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
                                            attrbuf);
       }
 
+      /* Always add the input element, so is present in the form */
+      char *value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
+      char *name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
+
       ResourceFactory *factory = HT2LT(html)->getResourceFactory();
 
+      bool owns_embed = true;
       if (a_Html_should_display(html)) {
          /* We used to have Textblock (prefs.limit_text_width, ...) here,
           * but it caused 100% CPU usage.
@@ -1001,16 +1000,17 @@ void Html_tag_open_button(DilloHtml *html, const char *tag, int tagsize)
 
          ComplexButtonResource *resource = factory->createComplexButtonResource(page, true);
          embed = new Embed(resource);
+
          HT2TB(html)->addWidget (embed, html->backgroundStyle ());
          S_TOP(html)->textblock = html->dw = page;
+         owns_embed = false;
       } else {
-         embed = NULL;
+         /* Use simple button if not visible */
+         Resource *resource = factory->createLabelButtonResource(value);
+         embed = new Embed(resource);
       }
 
-      /* Always add the input element, so is present in the form */
-      char *value = a_Html_get_attr_wdef(html, tag, tagsize, "value", NULL);
-      char *name = a_Html_get_attr_wdef(html, tag, tagsize, "name", NULL);
-      Html_add_input(html, inp_type, embed, name, value, FALSE);
+      Html_add_input(html, inp_type, embed, name, value, FALSE, owns_embed);
       dFree(name);
       dFree(value);
    }
@@ -1716,10 +1716,12 @@ void DilloHtmlReceiver::clicked (Resource *resource,
  */
 DilloHtmlInput::DilloHtmlInput (DilloHtmlInputType type2, Embed *embed2,
                                 const char *name2, const char *init_str2,
-                                bool init_val2)
+                                bool init_val2, bool owns_embed)
 {
    type = type2;
-   embed = embed2; /* May be NULL! */
+   assert(embed2);
+   embed = embed2; /* Cannot be NULL! */
+   this->owns_embed = owns_embed;
    name = (name2) ? dStrdup(name2) : NULL;
    init_str = (init_str2) ? dStrdup(init_str2) : NULL;
    init_val = init_val2;
@@ -1747,6 +1749,8 @@ DilloHtmlInput::~DilloHtmlInput ()
    dStr_free(file_data, 1);
    if (select)
       delete select;
+   if (owns_embed && embed)
+      delete embed;
 }
 
 /**
@@ -2085,8 +2089,6 @@ static Embed *Html_input_image(DilloHtml *html, const char *tag, int tagsize)
 {
    DilloImage *Image;
    Embed *button = NULL;
-
-   assert(a_Html_should_display(html));
 
    html->styleEngine->setPseudoLink ();
 
