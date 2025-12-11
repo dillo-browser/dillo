@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test form submission with display:none elements</title>
+    <style>
+      /* * { border: solid 1px blue; margin: 5px; padding: 5px; } */
+    </style>
+  </head>
+  <body>
+    <form class="search-form" action="/search" id="usrform">
+      <p>This form contains multiple types of input elements with no visibility.
+      The are all used to compute the data sent to the server, but they should
+      not be visible.</p>
+      <p>To test press the Submit button. It shouldn't crash.</p>
+
+      <input style="display:none" placeholder="Search..." name="q" maxlength="100" autofocus>
+      <input style="display:none" type="checkbox" name="sans" value="1">
+      <label for="pet-select" style="display:none">Choose a pet:</label>
+
+      <!-- Only the select has display:none, it should hide the children -->
+      <select name="pets" id="pet-select" style="display:none">
+        <option value="">--Please choose an option--</option>
+        <option value="dog">Dog</option>
+        <option value="cat">Cat</option>
+        <option value="hamster">Hamster</option>
+        <option value="parrot">Parrot</option>
+        <option value="spider">Spider</option>
+        <option value="goldfish">Goldfish</option>
+      </select>
+
+      <button name="button" style="display:none">Hi</button>
+      <button name="button" style="display:none"><span>Hi from a span</span></button>
+
+      <!-- We want the submit button to be visible -->
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>
