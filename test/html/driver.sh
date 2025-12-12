@@ -45,7 +45,7 @@ function render_page() {
   # FIXME: We need a beter way to wait for the UNIX socket
   sleep 0.2
 
-  if ! timeout 5 dilloc wait; then
+  if ! dilloc wait 5; then
     echo "cannot render page under 5 seconds" >&2
     exit 1
   fi
