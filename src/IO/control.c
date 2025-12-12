@@ -148,7 +148,7 @@ static void Control_read_cb(int fd, void *data)
       fprintf(f, " ping          Check if dillo replies correctly:\n");
       fprintf(f, " pid           Print PID of selected dillo process\n");
       fprintf(f, " reload        Reload the current tab\n");
-      fprintf(f, " has_finished  Print 1 if finished loading, 0 otherwise\n");
+      fprintf(f, " ready         Exits with 0 if finished loading, 1 otherwise\n");
       fprintf(f, " open <url>    Open the given url in the current tab\n");
       fprintf(f, " url           Print the url in the current tab\n");
       fprintf(f, " dump          Print the content of the current tab\n");
@@ -163,8 +163,8 @@ static void Control_read_cb(int fd, void *data)
    } else if (strcmp(cmd, "reload") == 0) {
       a_UIcmd_reload_all_active();
       fprintf(f, "0\n");
-   } else if (strcmp(cmd, "has_finished") == 0) {
-      fprintf(f, "0\n%d\n", a_UIcmd_has_finished(bw));
+   } else if (strcmp(cmd, "ready") == 0) {
+      fprintf(f, "%d\n", a_UIcmd_has_finished(bw) ? 0 : 1);
    } else if (strncmp(cmd, "open ", 5) == 0) {
       a_UIcmd_open_urlstr(bw, cmd+5);
       fprintf(f, "0\n");
