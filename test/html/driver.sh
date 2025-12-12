@@ -13,6 +13,7 @@ set -e
 set -x
 
 DILLOBIN=${DILLOBIN:-$TOP_BUILDDIR/src/dillo}
+DILLOCBIN=${DILLOCBIN:-$TOP_BUILDDIR/src/dilloc}
 LEAKFILTER=${LEAKFILTER:-$TOP_SRCDIR/test/html/leakfilter.awk}
 
 # Clean asan options if set
@@ -20,6 +21,11 @@ unset ASAN_OPTIONS
 
 if [ ! -e $DILLOBIN ]; then
   echo missing dillo binary, set DILLOBIN with the path to dillo
+  exit 1
+fi
+
+if [ ! -e $DILLOCBIN ]; then
+  echo missing dilloc binary, set DILLOCBIN with the path to dilloc
   exit 1
 fi
 
@@ -34,35 +40,30 @@ function render_page() {
   outerr="$2.err"
 
   "$DILLOBIN" -f "$htmlfile" 2> "$outerr" &
-  dillopid=$!
+  export DILLO_PID=$!
 
-  # TODO: We need a better system to determine when the page loaded
-  # This will poll for the window every 10th of a second for up to 5 seconds
-  found_window=false
-  for i in {0..50}; do
-    sleep 0.1
+  # FIXME: We need a beter way to wait for the UNIX socket
+  sleep 0.2
 
-    # Capture only Dillo window
-    winid=$(xwininfo -all -root | awk '/Dillo:/ {print $1}')
-    if [ ! -z "$winid" ]; then
-      found_window=true
-      # Wait some after the window appears to ensure rendering is done
-      sleep ${DILLO_TEST_WAIT_TIME:-1}
-      break
-    fi
-  done
+  if ! timeout 5 dilloc wait; then
+    echo "cannot render page under 5 seconds" >&2
+    exit 1
+  fi
 
-  if ! $found_window; then
+  # Capture only Dillo window
+  winid=$(xwininfo -all -root | awk '/Dillo:/ {print $1}')
+  if [ -z "$winid" ]; then
     echo "cannot find Dillo window" >&2
     exit 1
   fi
+
   xwd -id "$winid" -silent | ${magick_bin} xwd:- png:${outpic}
 
   # Exit cleanly
-  kill -USR2 "$dillopid"
+  dilloc quit
 
   # Dillo may fail due to leaks, but we will check them manually
-  wait "$dillopid" || true
+  wait "$DILLO_PID" || true
   awk -f "$LEAKFILTER" < "$outerr"
 }
 
