@@ -2,6 +2,7 @@
  * File: timeout.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,5 +42,11 @@ void a_Timeout_repeat(float t, TimeoutCb_t cb, void *cbdata)
 void a_Timeout_remove()
 {
    /* in FLTK, timeouts run one time by default */
+   /* WTF? FIXME */
 }
 
+/* Remove timeout, data == NULL removes all matching cb only */
+void a_Timeout_actually_remove(TimeoutCb_t cb, void *data)
+{
+   Fl::remove_timeout(cb, data);
+}

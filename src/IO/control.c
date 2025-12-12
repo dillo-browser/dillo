@@ -37,6 +37,7 @@
 #include "capi.h"
 #include "dlib/dlib.h"
 #include "msg.h"
+#include "timeout.hh"
 
 /* One control fd per process */
 static int control_fd = -1;
@@ -45,6 +46,8 @@ static char *control_path = NULL;
 /* The BrowserWindow that we are currently waiting to finish */
 static BrowserWindow *bw_waiting = NULL;
 static FILE *bw_waiting_file = NULL;
+
+static void handle_wait_timeout(void *data);
 
 static void
 cmd_load(FILE *f, int fd)
@@ -149,13 +152,15 @@ static void Control_read_cb(int fd, void *data)
       fprintf(f, " pid           Print PID of selected dillo process\n");
       fprintf(f, " reload        Reload the current tab\n");
       fprintf(f, " ready         Exits with 0 if finished loading, 1 otherwise\n");
-      fprintf(f, " open <url>    Open the given url in the current tab\n");
+      fprintf(f, " open URL      Open the given URL in the current tab\n");
       fprintf(f, " url           Print the url in the current tab\n");
       fprintf(f, " dump          Print the content of the current tab\n");
       fprintf(f, " hdump         Print the HTTP headers of the current tab\n");
       fprintf(f, " load          Replace the content in the current tab by stdin\n");
       fprintf(f, " quit          Close dillo\n");
-      fprintf(f, " wait          Wait until the current tab has finished loading\n");
+      fprintf(f, " wait [T]      Wait until the current tab has finished loading\n");
+      fprintf(f, "               at most T seconds (default 60.0). Wait forever with\n");
+      fprintf(f, "               T set to 0.\n");
    } else if (strcmp(cmd, "ping") == 0) {
       fprintf(f, "0\npong\n");
    } else if (strcmp(cmd, "pid") == 0) {
@@ -199,14 +204,25 @@ static void Control_read_cb(int fd, void *data)
       const char *cmdname = cmd + 4;
       int ret = a_UIcmd_by_name(bw, cmdname);
       fprintf(f, "%d\n", ret == 0 ? 0 : 1);
-   } else if (strcmp(cmd, "wait") == 0) {
+   } else if (strcmp(cmd, "wait") == 0 || strncmp(cmd, "wait ", 5) == 0) {
+      float timeout = 60.0f; /* 1 minute by default */
+      /* Contains timeout argument? */
+      if (cmd[4] == ' ')
+         timeout = atof(&cmd[5]);
       if (a_UIcmd_has_finished(bw)) {
          fprintf(f, "0\n");
       } else {
-         assert(bw_waiting == NULL);
-         bw_waiting = bw;
-         bw_waiting_file = f;
-         do_close = 0;
+         if (bw_waiting) {
+            fprintf(f, "1\nalready waiting\n");
+         } else {
+            bw_waiting = bw;
+            bw_waiting_file = f;
+            do_close = 0;
+
+            /* If timeout is 0 or negative, wait forever */
+            if (timeout > 0.0f)
+               a_Timeout_add(timeout, handle_wait_timeout, NULL);
+         }
       }
    } else {
       fprintf(f, "1\nunknown command: %s\n", cmd);
@@ -217,6 +233,19 @@ static void Control_read_cb(int fd, void *data)
    if (do_close)
       fclose(f);
    // close(new_fd); // No need as fclose already does
+}
+
+/* Timeout has passed, return error */
+static void handle_wait_timeout(void *data)
+{
+   assert(bw_waiting_file);
+   FILE *f = bw_waiting_file;
+
+   fprintf(f, "1\ntimeout\n");
+   fclose(f);
+
+   bw_waiting = NULL;
+   bw_waiting_file = NULL;
 }
 
 void a_Control_notify_finish(BrowserWindow *bw)
@@ -233,6 +262,7 @@ void a_Control_notify_finish(BrowserWindow *bw)
    fprintf(f, "0\n");
    fclose(f);
 
+   a_Timeout_actually_remove(handle_wait_timeout, NULL);
    bw_waiting = NULL;
    bw_waiting_file = NULL;
 }
