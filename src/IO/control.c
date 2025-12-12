@@ -106,7 +106,7 @@ static void Control_read_cb(int fd, void *data)
    ssize_t r;
    do {
       r = read(new_fd, buf, 1);
-      MSG("read = %zd\n", r);
+      _MSG("read = %zd\n", r);
       if (r < 0) {
          if (errno == EINTR) {
             continue;
@@ -121,7 +121,7 @@ static void Control_read_cb(int fd, void *data)
          break;
    } while (r);
 
-   MSG("got msg: %s\n", dstr->str);
+   _MSG("got msg: %s\n", dstr->str);
 
    char *cmd = dstr->str;
    for (char *p = cmd; *p != '\0'; p++) {
