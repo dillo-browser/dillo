@@ -141,7 +141,22 @@ static void Control_read_cb(int fd, void *data)
    BrowserWindow *bw = a_UIcmd_get_first_active_bw();
    int do_close = 1;
 
-   if (strcmp(cmd, "ping") == 0) {
+   if (strcmp(cmd, "help") == 0) {
+      fprintf(f, "0\n");
+      fprintf(f, "Commands return 0 on success or non-zero on error.\n");
+      fprintf(f, "Available commands:\n");
+      fprintf(f, " ping          Check if dillo replies correctly:\n");
+      fprintf(f, " pid           Print PID of selected dillo process\n");
+      fprintf(f, " reload        Reload the current tab\n");
+      fprintf(f, " has_finished  Print 1 if finished loading, 0 otherwise\n");
+      fprintf(f, " open <url>    Open the given url in the current tab\n");
+      fprintf(f, " url           Print the url in the current tab\n");
+      fprintf(f, " dump          Print the content of the current tab\n");
+      fprintf(f, " hdump         Print the HTTP headers of the current tab\n");
+      fprintf(f, " load          Replace the content in the current tab by stdin\n");
+      fprintf(f, " quit          Close dillo\n");
+      fprintf(f, " wait          Wait until the current tab has finished loading\n");
+   } else if (strcmp(cmd, "ping") == 0) {
       fprintf(f, "0\npong\n");
    } else if (strcmp(cmd, "pid") == 0) {
       fprintf(f, "0\n%d\n", getpid());

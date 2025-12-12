@@ -175,7 +175,7 @@ connect_to_dillo(int *sock)
 int main(int argc, char *argv[])
 {
    if (argc <= 1) {
-      fprintf(stderr, "missing command\n");
+      fprintf(stderr, "missing command, try 'dilloc help'\n");
       return 2;
    }
 
