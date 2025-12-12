@@ -127,6 +127,7 @@ keywords. Generated for version __VERSION__.</p>
     <ul>
       <li><a href="#plugins">Plugins</a></li>
       <li><a href="#bug-meter">Bug meter</a></li>
+      <li><a href="#remote-control">Remote control</a></li>
       <li><a href="#keyboard-shortcuts">Keyboard shortcuts</a></li>
     </ul>
   </li>
@@ -805,6 +806,22 @@ compliant with HTML standards.
 <p>
 The bug meter is located at the lower right corner of Dillo. Use the left-click
 to see the messages, right-click for a menu to open other HTML validators.
+
+<h3 id="remote-control">Remote control</h3>
+<p>
+Dillo can be build with experimental support for remote control using the flag
+<code>--enable-control-socket</code> at configure time. Notice that this
+feature is <em>experimental</em> and the command names or behavior can change in
+future versions. When enabled, the <code>dilloc</code> program is also built,
+which allows the remote control of dillo given its PID using a UNIX socket. By
+default, the first process that replies is used. The environment variable
+<code>DILLO_PID</code> can be used to select which instance of dillo to use.
+
+<p>
+The dilloc program sends commands to dillo and prints the response in the
+standard output. Some commands can also read data from the standard input and
+write it to dillo. Use <code>dilloc help</code> to see which commands are
+available and their syntax.
 
 <h3 id="keyboard-shortcuts">Keyboard shortcuts</h3>
 <p>
