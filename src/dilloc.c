@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <time.h>
 
 static int
 is_number(const char *str)
@@ -151,6 +152,14 @@ find_working_socket(int *sock)
    return -1;
 }
 
+static double
+get_time_ms(void)
+{
+   struct timespec ts;
+   clock_gettime(CLOCK_MONOTONIC, &ts);
+   return (double) ts.tv_sec + (double) ts.tv_nsec * 1.0e-9;
+}
+
 static int
 connect_to_dillo(int *sock)
 {
@@ -158,8 +167,20 @@ connect_to_dillo(int *sock)
    char *given_pid = getenv("DILLO_PID");
    int fd;
    if (given_pid) {
-      if (connect_given_pid(&fd, given_pid) != 0)
-         return -1;
+      double maxtime = get_time_ms() + 30000.0; /* 30 seconds */
+      struct timespec dur = { .tv_sec = 0, .tv_nsec = 50000000UL };
+      while (1) {
+         if (connect_given_pid(&fd, given_pid) == 0)
+            break;
+
+         if (get_time_ms() > maxtime) {
+            fprintf(stderr, "timeout connecting to : %s\n", strerror(errno));
+            return -1;
+         }
+
+         /* Retry after a bit */
+         nanosleep(&dur, NULL);
+      }
    } else {
       /* Otherwise, try to find a working pid and remove those that don't work,
        * which are likely dead processes */

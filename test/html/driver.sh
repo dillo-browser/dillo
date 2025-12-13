@@ -42,9 +42,6 @@ function render_page() {
   "$DILLOBIN" -f "$htmlfile" 2> "$outerr" &
   export DILLO_PID=$!
 
-  # FIXME: We need a beter way to wait for the UNIX socket
-  sleep 0.2
-
   if ! dilloc wait 5; then
     echo "cannot render page under 5 seconds" >&2
     exit 1
