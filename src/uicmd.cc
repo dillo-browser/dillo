@@ -1647,25 +1647,40 @@ void a_UIcmd_set_buttons_sens(BrowserWindow *bw)
    sens = (a_Nav_stack_ptr(bw) < a_Nav_stack_size(bw) - 1 &&
            !a_Bw_expecting(bw));
    BW2UI(bw)->button_set_sens(UI_FORW, sens);
-
-   a_UIcmd_finish_loading(bw);
 }
 
 int a_UIcmd_has_finished(BrowserWindow *bw)
 {
    if (dList_length(bw->ImageClients) || dList_length(bw->RootClients))
-	   return 0;
+      return 0;
+
+   if (bw->NumPendingStyleSheets > 0)
+      return 0;
+
+   if (a_Bw_expecting(bw))
+      return 0;
 
    return 1;
 }
 
 void a_UIcmd_finish_loading(BrowserWindow *bw)
 {
-	/* Not yet */
-   if (dList_length(bw->ImageClients) || dList_length(bw->RootClients))
-	   return;
+   if (a_Control_is_waiting() && a_UIcmd_has_finished(bw)) {
+      /* FIXME: This is a very ugly hack but is relatively simpler than
+       * a proper solution with emitted signals. Before notifying that
+       * the current page has finished rendering, we need to perform any
+       * last layout passes as needed (done in generalIdle()) as well as
+       * flush the output of the render to the screen (in Fl::flush()).
+       * Otherwise we risk dilloc wait to return before the screen has
+       * the finished render result. */
+      Layout *layout = (Layout *) bw->render_layout;
+      FltkPlatform *platform = (FltkPlatform *) layout->getPlatform();
+      platform->generalIdle();
+      Fl::flush();
 
-   a_Control_notify_finish(bw);
+      /* Now we are ready to notify any client */
+      a_Control_notify_finish(bw);
+   }
 }
 
 /*

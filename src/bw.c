@@ -2,7 +2,7 @@
  * File: bw.c
  *
  * Copyright (C) 2006-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -170,8 +170,10 @@ void a_Bw_close_client(BrowserWindow *bw, int ClientKey)
       a_UIcmd_set_img_prog(bw, bw->NumImagesGot, bw->NumImages, 1);
       if (bw->NumImagesGot == bw->NumImages)
          a_UIcmd_set_img_prog(bw, 0, 0, 0);
-      if (dList_length(bw->RootClients) == 0)
+      if (dList_length(bw->RootClients) == 0) {
          a_UIcmd_set_buttons_sens(bw);
+         a_UIcmd_finish_loading(bw);
+      }
    }
 }
 

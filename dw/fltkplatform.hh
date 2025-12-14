@@ -158,7 +158,6 @@ private:
    int idleFuncId;
 
    static void generalStaticIdle(void *data);
-   void generalIdle();
 
    FltkView *view;
    lout::container::typed::List <ui::FltkResource> *resources;
@@ -167,6 +166,7 @@ public:
    FltkPlatform ();
    ~FltkPlatform ();
 
+   void generalIdle();
    void setLayout (core::Layout *layout);
 
    void attachView (core::View *view);
