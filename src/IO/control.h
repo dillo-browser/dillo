@@ -19,6 +19,7 @@ extern "C" {
 #include "bw.h"
 
 int a_Control_init(void);
+int a_Control_is_waiting(void);
 void a_Control_notify_finish(BrowserWindow *bw);
 int a_Control_free(void);
 

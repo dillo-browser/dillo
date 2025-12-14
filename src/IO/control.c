@@ -248,6 +248,11 @@ static void handle_wait_timeout(void *data)
    bw_waiting_file = NULL;
 }
 
+int a_Control_is_waiting(void)
+{
+   return bw_waiting != NULL;
+}
+
 void a_Control_notify_finish(BrowserWindow *bw)
 {
    if (bw_waiting == NULL || bw_waiting != bw)
@@ -359,6 +364,7 @@ int a_Control_free(void)
 #else
 
 int a_Control_init(void) { return 0; }
+int a_Control_is_waiting(void) { return 0; }
 void a_Control_notify_finish(BrowserWindow *bw) { (void) bw; }
 int a_Control_free(void) { return 0; }
 
