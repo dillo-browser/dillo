@@ -730,6 +730,12 @@ if test "x$enable_html_tests" = "xyes" ; then
   if test "x$html_tests_ok" != "xyes"; then
     AC_MSG_ERROR([Cannot find all tools to enable HTML tests])
   fi
+
+  # Needs control socket
+  if test "x$enable_control_socket" != "xyes"; then
+    AC_MSG_NOTICE([Enabling control socket support for HTML tests])
+    enable_control_socket=yes
+  fi
 fi
 
 AM_CONDITIONAL([ENABLE_HTML_TESTS],  [test "x$html_tests_ok" = "xyes"])
