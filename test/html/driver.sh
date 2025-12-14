@@ -12,22 +12,26 @@
 set -e
 set -x
 
-DILLOBIN=${DILLOBIN:-$TOP_BUILDDIR/src/dillo}
-DILLOCBIN=${DILLOCBIN:-$TOP_BUILDDIR/src/dilloc}
+DILLOBINDIR=${DILLOBINDIR:-$TOP_BUILDDIR/src/}
 LEAKFILTER=${LEAKFILTER:-$TOP_SRCDIR/test/html/leakfilter.awk}
+
+DILLOBINDIR=$(readlink -f "$DILLOBINDIR")
 
 # Clean asan options if set
 unset ASAN_OPTIONS
 
-if [ ! -e $DILLOBIN ]; then
-  echo missing dillo binary, set DILLOBIN with the path to dillo
+if [ ! -e $DILLOBINDIR/dillo ]; then
+  echo missing dillo binary, set DILLOBINDIR with the path to dillo bin directory
   exit 1
 fi
 
-if [ ! -e $DILLOCBIN ]; then
-  echo missing dilloc binary, set DILLOCBIN with the path to dilloc
+if [ ! -e $DILLOBINDIR/dilloc ]; then
+  echo missing dilloc binary, set DILLOCBINDIR with the path to dilloc bin directory
   exit 1
 fi
+
+# Make sure we use the correct dillo and dilloc
+export PATH="$DILLOBINDIR:$PATH"
 
 magick_bin="convert"
 if command -v magick 2>&1 >/dev/null; then
@@ -39,7 +43,7 @@ function render_page() {
   outpic="$2"
   outerr="$2.err"
 
-  "$DILLOBIN" -f "$htmlfile" 2> "$outerr" &
+  dillo -f "$htmlfile" 2> "$outerr" &
   export DILLO_PID=$!
 
   if ! dilloc wait 5; then

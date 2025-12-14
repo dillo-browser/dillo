@@ -11,7 +11,7 @@ cd build-$v
 ../configure --prefix=$(readlink -f ../install-$v) --enable-html-tests
 make
 make install
-DILLOBIN=$(readlink -f ../install-$v/bin/dillo) make check
+DILLOBINDIR=$(readlink -f ../install-$v/bin) make check
 # Check release fits in a floppy disk of 1.44 MB
 make dist-gzip
 size=$(stat -c %s dillo-*.tar.gz)
@@ -41,7 +41,7 @@ cd build-$v
   --prefix=$(readlink -f ../install-$v) --enable-html-tests
 make
 make install
-DILLOBIN=$(readlink -f ../install-$v/bin/dillo) make check
+DILLOBINDIR=$(readlink -f ../install-$v/bin) make check
 cd ..
 rm -rf build-$v install-$v
 # ----------------------------------------------------------------------

@@ -33,9 +33,9 @@ jobs:
         cp install/etc/dillo/* ~/.dillo/
     - name: make check
       run: |
-        export DILLOBIN=$(readlink -f install/bin/dillo)
+        export DILLOBINDIR=$(readlink -f install/bin)
         cd build && make check || (cat test/html/test-suite.log; false)
-        export DILLOBIN=
+        export DILLOBINDIR=
     - name: Check release fits in a floppy disk of 1.44 MB
       run: |
         cd build
@@ -51,7 +51,7 @@ jobs:
         fi
     - name: make distcheck (with HTML tests)
       run: |
-        export DILLOBIN=
+        export DILLOBINDIR=
         mkdir build-distcheck install-distcheck
         cd build-distcheck && ../configure --prefix=$(readlink -f ../install-distcheck) --enable-html-tests
         make distcheck DISTCHECK_CONFIGURE_FLAGS=--enable-html-tests
@@ -89,9 +89,9 @@ jobs:
         cp install/etc/dillo/* ~/.dillo/
     - name: make check
       run: |
-        export DILLOBIN=$(readlink -f install/bin/dillo)
+        export DILLOBINDIR=$(readlink -f install/bin)
         cd build && make check || (cat test/html/test-suite.log; false)
-        export DILLOBIN=
+        export DILLOBINDIR=
   ubuntu-latest-no-tls:
     needs: ubuntu-latest-html-tests
     runs-on: ubuntu-latest
