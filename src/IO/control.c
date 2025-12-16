@@ -277,7 +277,6 @@ int a_Control_init(void)
    int fd;
    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
       MSG("cannot create control socket: %s\n", strerror(errno));
-      exit(1);
       return -1;
    }
 
@@ -288,7 +287,7 @@ int a_Control_init(void)
 
    char ctldir[LEN];
    if (snprintf(ctldir, LEN, "%s/.dillo/ctl", dGethomedir()) >= LEN) {
-      MSG("path too long\n");
+      MSG("control socket dir path too long: %s/.dillo/ctl\n", dGethomedir());
       return -1;
    }
 
@@ -302,34 +301,36 @@ int a_Control_init(void)
    }
 
    if (snprintf(addr.sun_path, LEN, "%s/%d", ctldir, (int) getpid()) >= LEN) {
-      MSG("path too long\n");
+      MSG("control socket path too long: %s/%d\n", ctldir, (int) getpid());
       return -1;
    }
 
    int slen = sizeof(addr);
 
-   fcntl(fd, F_SETFL, O_NONBLOCK);
+   if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
+      MSG("control socket fcntl failed: %s\n", strerror(errno));
+      return -1;
+   }
 
    int on = 1;
    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) < 0) {
-      MSG("setsockopt failed: %s\n", strerror(errno));
-      exit(-1);
+      MSG("control socket setsockopt failed: %s\n", strerror(errno));
+      return -1;
    }
 
    if (ioctl(fd, FIONBIO, (char *)&on) != 0) {
-      MSG("ioctl failed: %s\n", strerror(errno));
-      exit(1);
+      MSG("control socket ioctl failed: %s\n", strerror(errno));
+      return -1;
    }
 
    if (bind(fd, (struct sockaddr *) &addr, slen) != 0) {
       MSG("cannot bind control socket: %s\n", strerror(errno));
-      exit(1);
       return -1;
    }
 
    if (listen(fd, 32) != 0) {
       MSG("cannot listen control socket: %s\n", strerror(errno));
-      exit(1);
+      return -1;
    }
 
    control_fd = fd;
