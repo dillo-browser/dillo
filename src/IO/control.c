@@ -52,19 +52,19 @@ static void handle_wait_timeout(void *data);
 static void
 cmd_load(FILE *f, int fd)
 {
-   MSG("cmd_load()\n");
+   _MSG("cmd_load()\n");
    Dstr *dstr = dStr_sized_new(1);
    ssize_t r;
    size_t len = 0;
    do {
-      char buf[1];
-      r = read(fd, buf, 1);
-      MSG("read buf = %zd\n", r);
+      char buf[4096];
+      r = read(fd, buf, 4096);
+      _MSG("read buf = %zd\n", r);
       if (r < 0) {
          if (errno == EINTR) {
             continue;
          } else {
-            MSG_ERR("Control_read_cb %s\n", dStrerror(errno));
+            MSG_ERR("read failed in load command: %s\n", dStrerror(errno));
             exit(1);
          }
       } else if (r > 0) {
