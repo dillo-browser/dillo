@@ -731,7 +731,7 @@ if test "x$enable_html_tests" = "xyes" ; then
     AC_MSG_ERROR([Cannot find all tools to enable HTML tests])
   fi
 
-  # Needs control socket
+  dnl Needs control socket
   if test "x$enable_control_socket" != "xyes"; then
     AC_MSG_NOTICE([Enabling control socket support for HTML tests])
     enable_control_socket=yes
@@ -743,11 +743,33 @@ AM_CONDITIONAL([ENABLE_HTML_TESTS],  [test "x$html_tests_ok" = "xyes"])
 dnl --------------
 dnl Control socket
 dnl --------------
-dnl
-dnl TODO: Write a test to check that UNIX sockets are suppported.
-dnl
+unix_socket_ok=no
 if test "x$enable_control_socket" = "xyes"; then
-  AC_DEFINE([ENABLE_CONTROL_SOCKET], [1], [Enable control socket])
+  dnl Check that UNIX sockets are suppported.
+  AC_MSG_CHECKING([for AF_UNIX socket support])
+  AC_COMPILE_IFELSE([
+    AC_LANG_PROGRAM([[
+        #include <sys/socket.h>
+        #include <netinet/in.h>
+        #include <sys/un.h>
+      ]],[[
+        int fd = socket(AF_UNIX, SOCK_STREAM, 0);
+        struct sockaddr_un addr;
+        addr.sun_family = AF_UNIX;
+        char ctldir[sizeof(addr.sun_path)];
+      ]]
+    )],
+    [unix_socket_ok=yes],
+    [unix_socket_ok=no]
+   )
+  if test "x$unix_socket_ok" = "xyes"; then
+    AC_MSG_RESULT([yes])
+    AC_MSG_NOTICE([Enabling control socket support])
+    AC_DEFINE([ENABLE_CONTROL_SOCKET], [1], [Enable control socket])
+  else
+    AC_MSG_RESULT([no])
+    AC_MSG_FAILURE([AF_UNIX socket test failed, cannot enable control socket])
+  fi
 else
   AC_MSG_NOTICE([Disabling control socket])
 fi
