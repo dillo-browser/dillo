@@ -720,18 +720,18 @@ void a_UIcmd_close_bw(void *vbw)
 }
 
 /*
- * Close all the browser windows
+ * Close all the browser windows. Set force != NULL to never ask.
  */
-void a_UIcmd_close_all_bw(void *)
+void a_UIcmd_close_all_bw(void *force)
 {
    BrowserWindow *bw;
    int choice = 1;
 
-   if (prefs.show_quit_dialog && a_Bw_num() > 1)
+   if (!force && prefs.show_quit_dialog && a_Bw_num() > 1)
       choice = a_Dialog_choice("Dillo: Quit?",
                                "More than one open tab or window.",
                                "Quit", "Cancel", NULL);
-   if (choice == 1)
+   if (force || choice == 1)
       while ((bw = a_Bw_get(0)))
          a_UIcmd_close_bw((void*)bw);
 }

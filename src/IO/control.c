@@ -196,8 +196,7 @@ static void Control_read_cb(int fd, void *data)
    } else if (strcmp(cmd, "load") == 0) {
       cmd_load(f, new_fd);
    } else if (strcmp(cmd, "quit") == 0) {
-      /* FIXME: May create confirmation dialog */
-      a_UIcmd_close_all_bw(NULL);
+      a_UIcmd_close_all_bw((void *)1);
       fprintf(f, "0\n");
    } else if (strncmp(cmd, "cmd ", 4) == 0) {
       const char *cmdname = cmd + 4;
