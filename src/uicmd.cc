@@ -1654,9 +1654,6 @@ int a_UIcmd_has_finished(BrowserWindow *bw)
    if (dList_length(bw->ImageClients) || dList_length(bw->RootClients))
       return 0;
 
-   if (bw->NumPendingStyleSheets > 0)
-      return 0;
-
    if (a_Bw_expecting(bw))
       return 0;
 

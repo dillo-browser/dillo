@@ -55,10 +55,9 @@ cmd_load(FILE *f, int fd)
    _MSG("cmd_load()\n");
    Dstr *dstr = dStr_sized_new(1);
    ssize_t r;
-   size_t len = 0;
    do {
-      char buf[4096];
-      r = read(fd, buf, 4096);
+      char buf[BUFSIZ];
+      r = read(fd, buf, BUFSIZ);
       _MSG("read buf = %zd\n", r);
       if (r < 0) {
          if (errno == EINTR) {
@@ -70,7 +69,6 @@ cmd_load(FILE *f, int fd)
       } else if (r > 0) {
          dStr_append_l(dstr, buf, r);
       }
-      len += r;
    } while (r);
 
    BrowserWindow *bw = a_UIcmd_get_first_active_bw();
@@ -85,6 +83,7 @@ cmd_load(FILE *f, int fd)
    a_UIcmd_repush(bw);
 
    dStr_free(dstr, 1);
+   a_Url_free(url);
 
    fprintf(f, "0\n");
 }
@@ -92,9 +91,7 @@ cmd_load(FILE *f, int fd)
 static void Control_read_cb(int fd, void *data)
 {
    _MSG("Control_read_cb called\n");
-   char buf[1024];
-   const int buf_sz = 1024;
-   Dstr *dstr = dStr_sized_new(buf_sz);
+   Dstr *dstr = dStr_sized_new(BUFSIZ);
 
    int new_fd = accept(control_fd, NULL, NULL);
    if (new_fd < 0) {
@@ -108,6 +105,8 @@ static void Control_read_cb(int fd, void *data)
 
    ssize_t r;
    do {
+      /* Read characters one by one */
+      char buf[1];
       r = read(new_fd, buf, 1);
       _MSG("read = %zd\n", r);
       if (r < 0) {
@@ -117,8 +116,8 @@ static void Control_read_cb(int fd, void *data)
             MSG_ERR("Control_read_cb %s\n", dStrerror(errno));
             exit(1);
          }
-      } else if (r > 0) {
-         dStr_append_l(dstr, buf, r);
+      } else if (r == 1) {
+         dStr_append_l(dstr, buf, 1);
       }
       if (buf[0] == '\n')
          break;
@@ -350,7 +349,7 @@ int a_Control_free(void)
    assert(control_path);
 
    a_IOwatch_remove_fd(control_fd, DIO_READ);
-   if (close(control_fd) != 0) {
+   if (dClose(control_fd) != 0) {
       MSG_ERR("close ctl socket failed\n");
       return -1;
    }

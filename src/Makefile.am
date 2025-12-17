@@ -15,8 +15,7 @@ bin_PROGRAMS = dillo
 if ENABLE_CONTROL_SOCKET
 bin_PROGRAMS += dilloc
 dilloc_LDADD = \
-	$(top_builddir)/dlib/libDlib.a \
-	$(top_builddir)/dw/libDw-core.a
+	$(top_builddir)/dlib/libDlib.a
 
 dilloc_SOURCES = \
 	dilloc.c

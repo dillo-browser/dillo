@@ -47,6 +47,12 @@ extern "C" {
 
 #define D_ASCII_TOUPPER(c) (((c) >= 'a' && (c) <= 'z') ? (c) - 0x20 : (c))
 #define D_ASCII_TOLOWER(c) (((c) >= 'A' && (c) <= 'Z') ? (c) + 0x20 : (c))
+
+/* Use 4 K of default buffer size if not defined */
+#ifndef BUFSIZ
+#define BUFSIZ 4096
+#endif
+
 /*
  *-- Casts -------------------------------------------------------------------
  */

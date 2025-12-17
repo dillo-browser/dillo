@@ -113,7 +113,10 @@ find_working_socket(int *sock)
          return -1;
       }
 
-      int ret = connect(fd, (struct sockaddr *) &addr, sizeof(addr));
+      int ret;
+      do {
+         ret = connect(fd, (struct sockaddr *) &addr, sizeof(addr));
+      } while (ret == -1 && errno == EINTR);
 
       if (ret == 0) {
          if (++found_pid == 1) {
@@ -132,7 +135,7 @@ find_working_socket(int *sock)
          }
       }
 
-      if (fd != -1 && close(fd) != 0) {
+      if (fd != -1 && dClose(fd) != 0) {
          fprintf(stderr, "cannot close fd: %s", strerror(errno));
          return -1;
       }
@@ -148,7 +151,7 @@ find_working_socket(int *sock)
    }
 
    fprintf(stderr, "multiple ctl sockets found, set DILLO_PID\n");
-   close(*sock);
+   dClose(*sock);
    return -1;
 }
 
@@ -230,9 +233,9 @@ int main(int argc, char *argv[])
 
    /* Forward stdin to the socket */
    if (is_load) {
-      uint8_t buf[1024];
+      uint8_t buf[BUFSIZ];
       while (1) {
-         ssize_t r = read(STDIN_FILENO, buf, 1024);
+         ssize_t r = read(STDIN_FILENO, buf, BUFSIZ);
          if (r == 0) {
             break;
          } else if (r < 0) {
@@ -253,7 +256,7 @@ int main(int argc, char *argv[])
          }
       }
 
-      close(fd);
+      dClose(fd);
       return 0;
    }
 
@@ -261,9 +264,9 @@ int main(int argc, char *argv[])
    int saw_rc = 0;
    int rc = 2;
 
-   uint8_t buf[1024];
+   uint8_t buf[BUFSIZ];
    while (1) {
-      ssize_t r = read(fd, buf, 1024);
+      ssize_t r = read(fd, buf, BUFSIZ);
       if (r == 0) {
          break;
       } else if (r < 2) {
@@ -290,7 +293,7 @@ int main(int argc, char *argv[])
       }
 
       while (r > 0) {
-         size_t w = write(1, p, r);
+         size_t w = write(STDOUT_FILENO, p, r);
          r -= w;
          p += w;
       }

@@ -27,5 +27,4 @@ int a_Control_free(void);
 }
 #endif /* __cplusplus */
 
-#endif /* IO_WATCH_H */
-
+#endif /* IO_CONTROL_H */
