@@ -840,6 +840,8 @@ dnl
 
 if eval "test x$GCC = xyes"; then
   CXXFLAGS="$CXXFLAGS -Wall -W -Wno-unused-parameter -fno-rtti -fno-exceptions -pedantic -D_POSIX_C_SOURCE=200112L"
+  # Ignore warning on FLTK headers from newer gcc versions
+  CXXFLAGS="$CXXFLAGS -Wno-cast-function-type"
 fi
 
 dnl ----------------------------------
