@@ -903,6 +903,7 @@ AC_CONFIG_FILES([
     test/unit/Makefile
     test/dw/Makefile
     test/html/Makefile
+    test/dilloc/Makefile
 ])
 
 AC_OUTPUT
