@@ -38,6 +38,15 @@ is_number(const char *str)
    return 1;
 }
 
+static double
+get_time_s(void)
+{
+   struct timespec ts;
+   clock_gettime(CLOCK_MONOTONIC, &ts);
+   return (double) ts.tv_sec + (double) ts.tv_nsec * 1.0e-9;
+}
+
+/* Connects to the given pid, retrying up to a timeout. */
 static int
 connect_given_pid(int *sock, const char *pid)
 {
@@ -50,22 +59,46 @@ connect_given_pid(int *sock, const char *pid)
       return -1;
    }
 
-#define LEN ((int) sizeof(addr.sun_path))
-   if (snprintf(addr.sun_path, LEN, "%s/.dillo/ctl/%s", dGethomedir(), pid) >= LEN) {
+   char *path = addr.sun_path;
+   int len = (int) sizeof(addr.sun_path);
+   if (snprintf(path, len, "%s/.dillo/ctl/%s", dGethomedir(), pid) >= len) {
       fprintf(stderr, "pid path too long\n");
       return -1;
    }
-#undef LEN
 
-   if (connect(fd, (struct sockaddr *) &addr, sizeof(addr)) != 0) {
-      fprintf(stderr, "cannot connect to %s: %s\n",
-            addr.sun_path, strerror(errno));
-      return -1;
+   double t0 = get_time_s();
+   double maxtime = t0 + 10.0; /* 10 seconds */
+   double warntime = t0 + 1.0; /* 1 second */
+   /* Retry every 50 ms */
+   struct timespec dur = { .tv_sec = 0, .tv_nsec = 50UL * 1000UL * 1000UL };
+   int warned = 0;
+   while (1) {
+      if (connect(fd, (struct sockaddr *) &addr, sizeof(addr)) == 0) {
+         *sock = fd;
+         return 0;
+      } else if (errno != ENOENT) {
+         fprintf(stderr, "connect to %s failed: %s\n", path, strerror(errno));
+         return -1;
+      }
+
+      if (!warned && get_time_s() >= warntime) {
+         fprintf(stderr, "connect to %s taking long\n", path);
+         warned = 1;
+      }
+
+      if (get_time_s() >= maxtime) {
+         fprintf(stderr, "timeout connecting to %s: %s\n",
+               path, strerror(errno));
+         break;
+      }
+
+      /* Retry after a bit */
+      nanosleep(&dur, NULL);
    }
 
-   *sock = fd;
+   dClose(fd);
 
-   return 0;
+   return -1;
 }
 
 /* Try to locate dillo if there is only one process */
@@ -155,35 +188,16 @@ find_working_socket(int *sock)
    return -1;
 }
 
-static double
-get_time_ms(void)
-{
-   struct timespec ts;
-   clock_gettime(CLOCK_MONOTONIC, &ts);
-   return (double) ts.tv_sec + (double) ts.tv_nsec * 1.0e-9;
-}
-
 static int
 connect_to_dillo(int *sock)
 {
    /* If the PID is given, use only that one */
    char *given_pid = getenv("DILLO_PID");
-   int fd;
+   int fd = -1;
    if (given_pid) {
-      double maxtime = get_time_ms() + 30000.0; /* 30 seconds */
-      struct timespec dur = { .tv_sec = 0, .tv_nsec = 50000000UL };
-      while (1) {
-         if (connect_given_pid(&fd, given_pid) == 0)
-            break;
-
-         if (get_time_ms() > maxtime) {
-            fprintf(stderr, "timeout connecting to : %s\n", strerror(errno));
-            return -1;
-         }
-
-         /* Retry after a bit */
-         nanosleep(&dur, NULL);
-      }
+      /* Connect to the given pid with retry (dillo may be starting) */
+      if (connect_given_pid(&fd, given_pid) != 0)
+         return -1;
    } else {
       /* Otherwise, try to find a working pid and remove those that don't work,
        * which are likely dead processes */
@@ -203,7 +217,7 @@ int main(int argc, char *argv[])
       return 2;
    }
 
-   int fd;
+   int fd = -1;
    if (connect_to_dillo(&fd) != 0)
       return 2;
 
