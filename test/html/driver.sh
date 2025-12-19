@@ -1,7 +1,5 @@
 #!/bin/bash
 #
-# File: driver.sh
-#
 # Copyright (C) 2023-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -9,44 +7,44 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
-set -e
-set -x
+set -eux
 
-DILLOBINDIR=${DILLOBINDIR:-$TOP_BUILDDIR/src/}
-LEAKFILTER=${LEAKFILTER:-$TOP_SRCDIR/test/html/leakfilter.awk}
+source "$TOP_SRCDIR/test/lib/dilloc.sh"
+source "$TOP_SRCDIR/test/lib/workdir.sh"
+source "$TOP_SRCDIR/test/lib/xorg.sh"
 
-DILLOBINDIR=$(readlink -f "$DILLOBINDIR")
+function driver_start() {
+  workdir_setup "$1"
+  dillo_setup
+  xorg_start_server
 
-# Clean asan options if set
-unset ASAN_OPTIONS
+  # Check magick
+  magick_bin="convert"
+  if command -v magick 2>&1 >/dev/null; then
+    magick_bin="magick"
+  fi
 
-if [ ! -e $DILLOBINDIR/dillo ]; then
-  echo missing dillo binary, set DILLOBINDIR with the path to dillo bin directory
-  exit 1
-fi
+  # File used to filter leaks
+  LEAKFILTER=${LEAKFILTER:-$TOP_SRCDIR/test/html/leakfilter.awk}
 
-if [ ! -e $DILLOBINDIR/dilloc ]; then
-  echo missing dilloc binary, set DILLOCBINDIR with the path to dilloc bin directory
-  exit 1
-fi
+  # Clean asan options if set
+  unset ASAN_OPTIONS
+}
 
-# Make sure we use the correct dillo and dilloc
-export PATH="$DILLOBINDIR:$PATH"
-
-magick_bin="convert"
-if command -v magick 2>&1 >/dev/null; then
-  magick_bin="magick"
-fi
+function driver_stop() {
+  workdir_clean
+  xorg_stop_server
+}
 
 function render_page() {
   htmlfile="$1"
   outpic="$2"
   outerr="$2.err"
 
-  dillo -f "$htmlfile" 2> "$outerr" &
+  $DILLO -f "$htmlfile" 2> "$outerr" &
   export DILLO_PID=$!
 
-  if ! dilloc wait 5; then
+  if ! $DILLOC wait 5; then
     echo "cannot render page under 5 seconds" >&2
     exit 1
   fi
@@ -61,7 +59,7 @@ function render_page() {
   xwd -id "$winid" -silent | ${magick_bin} xwd:- png:${outpic}
 
   # Exit cleanly
-  dilloc quit
+  $DILLOC quit
 
   # Dillo may fail due to leaks, but we will check them manually
   wait "$DILLO_PID" || true
@@ -82,49 +80,23 @@ function test_file() {
     exit 1
   fi
 
-  test_name=$(basename "$html_file")
-  wdir="${test_name}_wdir"
-
-  # Clean any previous files
-  rm -rf "$wdir"
-  mkdir -p "$wdir"
-
-  # Use a FIFO to read the display number
-  mkfifo "$wdir/display.fifo"
-  exec 6<> "$wdir/display.fifo"
-  Xvfb -screen 5 1024x768x24 -displayfd 6 &
-  xorgpid=$!
-
-  # Always kill Xvfb on exit
-  trap "kill $xorgpid" EXIT
-
-  read dispnum < "$wdir/display.fifo"
-  export DISPLAY=":$dispnum"
-
-  render_page "$html_file" "$wdir/html.png"
-  render_page "$ref_file" "$wdir/ref.png"
+  render_page "$html_file" "$WORKDIR/html.png"
+  render_page "$ref_file" "$WORKDIR/ref.png"
 
   # AE = Absolute Error count of the number of different pixels
-  diffcount=$(compare -metric AE "$wdir/html.png" "$wdir/ref.png" "$wdir/diff.png" 2>&1 | cut -d ' ' -f 1 || true)
+  diffcount=$(compare -metric AE "$WORKDIR/html.png" "$WORKDIR/ref.png" "$WORKDIR/diff.png" 2>&1 | cut -d ' ' -f 1 || true)
 
   # The test passes only if both images are identical
   if [ "$diffcount" = "0" ]; then
     echo "OK"
-    ret=0
+    return 0
   else
     echo "FAIL"
-    ret=1
+    return 1
   fi
-
-  exec 6>&-
-  rm "$wdir/display.fifo"
-
-  if [ -z "$DILLO_TEST_LEAVE_FILES" ]; then
-    rm -rf "$wdir"
-  fi
-
-  return $ret
 }
 
+driver_start $1
+trap driver_stop EXIT
 test_file "$1"
 exit $?

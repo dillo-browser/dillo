@@ -9,11 +9,20 @@
 
 set -eux
 
-i="$SRCDIR/test.html"
-o="$WORKDIR/output.html"
+source "$TOP_SRCDIR/test/lib/dilloc.sh"
+source "$TOP_SRCDIR/test/lib/workdir.sh"
 
-# Split the input into two writes and verify that it is the same page
-(head -3 "$i"; tail +4 "$i") | $DILLOC load
-$DILLOC dump > "$o"
+function driver_start() {
+  workdir_setup "$1"
+  dilloc_start
+}
 
-diff -up "$i" "$o"
+function driver_stop() {
+  workdir_clean
+  dilloc_stop
+}
+
+driver_start "$1"
+trap driver_stop EXIT
+
+source "$1"

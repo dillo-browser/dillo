@@ -1,38 +1,19 @@
-#!/bin/sh
+#!/bin/bash
+#
+# Copyright (C) 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
 
-set -x
-set -e
+set -eux
 
-DILLOBINDIR=${DILLOBINDIR:-$TOP_BUILDDIR/src/}
-export PATH="$DILLOBINDIR:$PATH"
+i="$SRCDIR/test.html"
+o="$WORKDIR/output.html"
 
-# Cannot overwrite about:* pages
-dillo file:///dev/empty &
-export DILLO_PID=$!
+# Check that loading a page and dumping creates an exact copy
+$DILLOC load < "$i"
+$DILLOC dump > "$o"
 
-dilloc wait
-
-d=$(mktemp -d)
-cat >$d/input << EOF
-<!doctype html>
-<html>
-  <head>
-    <title>Testing dilloc load command</title>
-  </head>
-  <body>
-    <p>This page has been written via the <code>dilloc load</code> command</p>
-  </body>
-</html>
-EOF
-
-dilloc load < $d/input
-dilloc dump > $d/output
-dilloc quit
-
-rc=0
-diff -up $d/input $d/output || rc=$?
-
-rm $d/input $d/output
-rmdir $d
-
-exit $rc
+diff -up "$i" "$o"
