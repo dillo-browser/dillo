@@ -21,6 +21,8 @@ dillo-3.3.0 [Unreleased]
  - Increase margin in location bar to make it easier to select with the mouse.
  - Navigate back and forward with mouse buttons.
  - Fix OAuth login by allowing cookies in root 30X redirects.
+ - Add experimental UNIX control socket with --enable-control-socket.
+ - Add new dilloc program to remote control dillo from the command line.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex
