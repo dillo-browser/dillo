@@ -25,6 +25,8 @@ typedef struct {
 
 void a_Actions_init(void);
 Dlist *a_Actions_link_get(void);
+Dlist *a_Actions_page_get(void);
+int a_Actions_run(Action *action);
 
 #ifdef __cplusplus
 }

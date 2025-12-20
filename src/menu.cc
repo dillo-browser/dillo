@@ -18,8 +18,6 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Menu_Item.H>
 
-#include <unistd.h>
-#include <errno.h>
 #include "lout/misc.hh"    /* SimpleVector */
 #include "msg.h"
 #include "menu.hh"
@@ -30,6 +28,8 @@
 #include "ui.hh" // for (UI *)
 #include "keys.hh"
 #include "timeout.hh"
+
+#include <unistd.h>
 
 /*
  * Local data types
@@ -349,6 +349,72 @@ static void Menu_popup_cb(void *data)
    a_Timeout_remove();
 }
 
+static Fl_Menu_Item page_menu_[] = {
+   {"View page source", 0, Menu_view_page_source_cb,0,0,0,0,0,0},
+   {"View page bugs", 0, Menu_view_page_bugs_cb,0,0,0,0,0,0},
+   {"View stylesheets", 0, Menu_nop_cb,0,FL_SUBMENU_POINTER|FL_MENU_DIVIDER,
+    0,0,0,0},
+   {"Bookmark this page", 0,Menu_add_bookmark_cb,0,FL_MENU_DIVIDER,0,0,0,0},
+   {"Find text", 0, Menu_find_text_cb,0,0,0,0,0,0},
+   {"Save page as...", 0, Menu_save_page_cb,0,FL_MENU_DIVIDER,0,0,0,0},
+   {0,0,0,0,0,0,0,0,0}
+};
+
+/* Keep a pointer to the current page url so that is available from the page
+ * action callback */
+static const DilloUrl *current_page_url = NULL;
+
+/**
+ * Open URL following a custom action
+ */
+static void Menu_open_page_action_cb(Fl_Widget*, void *user_data)
+{
+   Action *action = (Action *) user_data;
+
+   if (current_page_url)
+      setenv("url", URL_STR(current_page_url), 1);
+
+   a_Actions_run(action);
+
+   unsetenv("url");
+}
+
+static Fl_Menu_Item *get_page_menu(void)
+{
+   static Fl_Menu_Item *page_menu = NULL;
+
+   /* Already initialized */
+   if (page_menu != NULL)
+      return page_menu;
+
+   Dlist *actions = a_Actions_page_get();
+   int nactions = dList_length(actions);
+
+   /* Count static menu entries */
+   int nstatic = 0;
+   while (page_menu_[nstatic].text)
+      nstatic++;
+
+   int ntotal = nstatic + nactions;
+   page_menu = (Fl_Menu_Item *) calloc(ntotal + 1, sizeof(Fl_Menu_Item));
+
+   /* Just copy the static entries */
+   for (int i = 0; i < nstatic; i++) {
+      memcpy(&page_menu[i], &page_menu_[i], sizeof(Fl_Menu_Item));
+   }
+
+   /* And append the dynamic ones */
+   for (int i = 0; i < nactions; i++) {
+      Action *action = (Action *) dList_nth_data(actions, i);
+      Fl_Menu_Item *item = &page_menu[nstatic + i];
+      item->text = action->label;
+      item->callback_ = Menu_open_page_action_cb;
+      item->user_data_ = action;
+   }
+
+   return page_menu;
+}
+
 /**
  * Page popup menu (construction & popup)
  */
@@ -360,17 +426,11 @@ void a_Menu_page_popup(BrowserWindow *bw, const DilloUrl *url,
    int j = 0;
 
    static Fl_Menu_Item *stylesheets = NULL;
-   static Fl_Menu_Item pm[] = {
-      {"View page source", 0, Menu_view_page_source_cb,0,0,0,0,0,0},
-      {"View page bugs", 0, Menu_view_page_bugs_cb,0,0,0,0,0,0},
-      {"View stylesheets", 0, Menu_nop_cb,0,FL_SUBMENU_POINTER|FL_MENU_DIVIDER,
-       0,0,0,0},
-      {"Bookmark this page", 0,Menu_add_bookmark_cb,0,FL_MENU_DIVIDER,0,0,0,0},
-      {"Find text", 0, Menu_find_text_cb,0,0,0,0,0,0},
-      {"Save page as...", 0, Menu_save_page_cb,0,0,0,0,0,0},
-      {0,0,0,0,0,0,0,0,0}
-   };
-   static Menu_popup_data_t page_data = {"Page menu", NULL, pm};
+   static Menu_popup_data_t page_data = {"Page menu", NULL, NULL};
+   Fl_Menu_Item *pm = get_page_menu();
+   page_data.menu = pm;
+
+   current_page_url = url;
 
    popup_x = Fl::event_x();
    popup_y = Fl::event_y();
@@ -470,21 +530,7 @@ static void Menu_open_url_action_cb(Fl_Widget*, void *user_data)
    setenv("url", URL_STR(url), 1);
    setenv("origin", URL_STR(origin), 1);
 
-   if (fork() == 0) {
-      /* Child */
-      errno = 0;
-      int ret = system(action->cmd);
-      if (ret == -1) {
-         MSG("Cannot run '%s': %s\n", action->cmd, strerror(errno));
-         exit(1);
-      } else if (ret != 0) {
-         MSG("Command exited with '%d': %s\n", ret, action->cmd);
-         exit(1);
-      } else {
-         /* All good, terminate the child */
-         exit(0);
-      }
-   }
+   a_Actions_run(action);
 }
 
 static Fl_Menu_Item *get_link_menu(void)

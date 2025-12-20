@@ -86,6 +86,7 @@ void a_Prefs_init(void)
    prefs.scroll_switches_tabs_reverse = FALSE;
    prefs.no_proxy = dStrdup(PREFS_NO_PROXY);
    prefs.link_actions = dList_new(16);
+   prefs.page_actions = dList_new(16);
    prefs.panel_size = P_medium;
    prefs.parse_embedded_css=TRUE;
    prefs.save_dir = dStrdup(PREFS_SAVE_DIR);

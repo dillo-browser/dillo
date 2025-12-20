@@ -15,6 +15,7 @@
 
 #include <math.h> // for rint()
 #include <string.h>
+#include <errno.h>
 
 #include <FL/fl_ask.H>
 #include <FL/Fl_Window.H>
@@ -185,8 +186,11 @@ const char *a_Dialog_input(const char *title, const char *msg)
     CustChoice2 *ch = new CustChoice2(1*gap,ih+3*gap,180,24);
     if (!pm) {
        int n_it = dList_length(prefs.search_urls);
-       pm = new Fl_Menu_Item[n_it+1];
-       memset(pm, '\0', (n_it + 1) * sizeof(Fl_Menu_Item));
+       pm = (Fl_Menu_Item *) calloc(n_it+1, sizeof(Fl_Menu_Item));
+       if (pm == NULL) {
+          MSG("calloc failed: %s\n", strerror(errno));
+          exit(1);
+       }
        for (int i = 0, j = 0; i < n_it; i++) {
           char *label, *url, *source;
           source = (char *)dList_nth_data(prefs.search_urls, i);

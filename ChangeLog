@@ -23,6 +23,9 @@ dillo-3.3.0 [Unreleased]
  - Fix OAuth login by allowing cookies in root 30X redirects.
  - Add experimental UNIX control socket with --enable-control-socket.
  - Add new dilloc program to remote control dillo from the command line.
+ - Set DILLO_PID variable when executing actions so dilloc can read it.
+ - Add support for "page_action" option to define custom entries in the page
+   menu to run programs or scripts.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex

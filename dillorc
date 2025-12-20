@@ -68,12 +68,23 @@
 # command will be executed in the system shell using the system() call. You can
 # implement your own handling logic in a script or program. The following
 # environment variables are set:
-#   $url:    URL being opened
-#   $origin: URL of the current document
+#   $url:       URL being opened
+#   $origin:    URL of the current document
+#   $DILLO_PID: PID of dillo process
 # Examples:
 # link_action="Debug variables:echo url=$url origin=$origin"
 # link_action="Open in MPV:mpv $url"
 # link_action="Open in Firefox:firefox $url"
+
+# Define custom actions for the page menu. The format is <label>:<cmd>. The
+# command will be executed in the system shell using the system() call. You can
+# implement your own handling logic in a script or program. The following
+# environment variables are set:
+#   $url:       URL of the current page
+#   $DILLO_PID: PID of dillo process
+# Examples:
+# page_action="Reader mode:dilloc dump | rdrview -H | dilloc load"
+# page_action="Mimic Chrome:curl_chrome136 -i --raw $url | dilloc rawload"
 
 #-------------------------------------------------------------------------
 #                           RENDERING SECTION

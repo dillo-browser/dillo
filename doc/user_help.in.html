@@ -128,6 +128,7 @@ keywords. Generated for version __VERSION__.</p>
       <li><a href="#plugins">Plugins</a></li>
       <li><a href="#bug-meter">Bug meter</a></li>
       <li><a href="#remote-control">Remote control</a></li>
+      <li><a href="#custom-actions">Custom actions</a></li>
       <li><a href="#keyboard-shortcuts">Keyboard shortcuts</a></li>
     </ul>
   </li>
@@ -822,6 +823,46 @@ The dilloc program sends commands to dillo and prints the response in the
 standard output. Some commands can also read data from the standard input and
 write it to dillo. Use <code>dilloc help</code> to see which commands are
 available and their syntax.
+
+<h3 id="custom-actions">Custom actions</h3>
+<p>
+Users can define custom actions that execute arbitrary programs directly from
+Dillo's UI. The context menu that appears when clicking with the right mouse
+button over a link or over the current page can be configured to show additional
+entries that will run programs defined in the dillorc configuration. The options
+<code>link_action</code> and <code>page_action</code> define new entries
+for the link and page menu respectively, multiple entries can be configured by
+writting them multiple times.
+
+<p>
+The format to specify an action is
+"<em>label</em><code>:</code><em>command</em>".
+The label will be shown in the context menu, when clicked the command will be
+executed with the <code>system()</code> function in the system shell, so it can
+include variables or pipes.
+
+<p>
+Dillo always sets the <code>DILLO_PID</code> environment variable, so that
+dilloc can select the correct Dillo process to query and manipulate the state of
+the browser (to use dilloc, the <a href="#remote-control">remote control</a>
+feature must be enabled at build time). Additionally, the following variables
+are set:
+<ul>
+  <li>For link actions, <code>url</code> is set to the hyperlink href and
+    <code>origin</code> to the current page URL that contains it.</li>
+  <li>For page actions, <code>url</code> is set to the current page URL.
+</ul>
+<p>
+Some examples are included in the dillorc configuration and shown below:
+<pre>
+link_action="Echo variables:echo url=$url origin=$origin"
+link_action="Open in MPV:mpv $url"
+link_action="Open in Firefox:firefox $url"
+link_action="Open in Mupdf:f=$(mktemp -u /tmp/XXXX.pdf); curl $url -o $f &amp;&amp; mupdf $f"
+
+page_action="Reader mode:dilloc dump | rdrview -H | dilloc load"
+page_action="Mimic Chrome:curl_chrome136 -i --raw $url | dilloc rawload"
+</pre>
 
 <h3 id="keyboard-shortcuts">Keyboard shortcuts</h3>
 <p>

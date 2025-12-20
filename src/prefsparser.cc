@@ -248,6 +248,7 @@ void PrefsParser::parse(FILE *fp)
       { "stretchability_factor", &prefs.stretchability_factor,
         PREFS_FRACTION_100, 0 },
       { "link_action", &prefs.link_actions, PREFS_STRINGS, 0 },
+      { "page_action", &prefs.page_actions, PREFS_STRINGS, 0 },
       { "zoom_factor", &prefs.zoom_factor, PREFS_DOUBLE, 0 }
    };
    // changing the LC_NUMERIC locale (temporarily) to C
