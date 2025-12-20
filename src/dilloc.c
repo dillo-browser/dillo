@@ -116,6 +116,7 @@ find_working_socket(int *sock)
    if (dp == NULL) {
       fprintf(stderr, "error: cannot open %s directory: %s\n",
             ctlpath, strerror(errno));
+      fprintf(stderr, "hint: is dillo running?\n");
       return -1;
    }
 
