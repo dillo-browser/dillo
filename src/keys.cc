@@ -518,7 +518,8 @@ void Keys::genAboutKeys(void)
 
    /* inject keymaps after loading them */
    DilloUrl *url = a_Url_new("about:keys", NULL);
-   a_Cache_entry_inject(url, table->str, table->len, 1);
+   a_Cache_entry_inject(url, table->str, table->len,
+         CA_GotHeader | CA_GotLength | CA_InternalUrl);
    dStr_free(table, 1);
    a_Url_free(url);
 }

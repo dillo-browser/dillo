@@ -50,7 +50,7 @@ static FILE *bw_waiting_file = NULL;
 static void handle_wait_timeout(void *data);
 
 static void
-cmd_load(FILE *f, int fd)
+cmd_load(FILE *f, int fd, int raw)
 {
    _MSG("cmd_load()\n");
    Dstr *dstr = dStr_sized_new(1);
@@ -79,7 +79,13 @@ cmd_load(FILE *f, int fd)
       return;
    }
 
-   a_Cache_entry_inject(url, dstr->str, dstr->len, 0);
+   if (raw) {
+      a_Cache_entry_inject(url, dstr->str, dstr->len, 0);
+   } else {
+      a_Cache_entry_inject(url, dstr->str, dstr->len,
+            CA_GotHeader | CA_GotLength);
+   }
+
    a_UIcmd_repush(bw);
 
    dStr_free(dstr, 1);
@@ -174,6 +180,8 @@ static void Control_read_cb(int fd, void *data)
       fprintf(f, " dump          Print the content of the current tab\n");
       fprintf(f, " hdump         Print the HTTP headers of the current tab\n");
       fprintf(f, " load          Replace the content in the current tab by stdin\n");
+      fprintf(f, " rawload       Replace the HTTP headers and content of the current\n");
+      fprintf(f, "               tab by stdin\n");
       fprintf(f, " quit          Close dillo\n");
       fprintf(f, " wait [T]      Wait until the current tab has finished loading\n");
       fprintf(f, "               at most T seconds (default 60.0). Wait forever with\n");
@@ -212,7 +220,9 @@ static void Control_read_cb(int fd, void *data)
       }
       a_Url_free(url);
    } else if (strcmp(cmd, "load") == 0) {
-      cmd_load(f, new_fd);
+      cmd_load(f, new_fd, 0);
+   } else if (strcmp(cmd, "rawload") == 0) {
+      cmd_load(f, new_fd, 1);
    } else if (strcmp(cmd, "quit") == 0) {
       a_UIcmd_close_all_bw((void *)1);
       fprintf(f, "0\n");

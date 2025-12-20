@@ -93,6 +93,7 @@ static CacheEntry_t *Cache_process_queue(CacheEntry_t *entry);
 static void Cache_delayed_process_queue(CacheEntry_t *entry);
 static void Cache_auth_entry(CacheEntry_t *entry, BrowserWindow *bw);
 static Dstr *Cache_data(CacheEntry_t *entry);
+static void Cache_entry_free(CacheEntry_t *entry, int deep);
 
 /**
  * Determine if two cache entries are equal (used by CachedURLs)
@@ -128,7 +129,8 @@ void a_Cache_init(void)
    {
       DilloUrl *url = a_Url_new("about:splash", NULL);
       Dstr *ds = dStr_new(AboutSplash);
-      a_Cache_entry_inject(url, ds->str, ds->len, 1);
+      a_Cache_entry_inject(url, ds->str, ds->len,
+            CA_GotHeader | CA_GotLength | CA_InternalUrl);
       dStr_free(ds, 1);
       a_Url_free(url);
    }
@@ -287,21 +289,29 @@ static int Cache_bufsize(CacheEntry_t *e)
  * The @param data_ds buffer is copied into the entry buffer, so it is
  * responsibility of the caller to free it.
  */
-void a_Cache_entry_inject(const DilloUrl *Url, const char *buf, size_t len, int internal)
+void a_Cache_entry_inject(const DilloUrl *Url,
+      const char *buf, size_t len, int flags)
 {
    CacheEntry_t *entry;
 
    if (!(entry = Cache_entry_search(Url)))
       entry = Cache_entry_add(Url);
-   entry->Flags = CA_GotHeader | CA_GotLength;
-   if (internal)
-      entry->Flags |= CA_InternalUrl;
-   if (len)
-      entry->Flags &= ~CA_IsEmpty;
-   dStr_truncate(entry->Data, 0);
-   dStr_append_l(entry->Data, buf, len);
-   dStr_fit(entry->Data);
-   entry->ExpectedSize = entry->TransferSize = entry->Data->len;
+
+   if (flags & CA_GotLength) {
+      entry->Flags = flags;
+      if (len)
+         entry->Flags &= ~CA_IsEmpty;
+      dStr_truncate(entry->Data, 0);
+      dStr_append_l(entry->Data, buf, len);
+      dStr_fit(entry->Data);
+      entry->ExpectedSize = entry->TransferSize = entry->Data->len;
+   } else {
+      /* Inject a new empty entry and process it to parse the headers and setup
+       * any decoder or content handler. */
+      Cache_entry_free(entry, 0);
+      Cache_entry_init(entry, Url);
+      a_Cache_process_dbuf(IORead, buf, len, Url);
+   }
 }
 
 /**
@@ -319,7 +329,7 @@ static void Cache_auth_free(Dlist *auth)
 /**
  *  Free the components of a CacheEntry_t struct.
  */
-static void Cache_entry_free(CacheEntry_t *entry)
+static void Cache_entry_free(CacheEntry_t *entry, int deep)
 {
    a_Url_free((DilloUrl *)entry->Url);
    dFree(entry->TypeDet);
@@ -338,7 +348,8 @@ static void Cache_entry_free(CacheEntry_t *entry)
       a_Decode_transfer_free(entry->TransferDecoder);
    if (entry->ContentDecoder)
       a_Decode_free(entry->ContentDecoder);
-   dFree(entry);
+   if (deep)
+      dFree(entry);
 }
 
 /**
@@ -372,7 +383,7 @@ static void Cache_entry_remove(CacheEntry_t *entry, DilloUrl *url)
 
    /* remove from cache */
    dList_remove(CachedURLs, entry);
-   Cache_entry_free(entry);
+   Cache_entry_free(entry, 1);
 }
 
 /**
@@ -437,10 +448,9 @@ static int Cache_internal_url(CacheEntry_t *entry)
    }
 
    if (s != NULL) {
-      a_Cache_entry_inject(entry->Url, s->str, s->len, 1);
+      a_Cache_entry_inject(entry->Url, s->str, s->len,
+            CA_GotHeader | CA_GotLength);
       dStr_free(s, 1);
-      /* Remove InternalUrl */
-      entry->Flags = CA_GotHeader + CA_GotLength;
    }
 
    return 0;
@@ -1597,7 +1607,7 @@ void a_Cache_freeall(void)
    /* Remove every cache entry */
    while ((data = dList_nth_data(CachedURLs, 0))) {
       dList_remove_fast(CachedURLs, data);
-      Cache_entry_free(data);
+      Cache_entry_free(data, 1);
    }
    /* Remove the cache list */
    dList_free(CachedURLs);

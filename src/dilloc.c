@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
       return 2;
 
    int is_load = 0;
-   if (argv[1] && strcmp(argv[1], "load") == 0) {
+   if (argv[1] && (!strcmp(argv[1], "load") || !strcmp(argv[1], "rawload"))) {
       is_load = 1;
    }
 
