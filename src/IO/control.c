@@ -95,12 +95,30 @@ static void Control_read_cb(int fd, void *data)
 
    int new_fd = accept(control_fd, NULL, NULL);
    if (new_fd < 0) {
-      if (errno != EWOULDBLOCK) {
-         MSG("accept failed: %s\n", strerror(errno));
+      if (errno == EAGAIN || errno == EWOULDBLOCK) {
+         /* Nothing? */
+         return;
+      } else {
+         MSG_ERR("accept failed: %s\n", strerror(errno));
          exit(1);
       }
-      /* Nothing? */
-      return;
+   }
+
+   /* From accept(2) man page:
+    *
+    * On Linux, the new socket returned by accept() does not inherit
+    * file status flags such as O_NONBLOCK and O_ASYNC from the
+    * listening socket. This behavior differs from the canonical BSD
+    * sockets implementation. Portable programs should not rely on
+    * inheritance or noninheritance of file status flags and always
+    * explicitly set all required flags on the socket returned from
+    * accept().
+    *
+    * So, disable O_NONBLOCK flag explicitly.
+    */
+   if (fcntl(new_fd, F_SETFL, 0) == -1) {
+      MSG_ERR("control socket fcntl failed: %s\n", strerror(errno));
+      exit(1);
    }
 
    ssize_t r;
