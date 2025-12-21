@@ -8,7 +8,8 @@ LOG_COMPILER = $(srcdir)/driver.sh
 
 TESTS = \
 	cmd-load.sh \
-	cmd-load-multi.sh
+	cmd-load-multi.sh \
+	cmd-load-deadlock.sh
 
 EXTRA_DIST = \
 	$(TESTS) \
