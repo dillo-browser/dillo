@@ -217,6 +217,7 @@ static void Control_req_prepare_reply(struct control_req *req)
       dStr_sprintfa(r, " ready         Exits with 0 if finished loading, 1 otherwise\n");
       dStr_sprintfa(r, " open URL      Open the given URL in the current tab\n");
       dStr_sprintfa(r, " url           Print the url in the current tab\n");
+      dStr_sprintfa(r, " status [MSG]  Set the status bar to MSG\n");
       dStr_sprintfa(r, " dump          Print the content of the current tab\n");
       dStr_sprintfa(r, " hdump         Print the HTTP headers of the current tab\n");
       dStr_sprintfa(r, " load          Replace the content in the current tab by stdin\n");
@@ -240,6 +241,12 @@ static void Control_req_prepare_reply(struct control_req *req)
       dStr_sprintfa(r, "0\n");
    } else if (strcmp(cmd, "url") == 0) {
       dStr_sprintfa(r, "0\n%s\n", a_UIcmd_get_location_text(bw));
+   } else if (!strcmp(cmd, "status") || !strncmp(cmd, "status ", 7)) {
+      if (cmd[6] == ' ')
+         a_UIcmd_set_msg(bw, "%s", cmd + 7);
+      else
+         a_UIcmd_set_msg(bw, "");
+      dStr_sprintfa(r, "0\n");
    } else if (strcmp(cmd, "dump") == 0) {
       DilloUrl *url = a_Url_new(a_UIcmd_get_location_text(bw), NULL);
       char *buf;
