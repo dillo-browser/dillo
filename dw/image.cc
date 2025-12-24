@@ -2,7 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
- * Copyright 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,6 +158,9 @@ Image::Image(const char *altText)
    mapList = NULL;
    mapKey = NULL;
    isMap = false;
+   useAltStyle = false;
+   altStyle = NULL;
+   savedStyle = NULL;
 
    DBG_OBJ_SET_NUM ("bufWidth", bufWidth);
    DBG_OBJ_SET_NUM ("bufHeight", bufHeight);
@@ -169,6 +172,10 @@ Image::~Image()
       free(altText);
    if (buffer)
       buffer->unref ();
+   if (altStyle)
+      altStyle->unref ();
+   if (savedStyle)
+      savedStyle->unref ();
    if (mapKey)
       delete mapKey;
 
@@ -187,10 +194,27 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
    /* First set a naive size based on the image properties if given */
 
    if (buffer) {
+      /* Restore saved border only if overwritten */
+      if (useAltStyle)
+         setStyle(savedStyle);
+
       requisition->width = buffer->getRootWidth ();
       requisition->ascent = buffer->getRootHeight ();
       requisition->descent = 0;
    } else {
+      if (!useAltStyle) {
+         savedStyle = getStyle();
+         savedStyle->ref();
+         core::style::StyleAttrs altAttrs = *getStyle();
+         altAttrs.borderWidth.setVal(1);
+         altAttrs.padding.setVal(2);
+         altAttrs.setBorderColor(altAttrs.color);
+         altAttrs.setBorderStyle(core::style::BORDER_SOLID);
+         altStyle = core::style::Style::create(&altAttrs);
+         setStyle(altStyle);
+         useAltStyle = true;
+      }
+
       if (altText && altText[0]) {
          if (altTextWidth == -1)
             altTextWidth =
