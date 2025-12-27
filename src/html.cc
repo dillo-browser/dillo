@@ -2158,7 +2158,7 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
       alt_ptr = dStrdup("[IMG]");
    }
 
-   dw::Image *dw = new dw::Image(alt_ptr);
+   dw::Image *dw = new dw::Image(alt_ptr, prefs.mark_unloaded_images);
    image =
       a_Image_new(html->dw->getLayout(), (void*)(dw::core::ImgRenderer*)dw, 0, 0);
    

@@ -21,6 +21,7 @@
 #include "image.hh"
 #include "dw/core.hh"
 #include "dw/image.hh"
+#include "prefs.h"
 
 using namespace dw::core;
 
@@ -59,7 +60,7 @@ DilloImage *a_Image_new(void *layout, void *img_rndr,
 DilloImage *a_Image_new_with_dw(void *layout, const char *alt_text,
                                 int32_t bg_color, int32_t fg_color)
 {
-   dw::Image *dw = new dw::Image(alt_text);
+   dw::Image *dw = new dw::Image(alt_text, prefs.mark_unloaded_images);
    return a_Image_new(layout, (void*)(dw::core::ImgRenderer*)dw, bg_color, fg_color);
 }
 

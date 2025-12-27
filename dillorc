@@ -25,6 +25,10 @@
 # ignore_image_formats="webp svg"
 #ignore_image_formats=""
 
+# Show a visible border on images that are not loaded yet. Makes it easier to
+# spot them, but may cause unwanted noise in some pages.
+#mark_unloaded_images=NO
+
 # Change this if you want background images to be loaded initially.
 # (While browsing, this can be changed from the tools/settings menu.)
 #load_background_images=NO

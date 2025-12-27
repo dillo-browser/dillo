@@ -145,7 +145,7 @@ int ImageMapsList::link (object::Object *key, int x, int y)
 
 int Image::CLASS_ID = -1;
 
-Image::Image(const char *altText)
+Image::Image(const char *altText, bool markEmpty)
 {
    DBG_OBJ_CREATE ("dw::Image");
    registerName ("dw::Image", &CLASS_ID);
@@ -159,6 +159,7 @@ Image::Image(const char *altText)
    mapKey = NULL;
    isMap = false;
    useAltStyle = false;
+   this->markEmpty = markEmpty;
    altStyle = NULL;
    savedStyle = NULL;
 
@@ -202,7 +203,7 @@ void Image::sizeRequestSimpl (core::Requisition *requisition)
       requisition->ascent = buffer->getRootHeight ();
       requisition->descent = 0;
    } else {
-      if (!useAltStyle) {
+      if (markEmpty && !useAltStyle) {
          savedStyle = getStyle();
          savedStyle->ref();
          core::style::StyleAttrs altAttrs = *getStyle();

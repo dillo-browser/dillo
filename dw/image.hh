@@ -149,6 +149,7 @@ private:
    Object *mapKey;
    bool isMap;
 
+   bool markEmpty;
    bool useAltStyle;
    core::style::Style *altStyle;
    core::style::Style *savedStyle;
@@ -175,7 +176,7 @@ protected:
 public:
    static int CLASS_ID;
 
-   Image(const char *altText);
+   Image(const char *altText, bool markEmpty = false);
    ~Image();
 
    // For images, the minimal width is not well defined, and

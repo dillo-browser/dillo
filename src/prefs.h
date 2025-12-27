@@ -98,6 +98,7 @@ typedef struct {
    bool_t fullwindow_start;
    bool_t load_images;
    char *ignore_image_formats;
+   bool_t mark_unloaded_images;
    bool_t load_background_images;
    bool_t load_stylesheets;
    bool_t parse_embedded_css;
