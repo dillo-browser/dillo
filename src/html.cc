@@ -2156,6 +2156,10 @@ DilloImage *a_Html_image_new(DilloHtml *html, const char *tag, int tagsize)
    if (!alt_ptr || !*alt_ptr) {
       dFree(alt_ptr);
       alt_ptr = dStrdup("[IMG]");
+   } else if (alt_ptr) {
+      char *new_alt = dStrconcat("[IMG] ", alt_ptr, NULL);
+      dFree(alt_ptr);
+      alt_ptr = new_alt;
    }
 
    dw::Image *dw = new dw::Image(alt_ptr, prefs.mark_unloaded_images);
