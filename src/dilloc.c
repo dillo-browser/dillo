@@ -308,7 +308,11 @@ int main(int argc, char *argv[])
       }
 
       while (r > 0) {
-         size_t w = write(STDOUT_FILENO, p, r);
+         ssize_t w = write(STDOUT_FILENO, p, r);
+         if (w < 0 && errno != EINTR) {
+            perror("cannot write to stdout");
+            return 2;
+         }
          r -= w;
          p += w;
       }
