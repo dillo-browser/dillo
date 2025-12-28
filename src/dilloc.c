@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
    for (ssize_t w = 0; w < cmd->len; ) {
       w = write(fd, cmd->str + w, cmd->len - w);
       if (w < 0) {
-         perror("write");
+         perror("write command to socket failed");
          return 2;
       }
    }
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
          if (r == 0) {
             break;
          } else if (r < 0) {
-            perror("read");
+            perror("read stdin failed");
             return 2;
          }
 
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
          while (r > 0) {
             ssize_t w = write(fd, p, r);
             if (w < 0) {
-               perror("write");
+               perror("write stdin to socket failed");
                return 2;
             }
             r -= w;
@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
       if (r == 0) {
          break;
       } else if (r < 2) {
-         perror("read");
+         perror("read reply failed");
          return 2;
       }
 
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
       while (r > 0) {
          ssize_t w = write(STDOUT_FILENO, p, r);
          if (w < 0 && errno != EINTR) {
-            perror("cannot write to stdout");
+            perror("cannot write reply to stdout");
             return 2;
          }
          r -= w;
