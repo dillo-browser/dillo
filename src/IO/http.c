@@ -17,7 +17,6 @@
 
 #include "config.h"
 
-#include <ctype.h>              /* isdigit */
 #include <unistd.h>
 #include <errno.h>              /* for errno */
 #include <stdlib.h>
@@ -709,7 +708,7 @@ static char *Http_get_connect_str(const DilloUrl *url)
    dstr = dStr_new("");
    auth1 = URL_AUTHORITY(url);
    auth_len = strlen(auth1);
-   if (auth_len > 0 && !isdigit(auth1[auth_len - 1]))
+   if (auth_len > 0 && !dIsdigit(auth1[auth_len - 1]))
       /* if no port number, add HTTPS port */
       auth2 = dStrconcat(auth1, ":443", NULL);
    else

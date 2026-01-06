@@ -13,6 +13,7 @@
 #ifndef __DLIB_H__
 #define __DLIB_H__
 
+#include <ctype.h>
 #include <stdio.h>     /* for FILE*  */
 #include <stddef.h>    /* for size_t */
 #include <stdarg.h>    /* for va_list */
@@ -42,8 +43,15 @@ extern "C" {
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 
 /* Handle signed char */
-#define dIsspace(c) isspace((uchar_t)(c))
 #define dIsalnum(c) isalnum((uchar_t)(c))
+#define dIsalpha(c) isalpha((uchar_t)(c))
+#define dIscntrl(c) iscntrl((uchar_t)(c))
+#define dIsdigit(c) isdigit((uchar_t)(c))
+#define dIsprint(c) isprint((uchar_t)(c))
+#define dIspunct(c) ispunct((uchar_t)(c))
+#define dIsspace(c) isspace((uchar_t)(c))
+#define dIsxdigit(c) isxdigit((uchar_t)(c))
+#define dTolower(c) tolower((uchar_t)(c))
 
 #define D_ASCII_TOUPPER(c) (((c) >= 'a' && (c) <= 'z') ? (c) - 0x20 : (c))
 #define D_ASCII_TOLOWER(c) (((c) >= 'A' && (c) <= 'Z') ? (c) + 0x20 : (c))

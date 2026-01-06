@@ -5,7 +5,7 @@
 #   error Do not include this file directly, use "core.hh" instead.
 #endif
 
-#include <ctype.h>
+#include "dlib/dlib.h"
 
 namespace dw {
 namespace core {
@@ -66,8 +66,8 @@ private:
    bool search0 (bool backwards, bool firstTrial);
 
    inline static bool charsEqual (char c1, char c2, bool caseSens)
-   { return caseSens ? c1 == c2 : tolower (c1) == tolower (c2) ||
-      (isspace (c1) && isspace (c2)); }
+   { return caseSens ? c1 == c2 : dTolower (c1) == dTolower (c2) ||
+      (dIsspace (c1) && dIsspace (c2)); }
 
 public:
    FindtextState ();

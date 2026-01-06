@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <ctype.h>
 #include <unistd.h>   /* for close */
 #include <fcntl.h>    /* for fcntl */
 
@@ -220,7 +219,7 @@ int a_Dpip_check_auth(const char *auth_tag)
    } else {
       port = strtol(rcline, &tail, 10);
       if (tail && port != 0) {
-         for (i = 0; *tail && isxdigit(tail[i+1]); ++i)
+         for (i = 0; *tail && dIsxdigit(tail[i+1]); ++i)
             SharedSecret[i] = tail[i+1];
          SharedSecret[i] = 0;
          if (strcmp(msg, SharedSecret) == 0)

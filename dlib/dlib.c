@@ -24,7 +24,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include <ctype.h>
 #include <time.h>
 
 #include "dlib.h"
@@ -525,7 +524,7 @@ const char *dStr_printable(Dstr *in, int maxlen)
       out = dStr_sized_new(in->len);
 
    for (i = 0; (i < in->len) && (out->len < maxlen); ++i) {
-      if (isprint(in->str[i]) || (in->str[i] == '\n')) {
+      if (dIsprint(in->str[i]) || (in->str[i] == '\n')) {
          dStr_append_c(out, in->str[i]);
       } else {
          dStr_append_l(out, "\\x", 2);

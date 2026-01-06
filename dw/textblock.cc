@@ -1238,14 +1238,14 @@ void Textblock::drawText(core::View *view, core::style::Style *style,
                bool initial_seen = false;
 
                for (int i = 0; i < start; i++)
-                  if (!ispunct(text[i]))
+                  if (!dIspunct(text[i]))
                      initial_seen = true;
                if (initial_seen)
                   break;
 
                int after = 0;
                text += start;
-               while (ispunct(text[after]))
+               while (dIspunct(text[after]))
                   after++;
                if (text[after])
                   after = layout->nextGlyph(text, after);
@@ -1931,7 +1931,7 @@ int Textblock::textWidth(const char *text, int start, int len,
                bool initial_seen = false;
 
                for (int i = 0; i < start; i++)
-                  if (!ispunct(text[i]))
+                  if (!dIspunct(text[i]))
                      initial_seen = true;
                if (initial_seen) {
                   ret = layout->textWidth(style->font, text+start, len);
@@ -1939,7 +1939,7 @@ int Textblock::textWidth(const char *text, int start, int len,
                   int after = 0;
 
                   text += start;
-                  while (ispunct(text[after]))
+                  while (dIspunct(text[after]))
                      after++;
                   if (text[after])
                      after = layout->nextGlyph(text, after);

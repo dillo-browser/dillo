@@ -16,7 +16,6 @@
  * With new HTML layout.
  */
 
-#include <ctype.h>           /* for isspace */
 #include <errno.h>           /* for errno */
 #include <stdio.h>
 #include <stdlib.h>

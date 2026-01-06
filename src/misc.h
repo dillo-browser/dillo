@@ -2,7 +2,6 @@
 #define __DILLO_MISC_H__
 
 #include <stddef.h>     /* for size_t */
-#include <ctype.h>      /* iscntrl, isascii */
 
 
 #ifdef __cplusplus
@@ -42,7 +41,7 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
    str = disposition;
 
    /* Parse the type (attachment, inline, ...) by reading alpha characters. */
-   for (s = str; *s && d_isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
+   for (s = str; *s && d_isascii((uchar_t)*s) && !dIscntrl(*s) &&
       !strchr(tspecials_space, *s); s++) ;
 
    if (s != str) {

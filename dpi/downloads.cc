@@ -20,7 +20,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <ctype.h>
 #include <math.h>
 #include <time.h>
 #include <signal.h>
@@ -513,7 +512,7 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
       case ST_newline:
          if (*p == ' ') {
             log_state = ST_discard;
-         } else if (isdigit(*p)) {
+         } else if (dIsdigit(*p)) {
             *q++ = *p; log_state = ST_number;
          } else if (*p == '\n') {
             *q++ = *p;
@@ -522,10 +521,10 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
          }
          break;
       case ST_number:
-         if (isdigit(*q++ = *p)) {
+         if (dIsdigit((*q++ = *p))) {
             // keep here
          } else if (*p == 'K') {
-            for (--q; isdigit(q[-1]); --q) ; 
+            for (--q; dIsdigit(q[-1]); --q) ;
             log_state = ST_discard;
          } else {
             log_state = ST_copy;
@@ -549,9 +548,9 @@ void DLItem::log_text_add(const char *buf, ssize_t st)
    // Now scan for the length of the file
    if (total_bytesize == -1) {
       p = strstr(log_text, "\nLength: ");
-      if (p && isdigit(p[9]) && strchr(p + 9, ' ')) {
+      if (p && dIsdigit(p[9]) && strchr(p + 9, ' ')) {
          for (p += 9, d = &num[0]; *p != ' '; ++p)
-            if (isdigit(*p))
+            if (dIsdigit(*p))
                *d++ = *p;
          *d = 0;
          total_bytesize = strtol (num, NULL, 10);

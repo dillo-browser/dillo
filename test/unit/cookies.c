@@ -26,7 +26,6 @@
 #include <stdarg.h>  /* va_list */
 #include <string.h> /* strchr */
 #include <errno.h>
-#include <ctype.h>
 #include <time.h>
 /* net */
 #include <sys/types.h>
@@ -126,7 +125,7 @@ static int Dpi_read_comm_keys(int *port)
       MSG_ERR("[Dpi_read_comm_keys] empty file: %s\n", fname);
    } else {
       *port = strtol(rcline, &tail, 10);
-      for (i = 0; *tail && isxdigit(tail[i+1]); ++i)
+      for (i = 0; *tail && dIsxdigit(tail[i+1]); ++i)
          SharedKey[i] = tail[i+1];
       SharedKey[i] = 0;
       ret = 1;

@@ -26,7 +26,6 @@
 #include <time.h>
 #include <errno.h>
 #include <limits.h> /* for INT_MAX */
-#include <ctype.h> /* for isspace */
 #include <stdlib.h> /* for strtol */
 
 #include "hsts.h"
@@ -223,7 +222,7 @@ void a_Hsts_set(const char *header, const DilloUrl *url)
       /* Get the value for the attribute and store it */
       if (dStrAsciiCasecmp(attr, "max-age") == 0) {
          value = Hsts_parse_value(&header);
-         if (isdigit(*value)) {
+         if (dIsdigit(*value)) {
             errno = 0;
             max_age = strtol(value, NULL, 10);
             if (errno == ERANGE)

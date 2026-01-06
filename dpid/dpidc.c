@@ -12,7 +12,6 @@
 #include <stdlib.h>  /* for exit */
 #include <string.h>  /* for memset */
 #include <unistd.h>  /* for read and write */
-#include <ctype.h>   /* for isxdigit */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -59,7 +58,7 @@ static int Dpi_read_comm_keys(int *port)
       MSG_ERR("[Dpi_read_comm_keys] empty file: %s\n", fname);
    } else {
       *port = strtol(rcline, &tail, 10);
-      for (i = 0; *tail && isxdigit(tail[i+1]); ++i)
+      for (i = 0; *tail && dIsxdigit(tail[i+1]); ++i)
          SharedKey[i] = tail[i+1];
       SharedKey[i] = 0;
       ret = 1;

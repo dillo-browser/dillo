@@ -37,7 +37,6 @@ void a_Cookies_init(void)
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <errno.h>
 
 #include "IO/Url.h"

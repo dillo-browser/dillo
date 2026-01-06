@@ -39,7 +39,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <ctype.h>            /* tolower for wget stuff */
 #include <stdio.h>
 #include <errno.h>
 #include "../../dlib/dlib.h"
@@ -577,13 +576,13 @@ static bool_t pattern_match (const char *pattern, const char *string)
 
   const char *p = pattern, *n = string;
   char c;
-  for (; (c = tolower (*p++)) != '\0'; n++)
+  for (; (c = dTolower (*p++)) != '\0'; n++)
     if (c == '*')
       {
-        for (c = tolower (*p); c == '*'; c = tolower (*++p))
+        for (c = dTolower (*p); c == '*'; c = dTolower (*++p))
           ;
         for (; *n != '\0'; n++)
-          if (tolower (*n) == c && pattern_match (p, n))
+          if (dTolower (*n) == c && pattern_match (p, n))
             return TRUE;
 #ifdef ASTERISK_EXCLUDES_DOT
           else if (*n == '.')
@@ -593,7 +592,7 @@ static bool_t pattern_match (const char *pattern, const char *string)
       }
     else
       {
-        if (c != tolower (*n))
+        if (c != dTolower (*n))
           return FALSE;
       }
   return *n == '\0';

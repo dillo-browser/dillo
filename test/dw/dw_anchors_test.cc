@@ -20,7 +20,6 @@
 
 
 
-#include <ctype.h>
 #include <FL/Fl_Window.H>
 #include <FL/Fl.H>
 

@@ -11,10 +11,11 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include "colors.h"
 
 #include "msg.h"
+
+#include "../dlib/dlib.h"
 
 /*
  * If EXTENDED_COLOR is defined, the extended set of named colors is supported.

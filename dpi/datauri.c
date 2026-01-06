@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <errno.h>
 
 #include "../dpip/dpip.h"
@@ -45,7 +44,7 @@ static void b64strip_illegal_chars(unsigned char* str)
    MSG("len=%d{%s}\n", strlen((char*)str), str);
 
    for (p = s; (*p = *s); ++s) {
-      if (d_isascii(*p) && (isalnum(*p) || strchr("+/=", *p)))
+      if (d_isascii(*p) && (dIsalnum(*p) || strchr("+/=", *p)))
          ++p;
    }
 

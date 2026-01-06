@@ -22,7 +22,6 @@
 
 #include "misc.hh"
 
-#include <ctype.h>
 #include <config.h>
 
 #define PRGNAME PACKAGE "/" VERSION

@@ -13,7 +13,6 @@
 
 #include "dlib/dlib.h"
 
-#include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
 #include <limits.h>
@@ -31,7 +30,7 @@ static int
 is_number(const char *str)
 {
    for (const char *p = str; *p; p++) {
-      if (!isdigit(*p))
+      if (!dIsdigit(*p))
          return 0;
    }
 

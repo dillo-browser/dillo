@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>        /* strtol */
 #include <string.h>
-#include <ctype.h>
 
 #include "dlib/dlib.h"
 #include "keys.hh"
@@ -216,7 +215,7 @@ KeysCommand_t Keys::getKeyCmd()
    KeyBinding_t keyNode;
 
    keyNode.modifier = Fl::event_state() & (FL_SHIFT | FL_CTRL |FL_ALT|FL_META);
-   if (iscntrl(Fl::event_text()[0])) {
+   if (dIscntrl(Fl::event_text()[0])) {
       keyNode.key = Fl::event_key();
    } else {
       const char *beyond = Fl::event_text() + Fl::event_length();
@@ -359,7 +358,7 @@ void Keys::parseKey(char *key, char *commandName)
    }
 
    // Skip space
-   for (  ; isspace(*key); ++key) ;
+   for (  ; dIsspace(*key); ++key) ;
    // Get modifiers
    while(*key == '<' && (p = strchr(key, '>'))) {
       ++key;

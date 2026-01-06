@@ -44,7 +44,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "url.h"
 #include "hsts.h"

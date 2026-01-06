@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <assert.h>
 
 #include "utf8.hh"
@@ -222,13 +221,13 @@ void a_Misc_parse_content_type(const char *type, char **major, char **minor,
    if (!(str = type))
       return;
 
-   for (s = str; *s && d_isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
+   for (s = str; *s && d_isascii((uchar_t)*s) && !dIscntrl(*s) &&
         !strchr(tspecials_space, *s); s++) ;
    if (major)
       *major = dStrndup(str, s - str);
 
    if (*s == '/') {
-      for (str = ++s; *s && d_isascii((uchar_t)*s) && !iscntrl((uchar_t)*s) &&
+      for (str = ++s; *s && d_isascii((uchar_t)*s) && !dIscntrl(*s) &&
            !strchr(tspecials_space, *s); s++) ;
       if (minor)
          *minor = dStrndup(str, s - str);

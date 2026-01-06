@@ -39,7 +39,6 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <sys/time.h>
-#include <ctype.h>
 
 #include "../dpip/dpip.h"
 #include "dpiutil.h"

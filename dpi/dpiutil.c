@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include <ctype.h>
 #include <errno.h>
 #include <sys/socket.h>
 
@@ -67,10 +66,10 @@ char *Unescape_uri_str(const char *s)
 
    if (strchr(s, '%')) {
       for (p = buf; (*p = *s); ++s, ++p) {
-         if (*p == '%' && isxdigit(s[1]) && isxdigit(s[2])) {
-            *p = (isdigit(s[1]) ? (s[1] - '0')
+         if (*p == '%' && dIsxdigit(s[1]) && dIsxdigit(s[2])) {
+            *p = (dIsdigit(s[1]) ? (s[1] - '0')
                                 : D_ASCII_TOUPPER(s[1]) - 'A' + 10) * 16;
-            *p += isdigit(s[2]) ? (s[2] - '0')
+            *p += dIsdigit(s[2]) ? (s[2] - '0')
                                 : D_ASCII_TOUPPER(s[2]) - 'A' + 10;
             s += 2;
          }

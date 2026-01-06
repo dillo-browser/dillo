@@ -10,7 +10,6 @@
  */
 
 #include <string.h>
-#include <ctype.h>
 
 #define FL_INTERNALS
 #include <FL/Fl_Window.H>

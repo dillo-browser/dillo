@@ -366,14 +366,14 @@ int CustChoice::handle(int e)
       if (k == FL_Enter || k == FL_Down) {
          return Fl_Choice::handle(FL_PUSH); // activate menu
 
-      } else if (isalnum(k)) { // try key as shortcut to menuitem
+      } else if (dIsalnum(k)) { // try key as shortcut to menuitem
          int t = value()+1 >= size() ? 0 : value()+1;
          while (t != value()) {
              const Fl_Menu_Item *mi = &(menu()[t]);
              if (mi->submenu()) // submenu?
                 ;
              else if (mi->label() && mi->active()) { // menu item?
-                if (k == tolower(mi->label()[0])) {
+                if (k == dTolower(mi->label()[0])) {
                    value(mi);
                    return 1; // Let FLTK know we used this key
                 }

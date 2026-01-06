@@ -44,7 +44,6 @@ int main(void)
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>       /* for time() and time_t */
-#include <ctype.h>
 #include <limits.h>
 #include <netdb.h>
 #include <signal.h>
@@ -487,14 +486,14 @@ static int Cookies_get_timefield(const char **str)
    int n;
    const char *s = *str;
 
-   if (!isdigit(*s))
+   if (!dIsdigit(*s))
       return -1;
 
    n = *(s++) - '0';
-   if (isdigit(*s)) {
+   if (dIsdigit(*s)) {
       n *= 10;
       n += *(s++) - '0';
-      if (isdigit(*s))
+      if (dIsdigit(*s))
          return -1;
    }
    *str = s;
@@ -550,24 +549,24 @@ static bool_t Cookies_get_year(struct tm *tm, const char **str)
    int n;
    const char *s = *str;
 
-   if (isdigit(*s))
+   if (dIsdigit(*s))
       n = *(s++) - '0';
    else
       return FALSE;
-   if (isdigit(*s)) {
+   if (dIsdigit(*s)) {
       n *= 10;
       n += *(s++) - '0';
    } else
       return FALSE;
-   if (isdigit(*s)) {
+   if (dIsdigit(*s)) {
       n *= 10;
       n += *(s++) - '0';
    }
-   if (isdigit(*s)) {
+   if (dIsdigit(*s)) {
       n *= 10;
       n += *(s++) - '0';
    }
-   if (isdigit(*s)) {
+   if (dIsdigit(*s)) {
       /* Sorry, users of prehistoric software in the year 10000! */
       return FALSE;
    }
@@ -936,7 +935,7 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
          cookie->domain = value;
       } else if (dStrAsciiCasecmp(attr, "Max-Age") == 0) {
          value = Cookies_parse_value(&str);
-         if (isdigit(*value) || *value == '-') {
+         if (dIsdigit(*value) || *value == '-') {
             long age;
             time_t now = time(NULL);
             struct tm *tm = gmtime(&now);
