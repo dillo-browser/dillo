@@ -14,6 +14,7 @@
  */
 
 #include <math.h> // for rint()
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
