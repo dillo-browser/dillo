@@ -197,20 +197,22 @@ jobs:
         make
         make check
       shell: alpine.sh {0}
-  macOS-13-openssl-1-1:
+  macOS-14-openssl-1-1:
     needs: ubuntu-latest-html-tests
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
     - name: Install dependencies
-      run: brew install autoconf automake fltk@1.3
+      run: brew install autoconf automake fltk@1.3 openssl@1.1
     - name: autogen
       run: ./autogen.sh
     - name: configure
       run: |
-        export PATH="/usr/local/opt/fltk@1.3/bin:$PATH"
+        export PATH="/opt/homebrew/opt/fltk@1.3/bin:$PATH"
+        export LDFLAGS="-L$(brew --prefix openssl@1.1)/lib"
+        export CPPFLAGS="-I$(brew --prefix openssl@1.1)/include"
         ./configure --disable-mbedtls
     - name: make
       run: make
@@ -218,11 +220,13 @@ jobs:
       run: make check
     - name: make distcheck
       run: |
-        export PATH="/usr/local/opt/fltk@1.3/bin:$PATH"
+        export PATH="/opt/homebrew/opt/fltk@1.3/bin:$PATH"
+        export LDFLAGS="-L$(brew --prefix openssl@1.1)/lib"
+        export CPPFLAGS="-I$(brew --prefix openssl@1.1)/include"
         make distcheck
-  macOS-13-openssl-3:
+  macOS-14-openssl-3:
     needs: ubuntu-latest-html-tests
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
     - uses: actions/checkout@v1
       with:
@@ -235,7 +239,9 @@ jobs:
       run: ./autogen.sh
     - name: configure
       run: |
-        export PATH="/usr/local/opt/fltk@1.3/bin:$PATH"
+        export PATH="/opt/homebrew/opt/fltk@1.3/bin:$PATH"
+        export LDFLAGS="-L$(brew --prefix openssl@3)/lib"
+        export CPPFLAGS="-I$(brew --prefix openssl@3)/include"
         ./configure --disable-mbedtls
     - name: make
       run: make
@@ -243,7 +249,9 @@ jobs:
       run: make check
     - name: make distcheck
       run: |
-        export PATH="/usr/local/opt/fltk@1.3/bin:$PATH"
+        export PATH="/opt/homebrew/opt/fltk@1.3/bin:$PATH"
+        export LDFLAGS="-L$(brew --prefix openssl@3)/lib"
+        export CPPFLAGS="-I$(brew --prefix openssl@3)/include"
         make distcheck
   freebsd-14-openssl-3:
     needs: ubuntu-latest-html-tests
