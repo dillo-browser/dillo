@@ -16,6 +16,7 @@ install-sh
 stamp-h1
 missing
 tags
+/src/commit.h
 /src/dillo
 /doc/dillo.1
 /dpi/[^/]*\.dpi
