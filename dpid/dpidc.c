@@ -19,8 +19,8 @@
 #include <netdb.h>
 #include <errno.h>
 
-#include "../dlib/dlib.h"
-#include "../dpip/dpip.h"
+#include "dlib/dlib.h" /* dIsxdigit */
+#include "dpip/dpip.h"
 
 #define MSG_ERR(...) printf("** ERROR **: " __VA_ARGS__);
 

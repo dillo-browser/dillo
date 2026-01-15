@@ -2,13 +2,12 @@
 #define __DILLO_MISC_H__
 
 #include <stddef.h>     /* for size_t */
+#include "dlib/dlib.h"  /* dIsascii */
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#define d_isascii(c)  (((c) & ~0x7f) == 0) 
 
 char *a_Misc_escape_chars(const char *str, const char *esc_set);
 int a_Misc_expand_tabs(char **start, char *end, char *buf, int buflen);
@@ -41,7 +40,7 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
    str = disposition;
 
    /* Parse the type (attachment, inline, ...) by reading alpha characters. */
-   for (s = str; *s && d_isascii((uchar_t)*s) && !dIscntrl(*s) &&
+   for (s = str; *s && dIsascii((uchar_t)*s) && !dIscntrl(*s) &&
       !strchr(tspecials_space, *s); s++) ;
 
    if (s != str) {
@@ -156,7 +155,7 @@ static inline void a_Misc_parse_content_disposition(const char *disposition, cha
       } else if (strchr(bad_characters, c)) {
          /* Bad character, replace with '_' */
          dst[j++] = '_';
-      } else if (!quoted && (!d_isascii((uchar_t) c) || c == '=')) {
+      } else if (!quoted && (!dIsascii((uchar_t) c) || c == '=')) {
          /* Found non-ascii character or '=', disregard */
          bad = 1;
          break;

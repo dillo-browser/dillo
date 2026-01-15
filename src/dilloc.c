@@ -11,7 +11,7 @@
 
 #include "config.h"
 
-#include "dlib/dlib.h"
+#include "dlib/dlib.h" /* dIsdigit */
 
 #include <dirent.h>
 #include <errno.h>

@@ -28,6 +28,7 @@
 #include "colors.h"
 #include "html_charrefs.h"
 #include "utf8.hh"
+#include "dlib/dlib.h"  /* dIsxdigit */
 
 #include "misc.h"
 #include "uicmd.hh"
@@ -1496,10 +1497,10 @@ static int
       int i;
 
       for (i = 0; val[i]; ++i)
-         if (!d_isascii(val[i]) || !(dIsalnum(val[i]) || strchr(":_.-", val[i])))
+         if (!dIsascii(val[i]) || !(dIsalnum(val[i]) || strchr(":_.-", val[i])))
             break;
 
-      if (val[i] || !(d_isascii(val[0]) && dIsalpha(val[0])))
+      if (val[i] || !(dIsascii(val[0]) && dIsalpha(val[0])))
          BUG_MSG("%s attribute value \"%s\" is not of the form "
                  "'[A-Za-z][A-Za-z0-9:_.-]*'.", attrname, val);
 

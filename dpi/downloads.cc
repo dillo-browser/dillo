@@ -43,7 +43,8 @@
 
 #include "config.h"
 #include "dpiutil.h"
-#include "../dpip/dpip.h"
+#include "dpip/dpip.h"
+#include "dlib/dlib.h" /* dIsdigit */
 
 /*
  * Debugging macros

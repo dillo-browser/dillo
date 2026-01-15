@@ -47,8 +47,8 @@
 
 #include "url.h"
 #include "hsts.h"
-#include "misc.h"
 #include "msg.h"
+#include "dlib/dlib.h" /* dIsascii */
 
 static const char *HEX = "0123456789ABCDEF";
 
@@ -627,7 +627,7 @@ char *a_Url_encode_hex_str(const char *str)
    newstr = dNew(char, 6*strlen(str)+1);
 
    for (c = newstr; *str; str++)
-      if ((dIsalnum(*str) && d_isascii(*str)) || strchr(verbatim, *str))
+      if ((dIsalnum(*str) && dIsascii(*str)) || strchr(verbatim, *str))
          *c++ = *str;
       else if (*str == ' ')
          *c++ = '+';

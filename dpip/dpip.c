@@ -20,6 +20,7 @@
 
 #include "dpip.h"
 #include "d_size.h"
+#include "dlib/dlib.h" /* dIsxdigit */
 
 #define RBUF_SZ 16*1024
 //#define RBUF_SZ 1

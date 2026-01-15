@@ -53,6 +53,8 @@ static inline int dIspunct(unsigned char c)  { return ispunct(c); }
 static inline int dIsspace(unsigned char c)  { return isspace(c); }
 static inline int dIsxdigit(unsigned char c) { return isxdigit(c); }
 static inline int dTolower(unsigned char c)  { return tolower(c); }
+/* Provide portable isascii */
+static inline int dIsascii(unsigned char c)  { return (c & ~0x7f) == 0; }
 
 #define D_ASCII_TOUPPER(c) (((c) >= 'a' && (c) <= 'z') ? (c) - 0x20 : (c))
 #define D_ASCII_TOLOWER(c) (((c) >= 'A' && (c) <= 'Z') ? (c) + 0x20 : (c))

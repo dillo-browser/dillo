@@ -26,6 +26,7 @@
 #include "prefs.h"
 #include "msg.h"
 #include "css.hh"
+#include "dlib/dlib.h" /* dIsdigit */
 
 using namespace dw;
 using namespace dw::core;

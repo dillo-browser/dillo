@@ -30,7 +30,7 @@
 
 #include "hsts.h"
 #include "msg.h"
-#include "../dlib/dlib.h"
+#include "dlib/dlib.h" /* dIsspace */
 #include "IO/tls.h"
 
 typedef struct {

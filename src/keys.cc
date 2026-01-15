@@ -15,12 +15,11 @@
 #include <stdlib.h>        /* strtol */
 #include <string.h>
 
-#include "dlib/dlib.h"
+#include "dlib/dlib.h"     /* dIscntrl */
 #include "keys.hh"
 #include "utf8.hh"
 #include "msg.h"
 #include "cache.h"
-#include "misc.h"
 
 /*
  *  Local data types
@@ -282,7 +281,7 @@ const char *Keys::getKeyName(int key)
          return keyNames[i].name;
    }
 
-   if (d_isascii(key)) {
+   if (dIsascii(key)) {
       sprintf(buf, "%c", key);
    } else {
       /* Otherwise print hexadecimal */

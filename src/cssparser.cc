@@ -24,6 +24,7 @@
 #include "html_common.hh"
 #include "css.hh"
 #include "cssparser.hh"
+#include "dlib/dlib.h" /* dIsspace */
 
 using namespace dw::core::style;
 

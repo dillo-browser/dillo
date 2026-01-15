@@ -33,7 +33,8 @@
 #include <signal.h>
 #include <netinet/in.h>
 
-#include "../dpip/dpip.h"
+#include "dpip/dpip.h"
+#include "dlib/dlib.h" /* dIsspace */
 #include "dpiutil.h"
 #include "d_size.h"
 

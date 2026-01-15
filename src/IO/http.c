@@ -38,6 +38,7 @@
 #include "../auth.h"
 #include "../prefs.h"
 #include "../misc.h"
+#include "dlib/dlib.h" /* dIsdigit */
 
 #include "../uicmd.hh"
 

@@ -24,6 +24,7 @@
 #include "../lout/misc.hh"
 #include "../lout/unicode.hh"
 #include "../lout/debug.hh"
+#include "dlib/dlib.h" /* dIspunct */
 
 #include <stdio.h>
 #include <math.h> // remove again?

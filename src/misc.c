@@ -9,6 +9,8 @@
  * (at your option) any later version.
  */
 
+#include "misc.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +18,7 @@
 
 #include "utf8.hh"
 #include "msg.h"
-#include "misc.h"
+#include "dlib/dlib.h" /* dIsspace */
 
 /**
  * Escape characters as %XX sequences.
@@ -221,13 +223,13 @@ void a_Misc_parse_content_type(const char *type, char **major, char **minor,
    if (!(str = type))
       return;
 
-   for (s = str; *s && d_isascii((uchar_t)*s) && !dIscntrl(*s) &&
+   for (s = str; *s && dIsascii((uchar_t)*s) && !dIscntrl(*s) &&
         !strchr(tspecials_space, *s); s++) ;
    if (major)
       *major = dStrndup(str, s - str);
 
    if (*s == '/') {
-      for (str = ++s; *s && d_isascii((uchar_t)*s) && !dIscntrl(*s) &&
+      for (str = ++s; *s && dIsascii((uchar_t)*s) && !dIscntrl(*s) &&
            !strchr(tspecials_space, *s); s++) ;
       if (minor)
          *minor = dStrndup(str, s - str);

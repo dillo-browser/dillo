@@ -40,7 +40,7 @@
 #include "IO.h"
 #include "Url.h"
 #include "../../dpip/dpip.h"
-#include "dlib/dlib.h"
+#include "dlib/dlib.h" /* dIsxdigit */
 
 /* This one is tricky, some sources state it should include the byte
  * for the terminating NULL, and others say it shouldn't. */

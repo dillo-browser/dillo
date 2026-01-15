@@ -15,7 +15,7 @@
 
 #include "msg.h"
 
-#include "../dlib/dlib.h"
+#include "dlib/dlib.h" /* dIsspace */
 
 /*
  * If EXTENDED_COLOR is defined, the extended set of named colors is supported.

@@ -23,7 +23,7 @@
 #include "fltkcore.hh"
 #include "fltkflatview.hh"
 #include "fltkcomplexbutton.hh"
-#include "dlib/dlib.h"
+#include "dlib/dlib.h" /* dTolower */
 #include "../lout/msg.h"
 #include "../lout/misc.hh"
 

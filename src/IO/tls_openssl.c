@@ -41,7 +41,7 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include "../../dlib/dlib.h"
+#include "dlib/dlib.h" /* dTolower */
 #include "../dialog.hh"
 #include "../klist.h"
 #include "iowatch.hh"

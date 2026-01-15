@@ -18,6 +18,7 @@
 #include <sys/socket.h>
 
 #include "dpiutil.h"
+#include "dlib/dlib.h" /* dIsxdigit */
 
 /*
  * Debugging macros

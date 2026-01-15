@@ -47,7 +47,7 @@
 #define MSG_ERR(...) MSG_INNARDS("** ERROR **: ", __VA_ARGS__)
 
 
-#include "dlib/dlib.h"
+#include "dlib/dlib.h" /* dIsxdigit */
 #include "dpip/dpip.h"
 
 static uint_t failed = 0;
