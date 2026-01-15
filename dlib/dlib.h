@@ -2,7 +2,7 @@
  * File: dlib.h
  *
  * Copyright (C) 2006-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2025-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,16 +42,17 @@ extern "C" {
 #undef  MIN
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 
-/* Handle signed char */
-#define dIsalnum(c) isalnum((uchar_t)(c))
-#define dIsalpha(c) isalpha((uchar_t)(c))
-#define dIscntrl(c) iscntrl((uchar_t)(c))
-#define dIsdigit(c) isdigit((uchar_t)(c))
-#define dIsprint(c) isprint((uchar_t)(c))
-#define dIspunct(c) ispunct((uchar_t)(c))
-#define dIsspace(c) isspace((uchar_t)(c))
-#define dIsxdigit(c) isxdigit((uchar_t)(c))
-#define dTolower(c) tolower((uchar_t)(c))
+/* Prevent negative char values from being transformed in negative integers.
+ * Instead force the value to be casted first to unsigned char, then to int. */
+static inline int dIsalnum(unsigned char c)  { return isalnum(c); }
+static inline int dIsalpha(unsigned char c)  { return isalpha(c); }
+static inline int dIscntrl(unsigned char c)  { return iscntrl(c); }
+static inline int dIsdigit(unsigned char c)  { return isdigit(c); }
+static inline int dIsprint(unsigned char c)  { return isprint(c); }
+static inline int dIspunct(unsigned char c)  { return ispunct(c); }
+static inline int dIsspace(unsigned char c)  { return isspace(c); }
+static inline int dIsxdigit(unsigned char c) { return isxdigit(c); }
+static inline int dTolower(unsigned char c)  { return tolower(c); }
 
 #define D_ASCII_TOUPPER(c) (((c) >= 'a' && (c) <= 'z') ? (c) - 0x20 : (c))
 #define D_ASCII_TOLOWER(c) (((c) >= 'A' && (c) <= 'Z') ? (c) + 0x20 : (c))
