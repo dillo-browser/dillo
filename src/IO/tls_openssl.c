@@ -1213,8 +1213,10 @@ static void Tls_connect(int fd, int connkey)
     * been closed by the server if the user responded too slowly to a popup.
     */
 
+   conn = a_Klist_get_data(conn_list, connkey);
+
    if (!ongoing) {
-      if (a_Klist_get_data(conn_list, connkey)) {
+      if (conn) {
          conn->connecting = FALSE;
          if (failed) {
             conn->in_connect = FALSE;
