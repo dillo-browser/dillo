@@ -68,6 +68,7 @@ typedef struct {
    ChainLink *Info;        /* Used for CCC asynchronous operations */
    char *connected_to;     /* Used for per-server connection limit */
    uint_t connect_port;
+   int SKey;
    Dstr *https_proxy_reply;
 } SocketData_t;
 
@@ -168,7 +169,8 @@ static int Http_sock_new(void)
 {
    SocketData_t *S = dNew0(SocketData_t, 1);
    S->SockFD = -1;
-   return a_Klist_insert(&ValidSocks, S);
+   S->SKey = a_Klist_insert(&ValidSocks, S);
+   return S->SKey;
 }
 
 /**
@@ -1092,6 +1094,8 @@ static void Http_server_remove(Server_t *srv)
 
    while ((sd = dList_nth_data(srv->queue, 0))) {
       dList_remove_fast(srv->queue, sd);
+      if (!(sd->flags & HTTP_SOCKET_TO_BE_FREED))
+         Http_socket_free(sd->SKey);
       dFree(sd);
    }
    dList_free(srv->queue);
@@ -1108,7 +1112,9 @@ static void Http_servers_remove_all(void)
    while (dList_length(servers) > 0) {
       srv = (Server_t*) dList_nth_data(servers, 0);
       while ((sd = dList_nth_data(srv->queue, 0))) {
-         dList_remove(srv->queue, sd);
+         dList_remove_fast(srv->queue, sd);
+         if (!(sd->flags & HTTP_SOCKET_TO_BE_FREED))
+            Http_socket_free(sd->SKey);
          dFree(sd);
       }
       Http_server_remove(srv);
