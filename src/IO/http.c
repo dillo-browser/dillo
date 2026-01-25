@@ -1045,6 +1045,8 @@ void a_Http_ccc(int Op, int Branch, int Dir, ChainLink *Info,
  */
 static void Http_socket_enqueue(Server_t *srv, SocketData_t* sock)
 {
+   assert(~sock->flags & HTTP_SOCKET_QUEUED);
+
    sock->flags |= HTTP_SOCKET_QUEUED;
 
    if ((sock->web->flags & WEB_Image) == 0) {
@@ -1092,7 +1094,9 @@ static void Http_server_remove(Server_t *srv)
 
    while ((sd = dList_nth_data(srv->queue, 0))) {
       dList_remove_fast(srv->queue, sd);
-      dFree(sd);
+      sd->flags &= ~HTTP_SOCKET_QUEUED;
+      if (sd->flags & HTTP_SOCKET_TO_BE_FREED)
+         dFree(sd);
    }
    dList_free(srv->queue);
    dList_remove_fast(servers, srv);
@@ -1108,8 +1112,10 @@ static void Http_servers_remove_all(void)
    while (dList_length(servers) > 0) {
       srv = (Server_t*) dList_nth_data(servers, 0);
       while ((sd = dList_nth_data(srv->queue, 0))) {
-         dList_remove(srv->queue, sd);
-         dFree(sd);
+         dList_remove_fast(srv->queue, sd);
+         sd->flags &= ~HTTP_SOCKET_QUEUED;
+         if (sd->flags & HTTP_SOCKET_TO_BE_FREED)
+            dFree(sd);
       }
       Http_server_remove(srv);
    }
