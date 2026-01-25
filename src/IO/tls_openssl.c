@@ -8,7 +8,7 @@
  * (for the certificate hostname checking from wget)
  * Copyright (C) 2011 Benjamin Johnson <obeythepenguin@users.sourceforge.net>
  * (for the https code offered from dplus browser that formed the basis...)
- * Copyright (C) 2023-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2023-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -470,14 +470,12 @@ static bool_t Tls_check_cert_strength(SSL *ssl, Server_t *srv, int *choice)
       char buf[buflen];
       int rc, i, n = sk_X509_num(sk);
       X509 *cert = NULL;
-      EVP_PKEY *public_key;
       int key_type, key_bits;
       const char *type_str;
       BIO *b;
 
       for (i = 0; i < n; i++) {
          cert = sk_X509_value(sk, i);
-         public_key = X509_get_pubkey(cert);
 
          /* We are trying to find a way to get the hash function used
           * with a certificate. This way, which is not very pleasant, puts
@@ -519,6 +517,31 @@ static bool_t Tls_check_cert_strength(SSL *ssl, Server_t *srv, int *choice)
 
          if (print_chain)
             MSG("%s ", buf);
+
+         EVP_PKEY *public_key = X509_get_pubkey(cert);
+
+         /* LibreSSL returns a NULL public_key for CurveBall attacks */
+         if (public_key == NULL) {
+            if (print_chain)
+               MSG("(error)\n");
+
+            const char *err = ERR_error_string(ERR_get_error(), NULL);
+            MSG("Cannot parse public key: %s\n", err);
+
+            /* Ask the user what to do if not already failed */
+            if (success) {
+               const char *msg =
+                  "The public key of a certificate in the chain cannot be decoded. "
+                  "Cannot trust remote server, continue?";
+
+               *choice = a_Dialog_choice("Dillo TLS security warning", msg,
+                     "Continue", "Cancel", NULL);
+
+               if (*choice != 1)
+                  success = FALSE;
+            }
+            continue;
+         }
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
          key_type = EVP_PKEY_type(EVP_PKEY_id(public_key));

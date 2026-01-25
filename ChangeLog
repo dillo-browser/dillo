@@ -28,6 +28,7 @@ dillo-3.3.0 [Unreleased]
    menu to run programs or scripts.
  - Add "mark_unloaded_images" option to show a border in images not loaded, so
    they are easier to see.
+ - Fix segfault on CurveBall TLS test with LibreSSL.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex
