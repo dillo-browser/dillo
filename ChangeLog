@@ -33,6 +33,10 @@ dillo-3.3.0 [Unreleased]
    Patches: Alex
 +- Add support for Content-Disposition header to set the filename.
    Patches: Cameron Paul, Rodrigo Arias Mallo
++- Fix build in NetBSD and avoid ctype(3) incorrect sign extension.
+   Patches: Leonardo Taccari
++- Fix use-after-free in HTTP server and OpenSSL connection dialog.
+   Patches: Magnus Larsen
 
 dillo-3.2.0 [Jan 18, 2025]
 
