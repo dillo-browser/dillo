@@ -516,7 +516,7 @@ static bool_t Tls_check_cert_strength(SSL *ssl, Server_t *srv, int *choice)
          BIO_free(b);
 
          if (print_chain)
-            MSG("%s ", buf);
+            MSG(" %d: %s ", i, buf);
 
          EVP_PKEY *public_key = X509_get_pubkey(cert);
 
@@ -570,7 +570,7 @@ static bool_t Tls_check_cert_strength(SSL *ssl, Server_t *srv, int *choice)
          X509_NAME_oneline(X509_get_issuer_name(cert), buf, buflen);
          buf[buflen-1] = '\0';
          if (print_chain)
-            MSG("root: %s\n", buf);
+            MSG(" root: %s\n", buf);
       }
    }
    return success;
