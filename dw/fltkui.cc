@@ -1173,7 +1173,7 @@ void FltkToggleButtonResource<I>::setWidgetStyle (Fl_Widget *widget,
 {
    FltkResource::setWidgetStyle(widget, style);
 
-   widget->selection_color(FL_BLACK);
+   widget->selection_color(FL_FOREGROUND_COLOR);
 }
 
 
