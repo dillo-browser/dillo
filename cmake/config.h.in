@@ -1,0 +1,18 @@
+/* config.h.in -- template for config.h used by CMake
+   This file is processed by configure_file(...). */
+
+/* --------------------------------------------------
+   Basic project info (substituted by CMake):
+   -------------------------------------------------- */
+#ifndef DILLO_CONFIG_H
+#define DILLO_CONFIG_H
+
+#define PACKAGE "@PROJECT_NAME@"
+#define VERSION "@PROJECT_VERSION@"
+
+#cmakedefine HAVE_STDINT_H
+#cmakedefine HAVE_INTTYPES_H
+#cmakedefine ENABLE_IPV6
+@DILLO_DEFINES_CONTENT@
+
+#endif /* DILLO_CONFIG_H */
