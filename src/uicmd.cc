@@ -2,7 +2,7 @@
  * File: uicmd.cc
  *
  * Copyright (C) 2005-2011 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1612,6 +1612,17 @@ void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label)
       // This is the focused bw, set window title
       UIcmd_set_window_labels(BW2UI(bw)->window(), title);
    }
+}
+
+/*
+ * Get page title based on the current location URL, NULL if empty.
+ */
+const char *a_UIcmd_get_page_title(BrowserWindow *bw)
+{
+   DilloUrl *url = a_Url_new(a_UIcmd_get_location_text(bw), NULL);
+   const char *title = a_History_get_title_by_url(url, 0);
+   a_Url_free(url);
+   return title;
 }
 
 /*

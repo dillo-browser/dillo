@@ -2,7 +2,7 @@
  * File: uicmd.cc
  *
  * Copyright (C) 2005-2011 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,6 +99,7 @@ void a_UIcmd_set_page_prog(BrowserWindow *bw, size_t nbytes, int cmd);
 void a_UIcmd_set_img_prog(BrowserWindow *bw, int n_img, int t_img, int cmd);
 void a_UIcmd_set_bug_prog(BrowserWindow *bw, int n_bug);
 void a_UIcmd_set_page_title(BrowserWindow *bw, const char *label);
+const char *a_UIcmd_get_page_title(BrowserWindow *bw);
 void a_UIcmd_set_msg(BrowserWindow *bw, const char *format, ...);
 void a_UIcmd_set_buttons_sens(BrowserWindow *bw);
 

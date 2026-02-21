@@ -1,7 +1,7 @@
 /*
  * File: control.c
  *
- * Copyright (C) 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2025-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -217,6 +217,7 @@ static void Control_req_prepare_reply(struct control_req *req)
       dStr_sprintfa(r, " ready         Exits with 0 if finished loading, 1 otherwise\n");
       dStr_sprintfa(r, " open URL      Open the given URL in the current tab\n");
       dStr_sprintfa(r, " url           Print the url in the current tab\n");
+      dStr_sprintfa(r, " title         Print the title of page in the current tab\n");
       dStr_sprintfa(r, " status [MSG]  Set the status bar to MSG\n");
       dStr_sprintfa(r, " dump          Print the content of the current tab\n");
       dStr_sprintfa(r, " hdump         Print the HTTP headers of the current tab\n");
@@ -241,6 +242,12 @@ static void Control_req_prepare_reply(struct control_req *req)
       dStr_sprintfa(r, "0\n");
    } else if (strcmp(cmd, "url") == 0) {
       dStr_sprintfa(r, "0\n%s\n", a_UIcmd_get_location_text(bw));
+   } else if (strcmp(cmd, "title") == 0) {
+      const char *title = a_UIcmd_get_page_title(bw);
+      if (title)
+         dStr_sprintfa(r, "0\n%s\n", title);
+      else
+         dStr_sprintfa(r, "1\n");
    } else if (!strcmp(cmd, "status") || !strncmp(cmd, "status ", 7)) {
       if (cmd[6] == ' ')
          a_UIcmd_set_msg(bw, "%s", cmd + 7);
