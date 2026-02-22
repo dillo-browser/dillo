@@ -2,7 +2,7 @@
  * File: ui.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -118,7 +118,40 @@ public:
          box(DILLO_INPUTBOX);
       }
    virtual int handle(int e);
+   int d_position();
+   void d_position(int p);
+   void d_position(int p, int m);
 };
+
+/* FLTK 1.4 deprecated "position()" for "insert_position()", so we make
+ * a backward compatible wrapper. */
+int CustInput::d_position()
+{
+#if FL_API_VERSION < 10400
+   return CustInput::position();
+#else
+   return CustInput::insert_position();
+#endif
+}
+
+void CustInput::d_position(int p)
+{
+#if FL_API_VERSION < 10400
+   CustInput::position(p);
+#else
+   CustInput::insert_position(p);
+#endif
+}
+
+
+void CustInput::d_position(int p, int m)
+{
+#if FL_API_VERSION < 10400
+   CustInput::position(p, m);
+#else
+   CustInput::insert_position(p, m);
+#endif
+}
 
 /**
  * Disable keys: Up, Down, Page_Up, Page_Down, Tab and
@@ -148,17 +181,17 @@ int CustInput::handle(int e)
          }
       } else if (modifier == FL_CTRL) {
          if (k == 'e') {
-            position(size());
+            d_position(size());
             return 1;
          } else if (k == 'k') {
-            cut(position(), size());
+            cut(d_position(), size());
             return 1;
          } else if (k == 'd') {
-            cut(position(), position()+1);
+            cut(d_position(), d_position()+1);
             return 1;
          } else if (k == 'a' || k == 'l') {
             // Make text selected when already focused.
-            position(size(), 0);
+            d_position(size(), 0);
             return 1;
          } else if (k == 'h' || k == 'o' || k == 'r' ||
                     k == FL_Home || k == FL_End) {
@@ -874,7 +907,7 @@ void UI::set_location(const char *str)
 {
    if (!str) str = "";
    Location->value(str);
-   Location->position((Fl::focus() == Location) ? strlen(str) : 0);
+   ((CustInput *) Location)->d_position((Fl::focus() == Location) ? strlen(str) : 0);
 }
 
 /**
@@ -889,7 +922,7 @@ void UI::focus_location()
    }
    Location->take_focus();
    // Make text selected when already focused.
-   Location->position(Location->size(), 0);
+   ((CustInput *) Location)->d_position(Location->size(), 0);
 }
 
 /**

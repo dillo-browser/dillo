@@ -2,6 +2,7 @@
  * File: dialog.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +60,29 @@ public:
    CustInput3 (int x, int y, int w, int h, const char* l=0) :
       Fl_Input(x,y,w,h,l) {};
    int handle(int e);
+   int d_position();
+   void d_position(int p);
 };
+
+/* FLTK 1.4 deprecated "position()" for "insert_position()", so we make
+ * a backward compatible wrapper. */
+int CustInput3::d_position()
+{
+#if FL_API_VERSION < 10400
+   return CustInput3::position();
+#else
+   return CustInput3::insert_position();
+#endif
+}
+
+void CustInput3::d_position(int p)
+{
+#if FL_API_VERSION < 10400
+   CustInput3::position(p);
+#else
+   CustInput3::insert_position(p);
+#endif
+}
 
 int CustInput3::handle(int e)
 {
@@ -72,13 +95,13 @@ int CustInput3::handle(int e)
 
    if (e == FL_KEYBOARD && modifier == FL_CTRL) {
       if (k == 'a' || k == 'e') {
-         position(k == 'a' ? 0 : size());
+         d_position(k == 'a' ? 0 : size());
          return 1;
       } else if (k == 'k') {
-         cut(position(), size());
+         cut(d_position(), size());
          return 1;
       } else if (k == 'd') {
-         cut(position(), position()+1);
+         cut(d_position(), d_position()+1);
          return 1;
       }
    }

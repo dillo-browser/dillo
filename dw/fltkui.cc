@@ -2,7 +2,7 @@
  * Dillo Widget
  *
  * Copyright 2005-2007 Sebastian Geerken <sgeerken@dillo.org>
- * Copyright 2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2025-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,6 +66,8 @@ public:
    int value(const char* str);
    const char* value();
    int handle(int e);
+   int d_position();
+   void d_position(int p);
 private:
    char *placeholder;
    bool showing_placeholder;
@@ -79,6 +81,26 @@ CustInput2::CustInput2 (int x, int y, int w, int h, const char* l) :
    placeholder = NULL;
    showing_placeholder = false;
    usual_color = FL_BLACK;      /* just init until widget style is set */
+}
+
+/* FLTK 1.4 deprecated "position()" for "insert_position()", so we make
+ * a backward compatible wrapper. */
+int CustInput2::d_position()
+{
+#if FL_API_VERSION < 10400
+   return CustInput2::position();
+#else
+   return CustInput2::insert_position();
+#endif
+}
+
+void CustInput2::d_position(int p)
+{
+#if FL_API_VERSION < 10400
+   CustInput2::position(p);
+#else
+   CustInput2::insert_position(p);
+#endif
 }
 
 /*
@@ -103,7 +125,7 @@ int CustInput2::show_placeholder()
    Fl_Input::textcolor(fltkui_dimmed(usual_color, color()));
    Fl_Input::input_type(FL_NORMAL_INPUT);
    ret = Fl_Input::value(placeholder);
-   position(0);
+   d_position(0);
    return ret;
 }
 
@@ -176,13 +198,13 @@ int CustInput2::handle(int e)
       }
       if (modifier == FL_CTRL) {
          if (k == 'e') {
-            position(size());
+            d_position(size());
             return 1;
          } else if (k == 'k') {
-            cut(position(), size());
+            cut(d_position(), size());
             return 1;
          } else if (k == 'd') {
-            cut(position(), position()+1);
+            cut(d_position(), d_position()+1);
             return 1;
          } else if (k == 'h' || k == 'i' || k == 'j' || k == 'l' || k == 'm') {
             // Fl_Input wants to use ^H as backspace, and also "insert a few

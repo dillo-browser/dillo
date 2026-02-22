@@ -2,6 +2,7 @@
  * File: findbar.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright (C) 2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +28,29 @@ public:
    MyInput (int x, int y, int w, int h, const char* l=0) :
       Fl_Input(x,y,w,h,l) {};
    int handle(int e);
+   int d_position();
+   void d_position(int p);
 };
+
+/* FLTK 1.4 deprecated "position()" for "insert_position()", so we make
+ * a backward compatible wrapper. */
+int MyInput::d_position()
+{
+#if FL_API_VERSION < 10400
+   return MyInput::position();
+#else
+   return MyInput::insert_position();
+#endif
+}
+
+void MyInput::d_position(int p)
+{
+#if FL_API_VERSION < 10400
+   MyInput::position(p);
+#else
+   MyInput::insert_position(p);
+#endif
+}
 
 int MyInput::handle(int e)
 {
@@ -47,13 +70,13 @@ int MyInput::handle(int e)
          }
       } else if (modifier == FL_CTRL) {
          if (k == 'a' || k == 'e') {
-            position(k == 'a' ? 0 : size());
+            d_position(k == 'a' ? 0 : size());
             return 1;
          } else if (k == 'k') {
-            cut(position(), size());
+            cut(d_position(), size());
             return 1;
          } else if (k == 'd') {
-            cut(position(), position()+1);
+            cut(d_position(), d_position()+1);
             return 1;
          } else if (k == 'h' || k == 'i' || k == 'j' || k == 'l' || k == 'm') {
             // Fl_Input wants to use ^H as backspace, and also "insert a few
@@ -205,6 +228,10 @@ void Findbar::show()
 
    /* select text even if already focused */
    i->take_focus();
+#if FL_API_VERSION < 10400
    i->position(i->size(), 0);
+#else
+   i->insert_position(i->size(), 0);
+#endif
 }
 
