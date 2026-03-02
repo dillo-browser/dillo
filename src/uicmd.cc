@@ -754,6 +754,9 @@ static char *UIcmd_find_search_str(const char *str)
          const char *search =
             (const char *)dList_nth_data(prefs.search_urls, p);
          if (search && dStrnAsciiCasecmp(str, search, len) == 0) {
+            /* Are we partially matching another entry? */
+            if (search[len] != ' ')
+               continue;
             prefs.search_url_idx = p;
             url = UIcmd_make_search_str(str + len + 1);
             break;

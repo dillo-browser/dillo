@@ -29,6 +29,7 @@ dillo-3.3.0 [Unreleased]
  - Add "mark_unloaded_images" option to show a border in images not loaded, so
    they are easier to see.
  - Fix segfault on CurveBall TLS test with LibreSSL.
+ - Match complete search prefixes in "search_url" to avoid partial matches.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex
