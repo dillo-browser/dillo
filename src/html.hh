@@ -2,7 +2,7 @@
  * File: html.hh
  *
  * Copyright (C) 2005-2009 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ extern "C" {
 
 /* Keep in sync with the length of the Tags array. It is protected by an
  * static assert in html.cc to prevent errors) */
-#define HTML_NTAGS 93
+#define HTML_NTAGS 94
 
 /*
  * Exported functions

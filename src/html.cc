@@ -2,7 +2,7 @@
  * File: html.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3540,7 +3540,7 @@ static const TagInfo Tags[] = {
  {"ins", B8(01111),'R', Html_tag_open_default, NULL, NULL},
  {"isindex", B8(11001),'F', Html_tag_open_isindex, NULL, NULL},
  {"kbd", B8(01011),'R', Html_tag_open_default, NULL, NULL},
- /* label 010101 */
+ {"label", B8(01010),'R', Html_tag_open_default, NULL, NULL},
  /* legend 01?? */
  {"li", B8(01110),'O', Html_tag_open_li, NULL, Html_tag_close_li},
  {"link", B8(10001),'F', Html_tag_open_link, NULL, NULL},
