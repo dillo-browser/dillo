@@ -56,7 +56,7 @@ const char *const AboutSplash=
 "</ul>\n"
 "\n"
 "<p>See more details in the\n"
-"<a href=\"https://dillo-browser.github.io/\">Dillo website</a>.</p>\n"
+"<a href=\"https://dillo-browser.org/\">Dillo website</a>.</p>\n"
 "\n"
 "</div>\n"
 "</body>\n"

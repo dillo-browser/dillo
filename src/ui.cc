@@ -302,7 +302,7 @@ static void help_cb(Fl_Widget *w, void *)
    } else {
       MSG("Can't read local help file at \"%s\"."
           " Getting remote help...\n", path);
-      a_UIcmd_open_urlstr(bw, "https://dillo-browser.github.io/user_help.html");
+      a_UIcmd_open_urlstr(bw, "https://dillo-browser.org/user_help.html");
    }
    dFree(path);
 }
@@ -687,7 +687,7 @@ void UI::make_status_bar(int ww, int wh)
 
     // Status box
     StatusOutput = new Fl_Output(0, wh-sh, ww-bm_w, sh);
-    StatusOutput->value("https://dillo-browser.github.io/");
+    StatusOutput->value("https://dillo-browser.org/");
     StatusOutput->labelsize(8);
     StatusOutput->box(FL_THIN_DOWN_BOX);
     StatusOutput->clear_visible_focus();

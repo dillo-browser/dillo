@@ -58,7 +58,7 @@ $ sudo make install
 ### From git
 
 ```sh
-$ git clone https://github.com/dillo-browser/dillo.git
+$ git clone https://git.dillo-browser.org/dillo
 $ cd dillo
 $ ./autogen.sh
 $ mkdir build
@@ -174,7 +174,7 @@ libiconv-devel libpng-devel libjpeg-devel libwebp-devel libbrotli-devel
 ```
 
 **Note**: Dillo can also be built with OpenSSL (libssl-devel) but there is a
-[known problem with detached threads](https://github.com/dillo-browser/dillo/issues/172)
+[known problem with detached threads](https://bug.dillo-browser.org/172)
 used by the DNS resolver and OpenSSL that causes a crash. If you use OpenSSL,
 disable the threaded resolver with `--disable-threaded-dns`.
 
@@ -193,7 +193,7 @@ setup-x86_64.exe -q -P gcc-core,gcc-g++,autoconf,automake,make,zlib-devel,mbedtl
 To build Dillo, follow the usual steps from a Cygwin shell:
 
 ```sh
-$ git clone https://github.com/dillo-browser/dillo.git
+$ git clone https://git.dillo-browser.org/dillo
 $ cd dillo
 $ ./autogen.sh
 $ mkdir build
