@@ -347,6 +347,7 @@ dnl ----------------
 dnl Test for libwebp
 dnl ----------------
 dnl
+webp_ok=no
 if test "x$enable_webp" = "xyes"; then
   AC_CHECK_HEADER(webp/decode.h, webp_ok=yes, webp_ok=no)
 
@@ -389,6 +390,7 @@ dnl ---------------
 dnl Test for brotli
 dnl ---------------
 dnl
+brotli_ok=no
 if test "x$enable_brotli" = "xyes"; then
   AC_CHECK_HEADER(brotli/decode.h, brotli_ok=yes, brotli_ok=no)
 
