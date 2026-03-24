@@ -21,7 +21,8 @@ dillo-3.3.0 [Unreleased]
  - Increase margin in location bar to make it easier to select with the mouse.
  - Navigate back and forward with mouse buttons.
  - Fix OAuth login by allowing cookies in root 30X redirects.
- - Add experimental UNIX control socket with --enable-control-socket.
+ - Add support for remote control via a UNIX socket (enabled by default, disable
+   with --disable-control-socket).
  - Add new dilloc program to remote control dillo from the command line.
  - Set DILLO_PID variable when executing actions so dilloc can read it.
  - Add support for "page_action" option to define custom entries in the page

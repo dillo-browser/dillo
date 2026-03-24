@@ -124,9 +124,9 @@ AC_ARG_WITH([ca-certs-dir],
   CA_CERTS_DIR=$withval)
 
 AC_ARG_ENABLE([control-socket],
-  [AS_HELP_STRING([--enable-control-socket], [Allow remote control of the browser via a UNIX socket (experimental)])],
+  [AS_HELP_STRING([--disable-control-socket], [Disable remote control of the browser via a UNIX socket with dilloc])],
   [enable_control_socket=$enableval],
-  [enable_control_socket=no])
+  [enable_control_socket=yes])
 
 dnl Developer options
 
@@ -980,5 +980,5 @@ _AS_ECHO([  SVG enabled    : ${enable_svg}])
 _AS_ECHO([  WEBP enabled   : ${webp_ok}])
 _AS_ECHO([  Brotli enabled : ${brotli_ok}])
 _AS_ECHO([  IPv6 enabled   : ${enable_ipv6}])
-_AS_ECHO([  Control socket : ${enable_control_socket} (experimental)])
+_AS_ECHO([  Control socket : ${enable_control_socket}])
 _AS_ECHO([])

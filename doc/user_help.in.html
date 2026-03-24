@@ -810,13 +810,12 @@ to see the messages, right-click for a menu to open other HTML validators.
 
 <h3 id="remote-control">Remote control</h3>
 <p>
-Dillo can be build with experimental support for remote control using the flag
-<code>--enable-control-socket</code> at configure time. Notice that this
-feature is <em>experimental</em> and the command names or behavior can change in
-future versions. When enabled, the <code>dilloc</code> program is also built,
-which allows the remote control of dillo given its PID using a UNIX socket. By
-default, the first process that replies is used. The environment variable
-<code>DILLO_PID</code> can be used to select which instance of dillo to use.
+Dillo is built with support for remote control by default (can be disabled using
+the flag <code>--disable-control-socket</code> at configure time). When enabled,
+the <code>dilloc</code> program is also built, which allows the remote control
+of dillo given its PID using a UNIX socket. By default, the first process that
+replies is used. The environment variable <code>DILLO_PID</code> can be used to
+select which instance of dillo to use.
 
 <p>
 The dilloc program sends commands to dillo and prints the response in the
