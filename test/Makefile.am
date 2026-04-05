@@ -4,7 +4,7 @@ if ENABLE_HTML_TESTS
 SUBDIRS += html
 endif
 
-if ENABLE_CONTROL_SOCKET
+if ENABLE_DILLOC_TESTS
 SUBDIRS += dilloc
 endif
 

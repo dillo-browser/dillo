@@ -740,32 +740,42 @@ if test "x$enable_ipv6" = "xyes"; then
   AC_DEFINE([ENABLE_IPV6], [1], [Enable IPv6 support])
 fi
 
-dnl ----------
-dnl HTML tests
-dnl ----------
+dnl ------------
+dnl Render tools
+dnl ------------
 dnl
-html_tests_ok=no
-if test "x$enable_html_tests" = "xyes" ; then
-  html_tests_ok=yes
+render_tools_ok=no
+if test "x$enable_html_tests" = "xyes" -o "x$enable_control_socket" = "xyes"; then
+  render_tools_ok=yes
   AC_CHECK_PROG(xvfb_ok, Xvfb, yes, no)
   AC_CHECK_PROG(xwd_ok, xwd, yes, no)
   AC_CHECK_PROG(xwininfo_ok, xwininfo, yes, no)
   AC_CHECK_PROG(convert_ok, convert, yes, no)
 
   if test "x$xvfb_ok" != "xyes"; then
-    html_tests_ok=no
+    render_tools_ok=no
   fi
   if test "x$xwd_ok" != "xyes"; then
-    html_tests_ok=no
+    render_tools_ok=no
   fi
   if test "x$xwininfo_ok" != "xyes"; then
-    html_tests_ok=no
+    render_tools_ok=no
   fi
   if test "x$convert_ok" != "xyes"; then
-    html_tests_ok=no
+    render_tools_ok=no
   fi
-  if test "x$html_tests_ok" != "xyes"; then
+fi
+
+dnl ----------
+dnl HTML tests
+dnl ----------
+dnl
+html_tests_ok=no
+if test "x$enable_html_tests" = "xyes" ; then
+  if test "x$render_tools_ok" != "xyes"; then
     AC_MSG_ERROR([Cannot find all tools to enable HTML tests])
+  else
+    html_tests_ok=yes
   fi
 
   dnl Needs control socket
@@ -781,6 +791,7 @@ dnl --------------
 dnl Control socket
 dnl --------------
 unix_socket_ok=no
+enable_dilloc_tests=no
 if test "x$enable_control_socket" = "xyes"; then
   dnl Check that UNIX sockets are suppported.
   AC_MSG_CHECKING([for AF_UNIX socket support])
@@ -807,10 +818,17 @@ if test "x$enable_control_socket" = "xyes"; then
     AC_MSG_RESULT([no])
     AC_MSG_FAILURE([AF_UNIX socket test failed, cannot enable control socket])
   fi
+  dnl Needs render tools
+  if test "x$render_tools_ok" = "xyes"; then
+    enable_dilloc_tests=yes
+  else
+    AC_MSG_WARN([Missing render tools to enable dilloc tests, disabling])
+  fi
 else
   AC_MSG_NOTICE([Disabling control socket])
 fi
 AM_CONDITIONAL([ENABLE_CONTROL_SOCKET],  [test "x$enable_control_socket" = "xyes"])
+AM_CONDITIONAL([ENABLE_DILLOC_TESTS],  [test "x$enable_dilloc_tests" = "xyes"])
 
 dnl --------------------
 dnl Command line options
@@ -952,6 +970,7 @@ _AS_ECHO([Developer options:])
 _AS_ECHO([])
 _AS_ECHO([  RTFL enabled : ${enable_rtfl}])
 _AS_ECHO([  HTML tests   : ${html_tests_ok}])
+_AS_ECHO([  Dilloc tests : ${enable_dilloc_tests}])
 _AS_ECHO([])
 _AS_ECHO([Configuration summary:])
 _AS_ECHO([])
