@@ -2,7 +2,7 @@
  * Preferences
  *
  * Copyright (C) 2006-2009 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -118,6 +118,7 @@ void a_Prefs_init(void)
    prefs.show_tooltip = TRUE;
    prefs.show_ui_tooltip = TRUE;
    prefs.small_icons = FALSE;
+   prefs.trace_http = FALSE;
    prefs.start_page = a_Url_new(PREFS_START_PAGE, NULL);
    prefs.new_tab_page = a_Url_new(PREFS_NEW_TAB_PAGE, NULL);
    prefs.theme = dStrdup(PREFS_THEME);

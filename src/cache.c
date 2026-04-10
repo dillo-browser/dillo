@@ -2,7 +2,7 @@
  * File: cache.c
  *
  * Copyright 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@
 #include "timeout.hh"
 #include "uicmd.hh"
 #include "dlib/dlib.h"
+#include "prefs.h"
 
 /** Maximum initial size for the automatically-growing data buffer */
 #define MAX_INIT_BUF  1024*1024
@@ -984,6 +985,10 @@ static int Cache_get_header(CacheEntry_t *entry,
       _MSG("Header [buf_size=%d]\n%s", i, hdr->str);
       entry->Flags |= CA_GotHeader;
       dStr_fit(hdr);
+
+      if (prefs.trace_http)
+         MSG("<<< receiving HTTP:\n%s\n", dStr_printable(hdr, 8192));
+
       /* Return number of header bytes in 'buf' [1 based] */
       return i;
    }

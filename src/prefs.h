@@ -2,7 +2,7 @@
  * Preferences
  *
  * Copyright (C) 2006-2009 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,6 +121,7 @@ typedef struct {
    char *save_dir;
    bool_t show_msg;
    bool_t show_extra_warnings;
+   bool_t trace_http;
    bool_t middle_click_drags_page;
    int penalty_hyphen, penalty_hyphen_2;
    int penalty_em_dash_left, penalty_em_dash_right, penalty_em_dash_right_2;

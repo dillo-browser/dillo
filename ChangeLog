@@ -33,6 +33,7 @@ dillo-3.3.0 [Unreleased]
  - Match complete search prefixes in "search_url" to avoid partial matches.
  - Update website URL to https://dillo-browser.org/ and git repository to
    https://git.dillo-browser.org/dillo.
+ - Add "trace_http" option to debug HTTP traffic.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex

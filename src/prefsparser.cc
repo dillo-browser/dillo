@@ -2,7 +2,7 @@
  * Preferences parser
  *
  * Copyright (C) 2006-2009 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -224,6 +224,7 @@ void PrefsParser::parse(FILE *fp)
       { "show_tools", &prefs.show_tools, PREFS_BOOL, 0 },
       { "show_tooltip", &prefs.show_tooltip, PREFS_BOOL, 0 },
       { "show_ui_tooltip", &prefs.show_ui_tooltip, PREFS_BOOL, 0 },
+      { "trace_http", &prefs.trace_http, PREFS_BOOL, 0 },
       { "small_icons", &prefs.small_icons, PREFS_BOOL, 0 },
       { "start_page", &prefs.start_page, PREFS_URL, 0 },
       { "theme", &prefs.theme, PREFS_STRING, 0 },

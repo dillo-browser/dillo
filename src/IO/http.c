@@ -2,7 +2,7 @@
  * File: http.c
  *
  * Copyright (C) 2000-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -493,12 +493,15 @@ static void Http_send_query(SocketData_t *S)
 
    /* Create the query */
    query = Http_make_query_str(S->web,
-		   S->flags & HTTP_SOCKET_USE_PROXY,
-		   S->flags & HTTP_SOCKET_TLS);
+         S->flags & HTTP_SOCKET_USE_PROXY,
+         S->flags & HTTP_SOCKET_TLS);
    dbuf = a_Chain_dbuf_new(query->str, query->len, 0);
 
    MSG_BW(S->web, 1, "Sending query%s...",
                      S->flags & HTTP_SOCKET_USE_PROXY ? " through proxy" : "");
+
+   if (prefs.trace_http)
+      MSG(">>> sending HTTP:\n%s\n", dStr_printable(query, 8192));
 
    /* send query */
    a_Chain_bcb(OpSend, S->Info, dbuf, NULL);
