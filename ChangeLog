@@ -35,6 +35,7 @@ dillo-3.3.0 [Unreleased]
    https://git.dillo-browser.org/dillo.
  - Add "trace_http" option to debug HTTP traffic.
  - Avoid cached responses when submitting forms.
+ - Fix cookie Max-Age parsing using the epoch instead of the local timezone.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex

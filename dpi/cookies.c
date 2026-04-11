@@ -939,23 +939,24 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
          if (dIsdigit(*value) || *value == '-') {
             long age;
             time_t now = time(NULL);
-            struct tm *tm = gmtime(&now);
 
             errno = 0;
             age = (*value == '-') ? 0 : strtol(value, NULL, 10);
 
-            if (errno == ERANGE ||
-                (age > 0 && (age > INT_MAX - tm->tm_sec))) {
-               /* let's not overflow */
-               tm->tm_sec = INT_MAX;
-            } else {
-               tm->tm_sec += age;
-            }
-            cookie->expires_at = mktime(tm);
-            if (age > 0 && cookie->expires_at == (time_t) -1) {
-               cookie->expires_at = cookies_future_time;
-            }
-            _MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
+            /* Don't store for more than a year */
+            long one_year = 31536000L; // 365 * 24 * 3600;
+
+            /* Limit age to a sensible value */
+            if (errno == ERANGE || age > one_year)
+               age = one_year;
+
+            /* No negative age */
+            if (age < 0)
+               age = 0L;
+
+            cookie->expires_at = now + age;
+
+            _MSG("Cookie (from age) to expire at %s", ctime(&cookie->expires_at));
             expires = max_age = TRUE;
          }
          dFree(value);
@@ -976,7 +977,7 @@ static CookieData_t *Cookies_parse(char *cookie_str, const char *server_date)
                    */
                   cookie->expires_at = cookies_future_time;
                }
-               _MSG("Cookie to expire at %s", ctime(&cookie->expires_at));
+               _MSG("Cookie (from Expires) to expire at %s", ctime(&cookie->expires_at));
                dFree(tm);
             } else {
                cookie->expires_at = (time_t) -1;
