@@ -1148,7 +1148,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *active_input)
             new_url = a_Url_new(action_str, NULL);
             /* new_url keeps the dStr and sets DataStr to NULL */
             a_Url_set_data(new_url, &DataStr);
-            a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Post);
+            a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Post | URL_E2EQuery);
             if (content_type == DILLO_HTML_ENC_MULTIPART)
                a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_MultipartEnc);
          } else {
@@ -1161,7 +1161,7 @@ DilloUrl *DilloHtmlForm::buildQueryUrl(DilloHtmlInput *active_input)
 
             url_str = dStrconcat(action_str, "?", DataStr->str, NULL);
             new_url = a_Url_new(url_str, NULL);
-            a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Get);
+            a_Url_set_flags(new_url, URL_FLAGS(new_url) | URL_Get | URL_E2EQuery);
             dFree(url_str);
          }
          dStr_free(DataStr, 1);

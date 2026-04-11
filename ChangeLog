@@ -34,6 +34,7 @@ dillo-3.3.0 [Unreleased]
  - Update website URL to https://dillo-browser.org/ and git repository to
    https://git.dillo-browser.org/dillo.
  - Add "trace_http" option to debug HTTP traffic.
+ - Avoid cached responses when submitting forms.
    Patches: Rodrigo Arias Mallo
 +- Middle click on back or forward button opens page in new tab.
    Patches: Alex
