@@ -547,6 +547,11 @@ The action can be: <code>DENY</code> to ignore cookies,
 to disk and <code>ACCEPT</code> to accept and store cookies in disk (this will
 allow sites to track you over time).
 <p>
+After modifying the cookiesrc file, use the <code>dpidc stop</code> command to
+stop the cookies plugin and force it to load the new configuration. <b>Until the
+cookies plugin is not restarted, it will continue to use the old settings.</b>
+You don't need to restart Dillo for the settings to take effect.
+<p>
 When the cookies plugin exits, only the accepted cookies by <code>ACCEPT</code>
 are saved to
 <a href="file:~/.dillo/cookies.txt"><code>~/.dillo/cookies.txt</code></a>,
