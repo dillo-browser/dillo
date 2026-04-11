@@ -559,6 +559,12 @@ and ACCEPT_SESSION cookies are
 forgotten. The cookies plugin normally exits after a period of inactivity, but
 you can force it to exit with the command <code>dpidc stop</code>.
 <p>
+To remove or edit persistent cookies (those with ACCEPT) first close all Dillo
+processes and then stop the cookies plugin with <code>dpidc stop</code>. After
+that, you can erase or edit the <code>~/.dillo/cookies.txt</code> file with a
+text editor. In the next start of Dillo, the new persistent cookies will be
+loaded from disk.
+<p>
 Here is an example <code>cookiesrc</code> file:
 <pre>
 # host        action
