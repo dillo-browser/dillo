@@ -5,6 +5,7 @@
  * Copyright 2001 Lars Clausen   <lrclause@cs.uiuc.edu>
  *                Jörgen Viksell <jorgen.viksell@telia.com>
  * Copyright 2002-2007 Jorge Arellano Cid <jcid@dillo.org>
+ * Copyright 2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -745,7 +746,7 @@ static void Cookies_add_cookie(CookieData_t *cookie)
        * Don't add an expired cookie. Whether expiring now == expired, exactly,
        * is arguable, but we definitely do not want to add a Max-Age=0 cookie.
        */
-      _MSG("Goodbye, cookie %s=%s d:%s p:%s\n", cookie->name,
+      MSG("Ignoring expired cookie %s=%s d:%s p:%s\n", cookie->name,
            cookie->value, cookie->domain, cookie->path);
       Cookies_free_cookie(cookie);
    } else {
