@@ -216,12 +216,12 @@
 # You can enable multiple search_url strings at once and select from among
 # them at runtime, with the first being the default.
 # (the prefix serves to search from the Location Bar. e.g. "dd dillo image")
-search_url="dd DuckDuckGo (https) https://duckduckgo.com/lite/?kp=-1&kd=-1&q=%s"
-search_url="Wikipedia http://www.wikipedia.org/w/index.php?search=%s&go=Go"
-search_url="Free Dictionary http://www.thefreedictionary.com/%s"
-search_url="Startpage (https) https://www.startpage.com/do/search?query=%s"
-search_url="Marginalia https://marginalia-search.com/search?query=%s"
-search_url="Wiby https://wiby.org/?q=%s"
+search_url="dd DuckDuckGo https://duckduckgo.com/lite/?kp=-1&kd=-1&q=%s"
+search_url="wi Wikipedia https://www.wikipedia.org/w/index.php?search=%s&go=Go"
+search_url="di Free Dictionary https://www.thefreedictionary.com/%s"
+search_url="sp Startpage https://www.startpage.com/do/search?query=%s"
+search_url="mg Marginalia https://marginalia-search.com/search?query=%s"
+search_url="wb Wiby https://wiby.org/?q=%s"
 search_url="mj Mojeek https://www.mojeek.com/search?q=%s"
 
 # If set, dillo will ask web servers to send pages in this language.
