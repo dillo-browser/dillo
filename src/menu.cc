@@ -2,7 +2,7 @@
  * File: menu.cc
  *
  * Copyright (C) 2005-2007 Jorge Arellano Cid <jcid@dillo.org>
- * Copyright (C) 2024-2025 Rodrigo Arias Mallo <rodarima@gmail.com>
+ * Copyright (C) 2024-2026 Rodrigo Arias Mallo <rodarima@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -913,7 +913,13 @@ void a_Menu_tools_popup(BrowserWindow *bw, int x, int y)
       pm[3].set();
    if (prefs.http_force_https)
       pm[4].set();
+   /* Method setonly(void) is deprecated in FLTK 1.5,
+    * available since 1.4.0. */
+#if FL_API_VERSION < 10400
    pm[6+cur_panelsize].setonly();
+#else
+   pm[6+cur_panelsize].setonly(&pm[6]);
+#endif
    cur_smallicons ? pm[9].set() : pm[9].clear();
 
    item = pm->popup(x, y);
