@@ -121,9 +121,9 @@ add_definitions(-DDILLO_SYSCONF="${CMAKE_INSTALL_FULL_SYSCONFDIR}/dillo/")
 add_definitions(-DDILLO_DOCDIR="${CMAKE_INSTALL_FULL_DOCDIR}/")
 add_definitions(-DDILLO_LIBDIR="${CMAKE_INSTALL_FULL_LIBDIR}/dillo/")
 
-# Development mode: use build directory for DPI plugins
-add_definitions(-DDPI_LIBDIR="${CMAKE_BINARY_DIR}")
-add_definitions(-DDPIDRC_SYS="${CMAKE_BINARY_DIR}/dpidrc")
+# System paths for dpid
+add_definitions(-DDPIDRC_SYS="${CMAKE_INSTALL_SYSCONFDIR}/dpidrc")
+
 
 # Enable features based on options
 if(ENABLE_COOKIES)
@@ -161,11 +161,6 @@ add_subdirectory(dpid)
 add_subdirectory(dpi)
 add_subdirectory(src)
 
-# Copy configuration files to build directory for development
-configure_file(${CMAKE_SOURCE_DIR}/dillorc ${CMAKE_BINARY_DIR}/dillorc COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/domainrc ${CMAKE_BINARY_DIR}/domainrc COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/keysrc ${CMAKE_BINARY_DIR}/keysrc COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/src/hsts_preload ${CMAKE_BINARY_DIR}/hsts_preload COPYONLY)
 
 # Installation configuration
 install(FILES dillorc DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/dillo)

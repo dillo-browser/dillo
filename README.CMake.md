@@ -22,7 +22,7 @@ cmake --build build --parallel 4
 sudo cmake --install build
 
 # Run from build directory (development)
-./build/run_dillo.sh
+./build/dillo
 ```
 
 ### Uninstall
@@ -66,17 +66,13 @@ cmake -B build -DCMAKE_INSTALL_PREFIX=/usr
 ## Development
 
 ### Running from Build Directory
-The build system supports development mode where you can run dillo directly from the build directory without installation:
+After building, you can run dillo directly from the build directory:
 
 ```bash
-./build/run_dillo.sh
+./build/dillo
 ```
 
-This script automatically:
-- Sets up DPI plugin paths
-- Copies configuration files to user directory
-- Generates proper dpidrc configuration
-- Runs dillo with correct environment
+Note: For full functionality (DPI plugins, configuration files), you should install the package first with `sudo cmake --install build`.
 
 ### Build Targets
 - `dillo` - Main browser executable
@@ -94,8 +90,8 @@ This CMake build system is a drop-in replacement for the autotools build system.
 
 1. **Build commands**: Use `cmake` instead of `./configure && make`
 2. **Configuration**: CMake options instead of configure flags
-3. **Development mode**: Built-in support for running from build directory
-4. **Cross-platform**: Better Windows/macOS support potential
+3. **Modern build system**: Better dependency management and cross-platform support
+4. **Clean output**: All executables built to build directory root
 
 ## Troubleshooting
 
@@ -136,6 +132,6 @@ The build system is organized as follows:
 When modifying the build system:
 1. Test both Debug and Release builds
 2. Verify installation and uninstallation work
-3. Test development mode with `run_dillo.sh`
+3. Test running from build directory
 4. Ensure all targets build without warnings
 5. Update this documentation for any new features
