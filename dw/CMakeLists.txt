@@ -1,0 +1,115 @@
+# dw libraries
+add_definitions(-DDILLO_LIBDIR="${CMAKE_INSTALL_FULL_LIBDIR}/dillo/")
+add_definitions(-DCUR_WORKING_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Core library
+set(DW_CORE_SOURCES
+    core.hh
+    events.hh
+    findtext.cc
+    findtext.hh
+    imgbuf.hh
+    imgrenderer.hh
+    imgrenderer.cc
+    iterator.cc
+    iterator.hh
+    layout.cc
+    layout.hh
+    platform.hh
+    selection.hh
+    selection.cc
+    stackingcontextmgr.hh
+    stackingcontextmgr.cc
+    style.cc
+    style.hh
+    tools.cc
+    tools.hh
+    types.cc
+    types.hh
+    ui.cc
+    ui.hh
+    view.hh
+    widget.cc
+    widget.hh
+)
+
+add_library(Dw-core STATIC ${DW_CORE_SOURCES})
+target_include_directories(Dw-core PUBLIC ${CMAKE_SOURCE_DIR})
+
+# FLTK library
+set(DW_FLTK_SOURCES
+    fltkcomplexbutton.cc
+    fltkcomplexbutton.hh
+    fltkcore.hh
+    fltkflatview.cc
+    fltkflatview.hh
+    fltkimgbuf.cc
+    fltkimgbuf.hh
+    fltkmisc.cc
+    fltkmisc.hh
+    fltkplatform.cc
+    fltkplatform.hh
+    fltkpreview.hh
+    fltkpreview.cc
+    fltkui.cc
+    fltkui.hh
+    fltkviewbase.cc
+    fltkviewbase.hh
+    fltkviewport.cc
+    fltkviewport.hh
+)
+
+add_library(Dw-fltk STATIC ${DW_FLTK_SOURCES})
+target_include_directories(Dw-fltk PUBLIC ${CMAKE_SOURCE_DIR})
+target_compile_options(Dw-fltk PRIVATE ${FLTK_CXXFLAGS})
+
+# Widgets library
+set(DW_WIDGETS_SOURCES
+    alignedtablecell.cc
+    alignedtablecell.hh
+    alignedtextblock.cc
+    alignedtextblock.hh
+    bullet.cc
+    bullet.hh
+    hyphenator.cc
+    hyphenator.hh
+    image.cc
+    image.hh
+    listitem.cc
+    listitem.hh
+    oofawarewidget.cc
+    oofawarewidget_iterator.cc
+    oofawarewidget.hh
+    ooffloatsmgr.cc
+    ooffloatsmgr.hh
+    oofposabslikemgr.cc
+    oofposabslikemgr.hh
+    oofposabsmgr.cc
+    oofposabsmgr.hh
+    oofposfixedmgr.cc
+    oofposfixedmgr.hh
+    oofpositionedmgr.cc
+    oofpositionedmgr.hh
+    oofposrelmgr.cc
+    oofposrelmgr.hh
+    outofflowmgr.cc
+    outofflowmgr.hh
+    regardingborder.cc
+    regardingborder.hh
+    ruler.cc
+    ruler.hh
+    simpletablecell.cc
+    simpletablecell.hh
+    table.cc
+    table_iterator.cc
+    table.hh
+    tablecell.cc
+    tablecell.hh
+    textblock.cc
+    textblock_iterator.cc
+    textblock_linebreaking.cc
+    textblock.hh
+)
+
+add_library(Dw-widgets STATIC ${DW_WIDGETS_SOURCES})
+target_include_directories(Dw-widgets PUBLIC ${CMAKE_SOURCE_DIR})
