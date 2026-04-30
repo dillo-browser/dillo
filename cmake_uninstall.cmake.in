@@ -1,0 +1,44 @@
+# CMake uninstall script for Dillo
+
+if(NOT EXISTS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
+    message(FATAL_ERROR "Cannot find install manifest: @CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
+endif()
+
+file(READ "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt" files)
+string(REGEX REPLACE "\n" ";" files "${files}")
+
+foreach(file ${files})
+    message(STATUS "Removing: ${file}")
+    if(EXISTS "${file}")
+        execute_process(
+            COMMAND @CMAKE_COMMAND@ -E remove "${file}"
+            RESULT_VARIABLE result
+            OUTPUT_VARIABLE output
+            ERROR_VARIABLE error
+        )
+        if(NOT result EQUAL 0)
+            message(FATAL_ERROR "Failed to remove ${file}: ${error}")
+        endif()
+    else()
+        message(STATUS "File does not exist: ${file}")
+    endif()
+endforeach()
+
+# Remove empty directories
+file(GLOB_RECURSE dirs "@CMAKE_INSTALL_PREFIX@/*")
+list(REVERSE dirs)
+
+foreach(dir ${dirs})
+    if(IS_DIRECTORY "${dir}")
+        file(GLOB dir_contents "${dir}/*")
+        if(dir_contents STREQUAL "")
+            message(STATUS "Removing empty directory: ${dir}")
+            execute_process(
+                COMMAND @CMAKE_COMMAND@ -E remove_directory "${dir}"
+                RESULT_VARIABLE result
+            )
+        endif()
+    endif()
+endforeach()
+
+message(STATUS "Uninstall completed successfully!")
